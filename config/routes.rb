@@ -17,6 +17,8 @@ HrLite::Engine.routes.draw do
   get "calendar", to: "calendar#show"
   resources :salary_slips, only: %i[index show]
   resource :employee_profile, only: :show, path: "profile"
+  get "career", to: "career#show"
+  resources :appraisals, only: %i[index show]
 
   namespace :admin do
     get "overview", to: "overview#index"
@@ -34,6 +36,10 @@ HrLite::Engine.routes.draw do
     end
     resources :employees, except: :destroy do
       resources :salary_structures, only: %i[new create edit update]
+      resources :appraisals, only: %i[new create edit update destroy] do
+        member { post :share }
+      end
+      resources :designation_changes, only: %i[new create]
     end
     resources :payroll_runs, only: %i[index show new create destroy] do
       member do

@@ -1,0 +1,32 @@
+<% content_for(:page_title) { "Appraisal" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Appraisal — <%= @appraisal.period_label %></h1>
+  <div class="hrl-page__actions"><a class="hrl-btn" href="<%= hr_lite.appraisals_path %>">Back</a></div>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <% if @appraisal.rating %><dt>Rating</dt><dd><%= @appraisal.rating %>/5</dd><% end %>
+    <dt>Reviewer</dt><dd><%= hr_display_name(@appraisal.reviewer) %></dd>
+    <dt>Shared</dt><dd><%= @appraisal.shared_at.strftime("%d %b %Y") %></dd>
+    <% if @appraisal.outcome != "none" %>
+      <dt>Outcome</dt>
+      <dd><%= @appraisal.outcome.humanize %><% if @appraisal.new_designation %> — <%= @appraisal.new_designation %><% end %>
+        <% if @appraisal.effective_date %> (effective <%= @appraisal.effective_date.strftime("%d %b %Y") %>)<% end %></dd>
+    <% end %>
+  </dl>
+</section>
+
+<% if @appraisal.strengths.present? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Strengths</h2>
+    <p><%= simple_format(@appraisal.strengths) %></p>
+  </section>
+<% end %>
+
+<% if @appraisal.improvements.present? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Areas to grow</h2>
+    <p><%= simple_format(@appraisal.improvements) %></p>
+  </section>
+<% end %>

@@ -1,0 +1,49 @@
+<% content_for(:page_title) { "Career" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My career</h1>
+</div>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Current role</h2>
+  <p><strong><%= @profile&.designation.presence || "Not set yet" %></strong>
+    <% if @profile %><span class="hrl-muted hrl-small">since <%= (@changes.first&.effective_date || @profile.date_of_joining).strftime("%b %Y") %></span><% end %>
+  </p>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Role history</h2>
+  <% if @changes.any? %>
+    <% @changes.each do |change| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= change.to_designation %></strong>
+          <% if change.from_designation.present? %><span class="hrl-muted">(from <%= change.from_designation %>)</span><% end %>
+          <div class="hrl-feed__meta">
+            Effective <%= change.effective_date.strftime("%d %b %Y") %>
+            <% if change.note.present? %> · <%= change.note %><% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="hrl-muted hrl-small">No role changes recorded yet.</p>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Appraisals</h2>
+  <% if @appraisals.any? %>
+    <% @appraisals.each do |appraisal| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= appraisal.period_label %></strong>
+          <% if appraisal.rating %><span class="hrl-badge hrl-badge--ok"><%= appraisal.rating %>/5</span><% end %>
+          <% if appraisal.outcome != "none" %><span class="hrl-badge"><%= appraisal.outcome.humanize %></span><% end %>
+        </div>
+        <a class="hrl-btn" href="<%= hr_lite.appraisal_path(appraisal) %>">Read</a>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="hrl-muted hrl-small">No shared appraisals yet.</p>
+  <% end %>
+</section>

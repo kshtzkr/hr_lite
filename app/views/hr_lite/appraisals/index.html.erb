@@ -1,0 +1,22 @@
+<% content_for(:page_title) { "Appraisals" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My appraisals</h1>
+  <div class="hrl-page__actions"><a class="hrl-btn" href="<%= hr_lite.career_path %>">Career timeline</a></div>
+</div>
+
+<section class="hrl-card">
+  <% if @appraisals.any? %>
+    <% @appraisals.each do |appraisal| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= appraisal.period_label %></strong>
+          <% if appraisal.rating %><span class="hrl-badge hrl-badge--ok"><%= appraisal.rating %>/5</span><% end %>
+        </div>
+        <a class="hrl-btn" href="<%= hr_lite.appraisal_path(appraisal) %>">Read</a>
+      </div>
+    <% end %>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No shared appraisals yet.</p>
+  <% end %>
+</section>

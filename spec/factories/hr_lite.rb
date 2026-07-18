@@ -82,6 +82,14 @@ FactoryBot.define do
     status { "draft" }
   end
 
+  factory :appraisal, class: "HrLite::Appraisal" do
+    user
+    association :reviewer, factory: :user
+    period_start { Date.new(2027, 1, 1) }
+    period_end { Date.new(2027, 6, 30) }
+    rating { 4 }
+  end
+
   factory :attendance_record, class: "HrLite::AttendanceRecord" do
     user
     sequence(:date) { |n| Date.current - n }
