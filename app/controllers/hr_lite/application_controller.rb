@@ -49,6 +49,20 @@ module HrLite
       end
     end
 
+    # Strict param parsing: anything that isn't the exact expected format
+    # falls back to today (never 500s on a mangled URL).
+    def parse_month_param(value)
+      Date.strptime(value.to_s, "%Y-%m")
+    rescue ArgumentError, TypeError
+      Date.current.beginning_of_month
+    end
+
+    def parse_date_param(value)
+      Date.strptime(value.to_s, "%Y-%m-%d")
+    rescue ArgumentError, TypeError
+      Date.current
+    end
+
     # Minimal LIMIT/OFFSET pagination — no host dependency.
     def paginate(scope, per: 25)
       @per = [ [ params.fetch(:per, per).to_i, 1 ].max, 100 ].min

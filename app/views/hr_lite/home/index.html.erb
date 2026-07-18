@@ -19,3 +19,7 @@
     <a class="hrl-btn hrl-mt" href="<%= hr_lite.kudos_path %>">Give kudos</a>
   </section>
 </div>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+<% end %>

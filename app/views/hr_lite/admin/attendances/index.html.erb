@@ -1,0 +1,49 @@
+<% content_for(:page_title) { "Team attendance" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Team attendance</h1>
+</div>
+
+<div class="hrl-row" style="margin-bottom:.8rem;">
+  <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path(date: @date - 1) %>">&larr;</a>
+  <strong><%= @date.strftime("%A, %d %B %Y") %></strong>
+  <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path(date: @date + 1) %>">&rarr;</a>
+  <% unless @date == Date.current %>
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path %>">Today</a>
+  <% end %>
+</div>
+
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at } %></div><div class="hrl-kpi__label">Checked in</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @employees.size - @records.size %></div><div class="hrl-kpi__label">No punch</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @flagged_count %></div><div class="hrl-kpi__label">Flagged</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at && r.check_out_at.nil? } %></div><div class="hrl-kpi__label">Still in</div></div>
+</div>
+
+<div class="hrl-table-wrap">
+  <table class="hrl-table hrl-table--stack">
+    <thead><tr><th>Employee</th><th>In</th><th>Out</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      <% @employees.each do |employee| %>
+        <% record = @records[employee.id] %>
+        <tr>
+          <td data-label="Employee"><%= hr_display_name(employee) %></td>
+          <td data-label="In"><%= record&.check_in_at&.strftime("%H:%M") || "—" %></td>
+          <td data-label="Out"><%= record&.check_out_at&.strftime("%H:%M") || "—" %></td>
+          <td data-label="Status">
+            <% if record&.flagged? %>
+              <span class="hrl-badge hrl-badge--bad" title="<%= record.flag_note %>">Flagged</span>
+            <% elsif record&.check_in_at %>
+              <span class="hrl-badge hrl-badge--ok"><%= record.status.humanize %></span>
+            <% else %>
+              <span class="hrl-badge hrl-badge--muted">No punch</span>
+            <% end %>
+            <% if record&.regularized? %><span class="hrl-badge">Fixed</span><% end %>
+          </td>
+          <td data-label="">
+            <a class="hrl-small" href="<%= hr_lite.admin_attendance_path(employee.id, date: @date, month: @date.strftime("%Y-%m")) %>">Fix / month</a>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

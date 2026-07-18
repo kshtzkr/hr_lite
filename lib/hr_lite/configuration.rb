@@ -5,7 +5,7 @@ module HrLite
   class Configuration
     attr_accessor :user_class, :parent_controller, :current_user_method,
                   :authenticate_method, :admin_check, :display_name_method,
-                  :mentionable_users, :notify, :render_pdf, :company,
+                  :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check,
                   :mailer_from, :mail_link_base, :notification_matrix, :back_link
@@ -17,6 +17,7 @@ module HrLite
       @authenticate_method   = :authenticate_user!
       @admin_check           = ->(user) { user.respond_to?(:admin?) && user.admin? }
       @display_name_method   = :display_name
+      @employees_scope       = -> { HrLite.user_klass.all }
       @mentionable_users     = ->(query) { HrLite.default_mentionable_users(query) }
       @notify                = ->(user:, kind:, title:, body:, path:) { }
       @render_pdf            = nil

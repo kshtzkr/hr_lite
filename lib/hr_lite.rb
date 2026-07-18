@@ -5,6 +5,7 @@ require "hr_lite/current"
 require "hr_lite/mention_parser"
 require "hr_lite/notifications"
 require "hr_lite/seeds"
+require "hr_lite/geo"
 
 module HrLite
   class << self
@@ -45,6 +46,12 @@ module HrLite
 
     def admin_users
       user_klass.all.select { |u| admin?(u) }
+    end
+
+    # Everyone HR tracks (host-overridable to exclude bots/test accounts),
+    # sorted by display name for team screens.
+    def employees
+      config.employees_scope.call.sort_by { |u| display_name(u).downcase }
     end
 
     def display_name(user)
