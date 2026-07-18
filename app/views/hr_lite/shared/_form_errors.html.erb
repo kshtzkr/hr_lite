@@ -1,0 +1,10 @@
+<% if record.errors.any? %>
+  <div class="hrl-errors">
+    <strong><%= pluralize(record.errors.count, "problem") %> prevented saving:</strong>
+    <ul>
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

@@ -1,0 +1,10 @@
+<h1><%= @heading %></h1>
+<% if @body.present? %><p><%= @body %></p><% end %>
+<% if @lines.any? %>
+  <ul class="lines">
+    <% @lines.each do |line| %><li><%= line %></li><% end %>
+  </ul>
+<% end %>
+<% if @cta_url %>
+  <a class="btn" href="<%= @cta_url %>">Open in HR</a>
+<% end %>

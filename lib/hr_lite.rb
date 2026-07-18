@@ -1,6 +1,10 @@
 require "hr_lite/version"
 require "hr_lite/engine"
 require "hr_lite/configuration"
+require "hr_lite/current"
+require "hr_lite/mention_parser"
+require "hr_lite/notifications"
+require "hr_lite/seeds"
 
 module HrLite
   class << self

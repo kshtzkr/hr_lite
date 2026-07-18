@@ -23,6 +23,7 @@ module Dummy
     config.active_record.encryption.deterministic_key = "test-deterministic-key-000000000"
     config.active_record.encryption.key_derivation_salt = "test-derivation-salt-00000000000"
 
+    config.action_controller.allow_forgery_protection = false
     config.action_mailer.delivery_method = :test
     config.action_mailer.default_url_options = { host: "hr.example.com" }
     config.active_job.queue_adapter = :test

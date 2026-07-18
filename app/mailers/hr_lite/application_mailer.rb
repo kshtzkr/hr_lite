@@ -1,6 +1,5 @@
 module HrLite
   class ApplicationMailer < ActionMailer::Base
-    default from: "from@example.com"
-    layout "mailer"
+    layout "hr_lite/mailer"
   end
 end

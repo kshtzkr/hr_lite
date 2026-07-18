@@ -1,0 +1,39 @@
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Kudos wall</h1>
+  <p class="hrl-page__sub">Appreciate teammates publicly. Mention people with @ — they get notified.</p>
+</div>
+
+<section class="hrl-card">
+  <%= form_with model: @kudo, url: hr_lite.kudos_path, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @kudo %>
+    <div class="hrl-field">
+      <%= f.label :message, "Say something nice" %>
+      <div class="hrl-mention-wrap" data-hrl-mention data-search-url="<%= hr_lite.users_search_path %>">
+        <%= f.text_area :message, placeholder: "Type @ to mention a teammate…", maxlength: 1000 %>
+      </div>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :badge, "Badge (optional)" %>
+      <div class="hrl-chiprow">
+        <% HrLite::Kudo::BADGES.each do |key, label| %>
+          <label><%= f.radio_button :badge, key %><span><%= label %></span></label>
+        <% end %>
+      </div>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Post kudos", class: "hrl-btn hrl-btn--primary" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <% if @kudos.any? %>
+    <div class="hrl-feed">
+      <%= render partial: "hr_lite/kudos/kudo", collection: @kudos %>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No kudos yet. Start the wall.</p>
+  <% end %>
+</section>
+
+<%= hrl_pagination %>

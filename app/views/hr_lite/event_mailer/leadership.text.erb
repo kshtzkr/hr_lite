@@ -1,0 +1,16 @@
+<%= @heading %>
+<% if @body.present? %>
+<%= @body %>
+<% end %>
+<% @lines.each do |line| %>
+- <%= line %>
+<% end %>
+<% if @diff.present? %>
+Changes:
+<% @diff.each do |attr, change| %>
+- <%= attr.to_s.humanize %>: <%= change.is_a?(Array) ? "#{change[0].inspect} -> #{change[1].inspect}" : change %>
+<% end %>
+<% end %>
+<% if @cta_url %>
+<%= @cta_url %>
+<% end %>
