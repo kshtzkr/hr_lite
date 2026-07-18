@@ -96,6 +96,13 @@ Override the CSS variables, nothing else:
 
 All views are also overridable via standard engine view precedence.
 
+## Docs
+
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — every config key, the event
+  list and the notification matrix, how the three access tiers gate.
+- [docs/PAYROLL.md](docs/PAYROLL.md) — the exact payroll math, rounding rules,
+  run lifecycle, and what is deliberately not modelled.
+
 ## Statutory disclaimer
 
 Payroll math (PF, ESI, PT, TDS) is projection-grade and configured in
