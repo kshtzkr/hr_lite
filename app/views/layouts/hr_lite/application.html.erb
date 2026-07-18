@@ -7,6 +7,9 @@
   <%= csp_meta_tag %>
   <%= yield :head %>
   <%= stylesheet_link_tag "hr_lite/hr_lite", media: "all" %>
+  <% HrLite.config.extra_stylesheets.each do |sheet| %>
+    <%= stylesheet_link_tag sheet, media: "all" %>
+  <% end %>
 </head>
 <body class="hrl-body">
   <header class="hrl-appbar">

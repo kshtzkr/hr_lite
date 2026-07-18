@@ -42,6 +42,15 @@ RSpec.describe "Access tiers", type: :request do
     end
   end
 
+  describe "extra stylesheets hook" do
+    it "links host-provided stylesheets after the engine sheet" do
+      HrLite.config.extra_stylesheets = [ "hr_lite_overrides" ]
+      sign_in employee
+      get "/hr/"
+      expect(response.body).to include("hr_lite_overrides")
+    end
+  end
+
   describe "nav visibility" do
     it "hides governing links from employees, shows them to leadership" do
       sign_in employee

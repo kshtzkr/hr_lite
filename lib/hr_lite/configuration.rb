@@ -7,7 +7,7 @@ module HrLite
                   :authenticate_method, :admin_check, :display_name_method,
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
-                  :leadership_emails, :leadership_check,
+                  :leadership_emails, :leadership_check, :extra_stylesheets,
                   :mailer_from, :mail_link_base, :notification_matrix, :back_link
 
     def initialize
@@ -30,6 +30,7 @@ module HrLite
         emails = HrLite.config.leadership_emails.map { |e| e.to_s.downcase.strip }
         emails.include?(user.email.to_s.downcase)
       end
+      @extra_stylesheets     = [] # host stylesheets linked AFTER hr_lite.css (CSS-var overrides)
       @mailer_from           = "hr@example.com"
       @mail_link_base        = nil # e.g. "https://hr.example.com" — enables email link buttons
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
