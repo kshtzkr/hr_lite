@@ -64,5 +64,42 @@ module HrLite
     def hrl_pagination
       render "hr_lite/shared/pagination"
     end
+
+    def hrl_money(amount)
+      return "—" if amount.nil?
+
+      whole, fraction = HrLite::Money.round2(amount).to_s("F").split(".")
+      sign = whole.delete_prefix!("-") ? "-" : ""
+      # Indian digit grouping: 12,34,567
+      grouped = whole.reverse.scan(/\d{1,2}(?=\d{2})|\d{1,3}/).join(",").reverse if whole.length > 3
+      grouped ||= whole
+      "#{sign}#{HrLite.config.currency_symbol}#{grouped}.#{fraction.ljust(2, '0')}"
+    end
+
+    ONES = %w[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen
+              fifteen sixteen seventeen eighteen nineteen].freeze
+    TENS = %w[zero ten twenty thirty forty fifty sixty seventy eighty ninety].freeze
+
+    # Indian-system amount in words for the slip footer.
+    def hrl_amount_in_words(amount)
+      rupees = HrLite::Money.round_rupee(amount).to_i
+      return "Zero rupees" if rupees.zero?
+
+      parts = []
+      [ [ 10_000_000, "crore" ], [ 100_000, "lakh" ], [ 1000, "thousand" ], [ 100, "hundred" ] ].each do |divisor, label|
+        next unless rupees >= divisor
+
+        parts << "#{hrl_two_digit_words(rupees / divisor)} #{label}"
+        rupees %= divisor
+      end
+      parts << hrl_two_digit_words(rupees) if rupees.positive?
+      "#{parts.join(' ').capitalize} rupees"
+    end
+
+    def hrl_two_digit_words(number)
+      return ONES[number] if number < 20
+
+      [ TENS[number / 10], number % 10 == 0 ? nil : ONES[number % 10] ].compact.join("-")
+    end
   end
 end

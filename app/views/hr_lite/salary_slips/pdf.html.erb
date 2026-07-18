@@ -1,0 +1,72 @@
+<% company = HrLite.config.company.call %>
+<div class="pdf-card">
+  <div class="pdf-head">
+    <div>
+      <div class="pdf-company"><%= company[:name] %></div>
+      <% if company[:address].present? %><div class="pdf-muted"><%= company[:address] %></div><% end %>
+    </div>
+    <div style="text-align:right;">
+      <h1>Salary slip</h1>
+      <div class="pdf-muted"><%= @slip.period_month.strftime("%B %Y") %></div>
+    </div>
+  </div>
+
+  <table>
+    <tbody>
+      <tr>
+        <td><strong><%= HrLite.display_name(@slip.user) %></strong>
+          <% if @profile&.designation.present? %> · <%= @profile.designation %><% end %></td>
+        <td class="num">Employee code: <%= @profile&.employee_code || "—" %></td>
+      </tr>
+      <tr>
+        <td>
+          <% if @profile&.department.present? %>Dept: <%= @profile.department %> · <% end %>
+          <% if @profile&.date_of_joining %>DOJ: <%= @profile.date_of_joining.strftime("%d %b %Y") %><% end %>
+        </td>
+        <td class="num">
+          <% if @profile&.masked_uan %>UAN: <%= @profile.masked_uan %> · <% end %>
+          <% if @profile&.masked_pan %>PAN: <%= @profile.masked_pan %><% end %>
+        </td>
+      </tr>
+      <tr>
+        <td>Payable days: <%= @slip.payable_days %> / <%= @slip.days_in_month %> (LOP <%= @slip.effective_lop_days %>)</td>
+        <td class="num"><% if @profile&.masked_account %>Bank: <%= @profile.bank_name %> <%= @profile.masked_account %><% end %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cols">
+    <div>
+      <table>
+        <thead><tr><th>Earnings</th><th class="num">Full</th><th class="num">Earned</th></tr></thead>
+        <tbody>
+          <% @slip.earnings_rows.each do |row| %>
+            <tr><td><%= row["label"] %></td><td class="num"><%= row["full_amount"] %></td><td class="num"><%= row["amount"] %></td></tr>
+          <% end %>
+          <tr class="total"><td>Gross</td><td></td><td class="num"><%= @slip.gross_earnings.to_s("F") %></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <table>
+        <thead><tr><th>Deductions</th><th class="num">Amount</th></tr></thead>
+        <tbody>
+          <% @slip.deductions_rows.each do |row| %>
+            <tr><td><%= row["label"] %></td><td class="num"><%= row["amount"] %></td></tr>
+          <% end %>
+          <tr class="total"><td>Total deductions</td><td class="num"><%= @slip.total_deductions.to_s("F") %></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pdf-net">
+    Net pay: <%= HrLite.config.currency_symbol %><%= @slip.net_pay.to_s("F") %>
+    (<%= hrl_amount_in_words(@slip.net_pay) %>)
+  </div>
+
+  <p class="pdf-foot">
+    Computer-generated payslip — no signature required. Statutory figures are computed on a
+    projection basis; verify with your accountant. Generated <%= Time.current.strftime("%d %b %Y") %>.
+  </p>
+</div>

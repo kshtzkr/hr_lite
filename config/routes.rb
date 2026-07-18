@@ -15,6 +15,8 @@ HrLite::Engine.routes.draw do
   resources :leave_balances, only: :index
   resources :holidays, only: :index
   get "calendar", to: "calendar#show"
+  resources :salary_slips, only: %i[index show]
+  resource :employee_profile, only: :show, path: "profile"
 
   namespace :admin do
     get "overview", to: "overview#index"
@@ -30,6 +32,19 @@ HrLite::Engine.routes.draw do
     resources :holidays, only: %i[index create update destroy] do
       collection { post :bulk_create }
     end
+    resources :employees, except: :destroy do
+      resources :salary_structures, only: %i[new create edit update]
+    end
+    resources :payroll_runs, only: %i[index show new create destroy] do
+      member do
+        post :compute
+        post :finalize
+        post :unlock
+        post :publish
+        get :register
+      end
+    end
+    resources :salary_slips, only: %i[show update]
     resource :setting, only: %i[edit update]
     resources :audit_logs, only: :index
   end

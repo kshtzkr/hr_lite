@@ -6,6 +6,8 @@ require "hr_lite/mention_parser"
 require "hr_lite/notifications"
 require "hr_lite/seeds"
 require "hr_lite/geo"
+require "hr_lite/money"
+require "hr_lite/statutory_rate_card"
 
 module HrLite
   class << self

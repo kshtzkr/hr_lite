@@ -58,6 +58,30 @@ FactoryBot.define do
     end
   end
 
+  factory :employee_profile, class: "HrLite::EmployeeProfile" do
+    user
+    sequence(:employee_code) { |n| "EMP#{format('%03d', n)}" }
+    date_of_joining { Date.new(2024, 1, 1) }
+    tax_regime { "new" }
+  end
+
+  factory :salary_structure, class: "HrLite::SalaryStructure" do
+    user
+    effective_from { Date.new(2026, 1, 1) }
+    basic { BigDecimal("40000") }
+    hra { BigDecimal("20000") }
+    special_allowance { BigDecimal("15000") }
+    pf_applicable { true }
+    pf_on_full_basic { false }
+    esi_applicable { true }
+    pt_state { "none" }
+  end
+
+  factory :payroll_run, class: "HrLite::PayrollRun" do
+    period_month { Date.new(2027, 6, 1) }
+    status { "draft" }
+  end
+
   factory :attendance_record, class: "HrLite::AttendanceRecord" do
     user
     sequence(:date) { |n| Date.current - n }

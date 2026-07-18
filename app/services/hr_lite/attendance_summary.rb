@@ -7,12 +7,17 @@ module HrLite
   #   half-day PAID leave: leave half payable; other half payable if
   #     punched, else lop (unpaid half-day leave: leave half is lop too)
   #   future dates                                       -> upcoming (neither)
+  #   dates outside the employment window (before DOJ / after exit, when an
+  #     EmployeeProfile exists)                          -> out_of_window (neither)
   #
-  # For closed months: payable + lop + upcoming == days_in_month.
+  # The window lives HERE and only here — payroll consumes payable/lop as-is
+  # and never re-clips, so a mid-month joiner is never double-penalized.
+  # For closed months: payable + lop + upcoming + out_of_window == days_in_month.
   module AttendanceSummary
     def self.for(user:, month:)
       range = month.beginning_of_month..month.end_of_month
-      from_day_status(DayStatus.new(user: user, range: range), range)
+      profile = EmployeeProfile.find_by(user_id: user.id)
+      from_day_status(DayStatus.new(user: user, range: range), range, profile: profile)
     end
 
     # Batch variant for team/payroll screens: 3 queries total, not 3×N.
@@ -20,14 +25,19 @@ module HrLite
       users.index_with { |user| self.for(user: user, month: month) }.transform_keys(&:id)
     end
 
-    def self.from_day_status(day_status, range)
+    def self.from_day_status(day_status, range, profile: nil)
       summary = {
         present: 0.to_d, half_day: 0.to_d, paid_leave: 0.to_d, unpaid_leave: 0.to_d,
-        holiday: 0, weekend: 0, absent: 0.to_d, upcoming: 0,
+        holiday: 0, weekend: 0, absent: 0.to_d, upcoming: 0, out_of_window: 0,
         payable_days: 0.to_d, lop_days: 0.to_d, days_in_month: range.count
       }
 
       range.each do |date|
+        if profile && !profile.active_on?(date)
+          summary[:out_of_window] += 1
+          next
+        end
+
         day = day_status.for(date)
         case day.kind
         when :holiday

@@ -1,0 +1,22 @@
+<% content_for(:page_title) { "My HR profile" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My HR profile</h1>
+</div>
+
+<% if @profile %>
+  <section class="hrl-card">
+    <dl class="hrl-deflist">
+      <dt>Employee code</dt><dd><%= @profile.employee_code %></dd>
+      <dt>Designation</dt><dd><%= @profile.designation.presence || "—" %></dd>
+      <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
+      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %B %Y") %></dd>
+      <dt>Tax regime</dt><dd><%= @profile.tax_regime.humanize %></dd>
+      <dt>PAN</dt><dd><%= @profile.masked_pan || "—" %></dd>
+      <dt>PF UAN</dt><dd><%= @profile.masked_uan || "—" %></dd>
+      <dt>Bank</dt><dd><%= [ @profile.bank_name, @profile.masked_account ].compact.join(" ").presence || "—" %></dd>
+    </dl>
+    <p class="hrl-small hrl-muted hrl-mt">Something wrong? Ask leadership to correct it — changes are audited.</p>
+  </section>
+<% else %>
+  <p class="hrl-card hrl-card--empty">Your HR profile has not been set up yet.</p>
+<% end %>

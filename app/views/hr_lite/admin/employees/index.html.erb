@@ -1,0 +1,40 @@
+<% content_for(:page_title) { "Employees" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Employees</h1>
+</div>
+
+<section class="hrl-card">
+  <% if @profiles.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Joined</th><th></th></tr></thead>
+        <tbody>
+          <% @profiles.each do |profile| %>
+            <tr>
+              <td data-label="Code"><%= profile.employee_code %></td>
+              <td data-label="Name"><%= hr_display_name(profile.user) %>
+                <% if profile.date_of_exit %><span class="hrl-badge hrl-badge--muted">Exited</span><% end %></td>
+              <td data-label="Designation"><%= profile.designation %></td>
+              <td data-label="Joined"><%= profile.date_of_joining.strftime("%d %b %Y") %></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_employee_path(profile) %>">Open</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No employee profiles yet.</p>
+  <% end %>
+</section>
+
+<% if @users_without_profile.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Staff without an HR profile</h2>
+    <div class="hrl-row">
+      <% @users_without_profile.each do |user| %>
+        <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_path(user_id: user.id) %>">+ <%= hr_display_name(user) %></a>
+      <% end %>
+    </div>
+  </section>
+<% end %>

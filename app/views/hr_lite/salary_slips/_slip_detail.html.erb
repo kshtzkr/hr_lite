@@ -1,0 +1,48 @@
+<%# locals: slip, profile — shared by employee show, admin show %>
+<div class="hrl-grid hrl-grid--2">
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Earnings</h2>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table">
+        <thead><tr><th>Component</th><th class="hrl-num">Full</th><th class="hrl-num">Earned</th></tr></thead>
+        <tbody>
+          <% slip.earnings_rows.each do |row| %>
+            <tr>
+              <td><%= row["label"] %></td>
+              <td class="hrl-num"><%= hrl_money(row["full_amount"]) %></td>
+              <td class="hrl-num"><%= hrl_money(row["amount"]) %></td>
+            </tr>
+          <% end %>
+          <tr><td><strong>Gross</strong></td><td></td><td class="hrl-num"><strong><%= hrl_money(slip.gross_earnings) %></strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Deductions</h2>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table">
+        <tbody>
+          <% slip.deductions_rows.each do |row| %>
+            <tr><td><%= row["label"] %></td><td class="hrl-num"><%= hrl_money(row["amount"]) %></td></tr>
+          <% end %>
+          <tr><td><strong>Total deductions</strong></td><td class="hrl-num"><strong><%= hrl_money(slip.total_deductions) %></strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <dt>Net pay</dt><dd><strong><%= hrl_money(slip.net_pay) %></strong> (<%= hrl_amount_in_words(slip.net_pay) %>)</dd>
+    <dt>Days</dt><dd><%= slip.payable_days %> payable / <%= slip.effective_lop_days %> LOP of <%= slip.days_in_month %></dd>
+    <% if profile %>
+      <dt>Employee code</dt><dd><%= profile.employee_code %></dd>
+      <% if profile.masked_uan %><dt>PF UAN</dt><dd><%= profile.masked_uan %></dd><% end %>
+      <% if profile.masked_pan %><dt>PAN</dt><dd><%= profile.masked_pan %></dd><% end %>
+      <% if profile.masked_account %><dt>Bank</dt><dd><%= profile.bank_name %> <%= profile.masked_account %></dd><% end %>
+    <% end %>
+  </dl>
+</section>
