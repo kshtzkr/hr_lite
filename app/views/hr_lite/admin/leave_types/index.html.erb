@@ -1,0 +1,39 @@
+<% content_for(:page_title) { "Leave types" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Leave types &amp; policy</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_leave_type_path %>">Add type</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Type</th><th>Quota</th><th>Accrual</th><th>Carry cap</th><th>Paid</th><th></th></tr></thead>
+      <tbody>
+        <% @leave_types.each do |type| %>
+          <tr>
+            <td data-label="Type">
+              <span class="hrl-badge" style="background: <%= type.color %>1f; color: <%= type.color %>;"><%= type.code %></span>
+              <%= type.name %>
+              <% unless type.active %><span class="hrl-badge hrl-badge--muted">Inactive</span><% end %>
+            </td>
+            <td data-label="Quota" class="hrl-num"><%= type.unlimited? ? "Unlimited" : type.annual_quota.to_f %></td>
+            <td data-label="Accrual"><%= type.accrual.humanize %></td>
+            <td data-label="Carry cap" class="hrl-num"><%= type.carry_forward_cap.to_f %></td>
+            <td data-label="Paid"><%= type.paid ? "Yes" : "No" %></td>
+            <td data-label="">
+              <a class="hrl-small" href="<%= hr_lite.edit_admin_leave_type_path(type) %>">Edit</a>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="hrl-row">
+  <a class="hrl-btn" href="<%= hr_lite.admin_office_locations_path %>">Office locations</a>
+  <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path %>">Holidays</a>
+  <a class="hrl-btn" href="<%= hr_lite.edit_admin_setting_path %>">Weekend policy</a>
+</div>

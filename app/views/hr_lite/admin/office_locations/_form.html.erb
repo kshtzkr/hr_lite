@@ -1,0 +1,18 @@
+<section class="hrl-card">
+  <%= form_with model: office_location, url: url, method: method, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: office_location %>
+    <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+    <div class="hrl-field">
+      <%= f.label :lat, "Latitude" %>
+      <%= f.number_field :lat, step: 0.000001 %>
+      <p class="hrl-hint">Right-click the office on Google Maps and copy the coordinates.</p>
+    </div>
+    <div class="hrl-field"><%= f.label :lng, "Longitude" %><%= f.number_field :lng, step: 0.000001 %></div>
+    <div class="hrl-field"><%= f.label :radius_m, "Radius (metres)" %><%= f.number_field :radius_m %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :active %><%= f.label :active %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_office_locations_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

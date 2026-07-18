@@ -1,5 +1,12 @@
-<%# Placeholder — replaced by the leave/holidays phase. %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Next holiday</h2>
-  <p class="hrl-muted hrl-small">The holiday calendar is coming soon.</p>
+  <% holiday = HrLite::Holiday.company_wide.upcoming.first %>
+  <% if holiday %>
+    <p><strong><%= holiday.name %></strong><br>
+      <span class="hrl-muted hrl-small"><%= holiday.date.strftime("%A, %d %B %Y") %>
+        (<%= (holiday.date - Date.current).to_i %> days away)</span></p>
+  <% else %>
+    <p class="hrl-muted hrl-small">No upcoming holidays on the calendar.</p>
+  <% end %>
+  <a class="hrl-small" href="<%= hr_lite.calendar_path %>">Company calendar</a>
 </section>

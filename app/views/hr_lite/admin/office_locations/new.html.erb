@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "Add office" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add office</h1></div>
+<%= render "form", office_location: @office_location, url: hr_lite.admin_office_locations_path, method: :post %>

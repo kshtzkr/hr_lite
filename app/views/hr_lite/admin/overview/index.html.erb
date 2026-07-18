@@ -1,0 +1,72 @@
+<% content_for(:page_title) { "HR overview" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">HR overview</h1>
+</div>
+
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:pending] %></div><div class="hrl-kpi__label">Pending approvals</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:on_leave] %></div><div class="hrl-kpi__label">On leave today</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:flagged] %></div><div class="hrl-kpi__label">Flagged punches</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:missing_checkout] %></div><div class="hrl-kpi__label">Missing checkouts</div></div>
+</div>
+
+<% if @query.empty? %>
+  <p class="hrl-card hrl-card--empty">All present and accounted for.</p>
+<% else %>
+  <% if @kpis[:pending].positive? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Pending approvals</h2>
+      <% @query.pending_requests.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <strong><%= hr_display_name(request.user) %></strong>
+            — <%= request.leave_type.name %>, <%= request.date_range_label %> (<%= request.days_count.to_f %> d)
+          </div>
+          <a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(request) %>">Decide</a>
+        </div>
+      <% end %>
+      <a class="hrl-small" href="<%= hr_lite.admin_leave_requests_path %>">All requests</a>
+    </section>
+  <% end %>
+
+  <% if @kpis[:on_leave].positive? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Out today</h2>
+      <% @query.on_leave_today.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <strong><%= hr_display_name(request.user) %></strong>
+            — <%= request.leave_type.name %> until <%= request.end_date.strftime("%d %b") %>
+          </div>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @kpis[:flagged].positive? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Flagged punches today</h2>
+      <% @query.flagged_today.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |record| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <strong><%= hr_display_name(record.user) %></strong>
+            <span class="hrl-small hrl-muted"><%= record.flag_note %></span>
+          </div>
+          <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(record.user_id, date: record.date, month: record.date.strftime("%Y-%m")) %>">Review</a>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @kpis[:missing_checkout].positive? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Missing checkouts (yesterday)</h2>
+      <% @query.missing_checkout_yesterday.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |record| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body"><strong><%= hr_display_name(record.user) %></strong></div>
+          <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(record.user_id, date: record.date, month: record.date.strftime("%Y-%m")) %>">Fix</a>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>

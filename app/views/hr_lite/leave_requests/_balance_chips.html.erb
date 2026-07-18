@@ -1,5 +1,17 @@
-<%# Placeholder — replaced by the leave phase. %>
 <section class="hrl-card">
-  <h2 class="hrl-card__title">Leave balance</h2>
-  <p class="hrl-muted hrl-small">Leave management is coming soon.</p>
+  <h2 class="hrl-card__title">Leave balance <%= Date.current.year %></h2>
+  <% types = HrLite::LeaveType.active.where(paid: true).where.not(annual_quota: nil) %>
+  <% if types.any? %>
+    <div class="hrl-row">
+      <% types.each do |type| %>
+        <% balance = HrLite::LeaveBalance.for(hr_current_user, type, Date.current.year) %>
+        <span class="hrl-badge" style="background: <%= type.color %>1f; color: <%= type.color %>;">
+          <%= type.code %> <%= balance.available.to_f %>/<%= balance.entitled.to_f %>
+        </span>
+      <% end %>
+    </div>
+    <a class="hrl-btn hrl-mt" href="<%= hr_lite.new_leave_request_path %>">Apply for leave</a>
+  <% else %>
+    <p class="hrl-muted hrl-small">No leave types configured yet.</p>
+  <% end %>
 </section>

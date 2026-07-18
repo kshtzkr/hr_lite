@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "Office locations" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Office locations</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_office_location_path %>">Add office</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @office_locations.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Name</th><th>Coordinates</th><th>Radius</th><th>Active</th><th></th></tr></thead>
+        <tbody>
+          <% @office_locations.each do |office| %>
+            <tr>
+              <td data-label="Name"><%= office.name %></td>
+              <td data-label="Coordinates"><%= office.lat %>, <%= office.lng %></td>
+              <td data-label="Radius" class="hrl-num"><%= office.radius_m %> m</td>
+              <td data-label="Active"><%= office.active ? "Yes" : "No" %></td>
+              <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_office_location_path(office) %>">Edit</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No offices yet — punches will never be radius-flagged until one exists.</p>
+  <% end %>
+</section>

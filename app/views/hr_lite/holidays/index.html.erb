@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "Holidays" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Holidays <%= @year %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.holidays_path(year: @year - 1) %>"><%= @year - 1 %></a>
+    <a class="hrl-btn" href="<%= hr_lite.holidays_path(year: @year + 1) %>"><%= @year + 1 %></a>
+    <a class="hrl-btn" href="<%= hr_lite.calendar_path %>">Calendar</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @holidays.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead>
+        <tbody>
+          <% @holidays.each do |holiday| %>
+            <tr>
+              <td data-label="Date"><%= holiday.date.strftime("%a, %d %b") %></td>
+              <td data-label="Holiday"><%= holiday.name %></td>
+              <td data-label=""><% if holiday.optional %><span class="hrl-badge hrl-badge--muted">Optional</span><% end %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No holidays recorded for <%= @year %>.</p>
+  <% end %>
+</section>

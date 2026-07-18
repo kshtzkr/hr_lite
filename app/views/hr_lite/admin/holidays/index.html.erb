@@ -1,0 +1,59 @@
+<% content_for(:page_title) { "Manage holidays" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Holidays <%= @year %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year - 1) %>"><%= @year - 1 %></a>
+    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year + 1) %>"><%= @year + 1 %></a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @holidays.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Date</th><th>Holiday</th><th>Optional</th><th></th></tr></thead>
+        <tbody>
+          <% @holidays.each do |holiday| %>
+            <tr>
+              <td data-label="Date"><%= holiday.date.strftime("%a, %d %b %Y") %></td>
+              <td data-label="Holiday"><%= holiday.name %></td>
+              <td data-label="Optional"><%= holiday.optional ? "Yes" : "No" %></td>
+              <td data-label="">
+                <%= button_to "Remove", hr_lite.admin_holiday_path(holiday), method: :delete,
+                              class: "hrl-btn hrl-btn--danger hrl-small",
+                              form: { data: { turbo_confirm: "Remove #{holiday.name}?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No holidays for <%= @year %> yet.</p>
+  <% end %>
+</section>
+
+<div class="hrl-grid hrl-grid--2">
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Add one</h2>
+    <%= form_with model: @holiday, url: hr_lite.admin_holidays_path, local: true do |f| %>
+      <div class="hrl-field"><%= f.label :date %><%= f.date_field :date %></div>
+      <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+      <div class="hrl-field hrl-field--check"><%= f.check_box :optional %><%= f.label :optional, "Optional / restricted" %></div>
+      <div class="hrl-form-actions"><%= f.submit "Add holiday", class: "hrl-btn hrl-btn--primary" %></div>
+    <% end %>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Bulk paste</h2>
+    <p class="hrl-small hrl-muted">One per line: <code>YYYY-MM-DD, Name</code> (append <code>, optional</code> for restricted holidays). Duplicates are skipped.</p>
+    <%= form_with url: hr_lite.bulk_create_admin_holidays_path, method: :post, local: true do %>
+      <div class="hrl-field">
+        <textarea name="lines" class="hrl-input" rows="6" placeholder="2026-11-09, Diwali&#10;2026-03-04, Holi"></textarea>
+      </div>
+      <div class="hrl-form-actions">
+        <button type="submit" class="hrl-btn hrl-btn--primary">Add all</button>
+      </div>
+    <% end %>
+  </section>
+</div>

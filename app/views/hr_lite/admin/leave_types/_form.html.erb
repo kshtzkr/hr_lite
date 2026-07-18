@@ -1,0 +1,27 @@
+<section class="hrl-card">
+  <%= form_with model: leave_type, url: url, method: method, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: leave_type %>
+    <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+    <div class="hrl-field"><%= f.label :code %><%= f.text_field :code %></div>
+    <div class="hrl-field"><%= f.label :color %><%= f.color_field :color %></div>
+    <div class="hrl-field">
+      <%= f.label :annual_quota, "Annual quota (blank = unlimited)" %>
+      <%= f.number_field :annual_quota, step: 0.5 %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :accrual %>
+      <%= f.select :accrual, HrLite::LeaveType::ACCRUALS.map { |a| [ a.humanize, a ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :carry_forward_cap, "Carry-forward cap" %>
+      <%= f.number_field :carry_forward_cap, step: 0.5 %>
+    </div>
+    <div class="hrl-field"><%= f.label :position %><%= f.number_field :position %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :paid %><%= f.label :paid %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :active %><%= f.label :active %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_leave_types_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>
