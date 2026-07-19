@@ -1,0 +1,27 @@
+<h1><%= @heading %></h1>
+<% if @body.present? %><p><%= @body %></p><% end %>
+<% if @lines.any? %>
+  <ul class="lines">
+    <% @lines.each do |line| %><li><%= line %></li><% end %>
+  </ul>
+<% end %>
+<% if @diff.present? %>
+  <table class="diff">
+    <tr><th>Field</th><th>Change</th></tr>
+    <% @diff.each do |attr, change| %>
+      <tr>
+        <td><%= attr.to_s.humanize %></td>
+        <td>
+          <% if change.is_a?(Array) %>
+            <%= change[0].inspect %> &rarr; <%= change[1].inspect %>
+          <% else %>
+            <%= change %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </table>
+<% end %>
+<% if @cta_url %>
+  <a class="btn" href="<%= @cta_url %>">Open in HR</a>
+<% end %>

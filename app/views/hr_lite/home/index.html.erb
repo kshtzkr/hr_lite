@@ -1,0 +1,25 @@
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Hello, <%= hr_display_name(hr_current_user) %></h1>
+</div>
+
+<div class="hrl-grid hrl-grid--2">
+  <%= render "hr_lite/attendance/punch_card" %>
+  <%= render "hr_lite/leave_requests/balance_chips" %>
+  <%= render "hr_lite/holidays/next_holiday" %>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Latest kudos</h2>
+    <% if @latest_kudos.any? %>
+      <div class="hrl-feed">
+        <%= render partial: "hr_lite/kudos/kudo", collection: @latest_kudos %>
+      </div>
+    <% else %>
+      <p class="hrl-muted hrl-small">No kudos yet — be the first to appreciate a teammate.</p>
+    <% end %>
+    <a class="hrl-btn hrl-mt" href="<%= hr_lite.kudos_path %>">Give kudos</a>
+  </section>
+</div>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+<% end %>

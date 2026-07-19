@@ -1,0 +1,39 @@
+<% content_for(:page_title) { "Leave decision" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@request.user) %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_leave_requests_path %>">Back</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <dt>Type</dt><dd><%= @request.leave_type.name %> (<%= @request.paid? ? "paid" : "unpaid" %>)</dd>
+    <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
+    <dt>Working days</dt><dd><%= @request.days_count.to_f %></dd>
+    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
+    <% unless @request.leave_type.unlimited? %>
+      <dt>Balance</dt>
+      <dd><%= @balance.available.to_f %> of <%= @balance.entitled.to_f %> available</dd>
+    <% end %>
+    <% if @request.decision_note.present? %><dt>Decision note</dt><dd><%= @request.decision_note %></dd><% end %>
+  </dl>
+</section>
+
+<% if @request.pending? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Decide</h2>
+    <%= form_with url: hr_lite.approve_admin_leave_request_path(@request), method: :post, local: true do %>
+      <div class="hrl-field">
+        <label for="decision_note">Note (required to reject)</label>
+        <textarea name="decision_note" id="decision_note" class="hrl-input"></textarea>
+      </div>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--primary" type="submit">Approve</button>
+        <button class="hrl-btn hrl-btn--danger" type="submit"
+                formaction="<%= hr_lite.reject_admin_leave_request_path(@request) %>">Reject</button>
+      </div>
+    <% end %>
+  </section>
+<% end %>

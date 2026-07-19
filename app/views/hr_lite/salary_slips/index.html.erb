@@ -1,0 +1,29 @@
+<% content_for(:page_title) { "Salary slips" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My salary slips</h1>
+</div>
+
+<section class="hrl-card">
+  <% if @slips.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Period</th><th>Net pay</th><th></th></tr></thead>
+        <tbody>
+          <% @slips.each do |slip| %>
+            <tr>
+              <td data-label="Period"><%= slip.period_month.strftime("%B %Y") %></td>
+              <td data-label="Net pay" class="hrl-num"><strong><%= hrl_money(slip.net_pay) %></strong></td>
+              <td data-label="">
+                <a class="hrl-btn" href="<%= hr_lite.salary_slip_path(slip) %>">View</a>
+                <a class="hrl-btn" href="<%= hr_lite.salary_slip_path(slip, format: :pdf) %>">PDF</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No published salary slips yet.</p>
+  <% end %>
+</section>

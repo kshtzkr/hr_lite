@@ -1,0 +1,10 @@
+<%= @heading %>
+<% if @body.present? %>
+<%= @body %>
+<% end %>
+<% @lines.each do |line| %>
+- <%= line %>
+<% end %>
+<% if @cta_url %>
+<%= @cta_url %>
+<% end %>

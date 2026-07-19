@@ -1,0 +1,76 @@
+<% content_for(:page_title) { "Payroll #{@run.label}" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Payroll — <%= @run.label %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_payroll_runs_path %>">All runs</a>
+  </div>
+</div>
+
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @slips.size %></div><div class="hrl-kpi__label">Slips</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_gross) %></div><div class="hrl-kpi__label">Gross</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_net) %></div><div class="hrl-kpi__label">Net payout</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_employer_cost) %></div><div class="hrl-kpi__label">Employer cost</div></div>
+</div>
+
+<% if @run.warnings.any? %>
+  <div class="hrl-flash hrl-flash--warn">
+    <strong>Warnings:</strong>
+    <ul><% @run.warnings.each do |warning| %><li><%= warning %></li><% end %></ul>
+  </div>
+<% end %>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <span class="hrl-badge"><%= @run.status.humanize %></span>
+    <% if @run.draft? || @run.review? %>
+      <%= button_to @run.draft? ? "Compute" : "Recompute", hr_lite.compute_admin_payroll_run_path(@run),
+                    method: :post, class: "hrl-btn hrl-btn--primary" %>
+    <% end %>
+    <% if @run.review? %>
+      <%= button_to "Finalize", hr_lite.finalize_admin_payroll_run_path(@run), method: :post, class: "hrl-btn" %>
+    <% end %>
+    <% if @run.finalized? %>
+      <%= button_to "Unlock", hr_lite.unlock_admin_payroll_run_path(@run), method: :post, class: "hrl-btn" %>
+      <%= button_to "Publish to employees", hr_lite.publish_admin_payroll_run_path(@run), method: :post,
+                    class: "hrl-btn hrl-btn--primary",
+                    form: { data: { turbo_confirm: "Publish #{@run.label}? Employees will be notified." } } %>
+    <% end %>
+    <% if @slips.any? %>
+      <a class="hrl-btn" href="<%= hr_lite.register_admin_payroll_run_path(@run, format: :csv) %>">Register CSV</a>
+    <% end %>
+    <% if @run.draft? %>
+      <%= button_to "Delete draft", hr_lite.admin_payroll_run_path(@run), method: :delete,
+                    class: "hrl-btn hrl-btn--danger",
+                    form: { data: { turbo_confirm: "Delete this draft run?" } } %>
+    <% end %>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <% if @slips.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Employee</th><th>Days</th><th>LOP</th><th>Gross</th><th>Deductions</th><th>Net</th><th></th></tr></thead>
+        <tbody>
+          <% @slips.each do |slip| %>
+            <tr>
+              <td data-label="Employee"><%= hr_display_name(slip.user) %></td>
+              <td data-label="Days" class="hrl-num"><%= slip.payable_days %></td>
+              <td data-label="LOP" class="hrl-num">
+                <%= slip.effective_lop_days %>
+                <% if slip.lop_override %><span class="hrl-badge hrl-badge--warn">override</span><% end %>
+              </td>
+              <td data-label="Gross" class="hrl-num"><%= hrl_money(slip.gross_earnings) %></td>
+              <td data-label="Deductions" class="hrl-num"><%= hrl_money(slip.total_deductions) %></td>
+              <td data-label="Net" class="hrl-num"><strong><%= hrl_money(slip.net_pay) %></strong></td>
+              <td data-label=""><a class="hrl-small" href="<%= hr_lite.admin_salary_slip_path(slip) %>">Detail</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No slips yet — compute the run.</p>
+  <% end %>
+</section>

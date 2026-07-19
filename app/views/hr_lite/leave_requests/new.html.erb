@@ -1,0 +1,36 @@
+<% content_for(:page_title) { "Apply for leave" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Apply for leave</h1>
+</div>
+
+<%= render "hr_lite/leave_requests/balance_chips" %>
+
+<section class="hrl-card">
+  <%= form_with model: @request, url: hr_lite.leave_requests_path, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @request %>
+    <div class="hrl-field">
+      <%= f.label :leave_type_id, "Type" %>
+      <%= f.collection_select :leave_type_id, HrLite::LeaveType.active, :id, :name %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :start_date, "From" %>
+      <%= f.date_field :start_date %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :end_date, "To" %>
+      <%= f.date_field :end_date %>
+    </div>
+    <div class="hrl-field hrl-field--check">
+      <%= f.check_box :half_day %>
+      <%= f.label :half_day, "Half day (single-day requests only)" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :reason, "Reason (optional)" %>
+      <%= f.text_area :reason %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Submit request", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.leave_requests_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

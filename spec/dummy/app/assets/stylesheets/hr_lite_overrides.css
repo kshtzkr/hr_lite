@@ -1,0 +1,2 @@
+/* Test fixture for the extra_stylesheets host hook. */
+:root { --hrl-accent: #00a24f; }

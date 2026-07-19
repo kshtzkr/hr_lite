@@ -1,0 +1,29 @@
+<section class="hrl-card">
+  <%= form_with model: appraisal, url: url, method: method, scope: :appraisal, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: appraisal %>
+    <div class="hrl-field"><%= f.label :period_start %><%= f.date_field :period_start %></div>
+    <div class="hrl-field"><%= f.label :period_end %><%= f.date_field :period_end %></div>
+    <div class="hrl-field">
+      <%= f.label :rating, "Rating (1-5, optional)" %>
+      <%= f.select :rating, [ [ "No rating", "" ] ] + (1..5).map { |n| [ "#{n}/5", n ] } %>
+    </div>
+    <div class="hrl-field"><%= f.label :strengths %><%= f.text_area :strengths %></div>
+    <div class="hrl-field"><%= f.label :improvements, "Areas to grow" %><%= f.text_area :improvements %></div>
+    <div class="hrl-field">
+      <%= f.label :outcome %>
+      <%= f.select :outcome, HrLite::Appraisal::OUTCOMES.map { |o| [ o.humanize, o ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :new_designation, "New designation (promotion only)" %>
+      <%= f.text_field :new_designation %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :effective_date, "Effective date (for increment/promotion)" %>
+      <%= f.date_field :effective_date %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save draft", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_employee_path(@profile) %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

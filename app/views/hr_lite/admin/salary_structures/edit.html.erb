@@ -1,0 +1,6 @@
+<% content_for(:page_title) { "Edit salary structure" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Edit structure — <%= hr_display_name(@profile.user) %></h1>
+</div>
+<%= render "form", structure: @structure,
+           url: hr_lite.admin_employee_salary_structure_path(@profile, @structure), method: :patch %>

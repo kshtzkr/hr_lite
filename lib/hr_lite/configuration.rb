@@ -5,10 +5,15 @@ module HrLite
   class Configuration
     attr_accessor :user_class, :parent_controller, :current_user_method,
                   :authenticate_method, :admin_check, :display_name_method,
-                  :mentionable_users, :notify, :render_pdf, :company,
+                  :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
-                  :leadership_emails, :leadership_check,
-                  :mailer_from, :notification_matrix, :back_link
+                  :leadership_emails, :leadership_check, :extra_stylesheets,
+                  :mailer_from, :public_url_base, :notification_matrix, :back_link
+
+    # 0.1.0 pre-release name for public_url_base; kept as an alias so early
+    # adopters' initializers don't break.
+    alias_method :mail_link_base, :public_url_base
+    alias_method :mail_link_base=, :public_url_base=
 
     def initialize
       @user_class            = "User"
@@ -17,19 +22,22 @@ module HrLite
       @authenticate_method   = :authenticate_user!
       @admin_check           = ->(user) { user.respond_to?(:admin?) && user.admin? }
       @display_name_method   = :display_name
+      @employees_scope       = -> { HrLite.user_klass.all }
       @mentionable_users     = ->(query) { HrLite.default_mentionable_users(query) }
-      @notify                = ->(user:, kind:, title:, body:, path:) {}
+      @notify                = ->(user:, kind:, title:, body:, path:) { }
       @render_pdf            = nil
       @company               = -> { { name: "Company", address: nil, logo_path: nil } }
       @time_zone             = "Asia/Kolkata"
       @currency_symbol      = "₹"
-      @on_designation_change = ->(user, designation) {}
+      @on_designation_change = ->(user, designation) { }
       @leadership_emails     = []
       @leadership_check      = ->(user) do
         emails = HrLite.config.leadership_emails.map { |e| e.to_s.downcase.strip }
         emails.include?(user.email.to_s.downcase)
       end
+      @extra_stylesheets     = [] # host stylesheets linked AFTER hr_lite.css (CSS-var overrides)
       @mailer_from           = "hr@example.com"
+      @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
     end

@@ -1,0 +1,42 @@
+<% content_for(:page_title) { "Slip review" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@slip.user) %> — <%= @slip.period_month.strftime("%B %Y") %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_payroll_run_path(@slip.payroll_run) %>">Back to run</a>
+  </div>
+</div>
+
+<%= render "hr_lite/salary_slips/slip_detail", slip: @slip, profile: @profile %>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Tax working</h2>
+  <dl class="hrl-deflist">
+    <% @slip.tax_details_hash.each do |key, value| %>
+      <dt><%= key.humanize %></dt><dd><%= value %></dd>
+    <% end %>
+  </dl>
+  <% if @slip.tax_details_hash["high_income_review"] == "true" %>
+    <p class="hrl-flash hrl-flash--warn">Projected taxable income is above ₹50L — surcharge is NOT modelled.
+      Set a TDS override after checking with the CA.</p>
+  <% end %>
+</section>
+
+<% if @slip.payroll_run.review? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Overrides</h2>
+    <p class="hrl-small hrl-muted">Overrides survive recomputes. Clear a field to remove its override.</p>
+    <%= form_with url: hr_lite.admin_salary_slip_path(@slip), method: :patch, scope: :salary_slip, local: true do |f| %>
+      <div class="hrl-field">
+        <%= f.label :lop_override, "LOP days override (attendance says #{@slip.lop_days})" %>
+        <%= f.number_field :lop_override, step: 0.5, value: @slip.lop_override %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :tds_override, "Monthly TDS override" %>
+        <%= f.number_field :tds_override, step: 1, value: @slip.tds_override %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= f.submit "Recompute with overrides", class: "hrl-btn hrl-btn--primary" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

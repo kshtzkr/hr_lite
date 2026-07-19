@@ -1,0 +1,41 @@
+<%# locals: month (Date, any day in month), day_status (HrLite::DayStatus), link_builder (optional lambda date -> url) %>
+<% first = month.beginning_of_month
+   last = month.end_of_month
+   link_builder = local_assigns[:link_builder] %>
+<div class="hrl-mgrid" role="grid" aria-label="Attendance for <%= month.strftime('%B %Y') %>">
+  <% %w[Mo Tu We Th Fr Sa Su].each do |d| %>
+    <div class="hrl-mgrid__head"><%= d %></div>
+  <% end %>
+  <% (first.cwday - 1).times do %>
+    <div></div>
+  <% end %>
+  <% (first..last).each do |date| %>
+    <% day = day_status.for(date)
+       classes = {
+         present: "hrl-mgrid__day--present", half_day: "hrl-mgrid__day--half",
+         leave: "hrl-mgrid__day--leave", half_day_leave: "hrl-mgrid__day--leave",
+         holiday: "hrl-mgrid__day--holiday", weekend: "hrl-mgrid__day--weekend",
+         absent: "hrl-mgrid__day--absent", upcoming: "hrl-mgrid__day--muted"
+       }[day.kind] %>
+    <div class="hrl-mgrid__day <%= classes %>" role="gridcell">
+      <% if day.record&.flagged? %><span class="hrl-mgrid__flag" title="<%= day.record.flag_note %>"></span><% end %>
+      <span class="hrl-mgrid__num">
+        <% if link_builder %>
+          <a href="<%= link_builder.call(date) %>"><%= date.day %></a>
+        <% else %>
+          <%= date.day %>
+        <% end %>
+      </span>
+      <% if day.record&.check_in_at %>
+        <span class="hrl-mgrid__tag"><%= day.record.check_in_at.strftime("%H:%M") %><%= day.record.check_out_at ? "–#{day.record.check_out_at.strftime('%H:%M')}" : "" %></span>
+      <% elsif day.kind == :absent %>
+        <span class="hrl-mgrid__tag">absent</span>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+<div class="hrl-legend hrl-small">
+  <span class="hrl-badge hrl-badge--ok">Present</span>
+  <span class="hrl-badge hrl-badge--bad">Absent</span>
+  <span class="hrl-badge hrl-badge--muted">Upcoming</span>
+</div>

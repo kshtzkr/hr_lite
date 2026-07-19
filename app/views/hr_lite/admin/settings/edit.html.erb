@@ -1,0 +1,18 @@
+<% content_for(:page_title) { "HR settings" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">HR settings</h1>
+</div>
+
+<section class="hrl-card">
+  <%= form_with model: @setting, url: hr_lite.admin_setting_path, method: :patch, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @setting %>
+    <div class="hrl-field">
+      <%= f.label :weekend_policy, "Weekly off policy" %>
+      <%= f.select :weekend_policy, HrLite::Setting::WEEKEND_POLICIES.map { |p| [ p.humanize, p ] } %>
+      <p class="hrl-hint">Drives working-day math everywhere: leave counting, attendance, payroll.</p>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+    </div>
+  <% end %>
+</section>

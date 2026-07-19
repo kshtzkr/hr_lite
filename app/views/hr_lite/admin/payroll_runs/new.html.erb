@@ -1,0 +1,20 @@
+<% content_for(:page_title) { "New payroll run" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">New payroll run</h1></div>
+
+<section class="hrl-card">
+  <%= form_with model: @run, url: hr_lite.admin_payroll_runs_path, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @run %>
+    <div class="hrl-field">
+      <%= f.label :period_month, "Month" %>
+      <%= f.month_field :period_month, value: @run.period_month&.strftime("%Y-%m") %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :notes, "Notes (optional)" %>
+      <%= f.text_area :notes %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Create run", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_payroll_runs_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

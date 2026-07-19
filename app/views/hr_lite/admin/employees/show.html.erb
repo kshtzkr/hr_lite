@@ -1,0 +1,75 @@
+<% content_for(:page_title) { @profile.employee_code } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
+    <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
+    <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
+  </div>
+</div>
+
+<div class="hrl-grid hrl-grid--2">
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Profile</h2>
+    <dl class="hrl-deflist">
+      <dt>Designation</dt><dd><%= @profile.designation.presence || "—" %></dd>
+      <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
+      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %b %Y") %></dd>
+      <% if @profile.date_of_exit %><dt>Exited</dt><dd><%= @profile.date_of_exit.strftime("%d %b %Y") %></dd><% end %>
+      <dt>Tax regime</dt><dd><%= @profile.tax_regime.humanize %></dd>
+      <dt>PAN</dt><dd><%= @profile.masked_pan || "—" %></dd>
+      <dt>UAN</dt><dd><%= @profile.masked_uan || "—" %></dd>
+      <dt>ESI</dt><dd><%= @profile.esi_number.present? ? "on file" : "—" %></dd>
+      <dt>Bank</dt><dd><%= [ @profile.bank_name, @profile.masked_account ].compact.join(" ").presence || "—" %></dd>
+    </dl>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Salary structures</h2>
+    <% if @structures.any? %>
+      <div class="hrl-table-wrap">
+        <table class="hrl-table">
+          <thead><tr><th>Effective</th><th class="hrl-num">Basic</th><th class="hrl-num">Gross</th><th></th></tr></thead>
+          <tbody>
+            <% @structures.each do |structure| %>
+              <tr>
+                <td><%= structure.effective_from.strftime("%b %Y") %></td>
+                <td class="hrl-num"><%= hrl_money(structure.basic) %></td>
+                <td class="hrl-num"><%= hrl_money(structure.monthly_gross) %></td>
+                <td><a class="hrl-small" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="hrl-muted hrl-small">No structure yet — payroll will skip this employee.</p>
+    <% end %>
+  </section>
+</div>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Appraisals</h2>
+  <% appraisals = HrLite::Appraisal.where(user_id: @profile.user_id).recent_first %>
+  <% if appraisals.any? %>
+    <% appraisals.each do |appraisal| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= appraisal.period_label %></strong>
+          <span class="hrl-badge <%= appraisal.shared? ? 'hrl-badge--ok' : 'hrl-badge--muted' %>"><%= appraisal.status.humanize %></span>
+          <% if appraisal.rating %><span class="hrl-badge"><%= appraisal.rating %>/5</span><% end %>
+          <% if appraisal.outcome != "none" %><span class="hrl-badge hrl-badge--warn"><%= appraisal.outcome.humanize %></span><% end %>
+        </div>
+        <% if appraisal.draft? %>
+          <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_appraisal_path(@profile, appraisal) %>">Edit</a>
+          <%= button_to "Share", hr_lite.share_admin_employee_appraisal_path(@profile, appraisal), method: :post,
+                        class: "hrl-btn hrl-btn--primary",
+                        form: { data: { turbo_confirm: "Share this appraisal with the employee? It becomes permanent." } } %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="hrl-muted hrl-small">No appraisals yet.</p>
+  <% end %>
+</section>

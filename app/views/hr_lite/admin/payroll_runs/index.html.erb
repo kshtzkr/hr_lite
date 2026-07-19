@@ -1,0 +1,33 @@
+<% content_for(:page_title) { "Payroll" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Payroll runs</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_payroll_run_path %>">New run</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @runs.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Period</th><th>Status</th><th>Slips</th><th>Net total</th><th></th></tr></thead>
+        <tbody>
+          <% @runs.each do |run| %>
+            <tr>
+              <td data-label="Period"><%= run.label %></td>
+              <td data-label="Status">
+                <span class="hrl-badge <%= { "published" => "hrl-badge--ok", "finalized" => "hrl-badge--warn", "draft" => "hrl-badge--muted" }[run.status] %>"><%= run.status.humanize %></span>
+              </td>
+              <td data-label="Slips" class="hrl-num"><%= run.salary_slips.size %></td>
+              <td data-label="Net total" class="hrl-num"><%= hrl_money(run.total_net) %></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_payroll_run_path(run) %>">Open</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No payroll runs yet.</p>
+  <% end %>
+</section>

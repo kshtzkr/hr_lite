@@ -1,0 +1,17 @@
+<div class="hrl-feed__item" id="kudo_<%= kudo.id %>">
+  <span class="hrl-avatar" aria-hidden="true"><%= hr_display_name(kudo.giver).first(1).upcase %></span>
+  <div class="hrl-feed__body">
+    <div class="hrl-row">
+      <strong><%= hr_display_name(kudo.giver) %></strong>
+      <% if kudo.badge_label %>
+        <span class="hrl-badge"><%= kudo.badge_label %></span>
+      <% end %>
+      <span class="hrl-feed__meta hrl-right"><%= time_ago_in_words(kudo.created_at) %> ago</span>
+    </div>
+    <p><%= render_kudo_message(kudo) %></p>
+    <% if kudo.deletable_by?(hr_current_user) %>
+      <%= button_to "Remove", hr_lite.kudo_path(kudo), method: :delete, class: "hrl-btn hrl-btn--danger hrl-small",
+                    form: { data: { turbo_confirm: "Remove this kudos?" } } %>
+    <% end %>
+  </div>
+</div>

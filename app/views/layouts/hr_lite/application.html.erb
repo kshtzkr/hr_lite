@@ -1,17 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Hr lite</title>
+  <title><%= [ content_for(:page_title), "Earthly HR" ].compact.join(" · ") %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-
   <%= yield :head %>
-
-  <%= stylesheet_link_tag    "hr_lite/application", media: "all" %>
+  <%= stylesheet_link_tag "hr_lite/hr_lite", media: "all" %>
+  <% HrLite.config.extra_stylesheets.each do |sheet| %>
+    <%= stylesheet_link_tag sheet, media: "all" %>
+  <% end %>
 </head>
-<body>
+<body class="hrl-body">
+  <header class="hrl-appbar">
+    <div class="hrl-appbar__inner">
+      <a class="hrl-appbar__brand" href="<%= hr_lite.root_path %>"><%= HrLite.config.company.call[:name].presence || "HR" %></a>
+      <nav class="hrl-nav hrl-nav--top" aria-label="HR">
+        <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).each do |item| %>
+          <%= hrl_nav_link(item) %>
+        <% end %>
+        <% if hr_admin? || hr_leadership? %>
+          <span class="hrl-nav__sep" aria-hidden="true"></span>
+          <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
+            <%= hrl_nav_link(item) %>
+          <% end %>
+        <% end %>
+        <% if hr_leadership? %>
+          <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
+            <%= hrl_nav_link(item) %>
+          <% end %>
+        <% end %>
+        <% if HrLite.config.back_link %>
+          <a class="hrl-nav__link hrl-nav__link--back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
+        <% end %>
+      </nav>
+      <span class="hrl-appbar__user"><%= hr_display_name(hr_current_user) %></span>
+    </div>
+  </header>
 
-<%= yield %>
+  <main class="hrl-main">
+    <% if flash[:notice].present? %><div class="hrl-flash hrl-flash--ok" role="status"><%= flash[:notice] %></div><% end %>
+    <% if flash[:alert].present? %><div class="hrl-flash hrl-flash--warn" role="alert"><%= flash[:alert] %></div><% end %>
+    <%= yield %>
+  </main>
 
+  <nav class="hrl-tabbar" aria-label="HR sections">
+    <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).first(5).each do |item| %>
+      <%= hrl_nav_link(item) %>
+    <% end %>
+  </nav>
+
+  <%= javascript_include_tag "hr_lite/mention", defer: true %>
+  <%= yield :scripts %>
 </body>
 </html>

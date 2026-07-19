@@ -1,0 +1,45 @@
+<% content_for(:page_title) { "Calendar" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Company calendar</h1>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-row" style="margin-bottom:.6rem;">
+    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <strong><%= @month.strftime("%B %Y") %></strong>
+    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
+    <a class="hrl-btn hrl-right" href="<%= hr_lite.holidays_path %>">Holiday list</a>
+  </div>
+
+  <% first = @month.beginning_of_month %>
+  <div class="hrl-mgrid">
+    <% %w[Mo Tu We Th Fr Sa Su].each do |d| %><div class="hrl-mgrid__head"><%= d %></div><% end %>
+    <% (first.cwday - 1).times do %><div></div><% end %>
+    <% (first..@month.end_of_month).each do |date| %>
+      <% cell_class =
+           if @holidays[date] then "hrl-mgrid__day--holiday"
+           elsif @calendar.weekend?(date) then "hrl-mgrid__day--weekend"
+           elsif @leaves[date].any? then "hrl-mgrid__day--leave"
+           end %>
+      <div class="hrl-mgrid__day <%= cell_class %>">
+        <span class="hrl-mgrid__num"><%= date.day %></span>
+        <% Array(@holidays[date]).each do |holiday| %>
+          <span class="hrl-mgrid__tag" title="<%= holiday.name %>"><%= holiday.name %></span>
+        <% end %>
+        <% @leaves[date].first(2).each do |request| %>
+          <span class="hrl-mgrid__tag" style="color: <%= request.leave_type.color %>;"
+                title="<%= hr_display_name(request.user) %> — <%= request.leave_type.name %>">
+            <%= hr_display_name(request.user).split.first %> · <%= request.leave_type.code %>
+          </span>
+        <% end %>
+        <% if @leaves[date].size > 2 %><span class="hrl-mgrid__tag">+<%= @leaves[date].size - 2 %> more</span><% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="hrl-legend hrl-small">
+    <span class="hrl-badge hrl-badge--warn">Holiday</span>
+    <span class="hrl-badge">On leave</span>
+    <span class="hrl-badge hrl-badge--muted">Weekend</span>
+  </div>
+</section>

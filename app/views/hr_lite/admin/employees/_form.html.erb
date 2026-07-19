@@ -1,0 +1,40 @@
+<section class="hrl-card">
+  <%= form_with model: profile, url: url, method: method, scope: :employee_profile, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: profile %>
+    <%= f.hidden_field :user_id %>
+    <% if profile.new_record? && profile.user_id.blank? %>
+      <div class="hrl-field">
+        <%= f.label :user_id, "Staff member" %>
+        <%= f.select :user_id, HrLite.employees.map { |u| [ HrLite.display_name(u), u.id ] } %>
+      </div>
+    <% end %>
+    <div class="hrl-field"><%= f.label :employee_code %><%= f.text_field :employee_code %></div>
+    <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
+    <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
+    <div class="hrl-field"><%= f.label :work_location %><%= f.text_field :work_location %></div>
+    <div class="hrl-field"><%= f.label :date_of_birth %><%= f.date_field :date_of_birth %></div>
+    <div class="hrl-field"><%= f.label :date_of_joining %><%= f.date_field :date_of_joining %></div>
+    <div class="hrl-field">
+      <%= f.label :date_of_exit, "Date of exit (leave blank while employed)" %>
+      <%= f.date_field :date_of_exit %>
+    </div>
+    <div class="hrl-field"><%= f.label :pan_number, "PAN" %><%= f.text_field :pan_number %></div>
+    <div class="hrl-field"><%= f.label :pf_uan, "PF UAN" %><%= f.text_field :pf_uan %></div>
+    <div class="hrl-field"><%= f.label :esi_number, "ESI number" %><%= f.text_field :esi_number %></div>
+    <div class="hrl-field"><%= f.label :bank_name %><%= f.text_field :bank_name %></div>
+    <div class="hrl-field"><%= f.label :bank_account_number %><%= f.text_field :bank_account_number %></div>
+    <div class="hrl-field"><%= f.label :bank_ifsc, "IFSC" %><%= f.text_field :bank_ifsc %></div>
+    <div class="hrl-field">
+      <%= f.label :tax_regime %>
+      <%= f.select :tax_regime, HrLite::EmployeeProfile::TAX_REGIMES.map { |r| [ "#{r.humanize} regime", r ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :declared_annual_deductions, "Declared annual deductions (old regime only)" %>
+      <%= f.number_field :declared_annual_deductions, step: 0.01, value: profile.declared_annual_deductions&.to_s("F") %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save profile", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_employees_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

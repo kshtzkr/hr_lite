@@ -1,0 +1,10 @@
+<% content_for(:page_title) { "Edit office" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Edit <%= @office_location.name %></h1>
+  <div class="hrl-page__actions">
+    <%= button_to "Delete", hr_lite.admin_office_location_path(@office_location), method: :delete,
+                  class: "hrl-btn hrl-btn--danger",
+                  form: { data: { turbo_confirm: "Remove this office?" } } %>
+  </div>
+</div>
+<%= render "form", office_location: @office_location, url: hr_lite.admin_office_location_path(@office_location), method: :patch %>

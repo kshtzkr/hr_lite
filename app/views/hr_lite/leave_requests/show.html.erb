@@ -1,0 +1,25 @@
+<% content_for(:page_title) { "Leave request" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Leave request</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.leave_requests_path %>">Back</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <dt>Type</dt><dd><%= @request.leave_type.name %></dd>
+    <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
+    <dt>Days</dt><dd><%= @request.days_count.to_f %></dd>
+    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
+    <% if @request.decision_note.present? %><dt>Decision note</dt><dd><%= @request.decision_note %></dd><% end %>
+    <% if @request.decided_at %><dt>Decided</dt><dd><%= @request.decided_at.strftime("%d %b %Y") %> by <%= hr_display_name(@request.decided_by) %></dd><% end %>
+  </dl>
+
+  <% if @request.cancellable_by?(hr_current_user) %>
+    <%= button_to "Cancel this leave", hr_lite.cancel_leave_request_path(@request), method: :post,
+                  class: "hrl-btn hrl-btn--danger hrl-mt",
+                  form: { data: { turbo_confirm: "Cancel this leave request?" } } %>
+  <% end %>
+</section>

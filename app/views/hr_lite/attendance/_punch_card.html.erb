@@ -1,0 +1,41 @@
+<% record = HrLite::AttendanceRecord.find_by(user_id: hr_current_user.id, date: Date.current) %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Today, <%= Date.current.strftime("%d %b") %></h2>
+
+  <div class="hrl-row hrl-small" style="margin-bottom:.6rem;">
+    <% if record&.check_in_at %>
+      <span class="hrl-badge hrl-badge--ok">In <%= record.check_in_at.strftime("%H:%M") %></span>
+    <% end %>
+    <% if record&.check_out_at %>
+      <span class="hrl-badge hrl-badge--muted">Out <%= record.check_out_at.strftime("%H:%M") %></span>
+    <% end %>
+    <% if record&.flagged? %>
+      <span class="hrl-badge hrl-badge--bad" title="<%= record.flag_note %>">Flagged</span>
+    <% end %>
+    <% if record.nil? %>
+      <span class="hrl-muted">Not checked in yet.</span>
+    <% end %>
+  </div>
+
+  <% if record&.check_in_at.blank? %>
+    <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
+                  html: { data: { "hrl-geo-punch": true } } do %>
+      <input type="hidden" name="lat"><input type="hidden" name="lng">
+      <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status hidden></p>
+    <% end %>
+  <% else %>
+    <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
+                  html: { data: { "hrl-geo-punch": true } } do %>
+      <input type="hidden" name="lat"><input type="hidden" name="lng">
+      <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
+        <%= record.check_out_at ? "Update check-out" : "Check out" %>
+      </button>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status hidden></p>
+    <% end %>
+  <% end %>
+
+  <a class="hrl-small" href="<%= hr_lite.attendance_path %>">View my month</a>
+</section>

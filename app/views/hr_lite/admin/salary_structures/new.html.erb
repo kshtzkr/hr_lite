@@ -1,0 +1,6 @@
+<% content_for(:page_title) { "New salary structure" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">New structure — <%= hr_display_name(@profile.user) %></h1>
+</div>
+<%= render "form", structure: @structure,
+           url: hr_lite.admin_employee_salary_structures_path(@profile), method: :post %>

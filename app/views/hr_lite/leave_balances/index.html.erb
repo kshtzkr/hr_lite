@@ -1,0 +1,19 @@
+<% content_for(:page_title) { "Leave balances" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Leave balances <%= @year %></h1>
+</div>
+
+<div class="hrl-grid hrl-grid--2">
+  <% @balances.each do |balance| %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title"><%= balance.leave_type.name %></h2>
+      <dl class="hrl-deflist">
+        <dt>Entitled</dt><dd><%= balance.entitled.to_f %></dd>
+        <dt>Used</dt><dd><%= balance.used.to_f %></dd>
+        <dt>Available</dt><dd><strong><%= balance.available.to_f %></strong></dd>
+        <% if balance.carried_forward.positive? %><dt>Carried forward</dt><dd><%= balance.carried_forward.to_f %></dd><% end %>
+        <% if balance.adjustment.nonzero? %><dt>Adjustments</dt><dd><%= balance.adjustment.to_f %> <span class="hrl-muted hrl-small"><%= balance.adjustment_note %></span></dd><% end %>
+      </dl>
+    </section>
+  <% end %>
+</div>

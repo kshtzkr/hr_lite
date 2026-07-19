@@ -1,0 +1,12 @@
+<% content_for(:page_title) { "Slip #{@slip.period_month.strftime('%b %Y')}" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Salary slip — <%= @slip.period_month.strftime("%B %Y") %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.salary_slips_path %>">All slips</a>
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.salary_slip_path(@slip, format: :pdf) %>">Download PDF</a>
+  </div>
+</div>
+
+<%= render "hr_lite/salary_slips/slip_detail", slip: @slip, profile: @slip.user_profile %>
+
+<p class="hrl-small hrl-muted">Computer-generated payslip. Verify statutory figures with your accountant.</p>

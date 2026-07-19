@@ -1,0 +1,39 @@
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Audit trail</h1>
+  <p class="hrl-page__sub">Every policy, settings and payroll change — append-only.</p>
+</div>
+
+<% if @audit_logs.any? %>
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead>
+        <tr><th>When</th><th>Who</th><th>Action</th><th>Subject</th><th>Changes</th></tr>
+      </thead>
+      <tbody>
+        <% @audit_logs.each do |log| %>
+          <tr>
+            <td data-label="When"><%= log.created_at.strftime("%d %b %Y, %H:%M") %></td>
+            <td data-label="Who"><%= hr_display_name(log.actor) %></td>
+            <td data-label="Action"><span class="hrl-badge hrl-badge--muted"><%= log.action %></span></td>
+            <td data-label="Subject"><%= log.subject_type.demodulize.underscore.humanize %> #<%= log.subject_id %></td>
+            <td data-label="Changes">
+              <% log.audited_changes.each do |attr, change| %>
+                <div class="hrl-small">
+                  <span class="hrl-muted"><%= attr.humanize %>:</span>
+                  <% if change.is_a?(Array) %>
+                    <%= change[0].inspect %> → <%= change[1].inspect %>
+                  <% else %>
+                    <%= change %>
+                  <% end %>
+                </div>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= hrl_pagination %>
+<% else %>
+  <p class="hrl-card hrl-card--empty">No changes recorded yet.</p>
+<% end %>

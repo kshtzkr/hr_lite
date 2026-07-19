@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "Edit employee profile" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Edit <%= @profile.employee_code %></h1></div>
+<%= render "form", profile: @profile, url: hr_lite.admin_employee_path(@profile), method: :patch %>

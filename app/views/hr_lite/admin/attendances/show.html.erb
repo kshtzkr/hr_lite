@@ -1,0 +1,55 @@
+<% content_for(:page_title) { "Attendance — #{hr_display_name(@employee)}" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@employee) %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path %>">Team view</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-row" style="margin-bottom:.6rem;">
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <strong><%= @month.strftime("%B %Y") %></strong>
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
+    <span class="hrl-right hrl-small hrl-muted">
+      Present <%= @counts[:present] %> · Half <%= @counts[:half_day] %> · Absent <%= @counts[:absent] %>
+    </span>
+  </div>
+  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status,
+             link_builder: ->(date) { hr_lite.admin_attendance_path(@employee.id, date: date, month: @month.strftime("%Y-%m")) } %>
+  <p class="hrl-small hrl-muted hrl-mt">Tap a date to fix its punches.</p>
+</section>
+
+<% if @edit_date %>
+  <section class="hrl-card" id="regularize">
+    <h2 class="hrl-card__title">Fix <%= @edit_date.strftime("%A, %d %B") %></h2>
+    <% if @edit_record.flagged? %>
+      <p class="hrl-small"><span class="hrl-badge hrl-badge--bad">Flagged</span> <%= @edit_record.flag_note %></p>
+    <% end %>
+    <%= form_with url: hr_lite.admin_attendance_path(@employee.id, date: @edit_date), method: :patch,
+                  scope: :attendance_record, local: true do |f| %>
+      <div class="hrl-field">
+        <%= f.label :check_in_at, "Check-in" %>
+        <%= f.datetime_local_field :check_in_at, value: @edit_record.check_in_at&.strftime("%Y-%m-%dT%H:%M") %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :check_out_at, "Check-out" %>
+        <%= f.datetime_local_field :check_out_at, value: @edit_record.check_out_at&.strftime("%Y-%m-%dT%H:%M") %>
+        <p class="hrl-hint">Clear both times to remove the punch entirely.</p>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :status %>
+        <%= f.select :status, HrLite::AttendanceRecord::STATUSES.map { |s| [ s.humanize, s ] },
+                     selected: @edit_record.status %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :regularization_note, "Why is this being fixed? (required)" %>
+        <%= f.text_area :regularization_note %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= f.submit "Save fix", class: "hrl-btn hrl-btn--primary" %>
+        <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: @month.strftime("%Y-%m")) %>">Cancel</a>
+      </div>
+    <% end %>
+  </section>
+<% end %>

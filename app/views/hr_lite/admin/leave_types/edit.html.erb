@@ -1,0 +1,10 @@
+<% content_for(:page_title) { "Edit leave type" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Edit <%= @leave_type.name %></h1>
+  <div class="hrl-page__actions">
+    <%= button_to "Delete", hr_lite.admin_leave_type_path(@leave_type), method: :delete,
+                  class: "hrl-btn hrl-btn--danger",
+                  form: { data: { turbo_confirm: "Delete this leave type?" } } %>
+  </div>
+</div>
+<%= render "form", leave_type: @leave_type, url: hr_lite.admin_leave_type_path(@leave_type), method: :patch %>

@@ -1,0 +1,37 @@
+<% content_for(:page_title) { "Leaves" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My leaves</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_leave_request_path %>">Apply</a>
+  </div>
+</div>
+
+<%= render "hr_lite/leave_requests/balance_chips" %>
+
+<section class="hrl-card">
+  <% if @requests.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Type"><span class="hrl-badge" style="background: <%= request.leave_type.color %>1f; color: <%= request.leave_type.color %>;"><%= request.leave_type.code %></span></td>
+              <td data-label="Dates"><%= request.date_range_label %></td>
+              <td data-label="Days" class="hrl-num"><%= request.days_count.to_f %></td>
+              <td data-label="Status">
+                <span class="hrl-badge <%= { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted" }[request.status] %>"><%= request.status.humanize %></span>
+              </td>
+              <td data-label="">
+                <a class="hrl-small" href="<%= hr_lite.leave_request_path(request) %>">View</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No leave requests yet.</p>
+  <% end %>
+</section>

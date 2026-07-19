@@ -1,0 +1,19 @@
+<% content_for(:page_title) { "Role change" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Role change — <%= hr_display_name(@profile.user) %></h1>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted">Current: <strong><%= @profile.designation.presence || "not set" %></strong>. The employee is notified and the change is recorded on their career timeline.</p>
+  <%= form_with model: @change, url: hr_lite.admin_employee_designation_changes_path(@profile),
+                scope: :designation_change, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @change %>
+    <div class="hrl-field"><%= f.label :to_designation, "New designation" %><%= f.text_field :to_designation %></div>
+    <div class="hrl-field"><%= f.label :effective_date %><%= f.date_field :effective_date %></div>
+    <div class="hrl-field"><%= f.label :note, "Note (optional)" %><%= f.text_area :note %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Record change", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_employee_path(@profile) %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

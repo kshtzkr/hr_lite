@@ -1,0 +1,6 @@
+<% content_for(:page_title) { "New appraisal" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">New appraisal — <%= hr_display_name(@profile.user) %></h1>
+</div>
+<%= render "form", appraisal: @appraisal,
+           url: hr_lite.admin_employee_appraisals_path(@profile), method: :post %>

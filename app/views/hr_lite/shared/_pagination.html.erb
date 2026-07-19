@@ -1,0 +1,11 @@
+<% if (@total_pages || 1) > 1 %>
+  <nav class="hrl-pager" aria-label="Pagination">
+    <% if @page > 1 %>
+      <%= link_to "Previous", url_for(request.query_parameters.merge(page: @page - 1)), class: "hrl-btn" %>
+    <% end %>
+    <span class="hrl-pager__info">Page <%= @page %> of <%= @total_pages %> (<%= @total_count %>)</span>
+    <% if @page < @total_pages %>
+      <%= link_to "Next", url_for(request.query_parameters.merge(page: @page + 1)), class: "hrl-btn" %>
+    <% end %>
+  </nav>
+<% end %>

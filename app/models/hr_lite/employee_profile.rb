@@ -1,0 +1,72 @@
+module HrLite
+  # Statutory identity + employment window. PII columns are encrypted at
+  # rest; masked readers feed the employee-facing view (full values render
+  # only in the leadership edit form). Records are never destroyed —
+  # exits are a date, payroll history is a statutory record.
+  class EmployeeProfile < ApplicationRecord
+    include EncryptedMoney
+    include Audited
+
+    belongs_to :user, class_name: HrLite.config.user_class
+
+    encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc
+    encrypted_money :declared_annual_deductions
+
+    TAX_REGIMES = %w[new old].freeze
+
+    validates :employee_code, presence: true, uniqueness: true
+    validates :user_id, uniqueness: true
+    validates :date_of_joining, presence: true
+    validates :tax_regime, inclusion: { in: TAX_REGIMES }
+    validates :pan_number, format: { with: /\A[A-Z]{5}[0-9]{4}[A-Z]\z/, message: "is not a valid PAN" },
+                           allow_blank: true
+    validates :bank_ifsc, format: { with: /\A[A-Z]{4}0[A-Z0-9]{6}\z/, message: "is not a valid IFSC" },
+                          allow_blank: true
+    validates :pf_uan, format: { with: /\A\d{12}\z/, message: "must be 12 digits" }, allow_blank: true
+    validate :exit_after_joining
+
+    scope :active_for, ->(month) {
+      where(date_of_joining: ..month.end_of_month)
+        .where("date_of_exit IS NULL OR date_of_exit >= ?", month.beginning_of_month)
+    }
+
+    def active_on?(date)
+      date_of_joining <= date && (date_of_exit.nil? || date_of_exit >= date)
+    end
+
+    def employment_range_in(month)
+      from = [ date_of_joining, month.beginning_of_month ].max
+      to = [ date_of_exit || month.end_of_month, month.end_of_month ].min
+      from <= to ? (from..to) : nil
+    end
+
+    def masked_pan
+      mask_middle(pan_number)
+    end
+
+    def masked_account
+      value = bank_account_number
+      value.blank? ? nil : "•••• #{value.last(4)}"
+    end
+
+    def masked_uan
+      mask_middle(pf_uan)
+    end
+
+    private
+
+    def mask_middle(value)
+      return nil if value.blank?
+      return "•" * value.length if value.length <= 4
+
+      "#{value.first(2)}#{'•' * (value.length - 4)}#{value.last(2)}"
+    end
+
+    def exit_after_joining
+      return unless date_of_exit && date_of_joining
+      return if date_of_exit >= date_of_joining
+
+      errors.add(:date_of_exit, "must be after joining")
+    end
+  end
+end

@@ -1,0 +1,22 @@
+<% content_for(:page_title) { "Attendance" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My attendance</h1>
+</div>
+
+<%= render "hr_lite/attendance/punch_card" %>
+
+<section class="hrl-card">
+  <div class="hrl-row" style="margin-bottom:.6rem;">
+    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <strong><%= @month.strftime("%B %Y") %></strong>
+    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
+    <span class="hrl-right hrl-small hrl-muted">
+      Present <%= @counts[:present] %> · Half <%= @counts[:half_day] %> · Absent <%= @counts[:absent] %>
+    </span>
+  </div>
+  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status %>
+</section>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+<% end %>

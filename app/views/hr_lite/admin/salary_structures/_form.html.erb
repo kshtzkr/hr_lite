@@ -1,0 +1,25 @@
+<section class="hrl-card">
+  <%= form_with model: structure, url: url, method: method, scope: :salary_structure, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: structure %>
+    <div class="hrl-field">
+      <%= f.label :effective_from, "Effective from (1st of month)" %>
+      <%= f.date_field :effective_from %>
+    </div>
+    <div class="hrl-field"><%= f.label :basic, "Basic (monthly)" %><%= f.number_field :basic, step: 0.01, value: structure.basic&.to_s("F") %></div>
+    <div class="hrl-field"><%= f.label :hra, "HRA" %><%= f.number_field :hra, step: 0.01, value: structure.hra&.to_s("F") %></div>
+    <div class="hrl-field"><%= f.label :special_allowance %><%= f.number_field :special_allowance, step: 0.01, value: structure.special_allowance&.to_s("F") %></div>
+    <div class="hrl-field"><%= f.label :other_earnings %><%= f.number_field :other_earnings, step: 0.01, value: structure.other_earnings&.to_s("F") %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :pf_applicable %><%= f.label :pf_applicable, "PF applicable" %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :pf_on_full_basic %><%= f.label :pf_on_full_basic, "PF on full basic (no ₹15k ceiling)" %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :esi_applicable %><%= f.label :esi_applicable, "ESI applicable (auto-exempt above gross ceiling)" %></div>
+    <div class="hrl-field">
+      <%= f.label :pt_state, "Professional tax state" %>
+      <%= f.select :pt_state, HrLite::StatutoryRateCard.for(Date.current)[:pt].keys.map { |s| [ s.humanize, s ] } %>
+    </div>
+    <div class="hrl-field"><%= f.label :notes %><%= f.text_area :notes %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save structure", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_employee_path(@profile) %>">Cancel</a>
+    </div>
+  <% end %>
+</section>
