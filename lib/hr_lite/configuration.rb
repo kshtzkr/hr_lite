@@ -9,7 +9,8 @@ module HrLite
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check, :extra_stylesheets,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
-                  :onboard_user, :offboard_user, :invite_url_for
+                  :onboard_user, :offboard_user, :invite_url_for,
+                  :leave_year_start_month
 
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
     # adopters' initializers don't break.
@@ -41,6 +42,7 @@ module HrLite
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
+      @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
 
       # Leadership onboarding/offboarding. onboard_user must return a saved
       # user record (default: create on user_class with whatever of

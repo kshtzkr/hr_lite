@@ -241,6 +241,21 @@
 .hrl-pager { display: flex; align-items: center; justify-content: center; gap: .8rem; margin: 1rem 0; font-size: .88rem; }
 .hrl-pager__info { color: var(--hrl-muted); }
 
+/* Org chart tree + reporting-line chain */
+.hrl-tree { list-style: none; margin: 0; padding-left: 0; }
+.hrl-tree .hrl-tree { padding-left: 1.1rem; border-left: 2px solid var(--hrl-line); margin-left: .55rem; }
+.hrl-tree__node { margin: .3rem 0; }
+.hrl-tree__card {
+  display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .45rem;
+  background: var(--hrl-bg); border: 1px solid var(--hrl-line);
+  border-radius: var(--hrl-radius-sm); padding: .4rem .7rem; max-width: 100%;
+}
+.hrl-tree__card--me { border-color: var(--hrl-accent); background: var(--hrl-info-bg); }
+.hrl-tree__name { font-weight: 650; font-size: .9rem; }
+.hrl-tree__role { color: var(--hrl-muted); font-size: .8rem; }
+.hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.hrl-chainrow__arrow { color: var(--hrl-muted); }
+
 /* Definition list */
 .hrl-deflist { display: grid; grid-template-columns: minmax(7rem, auto) 1fr; gap: .35rem .9rem; font-size: .9rem; }
 .hrl-deflist dt { color: var(--hrl-muted); }

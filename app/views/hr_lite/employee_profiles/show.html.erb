@@ -8,6 +8,9 @@
     <dl class="hrl-deflist">
       <dt>Employee code</dt><dd><%= @profile.employee_code %></dd>
       <dt>Designation</dt><dd><%= @profile.designation.presence || "—" %></dd>
+      <dt>Reports to</dt>
+      <dd><%= @profile.manager ? "#{hr_display_name(@profile.manager)} (your L1)" : "—" %>
+        · <a href="<%= hr_lite.org_path %>">Org chart</a></dd>
       <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
       <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %B %Y") %></dd>
       <dt>Tax regime</dt><dd><%= @profile.tax_regime.humanize %></dd>

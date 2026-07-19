@@ -36,6 +36,11 @@ module DemoSeeds
       )
     end
 
+    # Reporting lines: Asha (top) -> Rohan -> Meera & Dev.
+    HrLite::EmployeeProfile.find_by(user_id: admin.id).update!(manager_id: leadership.id)
+    HrLite::EmployeeProfile.find_by(user_id: employee.id).update!(manager_id: admin.id)
+    HrLite::EmployeeProfile.find_by(user_id: colleague.id).update!(manager_id: admin.id)
+
     seed_attendance(employee, office)
     seed_attendance(colleague, office, flagged: true)
     seed_leaves(employee, admin)

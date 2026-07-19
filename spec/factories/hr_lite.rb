@@ -95,6 +95,15 @@ FactoryBot.define do
     rating { 4 }
   end
 
+  factory :salary_slip, class: "HrLite::SalarySlip" do
+    payroll_run
+    user
+    period_month { payroll_run.period_month }
+    days_in_month { 30 }
+    payable_days { 30 }
+    lop_days { 0 }
+  end
+
   factory :comp_off_request, class: "HrLite::CompOffRequest" do
     user
     date_worked { Date.current.prev_occurring(:sunday) }

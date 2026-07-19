@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-19
+
+### Added
+
+- **Org chart (`/org`)**: everyone-visible reporting tree (who reports to
+  whom, names + designations + departments only — never salary or private
+  data) plus each viewer's own reporting line labelled L1/L2/... Managers
+  are set per employee by leadership ("Reports to"); reporting loops are
+  rejected.
+- **Configurable leave year** (`config.leave_year_start_month`, default 1):
+  set 7 for a July–June leave year. Balances, accrual, the year-boundary
+  split rule, carry-forward rollover and comp-off credits all follow it.
+  Balance headings show "2026–27"-style labels for non-calendar years.
+- **Joining-date proration, Keka-style**: entitlement accrues only from
+  the month someone joins (joined on/before the 15th → that month counts;
+  after → from the next month). Applies to monthly accrual AND
+  yearly-upfront grants (upfront = remaining months × monthly rate).
+
+### Changed
+
+- `LeaveBalance#year` is now a LeaveYear key; `LeaveYearRolloverJob`
+  defaults to the current leave year (schedule it on the leave year's
+  first day). The request-split validation message says "leave-year
+  boundary". Calendar-year installs (default) behave exactly as before.
+
 ## [0.3.0] - 2026-07-19
 
 ### Added

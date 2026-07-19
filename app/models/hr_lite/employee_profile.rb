@@ -8,6 +8,9 @@ module HrLite
     include Audited
 
     belongs_to :user, class_name: HrLite.config.user_class
+    # Reporting line (L1). Optional; the org chart treats manager-less
+    # profiles as roots (founders/directors).
+    belongs_to :manager, class_name: HrLite.config.user_class, optional: true
 
     encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc
     encrypted_money :declared_annual_deductions
@@ -28,6 +31,7 @@ module HrLite
                           allow_blank: true
     validates :pf_uan, format: { with: /\A\d{12}\z/, message: "must be 12 digits" }, allow_blank: true
     validate :exit_after_joining
+    validate :manager_chain_acyclic
 
     scope :active_for, ->(month) {
       where(date_of_joining: ..month.end_of_month)
@@ -44,6 +48,22 @@ module HrLite
       from <= to ? (from..to) : nil
     end
 
+    # [L1 user, L2 user, ...] walking manager_id upward. Cycle-safe.
+    def reporting_chain
+      chain = []
+      seen = { user_id => true }
+      current = manager_id
+      while current && !seen[current]
+        seen[current] = true
+        boss = HrLite.user_klass.find_by(id: current)
+        break if boss.nil?
+
+        chain << boss
+        current = EmployeeProfile.where(user_id: boss.id).pick(:manager_id)
+      end
+      chain
+    end
+
     def masked_pan
       mask_middle(pan_number)
     end
@@ -58,6 +78,22 @@ module HrLite
     end
 
     private
+
+    # Walking up from the proposed manager must never reach this person.
+    def manager_chain_acyclic
+      return if manager_id.nil?
+      return errors.add(:manager_id, "cannot be yourself") if manager_id == user_id
+
+      seen = {}
+      current = manager_id
+      while current
+        return errors.add(:manager_id, "creates a reporting loop") if current == user_id
+        break if seen[current]
+
+        seen[current] = true
+        current = EmployeeProfile.where(user_id: current).pick(:manager_id)
+      end
+    end
 
     def mask_middle(value)
       return nil if value.blank?

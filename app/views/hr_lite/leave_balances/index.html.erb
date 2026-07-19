@@ -1,6 +1,6 @@
 <% content_for(:page_title) { "Leave balances" } %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">Leave balances <%= @year %></h1>
+  <h1 class="hrl-page__title">Leave balances <%= HrLite::LeaveYear.label(@year) %></h1>
 </div>
 
 <div class="hrl-grid hrl-grid--2">
