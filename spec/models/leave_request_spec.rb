@@ -25,7 +25,7 @@ RSpec.describe HrLite::LeaveRequest do
       expect(build_request(end_date: monday - 1)).not_to be_valid
       cross_year = build_request(start_date: Date.new(2027, 12, 30), end_date: Date.new(2028, 1, 2))
       expect(cross_year).not_to be_valid
-      expect(cross_year.errors[:base]).to include("Split requests at the year boundary")
+      expect(cross_year.errors[:base]).to include("Split requests at the leave-year boundary")
     end
 
     it "rejects multi-day half-days" do

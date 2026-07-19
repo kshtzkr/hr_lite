@@ -11,6 +11,19 @@ module HrLite
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
                   :onboard_user, :offboard_user, :invite_url_for
 
+    attr_reader :leave_year_start_month
+
+    # Misconfiguration must fail at boot, not as production 500s on every
+    # balance screen. Accepts "7" (ENV-friendly) and validates 1..12.
+    # Changing this on an install with EXISTING balance rows reinterprets
+    # them — set it once at install time (see docs/CONFIGURATION.md).
+    def leave_year_start_month=(value)
+      month = Integer(value)
+      raise ArgumentError, "leave_year_start_month must be 1..12, got #{value.inspect}" unless (1..12).cover?(month)
+
+      @leave_year_start_month = month
+    end
+
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
     # adopters' initializers don't break.
     alias_method :mail_link_base, :public_url_base
@@ -41,6 +54,7 @@ module HrLite
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
+      @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
 
       # Leadership onboarding/offboarding. onboard_user must return a saved
       # user record (default: create on user_class with whatever of

@@ -1,0 +1,38 @@
+<% content_for(:page_title) { "Org chart" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Organisation</h1>
+</div>
+
+<% if @own_chain.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Your reporting line</h2>
+    <div class="hrl-chainrow">
+      <span class="hrl-badge hrl-badge--ok">You</span>
+      <% @own_chain.each_with_index do |boss, index| %>
+        <span class="hrl-chainrow__step">
+          <span class="hrl-chainrow__arrow">&rarr;</span>
+          <span class="hrl-badge">
+            L<%= index + 1 %> · <%= hr_display_name(boss) %><% if (p = @by_user[boss.id]) && p.designation.present? %> (<%= p.designation %>)<% end %>
+          </span>
+        </span>
+      <% end %>
+    </div>
+    <p class="hrl-hint">L1 is your direct manager; the chain ends at the top of the organisation.</p>
+  </section>
+<% elsif @own_profile %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Your reporting line</h2>
+    <p class="hrl-small hrl-muted">You are at the top of the organisation.</p>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Who reports to whom</h2>
+  <% if @roots.any? %>
+    <ul class="hrl-tree">
+      <%= render partial: "hr_lite/org/node", collection: @roots, as: :profile %>
+    </ul>
+  <% else %>
+    <p class="hrl-card--empty">No employee profiles yet — leadership adds them under Employees.</p>
+  <% end %>
+</section>

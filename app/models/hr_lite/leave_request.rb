@@ -11,7 +11,7 @@ module HrLite
 
     with_options on: :create do
       validate :end_after_start
-      validate :same_calendar_year
+      validate :same_leave_year
       validate :half_day_single_day_only
       validate :consumes_at_least_half_a_day
       validate :no_overlap_with_own_requests
@@ -97,7 +97,7 @@ module HrLite
     end
 
     def balance
-      LeaveBalance.for(user, leave_type, start_date.year)
+      LeaveBalance.for(user, leave_type, LeaveYear.key_for(start_date))
     end
 
     private
@@ -172,11 +172,11 @@ module HrLite
       errors.add(:end_date, "must be on or after the start date") if end_date < start_date
     end
 
-    def same_calendar_year
+    def same_leave_year
       return unless start_date && end_date
 
-      if start_date.year != end_date.year
-        errors.add(:base, "Split requests at the year boundary")
+      if LeaveYear.key_for(start_date) != LeaveYear.key_for(end_date)
+        errors.add(:base, "Split requests at the leave-year boundary")
       end
     end
 

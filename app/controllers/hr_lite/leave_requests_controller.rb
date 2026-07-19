@@ -43,7 +43,7 @@ module HrLite
     end
 
     def balance_cards
-      year = Date.current.year
+      year = LeaveYear.current_key
       LeaveType.active.where(paid: true).where.not(annual_quota: nil).map do |type|
         LeaveBalance.for(hr_current_user, type, year)
       end

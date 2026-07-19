@@ -30,14 +30,17 @@ RSpec.describe HrLite::AttendancePuncher do
 
   describe "check-out" do
     it "closes today's punch; a repeat overwrites (last out wins)" do
+      # Anchored mid-day: run near midnight, "+2 hours" must not cross
+      # into tomorrow (the repeat would then miss today's record).
+      travel_to(Time.zone.parse("#{Date.current} 14:00"))
       punch(:check_in)
       first = punch(:check_out)
       expect(first).to be_ok
 
-      travel_to(2.hours.from_now) do
-        second = punch(:check_out)
-        expect(second.record.check_out_at).to be > first.record.check_out_at
-      end
+      travel_to(2.hours.from_now)
+      second = punch(:check_out)
+      expect(second.record.check_out_at).to be > first.record.check_out_at
+      travel_back
     end
 
     it "refuses without an open check-in" do

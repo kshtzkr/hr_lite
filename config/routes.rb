@@ -20,6 +20,7 @@ HrLite::Engine.routes.draw do
     member { post :cancel }
   end
   get "team", to: "team#show"
+  get "org", to: "org#show"
   resources :holidays, only: :index
   get "calendar", to: "calendar#show"
   resources :salary_slips, only: %i[index show]

@@ -100,13 +100,13 @@ module HrLite
 
     private
 
-    # The credit goes into the year it can actually be SPENT (the current
-    # year at approval time) — crediting date_worked.year would strand a
-    # late-December day approved in January on last year's dead balance.
-    # The balance row is locked for the increment; two admins approving two
-    # different requests for the same person cannot lose an update.
+    # The credit goes into the leave year it can actually be SPENT (the
+    # current one at approval time) — crediting date_worked's leave year
+    # would strand a year-end day approved after rollover on a dead
+    # balance. The balance row is locked for the increment; two admins
+    # approving two different requests for one person cannot lose an update.
     def credit_balance!(type)
-      year = [ date_worked.year, Date.current.year ].max
+      year = LeaveYear.current_key
       balance = LeaveBalance.for(user, type, year)
       if balance.new_record?
         begin

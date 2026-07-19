@@ -1,0 +1,14 @@
+<%# locals: profile — recursive org-chart node; @children / hr_current_user from OrgController %>
+<li class="hrl-tree__node">
+  <div class="hrl-tree__card <%= 'hrl-tree__card--me' if profile.user_id == hr_current_user.id %>">
+    <span class="hrl-tree__name"><%= hr_display_name(profile.user) %></span>
+    <% if profile.designation.present? %><span class="hrl-tree__role"><%= profile.designation %></span><% end %>
+    <% if profile.department.present? %><span class="hrl-small hrl-muted"><%= profile.department %></span><% end %>
+  </div>
+  <% reports = @tree_children[profile.user_id].sort_by { |child| HrLite.display_name(child.user).downcase } %>
+  <% if reports.any? %>
+    <ul class="hrl-tree">
+      <%= render partial: "hr_lite/org/node", collection: reports, as: :profile %>
+    </ul>
+  <% end %>
+</li>

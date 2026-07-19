@@ -1,13 +1,25 @@
 module HrLite
-  # Jan-1 rollover: materialize carry-forward into the new year's balance
-  # rows. Idempotent — a balance whose carry has already been written is
-  # never touched again (manual adjustments stay safe).
+  # Leave-year rollover (host schedules it on the leave year's first day —
+  # Jan 1 for calendar years, Jul 1 for July–June years): materialize
+  # carry-forward into the new year's balance rows. Idempotent — a balance
+  # whose carry has already been written is never touched again (manual
+  # adjustments stay safe).
   class LeaveYearRolloverJob < ActiveJob::Base
     queue_as :default
 
-    def perform(year: Date.current.year)
-      previous_year = year - 1
+    def perform(year: nil)
+      # Resolve "today" in the HR time zone — cron often fires around the
+      # boundary midnight, and the host process may run in UTC.
+      Time.use_zone(HrLite.config.time_zone) do
+        year ||= LeaveYear.current_key
+        previous_year = year - 1
+        roll(year, previous_year)
+      end
+    end
 
+    private
+
+    def roll(year, previous_year)
       LeaveType.active.where(paid: true).where.not(annual_quota: nil).find_each do |type|
         next unless type.carry_forward_cap.positive?
 
@@ -16,7 +28,7 @@ module HrLite
           next if balance.persisted? && balance.carried_forward.positive?
 
           carry = LeaveBalance.for(user, type, previous_year)
-                              .available(as_of: Date.new(previous_year, 12, 31))
+                              .available(as_of: LeaveYear.range(previous_year).last)
           carry = [ [ carry, type.carry_forward_cap ].min, 0 ].max
           next if carry.zero? && balance.persisted?
 

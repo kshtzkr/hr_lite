@@ -30,6 +30,13 @@
     <% end %>
     <div class="hrl-field"><%= f.label :employee_code %><%= f.text_field :employee_code %></div>
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
+    <div class="hrl-field">
+      <%= f.label :manager_id, "Reports to (their L1)" %>
+      <%= f.select :manager_id,
+                   HrLite.active_employees.reject { |u| u.id == profile.user_id }
+                         .map { |u| [ HrLite.display_name(u), u.id ] },
+                   include_blank: "— nobody (top of the org) —" %>
+    </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
     <div class="hrl-field"><%= f.label :work_location %><%= f.text_field :work_location %></div>
     <div class="hrl-field"><%= f.label :date_of_birth %><%= f.date_field :date_of_birth %></div>

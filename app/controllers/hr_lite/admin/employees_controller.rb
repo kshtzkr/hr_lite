@@ -93,7 +93,7 @@ module HrLite
 
       def profile_params
         params.require(:employee_profile).permit(
-          :user_id, :employee_code, :designation, :date_of_birth, :date_of_joining,
+          :user_id, :manager_id, :employee_code, :designation, :date_of_birth, :date_of_joining,
           :date_of_exit, :department, :work_location, :pan_number, :pf_uan, :esi_number,
           :bank_account_number, :bank_ifsc, :bank_name, :tax_regime, :declared_annual_deductions
         )

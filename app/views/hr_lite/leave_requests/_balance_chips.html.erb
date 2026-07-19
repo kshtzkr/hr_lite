@@ -1,10 +1,10 @@
 <section class="hrl-card">
-  <h2 class="hrl-card__title">Leave balance <%= Date.current.year %></h2>
+  <h2 class="hrl-card__title">Leave balance <%= HrLite::LeaveYear.label(HrLite::LeaveYear.current_key) %></h2>
   <% types = HrLite::LeaveType.active.where(paid: true).where.not(annual_quota: nil) %>
   <% if types.any? %>
     <div class="hrl-row">
       <% types.each do |type| %>
-        <% balance = HrLite::LeaveBalance.for(hr_current_user, type, Date.current.year) %>
+        <% balance = HrLite::LeaveBalance.for(hr_current_user, type, HrLite::LeaveYear.current_key) %>
         <span class="hrl-badge" style="background: <%= type.color %>1f; color: <%= type.color %>;">
           <%= type.code %> <%= balance.available.to_f %>/<%= balance.entitled.to_f %>
         </span>

@@ -3,7 +3,7 @@ module HrLite
     class LeaveBalancesController < BaseController
       def index
         year = params[:year].to_i
-        @year = year.between?(2000, 2100) ? year : Date.current.year
+        @year = year.between?(2000, 2100) ? year : LeaveYear.current_key
         @types = LeaveType.active.where(paid: true).where.not(annual_quota: nil)
         @employees = HrLite.employees
       end
