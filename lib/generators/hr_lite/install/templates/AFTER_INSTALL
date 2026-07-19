@@ -10,9 +10,12 @@ hr_lite is almost ready. Remaining steps:
          mount HrLite::Engine => "/", as: :hr_lite
        end
 
-  2. Install and run the migrations:
+  2. Run the migrations — they load straight from the gem, nothing to copy:
 
-       bin/rails hr_lite:install:migrations db:migrate
+       bin/rails db:migrate
+
+     (Prefer copies in your repo? `bin/rails hr_lite:install:migrations`
+     first — the engine detects the copies and steps aside.)
 
   3. Seed leave types + fixed national holidays (idempotent, deploy-safe):
 

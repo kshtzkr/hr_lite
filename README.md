@@ -34,9 +34,13 @@ gem "hr_lite"
 ```bash
 bin/rails g hr_lite:install          # annotated initializer + next steps
 bin/rails g hr_lite:install --route  # …and mount at /hr for you
-bin/rails hr_lite:install:migrations db:migrate
+bin/rails db:migrate                 # engine migrations load straight from the gem
 bin/rails hr_lite:seed               # leave types + fixed national holidays (idempotent)
 ```
+
+Migrations are served from the gem (upgrades included) — nothing is copied
+into your repo. If you prefer copies, run `bin/rails hr_lite:install:migrations`
+once and the engine steps aside.
 
 To serve it on a subdomain instead of a path:
 
