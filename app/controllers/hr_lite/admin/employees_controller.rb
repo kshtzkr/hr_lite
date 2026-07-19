@@ -36,11 +36,14 @@ module HrLite
 
         if @profile.save
           if new_login
+            invite_url = HrLite.config.invite_url_for&.call(@profile.user)
             Notifications.publish(
               "employee.onboarded",
               title: "Welcome aboard — your HR account is ready",
-              body: "Sign in with your email; your manager has your starting password.",
+              body: invite_url ? "Set your password with the button below, then sign in with your email."
+                               : "Sign in with your email; your manager has your starting password.",
               path: "/",
+              link_url: invite_url,
               bell_to: [ @profile.user ],
               email_to: [ @profile.user ]
             )

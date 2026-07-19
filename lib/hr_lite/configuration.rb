@@ -9,7 +9,7 @@ module HrLite
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check, :extra_stylesheets,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
-                  :onboard_user, :offboard_user
+                  :onboard_user, :offboard_user, :invite_url_for
 
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
     # adopters' initializers don't break.
@@ -58,6 +58,10 @@ module HrLite
         klass.create!(attributes)
       }
       @offboard_user = ->(user) { }
+      # Optional: return an absolute set-your-password URL for a freshly
+      # onboarded user (e.g. a Devise reset link). When present, the welcome
+      # email carries it and leadership never needs to hand over a password.
+      @invite_url_for = nil
     end
   end
 

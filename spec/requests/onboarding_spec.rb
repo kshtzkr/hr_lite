@@ -66,6 +66,25 @@ RSpec.describe "Onboarding and offboarding", type: :request do
       expect(user.password_confirmation).to eq("secret-1")
     end
 
+    it "sends a set-your-password invite when the host provides invite_url_for" do
+      HrLite.config.invite_url_for = ->(user) { "https://hr.x.test/set-password?token=abc-#{user.id}" }
+      captured = nil
+      allow(HrLite::EventMailer).to receive(:event) do |**kw|
+        captured = kw
+        instance_double(ActionMailer::MessageDelivery, deliver_later: true)
+      end
+
+      post "/hr/admin/employees", params: { employee_profile: {
+        new_user_name: "Invited One", new_user_email: "invited@x.test", new_user_password: "",
+        employee_code: "EMP104", date_of_joining: Date.current.to_s, tax_regime: "new"
+      } }
+
+      user = User.find_by(email: "invited@x.test")
+      expect(user).to be_present
+      expect(captured[:link_url]).to eq("https://hr.x.test/set-password?token=abc-#{user.id}")
+      expect(captured[:body]).to include("Set your password")
+    end
+
     it "honours a host-overridden onboard_user hook" do
       called = nil
       HrLite.config.onboard_user = ->(name:, email:, password:) {
