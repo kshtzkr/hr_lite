@@ -15,6 +15,9 @@
     </span>
   </div>
   <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status %>
+  <p class="hrl-small hrl-muted hrl-mt">Forgot to check in or out on some day?
+    <a href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>
+    · <a href="<%= hr_lite.regularization_requests_path %>">My tickets</a></p>
 </section>
 
 <% content_for :scripts do %>

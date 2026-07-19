@@ -57,6 +57,13 @@ module HrLite
       config.employees_scope.call.sort_by { |u| display_name(u).downcase }
     end
 
+    # employees minus anyone whose profile says they have exited — user
+    # accounts outlive employment (slip access), broadcasts must not.
+    def active_employees(on: Date.current)
+      exits = HrLite::EmployeeProfile.where.not(date_of_exit: nil).pluck(:user_id, :date_of_exit).to_h
+      employees.select { |u| exits[u.id].nil? || exits[u.id] >= on }
+    end
+
     def display_name(user)
       return "" if user.nil?
 

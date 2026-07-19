@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-19
+
+### Added
+
+- **Comp-off requests**: employees request a credit for working a weekend
+  or holiday; admin approval credits the comp-off leave type's balance
+  (mark the type under Settings — seeds flag `CO`). New events
+  `comp_off.requested/approved/rejected/cancelled`.
+- **Regularization tickets**: forgot to punch? Employees propose the actual
+  times with a reason; admin approval writes them onto the day's attendance
+  record with the full regularization trail. New events
+  `regularization.requested/approved/rejected/cancelled`.
+- **Team board (`/team`)**: everyone-visible who's-in/who's-out for any
+  date — punch times, leave badges, hours worked that day and that month.
+- **Team leave notices**: approving a leave now bells + emails the whole
+  team ("X is on leave …", matrix row `leave.team_notice`; reasons are
+  never broadcast).
+- Approvals screens grew Leaves / Comp-off / Regularization tabs with
+  pending counts.
+
+### Fixed
+
+- Checkboxes rendered 100%-wide with misplaced labels (the bare
+  `input[type]` width rule out-ranked `.hrl-field--check`); checkbox rows
+  now size naturally and pick up the accent colour.
+- Hardening from adversarial review: comp-off credits land in the year
+  they can be spent (a December Sunday approved in January no longer
+  strands the credit on last year's balance); the balance increment locks
+  the balance row (no lost update when two admins approve concurrently);
+  a partial unique index guarantees one live comp-off request per person
+  per date; approval re-checks the calendar (StaleOffDay) after holiday
+  edits; regularization approval refuses merges that would corrupt the
+  record (checkout with no check-in, checkout before the genuine
+  check-in) with the real reason surfaced to the admin, keeps GPS flags,
+  and writes an AuditLog row like the manual fix path; tickets cannot
+  target a day covered by approved leave; only one leave type can carry
+  the comp-off flag; team notices skip exited staff; a host
+  notification-matrix override pinned on an older version no longer
+  silently drops events it doesn't know (defaults merge underneath).
+
+### Changed
+
+- `Seeds.run!` no longer re-flags CO as comp-off on every deploy (an
+  operator disabling comp-off stays disabled); pre-0.3.0 installs run
+  `Seeds.seed_comp_off_flag!` once or tick the box under Settings.
+
+## [0.2.2] - 2026-07-19
+
+### Fixed
+
+- Link-styled controls were unreadable: the global `.hrl-body a` colour
+  rule out-ranked component classes, so primary action links ("New
+  structure", "New run", "Add office", "Apply", "Download PDF", active
+  filter chips) rendered accent-on-accent with invisible text, and the
+  side-nav links lost their muted colour. The rule is now wrapped in
+  `:where()` (zero specificity) so every `.hrl-*` component wins.
+
 ## [0.2.1] - 2026-07-19
 
 ### Added

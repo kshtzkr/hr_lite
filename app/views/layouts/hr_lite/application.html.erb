@@ -31,7 +31,7 @@
         <% end %>
 
         <% if hr_admin? || hr_leadership? %>
-          <span class="hrl-side__group">Team</span>
+          <span class="hrl-side__group">Manage</span>
           <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
             <%= hrl_nav_link(item) %>
           <% end %>

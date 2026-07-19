@@ -45,6 +45,13 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `promotion.recorded` | employee | employee | ✓ | ✓ |
 | `policy.changed` (every governing-tier mutation, with change diff) | — | — | ✓ | ✓ |
 | `digest.daily` | — | — | ✓ | — |
+| `leave.team_notice` (fired on approval — "X is on leave", no reason) | whole team | whole team | — | — |
+| `comp_off.requested` | admins | — | ✓ | ✓ |
+| `comp_off.approved` / `comp_off.rejected` | requester | requester | approved only | — |
+| `comp_off.cancelled` | admins | — | ✓ | — |
+| `regularization.requested` | admins | — | ✓ | — |
+| `regularization.approved` / `regularization.rejected` | employee | employee | approved only | — |
+| `regularization.cancelled` | admins | — | ✓ | — |
 
 To mute or add channels for one event:
 

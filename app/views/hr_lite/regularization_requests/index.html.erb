@@ -1,0 +1,41 @@
+<% content_for(:page_title) { "Regularization" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My regularization tickets</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.attendance_path %>">My attendance</a>
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_regularization_request_path %>">Raise a ticket</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted" style="margin-top:0;">
+    Forgot to check in or out? Raise a ticket with the actual times — once an
+    admin approves, your attendance for that day is fixed automatically.
+  </p>
+  <% if @requests.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Date</th><th>Proposed times</th><th>Status</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Date"><%= request.date.strftime("%a, %d %b %Y") %></td>
+              <td data-label="Proposed times"><%= request.times_label %></td>
+              <td data-label="Status"><%= hrl_request_status_badge(request.status) %></td>
+              <td data-label="Note" class="hrl-small hrl-muted"><%= request.decision_note.presence || "—" %></td>
+              <td data-label="" class="<%= 'hrl-cell--void' unless request.pending? %>">
+                <% if request.pending? %>
+                  <%= button_to "Cancel", hr_lite.cancel_regularization_request_path(request), method: :post,
+                                class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this ticket?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No tickets yet.</p>
+  <% end %>
+</section>

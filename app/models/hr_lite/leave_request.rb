@@ -52,6 +52,7 @@ module HrLite
       return false if insufficient
 
       notify_decision("Leave approved")
+      notify_team
       true
     end
 
@@ -129,6 +130,23 @@ module HrLite
         body: reason.presence,
         path: "/admin/leave_requests/#{id}",
         bell_to: HrLite.admin_users
+      )
+    end
+
+    # Everyone should know a colleague will be away — bell + email to the
+    # whole team (matrix row "leave.team_notice"; hosts can mute either
+    # channel). Deliberately excludes the reason: dates are team-relevant,
+    # the why is not.
+    def notify_team
+      team = HrLite.active_employees.reject { |member| member.id == user_id }
+      return if team.empty?
+
+      Notifications.publish(
+        "leave.team_notice",
+        title: "#{HrLite.display_name(user)} is on leave — #{leave_type.name} (#{date_range_label})",
+        path: "/team",
+        bell_to: team,
+        email_to: team
       )
     end
 

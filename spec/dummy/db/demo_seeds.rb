@@ -40,6 +40,7 @@ module DemoSeeds
     seed_attendance(colleague, office, flagged: true)
     seed_leaves(employee, admin)
     seed_kudos(employee, colleague, admin)
+    seed_tickets(employee, colleague)
     seed_payroll(leadership)
     seed_career(employee, leadership)
   end
@@ -74,6 +75,28 @@ module DemoSeeds
     HrLite::LeaveRequest.create!(
       user_id: employee.id, leave_type: sick, half_day: true, reason: "Dentist",
       start_date: next_working_day(Date.current + 14), end_date: next_working_day(Date.current + 14)
+    )
+  end
+
+  # Pending comp-off + regularization requests so the approvals tabs and the
+  # employee ticket lists have live rows on first boot.
+  def seed_tickets(employee, colleague)
+    HrLite::CompOffRequest.create!(
+      user_id: colleague.id, date_worked: Date.current.prev_occurring(:sunday),
+      reason: "Airport transfers for the weekend departures"
+    )
+
+    absent_day = (1..10).map { |n| Date.current - n }.find do |d|
+      !d.saturday? && !d.sunday? &&
+        !HrLite::AttendanceRecord.exists?(user_id: employee.id, date: d)
+    end
+    return unless absent_day
+
+    HrLite::RegularizationRequest.create!(
+      user_id: employee.id, date: absent_day,
+      check_in_at: absent_day.in_time_zone.change(hour: 9, min: 40),
+      check_out_at: absent_day.in_time_zone.change(hour: 18, min: 45),
+      reason: "Was at the vendor meet all day — forgot both punches"
     )
   end
 

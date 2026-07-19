@@ -13,6 +13,13 @@ HrLite::Engine.routes.draw do
     member { post :cancel }
   end
   resources :leave_balances, only: :index
+  resources :comp_off_requests, only: %i[index new create] do
+    member { post :cancel }
+  end
+  resources :regularization_requests, only: %i[index new create] do
+    member { post :cancel }
+  end
+  get "team", to: "team#show"
   resources :holidays, only: :index
   get "calendar", to: "calendar#show"
   resources :salary_slips, only: %i[index show]
@@ -31,6 +38,12 @@ HrLite::Engine.routes.draw do
     end
     resources :leave_balances, only: :index do
       collection { post :adjust }
+    end
+    resources :comp_off_requests, only: %i[index show] do
+      member { post :approve; post :reject }
+    end
+    resources :regularization_requests, only: %i[index show] do
+      member { post :approve; post :reject }
     end
     resources :leave_types, except: :show
     resources :office_locations, except: :show

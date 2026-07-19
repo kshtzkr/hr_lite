@@ -5,7 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](MIT-LICENSE)
 
 A lightweight, self-contained HRMS engine for Rails — attendance with
-geolocation, leave management, holiday calendar, full Indian payroll
+geolocation, leave management with comp-off requests, regularization tickets,
+an everyone-visible team board, holiday calendar, full Indian payroll
 (PF/ESI/PT/TDS) with salary-slip PDFs, kudos with @mentions, appraisals and
 promotions. Think Keka-lite, mounted inside your existing app in a few lines.
 

@@ -29,12 +29,24 @@ module HrLite
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "resignation.withdrawn" => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
       "employee.onboarded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
-      "payroll.draft_ready"   => { bell: false, email: false, leadership_email: true,  leadership_bell: true  }
+      "payroll.draft_ready"   => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
+      "leave.team_notice"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "comp_off.requested"    => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
+      "comp_off.approved"     => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
+      "comp_off.rejected"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "comp_off.cancelled"    => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
+      "regularization.requested" => { bell: true, email: false, leadership_email: true,  leadership_bell: false },
+      "regularization.approved"  => { bell: true, email: true,  leadership_email: true,  leadership_bell: false },
+      "regularization.rejected"  => { bell: true, email: true,  leadership_email: false, leadership_bell: false },
+      "regularization.cancelled" => { bell: true, email: false, leadership_email: true,  leadership_bell: false }
     }.freeze
 
     class << self
+      # DEFAULT under the host override: a host matrix pinned on an older
+      # gem version keeps working when new events ship (rows it doesn't
+      # know about fall back to the defaults instead of vanishing).
       def matrix
-        HrLite.config.notification_matrix || DEFAULT_MATRIX
+        DEFAULT_MATRIX.merge(HrLite.config.notification_matrix || {})
       end
 
       def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [], diff: nil, link_url: nil)

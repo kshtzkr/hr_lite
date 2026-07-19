@@ -30,6 +30,11 @@ FactoryBot.define do
       paid { false }
       annual_quota { nil }
     end
+
+    trait :comp_off do
+      comp_off { true }
+      annual_quota { 0 }
+    end
   end
 
   factory :holiday, class: "HrLite::Holiday" do
@@ -88,6 +93,20 @@ FactoryBot.define do
     period_start { Date.new(2027, 1, 1) }
     period_end { Date.new(2027, 6, 30) }
     rating { 4 }
+  end
+
+  factory :comp_off_request, class: "HrLite::CompOffRequest" do
+    user
+    date_worked { Date.current.prev_occurring(:sunday) }
+    reason { "Ran the weekend departure desk" }
+  end
+
+  factory :regularization_request, class: "HrLite::RegularizationRequest" do
+    user
+    date { Date.current.prev_occurring(:tuesday) }
+    check_in_at { date.in_time_zone.change(hour: 10) }
+    check_out_at { date.in_time_zone.change(hour: 19) }
+    reason { "Phone died before I could punch out" }
   end
 
   factory :attendance_record, class: "HrLite::AttendanceRecord" do

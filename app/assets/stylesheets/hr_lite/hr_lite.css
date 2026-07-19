@@ -32,7 +32,10 @@
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-.hrl-body a { color: var(--hrl-accent); text-decoration: none; }
+/* :where() keeps this at zero specificity so any component class
+   (.hrl-btn--primary, .hrl-nav__link, ...) can set its own link colour —
+   a plain `.hrl-body a` would out-rank them and paint accent-on-accent. */
+:where(.hrl-body) a { color: var(--hrl-accent); text-decoration: none; }
 .hrl-shell { display: flex; min-height: 100vh; }
 .hrl-content { flex: 1; min-width: 0; }
 .hrl-main {
@@ -170,20 +173,30 @@
   .hrl-table--stack td { display: flex; justify-content: space-between; gap: .8rem; border-bottom: 1px dashed var(--hrl-line); }
   .hrl-table--stack td::before { content: attr(data-label); color: var(--hrl-muted); font-size: .78rem; }
   .hrl-table--stack td.hrl-num { text-align: left; }
+  .hrl-table--stack td.hrl-cell--void { display: none; }
 }
 
 /* Forms */
 .hrl-field { margin-bottom: .8rem; }
 .hrl-field label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: .3rem; }
 .hrl-field .hrl-hint { color: var(--hrl-muted); font-size: .76rem; margin-top: .25rem; }
-.hrl-input, .hrl-field input[type], .hrl-field select, .hrl-field textarea {
+/* Full-width text-ish controls only — checkboxes/radios/hidden must keep
+   their natural size (a bare [type] selector out-ranked .hrl-field--check
+   and blew checkboxes up to 100% width). */
+.hrl-input,
+.hrl-field input[type]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.hrl-field select, .hrl-field textarea {
   width: 100%; min-height: 44px; padding: .55rem .7rem; font: inherit;
   border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm);
   background: var(--hrl-card); color: var(--hrl-ink);
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
-.hrl-field--check { display: flex; align-items: center; gap: .5rem; }
-.hrl-field--check input { width: 1.15rem; height: 1.15rem; min-height: 0; }
+.hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: 44px; }
+.hrl-field--check input {
+  width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
+  accent-color: var(--hrl-accent);
+}
+.hrl-field--check label { margin-bottom: 0; font-weight: 600; }
 .hrl-errors { background: var(--hrl-bad-bg); color: var(--hrl-bad); border-radius: var(--hrl-radius-sm); padding: .7rem .9rem; margin-bottom: .85rem; font-size: .86rem; }
 .hrl-errors ul { margin: .3rem 0 0; padding-left: 1.1rem; }
 .hrl-form-actions { display: flex; gap: .6rem; margin-top: 1rem; }

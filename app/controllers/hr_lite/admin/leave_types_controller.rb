@@ -46,7 +46,7 @@ module HrLite
 
       def leave_type_params
         params.require(:leave_type)
-              .permit(:name, :code, :color, :paid, :annual_quota, :accrual,
+              .permit(:name, :code, :color, :paid, :comp_off, :annual_quota, :accrual,
                       :carry_forward_cap, :active, :position)
       end
     end
