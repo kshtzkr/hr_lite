@@ -1,5 +1,9 @@
 # hr_lite
 
+[![CI](https://github.com/kshtzkr/hr_lite/actions/workflows/ci.yml/badge.svg)](https://github.com/kshtzkr/hr_lite/actions/workflows/ci.yml)
+[![Gem Version](https://badge.fury.io/rb/hr_lite.svg)](https://rubygems.org/gems/hr_lite)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](MIT-LICENSE)
+
 A lightweight, self-contained HRMS engine for Rails — attendance with
 geolocation, leave management, holiday calendar, full Indian payroll
 (PF/ESI/PT/TDS) with salary-slip PDFs, kudos with @mentions, appraisals and
@@ -111,6 +115,31 @@ each financial year with your accountant** before the first run; per-slip
 LOP/TDS overrides are the escape hatch. Surcharge, perquisites and
 HRA-exemption math are not modelled.
 
+## Requirements & versioning
+
+- Rails >= 8.0, Ruby >= 3.2, any ActiveRecord database (portable column
+  types; developed against PostgreSQL, CI runs SQLite).
+- The host app must have ActiveRecord encryption keys configured.
+- [SemVer](https://semver.org): 0.x minors may break with a CHANGELOG note;
+  from 1.0, breaking changes only in majors.
+
+## Documentation
+
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — every config hook, the
+  event/notification matrix, access-tier gating.
+- [docs/PAYROLL.md](docs/PAYROLL.md) — exact payroll math, rounding rules,
+  and what is deliberately not modelled.
+- [CHANGELOG.md](CHANGELOG.md) — release history.
+
+## Contributing
+
+Bug reports and pull requests are welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for setup and ground rules (100%
+coverage, BigDecimal money, config hooks over host couplings). Security
+issues: report privately per [SECURITY.md](SECURITY.md). Everyone
+interacting with this project is expected to follow the
+[code of conduct](CODE_OF_CONDUCT.md).
+
 ## Development
 
 ```bash
@@ -122,4 +151,5 @@ bundle exec rubocop
 
 ## License
 
-MIT.
+The gem is available as open source under the terms of the
+[MIT License](MIT-LICENSE).

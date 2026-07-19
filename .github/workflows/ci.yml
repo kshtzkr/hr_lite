@@ -36,6 +36,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: [ "3.2", "3.3", "3.4", "ruby-4.0.0" ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -43,7 +47,7 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ruby-4.0.0
+          ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true
 
       - name: Run the dummy-app suite with coverage
