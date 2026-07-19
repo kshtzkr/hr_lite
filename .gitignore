@@ -10,3 +10,4 @@ spec/dummy/log/
 spec/dummy/tmp/
 .DS_Store
 *.gem
+spec/dummy/db/demo.sqlite3*
