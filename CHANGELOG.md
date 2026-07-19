@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Slip PDF template no longer 500s when rendered by host code
+  (`config.render_pdf`): amount-in-words is now a PORO
+  (`HrLite::AmountInWords`), not a view helper, since engine helpers are
+  not in scope under a host renderer.
 - `hrl_money` Indian digit grouping (₹3,69,000.00 — previously mis-grouped).
 - Layout `<title>` uses the configured company name instead of a
   hardcoded brand.

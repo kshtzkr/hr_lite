@@ -61,8 +61,10 @@
   </div>
 
   <div class="pdf-net">
+    <%# PORO, not a helper — this template is rendered by HOST code via
+        config.render_pdf, where engine helper modules are not in scope. %>
     Net pay: <%= HrLite.config.currency_symbol %><%= @slip.net_pay.to_s("F") %>
-    (<%= hrl_amount_in_words(@slip.net_pay) %>)
+    (<%= HrLite::AmountInWords.words(@slip.net_pay) %>)
   </div>
 
   <p class="pdf-foot">
