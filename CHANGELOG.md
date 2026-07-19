@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-19
+
+### Added
+
+- **Comp-off requests**: employees request a credit for working a weekend
+  or holiday; admin approval credits the comp-off leave type's balance
+  (mark the type under Settings — seeds flag `CO`). New events
+  `comp_off.requested/approved/rejected/cancelled`.
+- **Regularization tickets**: forgot to punch? Employees propose the actual
+  times with a reason; admin approval writes them onto the day's attendance
+  record with the full regularization trail. New events
+  `regularization.requested/approved/rejected/cancelled`.
+- **Team board (`/team`)**: everyone-visible who's-in/who's-out for any
+  date — punch times, leave badges, hours worked that day and that month.
+- **Team leave notices**: approving a leave now bells + emails the whole
+  team ("X is on leave …", matrix row `leave.team_notice`; reasons are
+  never broadcast).
+- Approvals screens grew Leaves / Comp-off / Regularization tabs with
+  pending counts.
+
+### Fixed
+
+- Checkboxes rendered 100%-wide with misplaced labels (the bare
+  `input[type]` width rule out-ranked `.hrl-field--check`); checkbox rows
+  now size naturally and pick up the accent colour.
+
 ## [0.2.2] - 2026-07-19
 
 ### Fixed

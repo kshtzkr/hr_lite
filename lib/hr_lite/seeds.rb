@@ -7,11 +7,23 @@ module HrLite
       { code: "SL", name: "Sick leave", color: "#f59e0b", paid: true, annual_quota: 6, accrual: "yearly_upfront", carry_forward_cap: 0, position: 2 },
       { code: "EL", name: "Earned leave", color: "#10b981", paid: true, annual_quota: 15, accrual: "monthly", carry_forward_cap: 30, position: 3 },
       { code: "LWP", name: "Leave without pay", color: "#6b7280", paid: false, annual_quota: nil, accrual: "yearly_upfront", carry_forward_cap: 0, position: 4 },
-      { code: "CO", name: "Comp off", color: "#8b5cf6", paid: true, annual_quota: 0, accrual: "yearly_upfront", carry_forward_cap: 0, position: 5 }
+      { code: "CO", name: "Comp off", color: "#8b5cf6", paid: true, annual_quota: 0, accrual: "yearly_upfront", carry_forward_cap: 0, position: 5, comp_off: true }
     ].freeze
 
     def self.run!
-      seed_leave_types! + seed_holidays!
+      seed_leave_types! + seed_holidays! + seed_comp_off_flag!
+    end
+
+    # Upgrades pre-0.3.0 installs: their CO row predates the comp_off column,
+    # and comp-off requests need exactly one type flagged to credit into.
+    def self.seed_comp_off_flag!
+      return [] if LeaveType.exists?(comp_off: true)
+
+      type = LeaveType.find_by(code: "CO")
+      return [] if type.nil?
+
+      type.update!(comp_off: true)
+      [ "comp_off flag on CO" ]
     end
 
     def self.seed_leave_types!

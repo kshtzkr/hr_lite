@@ -2,8 +2,9 @@ module HrLite
   module ApplicationHelper
     NAV_ITEMS = [
       { label: "Home",       path: :root_path,           match: [ "/" ] },
-      { label: "Attendance", path: :attendance_path,     match: [ "/attendance" ] },
-      { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances" ] },
+      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests" ] },
+      { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
+      { label: "Team",       path: :team_path,           match: [ "/team" ] },
       { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
@@ -13,7 +14,7 @@ module HrLite
     ADMIN_NAV_ITEMS = [
       { label: "Overview",        path: :admin_overview_path,        match: [ "/admin/overview" ] },
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
-      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances" ] }
+      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests" ] }
     ].freeze
 
     LEADERSHIP_NAV_ITEMS = [
@@ -84,6 +85,49 @@ module HrLite
     # PORO so host-rendered templates (config.render_pdf) work too.
     def hrl_amount_in_words(amount)
       HrLite::AmountInWords.words(amount)
+    end
+
+    def hrl_duration(seconds)
+      return "\u2014" if seconds.nil?
+
+      total = seconds.to_i
+      format("%dh %02dm", total / 3600, (total % 3600) / 60)
+    end
+
+    # Status badge for a TeamDay row — punch times over vague labels.
+    def hrl_team_status(row)
+      case row.kind
+      when :holiday then hrl_status_badge("Holiday", "hrl-badge--muted", worked_hint(row))
+      when :weekend then hrl_status_badge("Weekend", "hrl-badge--muted", worked_hint(row))
+      when :leave then hrl_status_badge("On leave (#{row.leave.leave_type.code})", "hrl-badge--warn")
+      when :half_day_leave then hrl_status_badge("Half-day leave (#{row.leave.leave_type.code})", "hrl-badge--warn", worked_hint(row))
+      when :upcoming then hrl_status_badge("\u2014", "hrl-badge--muted")
+      when :absent
+        label = row.date_today? ? "Not in yet" : "Absent"
+        hrl_status_badge(label, "hrl-badge--bad")
+      else # :present / :half_day punch
+        record = row.record
+        if record.check_out_at
+          hrl_status_badge("Done #{record.check_in_at.strftime('%H:%M')}\u2013#{record.check_out_at.strftime('%H:%M')}", "hrl-badge--ok")
+        else
+          hrl_status_badge("In since #{record.check_in_at.strftime('%H:%M')}", "hrl-badge--ok")
+        end
+      end
+    end
+
+    private
+
+    def hrl_status_badge(label, css, hint = nil)
+      badge = content_tag(:span, label, class: "hrl-badge #{css}")
+      hint ? safe_join([ badge, " ", content_tag(:span, hint, class: "hrl-small hrl-muted") ]) : badge
+    end
+
+    # A punch on a holiday/weekend/half-day-leave is worth surfacing —
+    # that's exactly what comp-off requests point at.
+    def worked_hint(row)
+      return nil unless row.record&.check_in_at
+
+      "worked #{row.record.check_in_at.strftime('%H:%M')}#{row.record.check_out_at ? "\u2013#{row.record.check_out_at.strftime('%H:%M')}" : ""}"
     end
   end
 end

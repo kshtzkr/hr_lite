@@ -1,0 +1,50 @@
+<% content_for(:page_title) { "Ticket — #{hr_display_name(@request.user)}" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Regularization — <%= hr_display_name(@request.user) %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_regularization_requests_path %>">All tickets</a>
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@request.user_id, month: @request.date.strftime("%Y-%m")) %>">Their month</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <dt>Date</dt><dd><%= @request.date.strftime("%A, %d %B %Y") %></dd>
+    <dt>Proposed times</dt><dd><%= @request.times_label %></dd>
+    <dt>Reason</dt><dd><%= @request.reason %></dd>
+    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <dt>Current punch</dt>
+    <dd>
+      <% if (punch = @request.punch)&.check_in_at %>
+        <%= punch.check_in_at.strftime("%H:%M") %><%= punch.check_out_at ? "–#{punch.check_out_at.strftime('%H:%M')}" : " (no check-out)" %>
+        <% if punch.flagged? %><span class="hrl-badge hrl-badge--bad">Flagged</span><% end %>
+      <% else %>
+        <span class="hrl-muted">No punch recorded for this day.</span>
+      <% end %>
+    </dd>
+    <% if @request.decided_at %>
+      <dt>Decided</dt>
+      <dd><%= hr_display_name(@request.decided_by) %> · <%= @request.decided_at.strftime("%d %b %H:%M") %>
+        <% if @request.decision_note.present? %> · <%= @request.decision_note %><% end %></dd>
+    <% end %>
+  </dl>
+</section>
+
+<% if @request.pending? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Decide</h2>
+    <p class="hrl-hint">Approving writes the proposed times onto the day's attendance record
+      (only the provided times overwrite) with the full regularization trail.</p>
+    <%= form_with url: hr_lite.approve_admin_regularization_request_path(@request), method: :post, local: true do |f| %>
+      <div class="hrl-field">
+        <%= f.label :decision_note, "Note (required to reject, optional to approve)" %>
+        <%= f.text_area :decision_note %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= f.submit "Approve — fix attendance", class: "hrl-btn hrl-btn--primary" %>
+        <%= f.submit "Reject", class: "hrl-btn hrl-btn--danger",
+                     formaction: hr_lite.reject_admin_regularization_request_path(@request) %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

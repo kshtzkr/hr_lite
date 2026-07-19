@@ -15,6 +15,11 @@ module HrLite
 
     scope :active, -> { where(active: true).order(:position, :id) }
 
+    # The type approved comp-off requests credit into (Settings marks it).
+    def self.comp_off_type
+      active.find_by(comp_off: true)
+    end
+
     def unlimited?
       annual_quota.nil?
     end

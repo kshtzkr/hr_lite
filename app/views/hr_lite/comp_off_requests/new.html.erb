@@ -1,0 +1,28 @@
+<% content_for(:page_title) { "Request comp-off" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Request comp-off</h1>
+</div>
+
+<section class="hrl-card">
+  <%= form_with model: @request, url: hr_lite.comp_off_requests_path, scope: :comp_off_request, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @request %>
+    <div class="hrl-field">
+      <%= f.label :date_worked, "Which day did you work?" %>
+      <%= f.date_field :date_worked %>
+      <p class="hrl-hint">Must be a weekend or holiday you actually worked — extra hours on a
+        normal working day are not comp-off under the policy.</p>
+    </div>
+    <div class="hrl-field hrl-field--check">
+      <%= f.check_box :half_day %>
+      <%= f.label :half_day, "I worked only half the day (credits 0.5)" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :reason, "What did you work on? (required)" %>
+      <%= f.text_area :reason %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Send for approval", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.comp_off_requests_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

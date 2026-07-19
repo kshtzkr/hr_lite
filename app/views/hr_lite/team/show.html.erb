@@ -1,0 +1,50 @@
+<% content_for(:page_title) { "Team" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Team — <%= @date == Date.current ? "today" : @date.strftime("%A, %d %B") %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>">&larr;</a>
+    <% unless @date == Date.current %>
+      <a class="hrl-btn" href="<%= hr_lite.team_path %>">Today</a>
+    <% end %>
+    <% if @date < Date.current %>
+      <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date + 1).strftime("%Y-%m-%d")) %>">&rarr;</a>
+    <% end %>
+  </div>
+</div>
+
+<% kpis = @board.kpis %>
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= kpis[:checked_in] %></div><div class="hrl-kpi__label">Checked in</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= kpis[:on_leave] %></div><div class="hrl-kpi__label">On leave</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= kpis[:not_in] %></div><div class="hrl-kpi__label">Not in</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @board.rows.size %></div><div class="hrl-kpi__label">Team size</div></div>
+</div>
+
+<section class="hrl-card">
+  <% if @board.rows.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Name</th><th>Status</th><th>Hours <%= @date == Date.current ? "today" : "that day" %></th><th>Hours this month</th></tr></thead>
+        <tbody>
+          <% @board.rows.each do |row| %>
+            <tr>
+              <td data-label="Name">
+                <strong><%= hr_display_name(row.user) %></strong>
+                <% if row.profile&.designation.present? %>
+                  <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span>
+                <% end %>
+              </td>
+              <td data-label="Status"><%= hrl_team_status(row) %></td>
+              <td data-label="Hours" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>
+              <td data-label="Hours this month" class="hrl-num"><%= hrl_duration(row.month_seconds) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">Nobody to show for this date.</p>
+  <% end %>
+  <p class="hrl-small hrl-muted hrl-mt">Forgot a punch yourself?
+    <a href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>.</p>
+</section>

@@ -1,0 +1,44 @@
+<% content_for(:page_title) { "Comp-off" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My comp-off</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.leave_requests_path %>">My leaves</a>
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_comp_off_request_path %>">Request comp-off</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted" style="margin-top:0;">
+    Worked on a weekend or holiday? Request a comp-off — once an admin approves,
+    <%= @comp_off_type ? "your #{@comp_off_type.name} balance is credited" : "a day is credited to your balance" %>
+    and you spend it through the normal leave flow.
+  </p>
+  <% if @requests.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Day worked</th><th>Credit</th><th>Status</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Day worked"><%= request.date_worked.strftime("%a, %d %b %Y") %></td>
+              <td data-label="Credit" class="hrl-num"><%= request.credit_days.to_f %></td>
+              <td data-label="Status">
+                <span class="hrl-badge <%= { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted" }[request.status] %>"><%= request.status.humanize %></span>
+              </td>
+              <td data-label="Note" class="hrl-small hrl-muted"><%= request.decision_note.presence || "—" %></td>
+              <td data-label="">
+                <% if request.pending? %>
+                  <%= button_to "Cancel", hr_lite.cancel_comp_off_request_path(request), method: :post,
+                                class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this request?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No comp-off requests yet.</p>
+  <% end %>
+</section>

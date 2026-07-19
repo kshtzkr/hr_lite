@@ -19,6 +19,10 @@
     <div class="hrl-field"><%= f.label :position %><%= f.number_field :position %></div>
     <div class="hrl-field hrl-field--check"><%= f.check_box :paid %><%= f.label :paid %></div>
     <div class="hrl-field hrl-field--check"><%= f.check_box :active %><%= f.label :active %></div>
+    <div class="hrl-field hrl-field--check">
+      <%= f.check_box :comp_off %>
+      <%= f.label :comp_off, "Comp-off type (approved comp-off requests credit into this)" %>
+    </div>
     <div class="hrl-form-actions">
       <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
       <a class="hrl-btn" href="<%= hr_lite.admin_leave_types_path %>">Cancel</a>

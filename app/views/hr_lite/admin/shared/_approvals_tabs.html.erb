@@ -1,0 +1,11 @@
+<%# locals: active (:leaves | :comp_off | :regularizations) %>
+<div class="hrl-row" style="margin-bottom:.85rem;">
+  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :leaves %>"
+     href="<%= hr_lite.admin_leave_requests_path %>">Leaves</a>
+  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :comp_off %>"
+     href="<%= hr_lite.admin_comp_off_requests_path %>">Comp-off
+    <% if (n = HrLite::CompOffRequest.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
+  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :regularizations %>"
+     href="<%= hr_lite.admin_regularization_requests_path %>">Regularization
+    <% if (n = HrLite::RegularizationRequest.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
+</div>

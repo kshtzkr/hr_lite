@@ -1,0 +1,36 @@
+<% content_for(:page_title) { "Comp-off approvals" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Comp-off approvals</h1>
+</div>
+
+<%= render "hr_lite/admin/shared/approvals_tabs", active: :comp_off %>
+
+<div class="hrl-row" style="margin-bottom:.85rem;">
+  <% HrLite::CompOffRequest::STATUSES.each do |status| %>
+    <a class="hrl-btn <%= 'hrl-btn--primary' if @status == status %>"
+       href="<%= hr_lite.admin_comp_off_requests_path(status: status) %>"><%= status.humanize %></a>
+  <% end %>
+</div>
+
+<section class="hrl-card">
+  <% if @requests.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Employee</th><th>Day worked</th><th>Credit</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Employee"><%= hr_display_name(request.user) %></td>
+              <td data-label="Day worked"><%= request.date_worked.strftime("%a, %d %b %Y") %></td>
+              <td data-label="Credit" class="hrl-num"><%= request.credit_days.to_f %></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_comp_off_request_path(request) %>">Open</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No <%= @status %> comp-off requests.</p>
+  <% end %>
+</section>
