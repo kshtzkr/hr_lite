@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-07-19
+
+### Added
+
+- Email-invite onboarding: leave the starting password blank and the
+  welcome email carries a set-your-password link from the host's
+  `invite_url_for` hook; `Notifications.publish`/`EventMailer.event`
+  accept an absolute `link_url` for tokenized URLs. (Intended for 0.2.0;
+  missed the merge window.)
+
 ## [0.2.0] - 2026-07-19
 
 ### Added
