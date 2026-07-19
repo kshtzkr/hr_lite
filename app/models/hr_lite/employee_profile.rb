@@ -14,6 +14,10 @@ module HrLite
 
     TAX_REGIMES = %w[new old].freeze
 
+    # Onboarding-form virtuals (the controller hands them to
+    # config.onboard_user; never persisted, never audited).
+    attr_accessor :new_user_name, :new_user_email, :new_user_password
+
     validates :employee_code, presence: true, uniqueness: true
     validates :user_id, uniqueness: true
     validates :date_of_joining, presence: true

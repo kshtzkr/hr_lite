@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-19
+
+### Added
+
+- Resignations: employees submit/withdraw from the portal; leadership
+  accepts with a confirmed last working day that stamps the profile's
+  exit date (payroll/attendance clip to it automatically).
+- Onboarding: leadership creates the sign-in with the profile via the
+  `onboard_user` hook (no self sign-up anywhere); offboarding stamps the
+  exit date and revokes access via `offboard_user` — records are never
+  deleted.
+- `PayrollAutoDraftJob`: monthly automation that drafts + computes the
+  previous month's payroll from attendance and notifies leadership for
+  review; publishing stays human.
+- Company logo (`company[:logo_url]`, data-URIs welcome) in the shell
+  and on salary-slip PDFs.
+- Keka-style left-rail navigation on desktop with grouped sections
+  (My work / Team / Organisation); mobile keeps the bottom tab bar.
+- New notification-matrix events: `resignation.*`, `employee.onboarded`,
+  `payroll.draft_ready`.
+
+### Fixed
+
+- The auto-created settings row no longer emails leadership
+  ("Someone created Setting" noise); real settings edits stay audited.
+
 ## [0.1.2] - 2026-07-19
 
 ### Fixed

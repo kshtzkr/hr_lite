@@ -10,5 +10,16 @@ module HrLite
     def self.instance
       first_or_create!
     end
+
+    private
+
+    # The defaults row bootstraps itself on first read — a system action,
+    # not a governing change; auditing it would email leadership noise.
+    # Real edits (updates) stay fully audited.
+    def hr_lite_audit!(action)
+      return if action == "create" && HrLite::Current.actor.nil?
+
+      super
+    end
   end
 end

@@ -24,7 +24,12 @@ module HrLite
       "appraisal.shared"      => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "promotion.recorded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: true  },
       "policy.changed"        => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
-      "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false }
+      "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
+      "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
+      "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
+      "resignation.withdrawn" => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
+      "employee.onboarded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
+      "payroll.draft_ready"   => { bell: false, email: false, leadership_email: true,  leadership_bell: true  }
     }.freeze
 
     class << self

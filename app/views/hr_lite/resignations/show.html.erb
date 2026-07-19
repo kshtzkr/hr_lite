@@ -1,0 +1,42 @@
+<% content_for(:page_title) { "Resignation" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Resignation</h1>
+</div>
+
+<% if @resignation %>
+  <section class="hrl-card">
+    <dl class="hrl-deflist">
+      <dt>Status</dt>
+      <dd><span class="hrl-badge <%= { 'accepted' => 'hrl-badge--warn', 'withdrawn' => 'hrl-badge--muted' }[@resignation.status] %>"><%= @resignation.status.humanize %></span></dd>
+      <dt>Last working day</dt><dd><%= @resignation.proposed_last_day.strftime("%d %B %Y") %></dd>
+      <% if @resignation.reason.present? %><dt>Reason</dt><dd><%= @resignation.reason %></dd><% end %>
+      <% if @resignation.decision_note.present? %><dt>Leadership note</dt><dd><%= @resignation.decision_note %></dd><% end %>
+    </dl>
+    <% if @resignation.pending? %>
+      <%= button_to "Withdraw resignation", hr_lite.withdraw_resignation_path, method: :post,
+                    class: "hrl-btn hrl-btn--danger hrl-mt",
+                    form: { data: { turbo_confirm: "Withdraw your resignation?" } } %>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @new_resignation %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Submit resignation</h2>
+    <p class="hrl-small hrl-muted">Leadership is notified immediately and will confirm your last working day.</p>
+    <%= form_with model: @new_resignation, url: hr_lite.resignation_path, local: true do |f| %>
+      <%= render "hr_lite/shared/form_errors", record: @new_resignation %>
+      <div class="hrl-field">
+        <%= f.label :proposed_last_day, "Proposed last working day" %>
+        <%= f.date_field :proposed_last_day %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :reason, "Reason (optional)" %>
+        <%= f.text_area :reason %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= f.submit "Submit resignation", class: "hrl-btn hrl-btn--primary" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>

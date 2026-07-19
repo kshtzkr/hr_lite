@@ -2,6 +2,9 @@
 <div class="pdf-card">
   <div class="pdf-head">
     <div>
+      <% if company[:logo_url].present? %>
+        <img src="<%= company[:logo_url] %>" alt="<%= company[:name] %>" style="height:34px; display:block; margin-bottom:6px;">
+      <% end %>
       <div class="pdf-company"><%= company[:name] %></div>
       <% if company[:address].present? %><div class="pdf-muted"><%= company[:address] %></div><% end %>
     </div>
