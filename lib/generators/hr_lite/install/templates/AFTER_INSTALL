@@ -1,0 +1,32 @@
+
+hr_lite is almost ready. Remaining steps:
+
+  1. Mount it (skip if you passed --route):
+
+       # config/routes.rb — a path…
+       mount HrLite::Engine => "/hr", as: :hr_lite
+       # …or a subdomain:
+       constraints subdomain: "hr" do
+         mount HrLite::Engine => "/", as: :hr_lite
+       end
+
+  2. Install and run the migrations:
+
+       bin/rails hr_lite:install:migrations db:migrate
+
+  3. Seed leave types + fixed national holidays (idempotent, deploy-safe):
+
+       bin/rails hr_lite:seed
+
+  4. Ensure ActiveRecord encryption keys exist (payroll PII is encrypted):
+
+       bin/rails db:encryption:init   # if you don't have keys yet
+
+  5. Schedule the recurring jobs in your job scheduler:
+
+       HrLite::DailyDigestJob        # each morning
+       HrLite::LeaveYearRolloverJob  # Jan 1
+
+  6. Review config/initializers/hr_lite.rb — set leadership emails, then
+     restart. Docs: https://github.com/kshtzkr/hr_lite/tree/main/docs
+

@@ -23,10 +23,10 @@ RSpec.describe HrLite::EventMailer do
       end
     end
 
-    it "includes a link button only when mail_link_base is configured" do
+    it "includes a link button only when public_url_base is configured" do
       expect(mail.html_part.body.to_s).not_to include("Open in HR")
 
-      HrLite.config.mail_link_base = "https://hr.acme.test/"
+      HrLite.config.public_url_base = "https://hr.acme.test/"
       with_link = described_class.event(to: "a@x.test", subject: "S", heading: "H", path: "/kudos")
       expect(with_link.html_part.body.to_s).to include(%(href="https://hr.acme.test/kudos"))
     end
@@ -54,7 +54,7 @@ RSpec.describe HrLite::EventMailer do
   describe ".link_for" do
     it "joins base and path safely, nil without either" do
       expect(described_class.link_for("/x")).to be_nil
-      HrLite.config.mail_link_base = "https://hr.x.test"
+      HrLite.config.public_url_base = "https://hr.x.test"
       expect(described_class.link_for(nil)).to be_nil
       expect(described_class.link_for("/x")).to eq("https://hr.x.test/x")
     end

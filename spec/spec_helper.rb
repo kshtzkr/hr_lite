@@ -4,6 +4,7 @@ if ENV["COVERAGE"] == "1" || ENV["CI"]
     enable_coverage :branch
     add_filter %r{^/spec/}
     add_filter "lib/hr_lite/version.rb" # loaded by bundler before SimpleCov starts
+    add_filter %r{/generators/.*/templates/} # generator templates are copied, not executed
     # The gem's own code only — the dummy app is a fixture, not shipped code.
     root File.expand_path("..", __dir__)
     track_files "{app,lib}/**/*.rb"

@@ -23,21 +23,28 @@ promotions. Think Keka-lite, mounted inside your existing app in a few lines.
 
 ## Installation
 
+Everything lives in the gem — a host app adds the gem, a mount line and one
+initializer. Nothing else.
+
 ```ruby
 # Gemfile
 gem "hr_lite"
 ```
 
+```bash
+bin/rails g hr_lite:install          # annotated initializer + next steps
+bin/rails g hr_lite:install --route  # …and mount at /hr for you
+bin/rails hr_lite:install:migrations db:migrate
+bin/rails hr_lite:seed               # leave types + fixed national holidays (idempotent)
+```
+
+To serve it on a subdomain instead of a path:
+
 ```ruby
-# config/routes.rb — mount anywhere: a path, or a subdomain
+# config/routes.rb
 constraints subdomain: "hr" do
   mount HrLite::Engine => "/", as: :hr_lite
 end
-```
-
-```bash
-bin/rails hr_lite:install:migrations db:migrate
-bin/rails hr_lite:seed   # default leave types + fixed national holidays (idempotent)
 ```
 
 Your app must have ActiveRecord encryption keys configured

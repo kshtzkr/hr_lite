@@ -67,6 +67,31 @@ module HrLite
       "User ##{user.id}"
     end
 
+    # Absolute public URL for an engine-relative path, from
+    # config.public_url_base. Nil when no base is configured — callers (and
+    # emails) then simply carry no link. Hosts use this to build bell
+    # deep-links and profile links without re-deriving the HR host.
+    def public_url(path = "/")
+      base = config.public_url_base.to_s.chomp("/")
+      return nil if base.empty?
+
+      "#{base}#{path}"
+    end
+
+    # True when the given absolute URL points at the configured public HR
+    # host — the allowlist check for hosts that follow stored notification
+    # links (an open-redirect guard stays intact on their side).
+    def public_url?(candidate)
+      base = public_url
+      return false if base.nil?
+
+      candidate_uri = URI.parse(candidate.to_s)
+      base_uri = URI.parse(base)
+      %w[http https].include?(candidate_uri.scheme) && candidate_uri.host == base_uri.host
+    rescue URI::InvalidURIError
+      false
+    end
+
     # Host bell hook. Never raises — a notification must not break the
     # domain action that triggered it.
     def notify(user:, kind:, title:, body: nil, path: nil)

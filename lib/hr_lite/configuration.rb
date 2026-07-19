@@ -8,7 +8,12 @@ module HrLite
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check, :extra_stylesheets,
-                  :mailer_from, :mail_link_base, :notification_matrix, :back_link
+                  :mailer_from, :public_url_base, :notification_matrix, :back_link
+
+    # 0.1.0 pre-release name for public_url_base; kept as an alias so early
+    # adopters' initializers don't break.
+    alias_method :mail_link_base, :public_url_base
+    alias_method :mail_link_base=, :public_url_base=
 
     def initialize
       @user_class            = "User"
@@ -32,7 +37,7 @@ module HrLite
       end
       @extra_stylesheets     = [] # host stylesheets linked AFTER hr_lite.css (CSS-var overrides)
       @mailer_from           = "hr@example.com"
-      @mail_link_base        = nil # e.g. "https://hr.example.com" — enables email link buttons
+      @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
     end

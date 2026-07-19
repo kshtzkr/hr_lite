@@ -22,13 +22,12 @@ module HrLite
     end
 
     # Emails need absolute URLs; the engine can't know its public mount.
-    # Hosts set config.mail_link_base (e.g. "https://hr.example.com");
+    # Hosts set config.public_url_base (e.g. "https://hr.example.com");
     # unset => emails simply carry no link button.
     def self.link_for(path)
-      base = HrLite.config.mail_link_base.to_s
-      return nil if base.blank? || path.blank?
+      return nil if path.blank?
 
-      "#{base.chomp('/')}#{path}"
+      HrLite.public_url(path)
     end
   end
 end
