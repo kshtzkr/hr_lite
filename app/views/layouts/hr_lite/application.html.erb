@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title><%= [ content_for(:page_title), "#{HrLite.config.company.call[:name].presence || 'HR'} — HR" ].compact.join(" · ") %></title>
+  <% company = HrLite.config.company.call %>
+  <title><%= [ content_for(:page_title), "#{company[:name].presence || 'HR'} — HR" ].compact.join(" · ") %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
@@ -12,37 +13,65 @@
   <% end %>
 </head>
 <body class="hrl-body">
-  <header class="hrl-appbar">
-    <div class="hrl-appbar__inner">
-      <a class="hrl-appbar__brand" href="<%= hr_lite.root_path %>"><%= HrLite.config.company.call[:name].presence || "HR" %></a>
-      <nav class="hrl-nav hrl-nav--top" aria-label="HR">
+  <div class="hrl-shell">
+    <%# Keka-style left rail on desktop; slides away on phones (tabbar takes over). %>
+    <aside class="hrl-side" aria-label="HR navigation">
+      <a class="hrl-side__brand" href="<%= hr_lite.root_path %>">
+        <% if company[:logo_url].present? %>
+          <img class="hrl-side__logo" src="<%= company[:logo_url] %>" alt="<%= company[:name] %>">
+        <% else %>
+          <span class="hrl-side__brandname"><%= company[:name].presence || "HR" %></span>
+        <% end %>
+      </a>
+
+      <nav class="hrl-side__nav">
+        <span class="hrl-side__group">My work</span>
         <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).each do |item| %>
           <%= hrl_nav_link(item) %>
         <% end %>
+
         <% if hr_admin? || hr_leadership? %>
-          <span class="hrl-nav__sep" aria-hidden="true"></span>
+          <span class="hrl-side__group">Team</span>
           <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
             <%= hrl_nav_link(item) %>
           <% end %>
         <% end %>
+
         <% if hr_leadership? %>
+          <span class="hrl-side__group">Organisation</span>
           <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
             <%= hrl_nav_link(item) %>
           <% end %>
         <% end %>
-        <% if HrLite.config.back_link %>
-          <a class="hrl-nav__link hrl-nav__link--back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
-        <% end %>
       </nav>
-      <span class="hrl-appbar__user"><%= hr_display_name(hr_current_user) %></span>
-    </div>
-  </header>
 
-  <main class="hrl-main">
-    <% if flash[:notice].present? %><div class="hrl-flash hrl-flash--ok" role="status"><%= flash[:notice] %></div><% end %>
-    <% if flash[:alert].present? %><div class="hrl-flash hrl-flash--warn" role="alert"><%= flash[:alert] %></div><% end %>
-    <%= yield %>
-  </main>
+      <div class="hrl-side__foot">
+        <span class="hrl-side__user" title="<%= hr_current_user&.email %>"><%= hr_display_name(hr_current_user) %></span>
+        <% if HrLite.config.back_link %>
+          <a class="hrl-side__back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
+        <% end %>
+      </div>
+    </aside>
+
+    <div class="hrl-content">
+      <header class="hrl-appbar hrl-appbar--mobile">
+        <a class="hrl-appbar__brand" href="<%= hr_lite.root_path %>">
+          <% if company[:logo_url].present? %>
+            <img class="hrl-appbar__logo" src="<%= company[:logo_url] %>" alt="<%= company[:name] %>">
+          <% else %>
+            <%= company[:name].presence || "HR" %>
+          <% end %>
+        </a>
+        <span class="hrl-appbar__user"><%= hr_display_name(hr_current_user) %></span>
+      </header>
+
+      <main class="hrl-main">
+        <% if flash[:notice].present? %><div class="hrl-flash hrl-flash--ok" role="status"><%= flash[:notice] %></div><% end %>
+        <% if flash[:alert].present? %><div class="hrl-flash hrl-flash--warn" role="alert"><%= flash[:alert] %></div><% end %>
+        <%= yield %>
+      </main>
+    </div>
+  </div>
 
   <nav class="hrl-tabbar" aria-label="HR sections">
     <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).first(5).each do |item| %>

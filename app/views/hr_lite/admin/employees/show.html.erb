@@ -9,6 +9,48 @@
   </div>
 </div>
 
+<% if @pending_resignation %>
+  <section class="hrl-card" style="border-color: var(--hrl-warn);">
+    <h2 class="hrl-card__title">Pending resignation</h2>
+    <dl class="hrl-deflist">
+      <dt>Proposed last day</dt><dd><%= @pending_resignation.proposed_last_day.strftime("%d %B %Y") %></dd>
+      <% if @pending_resignation.reason.present? %><dt>Reason</dt><dd><%= @pending_resignation.reason %></dd><% end %>
+    </dl>
+    <%= form_with url: hr_lite.accept_admin_resignation_path(@pending_resignation), method: :post, local: true do %>
+      <div class="hrl-field">
+        <label for="res_last_day">Confirm last working day</label>
+        <input type="date" id="res_last_day" name="last_day" class="hrl-input"
+               value="<%= @pending_resignation.proposed_last_day %>">
+      </div>
+      <div class="hrl-field">
+        <label for="res_note">Note to the employee (optional)</label>
+        <input type="text" id="res_note" name="note" class="hrl-input">
+      </div>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--primary" type="submit">Accept resignation</button>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @profile.date_of_exit.nil? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Offboard</h2>
+    <p class="hrl-small hrl-muted">Stamps the last day (attendance and payroll clip to it) and revokes sign-in.
+      Records are never deleted.</p>
+    <%= form_with url: hr_lite.offboard_admin_employee_path(@profile), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Offboard #{hr_display_name(@profile.user)}?" } } do %>
+      <div class="hrl-field">
+        <label for="off_date">Last working day</label>
+        <input type="date" id="off_date" name="date_of_exit" class="hrl-input" value="<%= Date.current %>">
+      </div>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--danger" type="submit">Offboard employee</button>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
 <div class="hrl-grid hrl-grid--2">
   <section class="hrl-card">
     <h2 class="hrl-card__title">Profile</h2>

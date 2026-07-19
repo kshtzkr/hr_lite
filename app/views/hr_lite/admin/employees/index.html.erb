@@ -28,6 +28,23 @@
   <% end %>
 </section>
 
+<% if @pending_resignations.any? %>
+  <section class="hrl-card" style="border-color: var(--hrl-warn);">
+    <h2 class="hrl-card__title">Pending resignations</h2>
+    <% @pending_resignations.each do |resignation| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= hr_display_name(resignation.user) %></strong>
+          — proposed last day <%= resignation.proposed_last_day.strftime("%d %b %Y") %>
+          <% if resignation.reason.present? %><span class="hrl-small hrl-muted"><%= resignation.reason.truncate(80) %></span><% end %>
+        </div>
+        <% profile = HrLite::EmployeeProfile.find_by(user_id: resignation.user_id) %>
+        <% if profile %><a class="hrl-btn" href="<%= hr_lite.admin_employee_path(profile) %>">Decide</a><% end %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
 <% if @users_without_profile.any? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Staff without an HR profile</h2>

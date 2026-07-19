@@ -4,9 +4,27 @@
     <%= f.hidden_field :user_id %>
     <% if profile.new_record? && profile.user_id.blank? %>
       <div class="hrl-field">
-        <%= f.label :user_id, "Staff member" %>
-        <%= f.select :user_id, HrLite.employees.map { |u| [ HrLite.display_name(u), u.id ] } %>
+        <%= f.label :user_id, "Existing staff member" %>
+        <%= f.select :user_id, HrLite.employees.map { |u| [ HrLite.display_name(u), u.id ] },
+                     include_blank: "— onboard a brand-new person below —" %>
       </div>
+      <fieldset class="hrl-card" style="margin-bottom:.8rem;">
+        <legend class="hrl-card__title">New login (onboarding)</legend>
+        <p class="hrl-hint">Fill these ONLY for someone who has no account yet — their sign-in is
+          created with the profile; there is no self sign-up.</p>
+        <div class="hrl-field">
+          <%= f.label :new_user_name, "Full name" %>
+          <%= f.text_field :new_user_name %>
+        </div>
+        <div class="hrl-field">
+          <%= f.label :new_user_email, "Work email (their sign-in)" %>
+          <%= f.email_field :new_user_email %>
+        </div>
+        <div class="hrl-field">
+          <%= f.label :new_user_password, "Starting password (share it with them; they can change it later)" %>
+          <%= f.text_field :new_user_password %>
+        </div>
+      </fieldset>
     <% end %>
     <div class="hrl-field"><%= f.label :employee_code %><%= f.text_field :employee_code %></div>
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>

@@ -8,7 +8,8 @@ module HrLite
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check, :extra_stylesheets,
-                  :mailer_from, :public_url_base, :notification_matrix, :back_link
+                  :mailer_from, :public_url_base, :notification_matrix, :back_link,
+                  :onboard_user, :offboard_user
 
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
     # adopters' initializers don't break.
@@ -40,6 +41,23 @@ module HrLite
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
+
+      # Leadership onboarding/offboarding. onboard_user must return a saved
+      # user record (default: create on user_class with whatever of
+      # name/email/password it supports). offboard_user should revoke the
+      # person's access — the engine never deletes anything (statutory
+      # records), it only stamps the exit date.
+      @onboard_user = ->(name:, email:, password:) {
+        klass = HrLite.user_klass
+        attributes = { email: email }
+        attributes[:name] = name if klass.column_names.include?("name")
+        if klass.method_defined?(:password=)
+          attributes[:password] = password
+          attributes[:password_confirmation] = password if klass.method_defined?(:password_confirmation=)
+        end
+        klass.create!(attributes)
+      }
+      @offboard_user = ->(user) { }
     end
   end
 
