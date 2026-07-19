@@ -37,7 +37,7 @@ module HrLite
         HrLite.config.notification_matrix || DEFAULT_MATRIX
       end
 
-      def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [], diff: nil)
+      def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [], diff: nil, link_url: nil)
         row = matrix[event.to_s]
         unless row
           Rails.logger.warn("[hr_lite] unknown notification event #{event}")
@@ -45,7 +45,7 @@ module HrLite
         end
 
         deliver_bells(event, row, bell_to, title, body, path)
-        deliver_emails(row, email_to, title, body, path, lines)
+        deliver_emails(row, email_to, title, body, path, lines, link_url)
         deliver_leadership_email(event, row, title, body, path, lines, diff)
         deliver_leadership_bells(event, row, bell_to, title, body, path)
         nil
@@ -61,14 +61,15 @@ module HrLite
         end
       end
 
-      def deliver_emails(row, email_to, title, body, path, lines)
+      def deliver_emails(row, email_to, title, body, path, lines, link_url = nil)
         return unless row[:email]
 
         Array(email_to).compact.uniq.each do |user|
           next if user.email.blank?
 
           EventMailer.event(to: user.email, subject: title, heading: title,
-                            body: body, lines: lines, path: path).deliver_later
+                            body: body, lines: lines, path: path,
+                            link_url: link_url).deliver_later
         end
       rescue => e
         Rails.logger.error("[hr_lite] event email failed: #{e.class}: #{e.message}")
