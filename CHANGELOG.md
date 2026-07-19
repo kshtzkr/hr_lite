@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `bin/demo`: one-command sandbox — fresh sqlite database, engine
+  migrations from the gem, rich sample data (three persona tiers,
+  attendance history, leaves, kudos, a published payroll run, a shared
+  appraisal) and a click-to-sign-in persona picker.
+
+### Fixed
+
+- `hrl_money` Indian digit grouping (₹3,69,000.00 — previously mis-grouped).
+- Layout `<title>` uses the configured company name instead of a
+  hardcoded brand.
+
 ## [0.1.0] - 2026-07-19
 
 Initial release.

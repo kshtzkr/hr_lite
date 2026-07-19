@@ -3,3 +3,10 @@ test:
   database: <%= File.expand_path("../db/test.sqlite3", __dir__) %>
   pool: 5
   timeout: 5000
+
+# Used only by bin/demo (throwaway sandbox; recreated on every boot).
+development:
+  adapter: sqlite3
+  database: <%= File.expand_path("../db/demo.sqlite3", __dir__) %>
+  pool: 5
+  timeout: 5000

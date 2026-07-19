@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>hr_lite demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #f4f5f7;
+           color: #111827; margin: 0; display: grid; place-items: center; min-height: 100vh; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 2rem;
+            max-width: 26rem; width: calc(100% - 2rem); }
+    h1 { font-size: 1.3rem; margin: 0 0 .25rem; }
+    p { color: #6b7280; font-size: .9rem; }
+    form { margin: .5rem 0; }
+    button { width: 100%; min-height: 48px; font-size: 1rem; font-weight: 600; cursor: pointer;
+             border-radius: 9px; border: 1px solid #e5e7eb; background: #fff; }
+    button.primary { background: #2563eb; border-color: #2563eb; color: #fff; }
+    small { color: #6b7280; display: block; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>hr_lite demo</h1>
+    <p>Pick a persona — each sees a different tier of the HR portal.</p>
+    <% @personas.each do |user| %>
+      <%= button_to user.name, "/demo/sign_in/#{user.id}", method: :post,
+            class: (user.email.include?("lead") ? "primary" : nil) %>
+    <% end %>
+    <small>Data resets every time you restart <code>bin/demo</code>.</small>
+  </div>
+</body>
+</html>

@@ -69,11 +69,15 @@ module HrLite
       return "—" if amount.nil?
 
       whole, fraction = HrLite::Money.round2(amount).to_s("F").split(".")
-      sign = whole.delete_prefix!("-") ? "-" : ""
-      # Indian digit grouping: 12,34,567
-      grouped = whole.reverse.scan(/\d{1,2}(?=\d{2})|\d{1,3}/).join(",").reverse if whole.length > 3
-      grouped ||= whole
-      "#{sign}#{HrLite.config.currency_symbol}#{grouped}.#{fraction.ljust(2, '0')}"
+      sign = whole.start_with?("-") ? "-" : ""
+      whole = whole.delete_prefix("-")
+      # Indian digit grouping: last three digits together, then pairs
+      # (12,34,567 — not the western 1,234,567).
+      if whole.length > 3
+        head = whole[0..-4].reverse.scan(/\d{1,2}/).join(",").reverse
+        whole = "#{head},#{whole[-3..]}"
+      end
+      "#{sign}#{HrLite.config.currency_symbol}#{whole}.#{fraction.ljust(2, '0')}"
     end
 
     ONES = %w[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen

@@ -8,6 +8,14 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticate_user!
-    head :unauthorized unless current_user
+    return if current_user
+
+    # Humans in the bin/demo sandbox land on the persona picker; specs keep
+    # the bare 401 contract.
+    if ENV["HR_LITE_DEMO"] == "1"
+      redirect_to "/"
+    else
+      head :unauthorized
+    end
   end
 end
