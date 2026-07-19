@@ -33,7 +33,7 @@
     <div class="hrl-field">
       <%= f.label :manager_id, "Reports to (their L1)" %>
       <%= f.select :manager_id,
-                   HrLite.employees.reject { |u| u.id == profile.user_id }
+                   HrLite.active_employees.reject { |u| u.id == profile.user_id }
                          .map { |u| [ HrLite.display_name(u), u.id ] },
                    include_blank: "— nobody (top of the org) —" %>
     </div>

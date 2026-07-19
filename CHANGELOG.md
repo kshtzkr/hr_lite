@@ -28,9 +28,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `LeaveBalance#year` is now a LeaveYear key; `LeaveYearRolloverJob`
-  defaults to the current leave year (schedule it on the leave year's
-  first day). The request-split validation message says "leave-year
-  boundary". Calendar-year installs (default) behave exactly as before.
+  defaults to the current leave year in the configured HR time zone
+  (schedule it on the leave year's first day). The request-split
+  validation message says "leave-year boundary".
+
+### Upgrade notes
+
+- **Set `leave_year_start_month` once, at install time.** Balance rows
+  are keyed by leave year with no stored epoch — changing the start
+  month on an install with existing balances silently reinterprets
+  every row (carry, adjustments, comp-off credits) and miskeys
+  historical requests. The setter validates 1..12 and accepts "7".
+- **Joining-date proration applies to existing data.** Employees who
+  joined partway through the CURRENT year previously showed the full
+  year's accrual; from 0.4.0 they accrue only from their joining month,
+  so their entitlement can drop (and, if they already used more, go
+  negative). Where the old number was intended, add a one-off balance
+  adjustment with a note.
 
 ## [0.3.0] - 2026-07-19
 

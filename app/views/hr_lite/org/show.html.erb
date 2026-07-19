@@ -9,9 +9,11 @@
     <div class="hrl-chainrow">
       <span class="hrl-badge hrl-badge--ok">You</span>
       <% @own_chain.each_with_index do |boss, index| %>
-        <span class="hrl-chainrow__arrow">&rarr;</span>
-        <span class="hrl-badge">
-          L<%= index + 1 %> · <%= hr_display_name(boss) %><% if (p = @by_user[boss.id]) && p.designation.present? %> (<%= p.designation %>)<% end %>
+        <span class="hrl-chainrow__step">
+          <span class="hrl-chainrow__arrow">&rarr;</span>
+          <span class="hrl-badge">
+            L<%= index + 1 %> · <%= hr_display_name(boss) %><% if (p = @by_user[boss.id]) && p.designation.present? %> (<%= p.designation %>)<% end %>
+          </span>
         </span>
       <% end %>
     </div>

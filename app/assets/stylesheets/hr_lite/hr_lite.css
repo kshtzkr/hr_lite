@@ -251,9 +251,12 @@
   border-radius: var(--hrl-radius-sm); padding: .4rem .7rem; max-width: 100%;
 }
 .hrl-tree__card--me { border-color: var(--hrl-accent); background: var(--hrl-info-bg); }
+.hrl-tree__name, .hrl-tree__role { min-width: 0; overflow-wrap: anywhere; }
 .hrl-tree__name { font-weight: 650; font-size: .9rem; }
 .hrl-tree__role { color: var(--hrl-muted); font-size: .8rem; }
 .hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.hrl-chainrow__step { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }
+.hrl-chainrow .hrl-badge { white-space: normal; overflow-wrap: anywhere; }
 .hrl-chainrow__arrow { color: var(--hrl-muted); }
 
 /* Definition list */

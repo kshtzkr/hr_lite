@@ -18,7 +18,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `mailer_from` | `hr@example.com` | From-address for every HR email. |
 | `mail_link_base` | `nil` | e.g. `https://hr.example.com` — enables the "Open in HR" button in emails. Unset = emails carry no links. |
 | `notification_matrix` | `Notifications::DEFAULT_MATRIX` | Per-event channel routing — see below. |
-| `leave_year_start_month` | `1` | First month of the leave year. `7` = July–June: balances, accrual, rollover, split rule and comp-off credits all follow it; schedule `LeaveYearRolloverJob` on that month's 1st. Entitlement always prorates from the joining date (≤ 15th counts that month). |
+| `leave_year_start_month` | `1` | First month of the leave year. `7` = July–June: balances, accrual, rollover, split rule and comp-off credits all follow it; schedule `LeaveYearRolloverJob` on that month's 1st. Entitlement always prorates from the joining date (≤ 15th counts that month). **Set once at install time** — balance rows are keyed by leave year, and changing the start month later reinterprets every stored balance. Validated 1..12 at assignment. |
 | `render_pdf` | `nil` | `->(template:, assigns:, cache_key:)` returning PDF bytes. Unset: built-in WickedPdf if the gem is present, else PDF is disabled with a flash. |
 | `company` | `{name: "Company"}` | Lambda → `{name:, address:, logo_path:}` for slips/emails/shell brand. |
 | `time_zone` | `Asia/Kolkata` | Wraps every HR request (`Time.use_zone`). |

@@ -29,5 +29,38 @@ RSpec.describe HrLite::LeaveYear do
         expect(described_class.current_key).to eq(2026)
       end
     end
+
+    it "zero-pads single-digit short years in labels" do
+      expect(described_class.label(2005)).to eq("2005–06")
+      expect(described_class.label(2099)).to eq("2099–00")
+    end
+  end
+
+  describe "configuration guardrails" do
+    it "accepts integer-ish values and rejects garbage at assignment" do
+      HrLite.config.leave_year_start_month = "7"
+      expect(described_class.start_month).to eq(7)
+
+      expect { HrLite.config.leave_year_start_month = 0 }.to raise_error(ArgumentError, /1\.\.12/)
+      expect { HrLite.config.leave_year_start_month = 13 }.to raise_error(ArgumentError, /1\.\.12/)
+      expect { HrLite.config.leave_year_start_month = "july" }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe "rollover time-zone safety" do
+    it "keys the default year in the HR time zone, not the host process zone" do
+      HrLite.config.leave_year_start_month = 7
+      user = create(:user)
+      type = create(:leave_type, annual_quota: 12, carry_forward_cap: 5)
+      HrLite::LeaveBalance.for(user, type, 2026).tap { |b| b.adjustment = 2; b.save! }
+
+      # 30 Jun 20:00 UTC = 1 Jul 01:30 IST: the HR year has already rolled.
+      # A UTC-zoned host would key 2026 and re-run last year's rollover;
+      # the IST-aware job must materialize the 2026 -> 2027 carry.
+      travel_to(Time.utc(2027, 6, 30, 20, 0)) do
+        Time.use_zone("UTC") { HrLite::LeaveYearRolloverJob.new.perform }
+      end
+      expect(HrLite::LeaveBalance.for(user, type, 2027).carried_forward).to be > 0
+    end
   end
 end

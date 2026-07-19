@@ -7,9 +7,19 @@ module HrLite
   class LeaveYearRolloverJob < ActiveJob::Base
     queue_as :default
 
-    def perform(year: LeaveYear.current_key)
-      previous_year = year - 1
+    def perform(year: nil)
+      # Resolve "today" in the HR time zone — cron often fires around the
+      # boundary midnight, and the host process may run in UTC.
+      Time.use_zone(HrLite.config.time_zone) do
+        year ||= LeaveYear.current_key
+        previous_year = year - 1
+        roll(year, previous_year)
+      end
+    end
 
+    private
+
+    def roll(year, previous_year)
       LeaveType.active.where(paid: true).where.not(annual_quota: nil).find_each do |type|
         next unless type.carry_forward_cap.positive?
 

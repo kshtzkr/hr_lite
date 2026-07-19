@@ -5,8 +5,8 @@ module HrLite
       { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests" ] },
       { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
       { label: "Team",       path: :team_path,           match: [ "/team" ] },
-      { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ] },
+      { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
       { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals", "/profile" ] }

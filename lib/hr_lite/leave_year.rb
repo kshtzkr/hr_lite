@@ -27,7 +27,7 @@ module HrLite
 
     # "2026" for calendar years, "2026–27" otherwise.
     def label(key)
-      start_month == 1 ? key.to_s : "#{key}–#{(key + 1) % 100}"
+      start_month == 1 ? key.to_s : format("%d–%02d", key, (key + 1) % 100)
     end
   end
 end

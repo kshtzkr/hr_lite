@@ -32,6 +32,7 @@ module HrLite
     validates :pf_uan, format: { with: /\A\d{12}\z/, message: "must be 12 digits" }, allow_blank: true
     validate :exit_after_joining
     validate :manager_chain_acyclic
+    validate :manager_is_active_staff, if: :manager_id_changed?
 
     scope :active_for, ->(month) {
       where(date_of_joining: ..month.end_of_month)
@@ -46,6 +47,15 @@ module HrLite
       from = [ date_of_joining, month.beginning_of_month ].max
       to = [ date_of_exit || month.end_of_month, month.end_of_month ].min
       from <= to ? (from..to) : nil
+    end
+
+    # The manager as shown to the employee — an exited manager reads as
+    # "no manager" until leadership reassigns (matches the org chart).
+    def active_manager
+      return nil if manager.nil?
+
+      boss_exit = EmployeeProfile.where(user_id: manager_id).pick(:date_of_exit)
+      boss_exit && boss_exit < Date.current ? nil : manager
     end
 
     # [L1 user, L2 user, ...] walking manager_id upward. Cycle-safe.
@@ -78,6 +88,15 @@ module HrLite
     end
 
     private
+
+    # A newly-assigned manager must be a real, still-employed staff member.
+    def manager_is_active_staff
+      return if manager_id.nil?
+      return errors.add(:manager_id, "is not a staff account") if HrLite.user_klass.find_by(id: manager_id).nil?
+
+      boss_exit = EmployeeProfile.where(user_id: manager_id).pick(:date_of_exit)
+      errors.add(:manager_id, "has already exited") if boss_exit && boss_exit < Date.current
+    end
 
     # Walking up from the proposed manager must never reach this person.
     def manager_chain_acyclic

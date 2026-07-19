@@ -87,8 +87,41 @@ RSpec.describe "Org chart", type: :request do
     end
   end
 
-  it "shows the reporting line on the employee's own profile" do
+  it "shows the reporting line on the employee's own profile — until the manager exits" do
     get "/hr/profile"
     expect(response.body).to include("Rohan Manager (your L1)")
+
+    manager_profile.update_columns(date_of_exit: Date.current - 1) # rubocop:disable Rails/SkipsModelValidations
+    get "/hr/profile"
+    expect(response.body).not_to include("(your L1)")
+  end
+
+  it "still renders everyone when bad data contains a manager cycle" do
+    # A cycle that slipped past validation (concurrent writes / imports).
+    manager_profile.update_columns(manager_id: employee.id) # rubocop:disable Rails/SkipsModelValidations
+    director_profile.update_columns(manager_id: manager.id) # rubocop:disable Rails/SkipsModelValidations
+
+    get "/hr/org"
+    expect(response).to have_http_status(:ok)
+    tree = response.body[response.body.index("Who reports to whom")..]
+    expect(tree).to include("Asha Director").and include("Rohan Manager").and include("Meera Field")
+  end
+
+  it "rejects assigning a manager who already exited or does not exist" do
+    manager_profile.update_columns(date_of_exit: Date.current - 1) # rubocop:disable Rails/SkipsModelValidations
+    stale = employee_profile.tap { |p| p.manager_id = manager.id }
+    stale.manager_id_will_change!
+    expect(stale).not_to be_valid
+    expect(stale.errors[:manager_id].join).to include("exited")
+
+    ghost = employee_profile.reload.tap { |p| p.manager_id = 999_999 }
+    expect(ghost).not_to be_valid
+    expect(ghost.errors[:manager_id].join).to include("not a staff account")
+  end
+
+  it "keeps Calendar in the phone tab bar (Org lives after it)" do
+    first_five = HrLite::ApplicationHelper::NAV_ITEMS.first(5).map { |item| item[:label] }
+    expect(first_five).to include("Calendar")
+    expect(first_five).not_to include("Org")
   end
 end
