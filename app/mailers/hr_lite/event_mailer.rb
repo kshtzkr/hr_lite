@@ -3,11 +3,11 @@ module HrLite
   # body, detail lines, diff table) is assembled by the Notifications bus so
   # adding an event never means adding a template.
   class EventMailer < ApplicationMailer
-    def event(to:, subject:, heading:, body: nil, lines: [], path: nil)
+    def event(to:, subject:, heading:, body: nil, lines: [], path: nil, link_url: nil)
       @heading = heading
       @body = body
       @lines = Array(lines)
-      @cta_url = HrLite::EventMailer.link_for(path)
+      @cta_url = link_url.presence || HrLite::EventMailer.link_for(path)
       mail(to: to, from: HrLite.config.mailer_from, subject: subject)
     end
 

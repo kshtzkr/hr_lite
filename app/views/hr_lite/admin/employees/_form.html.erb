@@ -21,8 +21,10 @@
           <%= f.email_field :new_user_email %>
         </div>
         <div class="hrl-field">
-          <%= f.label :new_user_password, "Starting password (share it with them; they can change it later)" %>
+          <%= f.label :new_user_password, "Starting password (optional)" %>
           <%= f.text_field :new_user_password %>
+          <p class="hrl-hint">Leave blank (recommended): they get an email invite and set their own
+            password. Fill it only if you want to hand a password over yourself.</p>
         </div>
       </fieldset>
     <% end %>
