@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-07-19
+
+### Fixed
+
+- Link-styled controls were unreadable: the global `.hrl-body a` colour
+  rule out-ranked component classes, so primary action links ("New
+  structure", "New run", "Add office", "Apply", "Download PDF", active
+  filter chips) rendered accent-on-accent with invisible text, and the
+  side-nav links lost their muted colour. The rule is now wrapped in
+  `:where()` (zero specificity) so every `.hrl-*` component wins.
+
 ## [0.2.1] - 2026-07-19
 
 ### Added

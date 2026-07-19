@@ -32,7 +32,10 @@
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-.hrl-body a { color: var(--hrl-accent); text-decoration: none; }
+/* :where() keeps this at zero specificity so any component class
+   (.hrl-btn--primary, .hrl-nav__link, ...) can set its own link colour —
+   a plain `.hrl-body a` would out-rank them and paint accent-on-accent. */
+:where(.hrl-body) a { color: var(--hrl-accent); text-decoration: none; }
 .hrl-shell { display: flex; min-height: 100vh; }
 .hrl-content { flex: 1; min-width: 0; }
 .hrl-main {
