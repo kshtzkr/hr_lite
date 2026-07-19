@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title><%= [ content_for(:page_title), "Earthly HR" ].compact.join(" · ") %></title>
+  <title><%= [ content_for(:page_title), "#{HrLite.config.company.call[:name].presence || 'HR'} — HR" ].compact.join(" · ") %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>

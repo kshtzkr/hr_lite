@@ -21,6 +21,18 @@ promotions. Think Keka-lite, mounted inside your existing app in a few lines.
 - **Encrypted at rest**: PAN/UAN/bank numbers and every money amount use
   ActiveRecord encryption.
 
+## Try it in one command
+
+```bash
+git clone https://github.com/kshtzkr/hr_lite && cd hr_lite
+bin/demo    # → http://localhost:3999
+```
+
+A throwaway sandbox boots with three persona tiers (leadership / admin /
+employee — one click to sign in as each) and pre-seeded attendance, leaves,
+kudos, a published payroll run and a shared appraisal. Data resets on every
+restart.
+
 ## Installation
 
 Everything lives in the gem — a host app adds the gem, a mount line and one
