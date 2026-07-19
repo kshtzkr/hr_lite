@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-07-19
+
+### Fixed
+
+- Slip PDF template no longer 500s when rendered by host code
+  (`config.render_pdf`): amount-in-words is now a PORO
+  (`HrLite::AmountInWords`), not a view helper, since engine helpers are
+  not in scope under a host renderer. Caught live against a host app;
+  regression spec renders the template through a bare controller.
+
 ## [0.1.1] - 2026-07-19
 
 ### Added

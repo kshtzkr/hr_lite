@@ -7,6 +7,7 @@ require "hr_lite/notifications"
 require "hr_lite/seeds"
 require "hr_lite/geo"
 require "hr_lite/money"
+require "hr_lite/amount_in_words"
 require "hr_lite/statutory_rate_card"
 
 module HrLite

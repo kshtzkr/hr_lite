@@ -80,30 +80,10 @@ module HrLite
       "#{sign}#{HrLite.config.currency_symbol}#{whole}.#{fraction.ljust(2, '0')}"
     end
 
-    ONES = %w[zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen
-              fifteen sixteen seventeen eighteen nineteen].freeze
-    TENS = %w[zero ten twenty thirty forty fifty sixty seventy eighty ninety].freeze
-
-    # Indian-system amount in words for the slip footer.
+    # Indian-system amount in words for the slip footer. Delegates to the
+    # PORO so host-rendered templates (config.render_pdf) work too.
     def hrl_amount_in_words(amount)
-      rupees = HrLite::Money.round_rupee(amount).to_i
-      return "Zero rupees" if rupees.zero?
-
-      parts = []
-      [ [ 10_000_000, "crore" ], [ 100_000, "lakh" ], [ 1000, "thousand" ], [ 100, "hundred" ] ].each do |divisor, label|
-        next unless rupees >= divisor
-
-        parts << "#{hrl_two_digit_words(rupees / divisor)} #{label}"
-        rupees %= divisor
-      end
-      parts << hrl_two_digit_words(rupees) if rupees.positive?
-      "#{parts.join(' ').capitalize} rupees"
-    end
-
-    def hrl_two_digit_words(number)
-      return ONES[number] if number < 20
-
-      [ TENS[number / 10], number % 10 == 0 ? nil : ONES[number % 10] ].compact.join("-")
+      HrLite::AmountInWords.words(amount)
     end
   end
 end
