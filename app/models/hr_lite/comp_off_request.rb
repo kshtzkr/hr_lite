@@ -38,17 +38,18 @@ module HrLite
     # --- transitions -------------------------------------------------------
 
     # Credits the comp-off balance inside the row lock, so a double-tap
-    # cannot credit twice. Fails loudly when no comp-off type is configured.
+    # cannot credit twice. Fails loudly when no comp-off type is configured
+    # or the day stopped being an off day (holiday edited away).
     def approve!(actor:, note: nil)
       type = LeaveType.comp_off_type
       raise MissingCompOffType if type.nil?
 
       transition!("approved", actor, note) do
-        balance = LeaveBalance.for(user, type, date_worked.year)
-        balance.adjustment += credit_days
-        balance.adjustment_note = [ balance.adjustment_note.presence,
-                                    "+#{credit_days.to_f} comp-off for #{date_worked} (request ##{id})" ].compact.join("; ")
-        balance.save!
+        raise StaleOffDay if WorkingCalendar.new(date_worked..date_worked).working_day?(date_worked)
+
+        # (A duplicate live request for the same date cannot exist — the
+        # partial unique index on [user_id, date_worked] guarantees it.)
+        credit_balance!(type)
       end
 
       Notifications.publish(
@@ -90,7 +91,37 @@ module HrLite
       end
     end
 
+    class StaleOffDay < StandardError
+      def message
+        "That date is now a regular working day (the calendar changed since the request) — " \
+          "reject it and ask them to re-file if it still applies."
+      end
+    end
+
     private
+
+    # The credit goes into the year it can actually be SPENT (the current
+    # year at approval time) — crediting date_worked.year would strand a
+    # late-December day approved in January on last year's dead balance.
+    # The balance row is locked for the increment; two admins approving two
+    # different requests for the same person cannot lose an update.
+    def credit_balance!(type)
+      year = [ date_worked.year, Date.current.year ].max
+      balance = LeaveBalance.for(user, type, year)
+      if balance.new_record?
+        begin
+          balance.save!
+        rescue ActiveRecord::RecordNotUnique
+          balance = LeaveBalance.for(user, type, year)
+        end
+      end
+      balance.with_lock do
+        balance.adjustment += credit_days
+        balance.adjustment_note = [ balance.adjustment_note.presence,
+                                    "+#{credit_days.to_f} comp-off for #{date_worked} (request ##{id})" ].compact.join("; ")
+        balance.save!
+      end
+    end
 
     def transition!(new_status, actor, note)
       with_lock do

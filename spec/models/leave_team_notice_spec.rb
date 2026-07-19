@@ -39,6 +39,30 @@ RSpec.describe "Leave team notice" do
     expect(team_emails.map { |e| e[:to] }).not_to include("meera@x.test")
   end
 
+  it "never notifies exited staff" do
+    gone = create(:user, name: "Gone", email: "gone@x.test")
+    create(:employee_profile, user: gone, date_of_exit: Date.new(2027, 1, 31))
+    bells = []
+    HrLite.config.notify = ->(**kw) { bells << kw }
+
+    approved_request
+    notices = bells.select { |b| b[:kind] == "leave.team_notice" }
+    expect(notices.map { |b| b[:user] }).to include(colleague)
+    expect(notices.map { |b| b[:user] }).not_to include(gone)
+  end
+
+  it "keeps default rows for events a stale host matrix override doesn't know" do
+    # A host that pinned an override on an older gem version: no
+    # leave.team_notice row at all — the default must still fire.
+    HrLite.config.notification_matrix = { "leave.requested" => { bell: false, email: false, leadership_email: false, leadership_bell: false } }
+    bells = []
+    HrLite.config.notify = ->(**kw) { bells << kw }
+
+    approved_request
+    expect(bells.map { |b| b[:kind] }).to include("leave.team_notice")
+    expect(bells.map { |b| b[:kind] }).not_to include("leave.requested")
+  end
+
   it "stays quiet when the host mutes the matrix row" do
     HrLite.config.notification_matrix = HrLite::Notifications::DEFAULT_MATRIX.merge(
       "leave.team_notice" => { bell: false, email: false, leadership_email: false, leadership_bell: false }

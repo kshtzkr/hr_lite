@@ -42,8 +42,11 @@ module HrLite
     }.freeze
 
     class << self
+      # DEFAULT under the host override: a host matrix pinned on an older
+      # gem version keeps working when new events ship (rows it doesn't
+      # know about fall back to the defaults instead of vanishing).
       def matrix
-        HrLite.config.notification_matrix || DEFAULT_MATRIX
+        DEFAULT_MATRIX.merge(HrLite.config.notification_matrix || {})
       end
 
       def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [], diff: nil, link_url: nil)

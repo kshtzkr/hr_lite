@@ -18,6 +18,7 @@ module HrLite
       validate :times_fall_on_date
       validate :checkout_after_checkin
       validate :no_duplicate_pending
+      validate :no_approved_leave_conflict
     end
 
     after_create :notify_requested
@@ -43,16 +44,30 @@ module HrLite
     # Applies the proposed times to the day's record (creating it if the
     # person never punched at all). Only the provided times overwrite —
     # a forgot-checkout ticket keeps the genuine GPS check-in untouched.
+    # A merge that would produce a nonsense record (checkout before the
+    # existing check-in, or a checkout with no check-in at all) raises
+    # InvalidMerge with the real story so the admin knows what to fix.
     def approve!(actor:, note: nil)
       transition!("approved", actor, note) do
         record = AttendanceRecord.find_or_initialize_by(user_id: user_id, date: date)
         record.check_in_at = check_in_at if check_in_at
         record.check_out_at = check_out_at if check_out_at
+        if record.check_in_at.nil?
+          raise InvalidMerge, "the day has no check-in — the ticket needs a check-in time too"
+        end
+
         record.status = "present" if record.status.blank?
         record.regularized_by_id = actor.id
         record.regularized_at = Time.current
         record.regularization_note = "Ticket ##{id}: #{reason}"
+        raise InvalidMerge, record.errors.full_messages.to_sentence unless record.valid?
+
         record.save!
+        AuditLog.create!(
+          actor: actor, action: "regularize",
+          subject_type: record.class.name, subject_id: record.id,
+          audited_changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
+        )
       end
 
       Notifications.publish(
@@ -87,6 +102,10 @@ module HrLite
       )
       true
     end
+
+    # The merged attendance record would be invalid — surfaced to the
+    # deciding admin verbatim; the ticket stays pending.
+    class InvalidMerge < StandardError; end
 
     private
 
@@ -137,6 +156,15 @@ module HrLite
 
       clash = self.class.pending.where(user_id: user_id, date: date).where.not(id: id)
       errors.add(:date, "already has a pending ticket") if clash.exists?
+    end
+
+    # A punch on a day covered by approved full-day leave would contradict
+    # the leave (which wins in every display and still burns the balance).
+    def no_approved_leave_conflict
+      return unless date
+
+      leave = LeaveRequest.active_on(date).where(user_id: user_id, half_day: false)
+      errors.add(:date, "is covered by your approved leave — cancel the leave first") if leave.exists?
     end
 
     def notify_requested

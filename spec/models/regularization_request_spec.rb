@@ -103,6 +103,54 @@ RSpec.describe HrLite::RegularizationRequest do
     end
   end
 
+  describe "#approve! merge safety" do
+    it "refuses a checkout-only ticket when the day has no check-in at all" do
+      request = build_request(check_in_at: nil)
+      request.save!
+      expect { request.approve!(actor: admin) }
+        .to raise_error(HrLite::RegularizationRequest::InvalidMerge, /no check-in/)
+      expect(request.reload).to be_pending
+      expect(HrLite::AttendanceRecord.exists?(user_id: user.id, date: tuesday)).to be(false)
+    end
+
+    it "refuses a merge that would put checkout before the existing genuine check-in" do
+      create(:attendance_record, user: user, date: tuesday,
+             check_in_at: tuesday.in_time_zone.change(hour: 11))
+      request = build_request(check_in_at: nil,
+                              check_out_at: tuesday.in_time_zone.change(hour: 10, min: 30))
+      request.save!
+
+      expect { request.approve!(actor: admin) }
+        .to raise_error(HrLite::RegularizationRequest::InvalidMerge, /after check-in/)
+      expect(request.reload).to be_pending
+    end
+
+    it "keeps the GPS flag (and note) on a regularized record and writes an audit row" do
+      record = create(:attendance_record, :flagged, user: user, date: tuesday,
+                      check_in_at: tuesday.in_time_zone.change(hour: 9))
+      request = build_request(check_in_at: nil)
+      request.save!
+
+      expect { request.approve!(actor: admin) }.to change(HrLite::AuditLog, :count).by(1)
+      record.reload
+      expect(record.flagged).to be(true)
+      expect(record.flag_note).to be_present
+      log = HrLite::AuditLog.order(:id).last
+      expect(log.action).to eq("regularize")
+      expect(log.audited_changes["ticket"]).to eq(request.id)
+    end
+  end
+
+  it "cannot be raised for a day covered by approved full-day leave" do
+    type = create(:leave_type, annual_quota: 12)
+    leave = create(:leave_request, user: user, leave_type: type, start_date: tuesday, end_date: tuesday)
+    leave.update!(status: "approved")
+
+    request = build_request
+    expect(request).not_to be_valid
+    expect(request.errors[:date].join).to include("approved leave")
+  end
+
   describe "#reject! and #cancel!" do
     it "rejects with a note, leaving attendance untouched" do
       request = build_request

@@ -46,6 +46,16 @@ RSpec.describe "Comp-off requests", type: :request do
       expect(mine.reload).to be_cancelled
     end
 
+    it "turns a database uniqueness race into a form error, not a 500" do
+      allow_any_instance_of(HrLite::CompOffRequest).to receive(:save)
+        .and_raise(ActiveRecord::RecordNotUnique, "duplicate")
+      post "/hr/comp_off_requests", params: {
+        comp_off_request: { date_worked: sunday, reason: "Race" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("already has a comp-off request")
+    end
+
     it "refuses to cancel a decided request" do
       mine = create(:comp_off_request, user: user, date_worked: sunday)
       mine.approve!(actor: admin)
@@ -86,6 +96,17 @@ RSpec.describe "Comp-off requests", type: :request do
     it "notes the missing punch for the approver" do
       get "/hr/admin/comp_off_requests/#{request_row.id}"
       expect(response.body).to include("No punch recorded")
+    end
+
+    it "surfaces a calendar change instead of crediting a working day" do
+      holiday = create(:holiday, date: Date.new(2027, 7, 6), name: "Festival")
+      stale = create(:comp_off_request, user: user, date_worked: Date.new(2027, 7, 6))
+      holiday.destroy!
+
+      post "/hr/admin/comp_off_requests/#{stale.id}/approve"
+      follow_redirect!
+      expect(response.body).to include("now a regular working day")
+      expect(stale.reload).to be_pending
     end
 
     it "surfaces the missing comp-off type instead of crashing" do

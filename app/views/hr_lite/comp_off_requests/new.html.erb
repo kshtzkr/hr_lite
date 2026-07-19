@@ -8,7 +8,7 @@
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
       <%= f.label :date_worked, "Which day did you work?" %>
-      <%= f.date_field :date_worked %>
+      <%= f.date_field :date_worked, max: Date.current %>
       <p class="hrl-hint">Must be a weekend or holiday you actually worked — extra hours on a
         normal working day are not comp-off under the policy.</p>
     </div>

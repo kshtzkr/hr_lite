@@ -18,6 +18,9 @@ module HrLite
       else
         render :new, status: :unprocessable_entity
       end
+    rescue ActiveRecord::RecordNotUnique
+      @request.errors.add(:date_worked, "already has a comp-off request")
+      render :new, status: :unprocessable_entity
     end
 
     def cancel

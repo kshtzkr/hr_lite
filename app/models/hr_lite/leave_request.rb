@@ -138,7 +138,7 @@ module HrLite
     # channel). Deliberately excludes the reason: dates are team-relevant,
     # the why is not.
     def notify_team
-      team = HrLite.employees.reject { |member| member.id == user_id }
+      team = HrLite.active_employees.reject { |member| member.id == user_id }
       return if team.empty?
 
       Notifications.publish(

@@ -173,6 +173,7 @@
   .hrl-table--stack td { display: flex; justify-content: space-between; gap: .8rem; border-bottom: 1px dashed var(--hrl-line); }
   .hrl-table--stack td::before { content: attr(data-label); color: var(--hrl-muted); font-size: .78rem; }
   .hrl-table--stack td.hrl-num { text-align: left; }
+  .hrl-table--stack td.hrl-cell--void { display: none; }
 }
 
 /* Forms */

@@ -82,6 +82,14 @@ RSpec.describe "Regularization tickets", type: :request do
       expect(record.regularization_note).to include("Ticket ##{ticket.id}")
     end
 
+    it "explains an impossible merge instead of the wrong 'already decided' alert" do
+      broken = create(:regularization_request, user: user, date: tuesday - 1, check_in_at: nil)
+      post "/hr/admin/regularization_requests/#{broken.id}/approve"
+      follow_redirect!
+      expect(response.body).to include("Cannot apply").and include("no check-in")
+      expect(broken.reload).to be_pending
+    end
+
     it "shows a flagged existing punch on the ticket" do
       create(:attendance_record, :flagged, user: user, date: tuesday,
              check_in_at: tuesday.in_time_zone.change(hour: 9))

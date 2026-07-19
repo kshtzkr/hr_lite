@@ -15,5 +15,10 @@ class CreateHrLiteCompOffRequests < ActiveRecord::Migration[8.0]
     add_index :hr_lite_comp_off_requests, [ :user_id, :status ]
     add_index :hr_lite_comp_off_requests, [ :user_id, :date_worked ]
     add_index :hr_lite_comp_off_requests, [ :status, :date_worked ]
+    # Two tabs / a double-tap racing past the app-level duplicate check
+    # must not create two live requests for one worked day.
+    add_index :hr_lite_comp_off_requests, [ :user_id, :date_worked ],
+              unique: true, where: "status IN ('pending', 'approved')",
+              name: "index_hr_lite_comp_off_requests_live_uniqueness"
   end
 end

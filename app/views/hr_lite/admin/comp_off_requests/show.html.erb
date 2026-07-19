@@ -11,7 +11,7 @@
     <dt>Day worked</dt><dd><%= @request.date_worked.strftime("%A, %d %B %Y") %></dd>
     <dt>Credit</dt><dd><%= @request.credit_days.to_f %> day</dd>
     <dt>Reason</dt><dd><%= @request.reason %></dd>
-    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <dt>Status</dt><dd><%= hrl_request_status_badge(@request.status) %></dd>
     <dt>Punch that day</dt>
     <dd>
       <% if (punch = @request.punch)&.check_in_at %>
@@ -37,8 +37,9 @@
         <%= f.text_area :decision_note %>
       </div>
       <div class="hrl-form-actions">
-        <%= f.submit "Approve — credit #{@request.credit_days.to_f} day", class: "hrl-btn hrl-btn--primary" %>
-        <%= f.submit "Reject", class: "hrl-btn hrl-btn--danger",
+        <%= f.button "Approve — credit #{@request.credit_days.to_f} day",
+                     type: :submit, class: "hrl-btn hrl-btn--primary" %>
+        <%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger",
                      formaction: hr_lite.reject_admin_comp_off_request_path(@request) %>
       </div>
     <% end %>

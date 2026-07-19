@@ -109,17 +109,31 @@ module HrLite
         record = row.record
         if record.check_out_at
           hrl_status_badge("Done #{record.check_in_at.strftime('%H:%M')}\u2013#{record.check_out_at.strftime('%H:%M')}", "hrl-badge--ok")
-        else
+        elsif row.date_today?
           hrl_status_badge("In since #{record.check_in_at.strftime('%H:%M')}", "hrl-badge--ok")
+        else
+          hrl_status_badge("In #{record.check_in_at.strftime('%H:%M')}, no check-out", "hrl-badge--warn")
         end
       end
     end
 
+    # Status pill for a request lifecycle string — one colour map for every
+    # list and show screen.
+    def hrl_request_status_badge(status)
+      css = { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad",
+              "cancelled" => "hrl-badge--muted" }[status]
+      content_tag(:span, status.humanize, class: "hrl-badge #{css}")
+    end
+
     private
 
+    # Always ONE root node — these land inside stacked-table flex cells,
+    # where a second sibling would be flung to the far edge.
     def hrl_status_badge(label, css, hint = nil)
       badge = content_tag(:span, label, class: "hrl-badge #{css}")
-      hint ? safe_join([ badge, " ", content_tag(:span, hint, class: "hrl-small hrl-muted") ]) : badge
+      return badge unless hint
+
+      content_tag(:span, safe_join([ badge, " ", content_tag(:span, hint, class: "hrl-small hrl-muted") ]))
     end
 
     # A punch on a holiday/weekend/half-day-leave is worth surfacing —

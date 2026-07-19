@@ -8,15 +8,15 @@
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
       <%= f.label :date, "Which day needs fixing?" %>
-      <%= f.date_field :date, value: @request.date&.strftime("%Y-%m-%d") %>
+      <%= f.date_field :date, value: @request.date&.strftime("%Y-%m-%d"), max: Date.current %>
     </div>
     <div class="hrl-field">
       <%= f.label :check_in_at, "Actual check-in (leave blank if only check-out is missing)" %>
-      <%= f.datetime_local_field :check_in_at, value: @request.check_in_at&.strftime("%Y-%m-%dT%H:%M") %>
+      <%= f.datetime_local_field :check_in_at, value: @request.check_in_at&.strftime("%Y-%m-%dT%H:%M"), max: Date.current.strftime("%Y-%m-%dT23:59") %>
     </div>
     <div class="hrl-field">
       <%= f.label :check_out_at, "Actual check-out (leave blank if only check-in is missing)" %>
-      <%= f.datetime_local_field :check_out_at, value: @request.check_out_at&.strftime("%Y-%m-%dT%H:%M") %>
+      <%= f.datetime_local_field :check_out_at, value: @request.check_out_at&.strftime("%Y-%m-%dT%H:%M"), max: Date.current.strftime("%Y-%m-%dT23:59") %>
     </div>
     <div class="hrl-field">
       <%= f.label :reason, "Why was the punch missed? (required)" %>

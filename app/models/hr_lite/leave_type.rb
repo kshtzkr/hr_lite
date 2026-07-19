@@ -12,6 +12,7 @@ module HrLite
     validates :accrual, inclusion: { in: ACCRUALS }
     validates :annual_quota, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
     validates :carry_forward_cap, numericality: { greater_than_or_equal_to: 0 }
+    validate :single_comp_off_type
 
     scope :active, -> { where(active: true).order(:position, :id) }
 
@@ -22,6 +23,17 @@ module HrLite
 
     def unlimited?
       annual_quota.nil?
+    end
+
+    private
+
+    # Approvals credit into THE comp-off type — two flagged types would
+    # make the credit target position-order roulette.
+    def single_comp_off_type
+      return unless comp_off
+
+      clash = self.class.where(comp_off: true).where.not(id: id)
+      errors.add(:comp_off, "is already set on #{clash.first.name}") if clash.exists?
     end
   end
 end

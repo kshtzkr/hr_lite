@@ -40,6 +40,18 @@ RSpec.describe HrLite::ApplicationHelper, type: :helper do
       expect(helper.hrl_team_status(row(kind: :holiday, record: record(hour_out: 15)))).to include("Holiday").and include("worked 10:00–15:00")
       expect(helper.hrl_team_status(row(kind: :weekend, record: record)))
         .to include("worked 10:00")
+      expect(helper.hrl_team_status(row(kind: :present, date: tuesday - 1,
+                                        record: record(date: tuesday - 1))))
+        .to include("no check-out")
+    end
+  end
+
+  describe "#hrl_request_status_badge" do
+    it "colours each lifecycle state" do
+      expect(helper.hrl_request_status_badge("approved")).to include("hrl-badge--ok")
+      expect(helper.hrl_request_status_badge("rejected")).to include("hrl-badge--bad")
+      expect(helper.hrl_request_status_badge("cancelled")).to include("hrl-badge--muted")
+      expect(helper.hrl_request_status_badge("pending")).to include("Pending")
     end
   end
 end

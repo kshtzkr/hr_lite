@@ -104,6 +104,75 @@ RSpec.describe HrLite::CompOffRequest do
     end
   end
 
+  describe "#approve! hardening" do
+    it "credits the CURRENT year when approval crosses the year boundary" do
+      travel_to(Date.new(2027, 12, 29))
+      request = build_request(date_worked: Date.new(2027, 12, 26)) # a Sunday
+      request.save!
+      travel_to(Date.new(2028, 1, 4))
+
+      request.approve!(actor: admin)
+      expect(HrLite::LeaveBalance.for(user, co_type, 2028).adjustment).to eq(1)
+      expect(HrLite::LeaveBalance.for(user, co_type, 2027).adjustment).to eq(0)
+    end
+
+    it "accumulates onto a balance that already has adjustments and notes" do
+      balance = HrLite::LeaveBalance.for(user, co_type, 2027)
+      balance.adjustment = BigDecimal("-1")
+      balance.adjustment_note = "-1.0 — clawback"
+      balance.save!
+
+      build_request.save!
+      HrLite::CompOffRequest.last.approve!(actor: admin)
+      second = build_request(date_worked: sunday - 7, half_day: true)
+      second.save!
+      second.approve!(actor: admin)
+
+      balance.reload
+      expect(balance.adjustment).to eq(BigDecimal("0.5"))
+      expect(balance.adjustment_note).to include("clawback").and include("+1.0 comp-off").and include("+0.5 comp-off")
+    end
+
+    it "raises StaleOffDay when the day stopped being an off day" do
+      holiday = create(:holiday, date: Date.new(2027, 7, 6), name: "Festival")
+      request = build_request(date_worked: Date.new(2027, 7, 6))
+      request.save!
+      holiday.destroy!
+
+      expect { request.approve!(actor: admin) }.to raise_error(HrLite::CompOffRequest::StaleOffDay, /working day/)
+      expect(request.reload).to be_pending
+      expect(HrLite::LeaveBalance.for(user, co_type, 2027).adjustment).to eq(0)
+    end
+  end
+
+  describe "off-day validation under other weekend policies" do
+    it "rejects Saturday under sun_only but accepts Sunday" do
+      HrLite::Setting.instance.update!(weekend_policy: "sun_only")
+      expect(build_request(date_worked: Date.new(2027, 7, 3))).not_to be_valid # Saturday
+      expect(build_request(date_worked: sunday)).to be_valid
+    end
+
+    it "accepts a 2nd Saturday but rejects a 1st Saturday under second_fourth_sat_sun" do
+      HrLite::Setting.instance.update!(weekend_policy: "second_fourth_sat_sun")
+      expect(build_request(date_worked: Date.new(2027, 6, 12))).to be_valid   # 2nd Saturday
+      expect(build_request(date_worked: Date.new(2027, 6, 5))).not_to be_valid # 1st Saturday
+    end
+  end
+
+  describe "only one comp-off type" do
+    it "blocks flagging a second type" do
+      another = build(:leave_type, comp_off: true)
+      expect(another).not_to be_valid
+      expect(another.errors[:comp_off].join).to include("already set on Comp off")
+    end
+  end
+
+  it "enforces one live request per date at the database too" do
+    build_request.save!
+    dup = build_request
+    expect { dup.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+  end
+
   describe "#reject! and #cancel!" do
     it "rejects with the note and notifies the employee" do
       bells = []

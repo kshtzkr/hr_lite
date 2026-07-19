@@ -11,11 +11,14 @@ module HrLite
     ].freeze
 
     def self.run!
-      seed_leave_types! + seed_holidays! + seed_comp_off_flag!
+      seed_leave_types! + seed_holidays!
     end
 
-    # Upgrades pre-0.3.0 installs: their CO row predates the comp_off column,
-    # and comp-off requests need exactly one type flagged to credit into.
+    # Deliberately NOT auto-run from run!: an operator unticking every
+    # comp-off flag to disable the feature must stay disabled across
+    # deploys ("re-runs never overwrite operator edits"). Pre-0.3.0
+    # installs call this once from their own upgrade seed, or just tick
+    # the box under Settings -> Leave types.
     def self.seed_comp_off_flag!
       return [] if LeaveType.exists?(comp_off: true)
 

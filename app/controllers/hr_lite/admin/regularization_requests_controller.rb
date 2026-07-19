@@ -14,6 +14,9 @@ module HrLite
         request = RegularizationRequest.find(params[:id])
         request.approve!(actor: hr_current_user, note: params[:decision_note].presence)
         redirect_to admin_regularization_requests_path, notice: "Ticket approved — attendance fixed."
+      rescue RegularizationRequest::InvalidMerge => e
+        redirect_to admin_regularization_request_path(request),
+                    alert: "Cannot apply — #{e.message}. Fix the day manually or reject with a note."
       rescue ActiveRecord::RecordInvalid
         redirect_to admin_regularization_request_path(request), alert: "Only pending tickets can be decided."
       end

@@ -2,12 +2,12 @@
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Team — <%= @date == Date.current ? "today" : @date.strftime("%A, %d %B") %></h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>">&larr;</a>
+    <a class="hrl-btn" aria-label="Previous day" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>">&larr;</a>
     <% unless @date == Date.current %>
       <a class="hrl-btn" href="<%= hr_lite.team_path %>">Today</a>
     <% end %>
     <% if @date < Date.current %>
-      <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date + 1).strftime("%Y-%m-%d")) %>">&rarr;</a>
+      <a class="hrl-btn" aria-label="Next day" href="<%= hr_lite.team_path(date: (@date + 1).strftime("%Y-%m-%d")) %>">&rarr;</a>
     <% end %>
   </div>
 </div>
@@ -29,10 +29,8 @@
           <% @board.rows.each do |row| %>
             <tr>
               <td data-label="Name">
-                <strong><%= hr_display_name(row.user) %></strong>
-                <% if row.profile&.designation.present? %>
-                  <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span>
-                <% end %>
+                <span><strong><%= hr_display_name(row.user) %></strong><% if row.profile&.designation.present? %>
+                  <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span><% end %></span>
               </td>
               <td data-label="Status"><%= hrl_team_status(row) %></td>
               <td data-label="Hours" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>

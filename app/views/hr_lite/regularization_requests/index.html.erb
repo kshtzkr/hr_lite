@@ -21,11 +21,9 @@
             <tr>
               <td data-label="Date"><%= request.date.strftime("%a, %d %b %Y") %></td>
               <td data-label="Proposed times"><%= request.times_label %></td>
-              <td data-label="Status">
-                <span class="hrl-badge <%= { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted" }[request.status] %>"><%= request.status.humanize %></span>
-              </td>
+              <td data-label="Status"><%= hrl_request_status_badge(request.status) %></td>
               <td data-label="Note" class="hrl-small hrl-muted"><%= request.decision_note.presence || "—" %></td>
-              <td data-label="">
+              <td data-label="" class="<%= 'hrl-cell--void' unless request.pending? %>">
                 <% if request.pending? %>
                   <%= button_to "Cancel", hr_lite.cancel_regularization_request_path(request), method: :post,
                                 class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this ticket?" } } %>

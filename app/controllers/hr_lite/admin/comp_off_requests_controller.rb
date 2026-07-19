@@ -15,7 +15,7 @@ module HrLite
         request.approve!(actor: hr_current_user, note: params[:decision_note].presence)
         redirect_to admin_comp_off_requests_path,
                     notice: "Approved — #{request.credit_days.to_f} day credited."
-      rescue CompOffRequest::MissingCompOffType => e
+      rescue CompOffRequest::MissingCompOffType, CompOffRequest::StaleOffDay => e
         redirect_to admin_comp_off_request_path(request), alert: e.message
       rescue ActiveRecord::RecordInvalid
         redirect_to admin_comp_off_request_path(request), alert: "Only pending requests can be decided."

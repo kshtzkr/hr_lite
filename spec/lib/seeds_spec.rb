@@ -25,23 +25,26 @@ RSpec.describe HrLite::Seeds do
     expect(lwp.paid).to be(false)
   end
 
-  it "flags CO as the comp-off type, upgrading pre-0.3.0 rows" do
+  it "flags CO on fresh installs and NEVER re-flags after an operator disables it" do
     described_class.run!
     expect(HrLite::LeaveType.comp_off_type.code).to eq("CO")
 
-    # A pre-0.3.0 install: CO exists but predates the comp_off column.
+    # Operator turns comp-off OFF; the every-deploy seed must respect that.
     HrLite::LeaveType.find_by(code: "CO").update!(comp_off: false)
-    expect(described_class.run!).to eq([ "comp_off flag on CO" ])
-    expect(HrLite::LeaveType.comp_off_type.code).to eq("CO")
+    expect(described_class.run!).to eq([])
+    expect(HrLite::LeaveType.comp_off_type).to be_nil
   end
 
-  it "leaves the flag alone when the operator moved it to another type" do
+  it "upgrades pre-0.3.0 installs via the explicit one-shot helper" do
     described_class.run!
     HrLite::LeaveType.find_by(code: "CO").update!(comp_off: false)
-    other = HrLite::LeaveType.find_by(code: "CL")
-    other.update!(comp_off: true)
+    expect(described_class.seed_comp_off_flag!).to eq([ "comp_off flag on CO" ])
+    expect(HrLite::LeaveType.comp_off_type.code).to eq("CO")
 
-    expect(described_class.run!).to eq([])
+    other = HrLite::LeaveType.find_by(code: "CL")
+    HrLite::LeaveType.find_by(code: "CO").update!(comp_off: false)
+    other.update!(comp_off: true)
+    expect(described_class.seed_comp_off_flag!).to eq([])
     expect(HrLite::LeaveType.comp_off_type).to eq(other)
   end
 

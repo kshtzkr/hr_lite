@@ -32,6 +32,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Checkboxes rendered 100%-wide with misplaced labels (the bare
   `input[type]` width rule out-ranked `.hrl-field--check`); checkbox rows
   now size naturally and pick up the accent colour.
+- Hardening from adversarial review: comp-off credits land in the year
+  they can be spent (a December Sunday approved in January no longer
+  strands the credit on last year's balance); the balance increment locks
+  the balance row (no lost update when two admins approve concurrently);
+  a partial unique index guarantees one live comp-off request per person
+  per date; approval re-checks the calendar (StaleOffDay) after holiday
+  edits; regularization approval refuses merges that would corrupt the
+  record (checkout with no check-in, checkout before the genuine
+  check-in) with the real reason surfaced to the admin, keeps GPS flags,
+  and writes an AuditLog row like the manual fix path; tickets cannot
+  target a day covered by approved leave; only one leave type can carry
+  the comp-off flag; team notices skip exited staff; a host
+  notification-matrix override pinned on an older version no longer
+  silently drops events it doesn't know (defaults merge underneath).
+
+### Changed
+
+- `Seeds.run!` no longer re-flags CO as comp-off on every deploy (an
+  operator disabling comp-off stays disabled); pre-0.3.0 installs run
+  `Seeds.seed_comp_off_flag!` once or tick the box under Settings.
 
 ## [0.2.2] - 2026-07-19
 

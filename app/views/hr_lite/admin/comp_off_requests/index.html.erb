@@ -6,6 +6,7 @@
 <%= render "hr_lite/admin/shared/approvals_tabs", active: :comp_off %>
 
 <div class="hrl-row" style="margin-bottom:.85rem;">
+  <span class="hrl-small hrl-muted">Status</span>
   <% HrLite::CompOffRequest::STATUSES.each do |status| %>
     <a class="hrl-btn <%= 'hrl-btn--primary' if @status == status %>"
        href="<%= hr_lite.admin_comp_off_requests_path(status: status) %>"><%= status.humanize %></a>

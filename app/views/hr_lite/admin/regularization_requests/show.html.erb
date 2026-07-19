@@ -12,7 +12,7 @@
     <dt>Date</dt><dd><%= @request.date.strftime("%A, %d %B %Y") %></dd>
     <dt>Proposed times</dt><dd><%= @request.times_label %></dd>
     <dt>Reason</dt><dd><%= @request.reason %></dd>
-    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <dt>Status</dt><dd><%= hrl_request_status_badge(@request.status) %></dd>
     <dt>Current punch</dt>
     <dd>
       <% if (punch = @request.punch)&.check_in_at %>
@@ -41,8 +41,8 @@
         <%= f.text_area :decision_note %>
       </div>
       <div class="hrl-form-actions">
-        <%= f.submit "Approve — fix attendance", class: "hrl-btn hrl-btn--primary" %>
-        <%= f.submit "Reject", class: "hrl-btn hrl-btn--danger",
+        <%= f.button "Approve — fix attendance", type: :submit, class: "hrl-btn hrl-btn--primary" %>
+        <%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger",
                      formaction: hr_lite.reject_admin_regularization_request_path(@request) %>
       </div>
     <% end %>
