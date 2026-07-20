@@ -1,6 +1,6 @@
 module HrLite
   module Admin
-    class AppraisalsController < LeadershipController
+    class AppraisalsController < SuperadminController
       before_action :set_profile
 
       def new

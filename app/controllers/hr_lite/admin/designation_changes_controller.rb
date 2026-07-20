@@ -1,7 +1,7 @@
 module HrLite
   module Admin
     # Standalone role change (promotion without an appraisal).
-    class DesignationChangesController < LeadershipController
+    class DesignationChangesController < SuperadminController
       before_action :set_profile
 
       def new

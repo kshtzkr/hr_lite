@@ -9,6 +9,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `current_user_method` | `:current_user` | Called on the controller per request. |
 | `authenticate_method` | `:authenticate_user!` | Any before_action-able method on the parent controller. |
 | `admin_check` | `user.admin?` if defined | Operations tier: team attendance, regularization, leave decisions, overview board. Leadership implies admin. |
+| `superadmin_emails` | `[]` | Money tier: salary structures, payroll, slips, appraisals, promotions. Empty = leadership keeps the money tier (pre-0.5.0). |
 | `leadership_emails` | `[]` | THE governing list. Policy, offices, holidays, weekend setting, employee profiles, salary structures, payroll, appraisals, audit trail. |
 | `leadership_check` | membership in `leadership_emails` (case-insensitive) | Replace to derive leadership some other way. |
 | `display_name_method` | `:display_name` → `:name` → `:email` | First present value wins. |

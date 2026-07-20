@@ -10,7 +10,7 @@ module HrLite
     before_action :hr_set_current_actor
     around_action :hr_use_time_zone
 
-    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_display_name
+    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_display_name
 
     private
 
@@ -24,6 +24,10 @@ module HrLite
 
     def hr_admin?
       HrLite.admin?(hr_current_user)
+    end
+
+    def hr_superadmin?
+      HrLite.superadmin?(hr_current_user)
     end
 
     def hr_leadership?

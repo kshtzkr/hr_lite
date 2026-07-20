@@ -20,9 +20,13 @@ module HrLite
 
     LEADERSHIP_NAV_ITEMS = [
       { label: "Employees", path: :admin_employees_path,        match: [ "/admin/employees" ] },
-      { label: "Payroll",   path: :admin_payroll_runs_path,     match: [ "/admin/payroll_runs", "/admin/salary_slips" ] },
       { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting" ] },
       { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] }
+    ].freeze
+
+    # Money tier — only config.superadmin_emails see these.
+    SUPERADMIN_NAV_ITEMS = [
+      { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] }
     ].freeze
 
     # Only items whose routes exist yet (the nav grows with each phase).

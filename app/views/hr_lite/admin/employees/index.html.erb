@@ -1,6 +1,9 @@
 <% content_for(:page_title) { "Employees" } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Employees</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_path %>">New employee</a>
+  </div>
 </div>
 
 <section class="hrl-card">

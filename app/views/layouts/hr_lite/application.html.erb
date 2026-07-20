@@ -42,6 +42,11 @@
           <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
             <%= hrl_nav_link(item) %>
           <% end %>
+          <% if hr_superadmin? %>
+            <% hrl_nav_items(HrLite::ApplicationHelper::SUPERADMIN_NAV_ITEMS).each do |item| %>
+              <%= hrl_nav_link(item) %>
+            <% end %>
+          <% end %>
         <% end %>
       </nav>
 

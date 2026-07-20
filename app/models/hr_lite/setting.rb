@@ -6,6 +6,8 @@ module HrLite
     WEEKEND_POLICIES = %w[sun_only sat_sun second_fourth_sat_sun].freeze
 
     validates :weekend_policy, inclusion: { in: WEEKEND_POLICIES }
+    validates :employee_code_prefix, presence: true,
+                                     format: { with: /\A[A-Za-z]{1,10}\z/, message: "letters only, max 10" }
 
     def self.instance
       first_or_create!

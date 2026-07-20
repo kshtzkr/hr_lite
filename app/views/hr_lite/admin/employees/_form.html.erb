@@ -28,7 +28,16 @@
         </div>
       </fieldset>
     <% end %>
-    <div class="hrl-field"><%= f.label :employee_code %><%= f.text_field :employee_code %></div>
+    <% if profile.persisted? %>
+      <div class="hrl-field">
+        <%= f.label :employee_code %>
+        <input class="hrl-input" type="text" value="<%= profile.employee_code %>" disabled>
+        <p class="hrl-hint">System-assigned; the prefix lives under Settings.</p>
+      </div>
+    <% else %>
+      <p class="hrl-hint">The employee code is assigned automatically
+        (<%= HrLite::Setting.instance.employee_code_prefix %> + next number).</p>
+    <% end %>
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
     <div class="hrl-field">
       <%= f.label :manager_id, "Reports to (their L1)" %>

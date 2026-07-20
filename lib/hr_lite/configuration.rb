@@ -8,6 +8,7 @@ module HrLite
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :leadership_check, :extra_stylesheets,
+                  :superadmin_emails, :superadmin_check,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
                   :onboard_user, :offboard_user, :invite_url_for
 
@@ -48,6 +49,13 @@ module HrLite
       @leadership_check      = ->(user) do
         emails = HrLite.config.leadership_emails.map { |e| e.to_s.downcase.strip }
         emails.include?(user.email.to_s.downcase)
+      end
+      # Money tier: salary structures, payroll, slips, appraisals. Empty
+      # list means "same as leadership" (pre-0.5.0 behaviour).
+      @superadmin_emails     = []
+      @superadmin_check      = ->(user) do
+        emails = HrLite.config.superadmin_emails.map { |e| e.to_s.downcase.strip }.reject(&:empty?)
+        emails.empty? ? HrLite.leadership?(user) : emails.include?(user.email.to_s.downcase)
       end
       @extra_stylesheets     = [] # host stylesheets linked AFTER hr_lite.css (CSS-var overrides)
       @mailer_from           = "hr@example.com"
