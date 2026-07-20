@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-20
+
+### Added
+
+- **Superadmin (money) tier** — `config.superadmin_emails`: only these
+  people reach salary structures, payroll runs, slips administration,
+  appraisals and promotions, or see salary/appraisal data on the
+  employee page and the Payroll nav item. Ordinary leadership keeps
+  governing people and policy. Empty list (default) = leadership keeps
+  the money tier, exactly as before.
+- **System-assigned employee codes**: prefix (Settings, default "EMP")
+  + zero-padded sequence — EMP001, EMP002, … Forms no longer accept a
+  code; changing the prefix starts a fresh sequence; explicitly-set
+  codes (imports/seeds) are never overwritten.
+- "New employee" button on the Employees screen.
+
 ## [0.4.0] - 2026-07-19
 
 ### Added

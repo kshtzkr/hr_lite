@@ -3,9 +3,11 @@
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">
     <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
-    <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
-    <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
-    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
+    <% if hr_superadmin? %>
+      <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
+      <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
+      <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
+    <% end %>
   </div>
 </div>
 
@@ -68,6 +70,7 @@
     </dl>
   </section>
 
+  <% if hr_superadmin? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Salary structures</h2>
     <% if @structures.any? %>
@@ -90,8 +93,10 @@
       <p class="hrl-muted hrl-small">No structure yet — payroll will skip this employee.</p>
     <% end %>
   </section>
+  <% end %>
 </div>
 
+<% if hr_superadmin? %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Appraisals</h2>
   <% appraisals = HrLite::Appraisal.where(user_id: @profile.user_id).recent_first %>
@@ -116,3 +121,4 @@
     <p class="hrl-muted hrl-small">No appraisals yet.</p>
   <% end %>
 </section>
+<% end %>

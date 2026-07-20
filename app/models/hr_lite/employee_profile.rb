@@ -21,6 +21,8 @@ module HrLite
     # config.onboard_user; never persisted, never audited).
     attr_accessor :new_user_name, :new_user_email, :new_user_password
 
+    before_validation :assign_employee_code, on: :create
+
     validates :employee_code, presence: true, uniqueness: true
     validates :user_id, uniqueness: true
     validates :date_of_joining, presence: true
@@ -88,6 +90,25 @@ module HrLite
     end
 
     private
+
+    # Codes are system-assigned: Settings prefix + zero-padded next number
+    # (EMP001, EMP002, ...). Scans the highest existing suffix for the
+    # CURRENT prefix so changing the prefix restarts a fresh sequence
+    # without colliding with history.
+    def assign_employee_code
+      return if employee_code.present?
+
+      prefix = Setting.instance.employee_code_prefix
+      last = self.class.where("employee_code LIKE ?", "#{sanitize_sql_like(prefix)}%")
+                 .pluck(:employee_code)
+                 .filter_map { |code| code.delete_prefix(prefix)[/\A\d+\z/]&.to_i }
+                 .max || 0
+      self.employee_code = format("%s%03d", prefix, last + 1)
+    end
+
+    def sanitize_sql_like(value)
+      self.class.sanitize_sql_like(value)
+    end
 
     # A newly-assigned manager must be a real, still-employed staff member.
     def manager_is_active_staff

@@ -138,4 +138,10 @@ RSpec.describe "Leadership settings", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
   end
+
+  it "saves the employee-code prefix from Settings" do
+    sign_in leader
+    patch "/hr/admin/setting", params: { setting: { weekend_policy: "sun_only", employee_code_prefix: "ESC" } }
+    expect(HrLite::Setting.instance.reload.employee_code_prefix).to eq("ESC")
+  end
 end

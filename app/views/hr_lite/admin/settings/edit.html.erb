@@ -11,6 +11,13 @@
       <%= f.select :weekend_policy, HrLite::Setting::WEEKEND_POLICIES.map { |p| [ p.humanize, p ] } %>
       <p class="hrl-hint">Drives working-day math everywhere: leave counting, attendance, payroll.</p>
     </div>
+    <div class="hrl-field">
+      <%= f.label :employee_code_prefix, "Employee code prefix" %>
+      <%= f.text_field :employee_code_prefix %>
+      <p class="hrl-hint">Codes are assigned automatically as
+        <%= @setting.employee_code_prefix %>001, <%= @setting.employee_code_prefix %>002, …
+        — you only choose the prefix.</p>
+    </div>
     <div class="hrl-form-actions">
       <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
     </div>

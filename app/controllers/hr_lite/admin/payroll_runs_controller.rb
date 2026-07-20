@@ -1,6 +1,6 @@
 module HrLite
   module Admin
-    class PayrollRunsController < LeadershipController
+    class PayrollRunsController < SuperadminController
       def index
         @runs = paginate(PayrollRun.recent_first)
       end

@@ -1,6 +1,6 @@
 module HrLite
   module Admin
-    class SalaryStructuresController < LeadershipController
+    class SalaryStructuresController < SuperadminController
       before_action :set_profile
 
       def new

@@ -38,6 +38,10 @@ module HrLite
       user.present? && !!config.leadership_check.call(user)
     end
 
+    def superadmin?(user)
+      user.present? && !!config.superadmin_check.call(user)
+    end
+
     # Leadership members resolvable to actual user records (for bell
     # notifications). Emails configured but absent from the user table are
     # still reachable by email — see Notifications.

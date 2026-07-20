@@ -1,6 +1,6 @@
 module HrLite
   module Admin
-    class SalarySlipsController < LeadershipController
+    class SalarySlipsController < SuperadminController
       def show
         @slip = SalarySlip.includes(:payroll_run).find(params[:id])
         @profile = @slip.user_profile
