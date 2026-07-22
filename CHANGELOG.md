@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+
+- Reworked the README to open-source standard: a shields.io badge row, a table
+  of contents, a per-feature usage guide (attendance and geolocation; leave,
+  comp-off and regularization; payroll; kudos and @mentions; the notification
+  bus), and sections for the recurring jobs, rake tasks and the install
+  generator.
+- Documented the leadership and superadmin (money) access tiers, and the
+  `HR_LEADERSHIP_EMAILS` convention the generated initializer uses to keep the
+  governing list out of a deploy.
+- Filled gaps in `docs/CONFIGURATION.md`: the `superadmin_check`,
+  `public_url_base`, `onboard_user`, `offboard_user` and `invite_url_for`
+  keys, and the `resignation.*`, `employee.onboarded` and `payroll.draft_ready`
+  rows of the notification matrix.
+
 ## [0.5.0] - 2026-07-20
 
 ### Added
@@ -202,5 +217,12 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/kshtzkr/hr_lite/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/kshtzkr/hr_lite/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/kshtzkr/hr_lite/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/kshtzkr/hr_lite/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/kshtzkr/hr_lite/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/kshtzkr/hr_lite/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/kshtzkr/hr_lite/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/kshtzkr/hr_lite/releases/tag/v0.1.0
