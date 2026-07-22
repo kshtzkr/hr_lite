@@ -10,6 +10,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `authenticate_method` | `:authenticate_user!` | Any before_action-able method on the parent controller. |
 | `admin_check` | `user.admin?` if defined | Operations tier: team attendance, regularization, leave decisions, overview board. Leadership implies admin. |
 | `superadmin_emails` | `[]` | Money tier: salary structures, payroll, slips, appraisals, promotions. Empty = leadership keeps the money tier (pre-0.5.0). |
+| `superadmin_check` | membership in `superadmin_emails` (case-insensitive); falls back to `leadership_check` when the list is empty | Replace to derive the money tier some other way. |
 | `leadership_emails` | `[]` | THE governing list. Policy, offices, holidays, weekend setting, employee profiles, salary structures, payroll, appraisals, audit trail. |
 | `leadership_check` | membership in `leadership_emails` (case-insensitive) | Replace to derive leadership some other way. |
 | `display_name_method` | `:display_name` → `:name` → `:email` | First present value wins. |
@@ -17,7 +18,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `mentionable_users` | name/email `LIKE` on the user table | Backs the kudos @-autocomplete (`GET <mount>/users/search`). |
 | `notify` | no-op | In-app bell hook: `->(user:, kind:, title:, body:, path:)`. `kind` is the event key; `path` is engine-relative. Exceptions are swallowed + logged. |
 | `mailer_from` | `hr@example.com` | From-address for every HR email. |
-| `mail_link_base` | `nil` | e.g. `https://hr.example.com` — enables the "Open in HR" button in emails. Unset = emails carry no links. |
+| `public_url_base` | `nil` | e.g. `https://hr.example.com` — enables the "Open in HR" button in emails and backs `HrLite.public_url` / `HrLite.public_url?`. Unset = emails carry no links. Aliased as `mail_link_base` for pre-0.1.0 initializers. |
 | `notification_matrix` | `Notifications::DEFAULT_MATRIX` | Per-event channel routing — see below. |
 | `leave_year_start_month` | `1` | First month of the leave year. `7` = July–June: balances, accrual, rollover, split rule and comp-off credits all follow it; schedule `LeaveYearRolloverJob` on that month's 1st. Entitlement always prorates from the joining date (≤ 15th counts that month). **Set once at install time** — balance rows are keyed by leave year, and changing the start month later reinterprets every stored balance. Validated 1..12 at assignment. |
 | `render_pdf` | `nil` | `->(template:, assigns:, cache_key:)` returning PDF bytes. Unset: built-in WickedPdf if the gem is present, else PDF is disabled with a flash. |
@@ -25,6 +26,9 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `time_zone` | `Asia/Kolkata` | Wraps every HR request (`Time.use_zone`). |
 | `currency_symbol` | `₹` | Display only. |
 | `on_designation_change` | no-op | `->(user, designation)` fired after every promotion/role change — mirror into your own user model here. Exceptions swallowed. |
+| `onboard_user` | creates a record on `user_class` with whatever of name/email/password it supports | `->(name:, email:, password:)` returning a SAVED user. Called when leadership onboards someone (no self sign-up). |
+| `offboard_user` | no-op | `->(user)` to revoke the person's access. The engine never deletes records (statutory retention); it only stamps the exit date. Exceptions logged. |
+| `invite_url_for` | `nil` | `->(user)` returning an absolute set-your-password URL (e.g. a Devise reset link). When present, the welcome email carries it, so leadership never hands over a password. |
 | `extra_stylesheets` | `[]` | Host stylesheets linked AFTER `hr_lite.css` — override the `--hrl-*` CSS variables to retheme. |
 | `back_link` | `nil` | `{label:, url:}` nav escape hatch back to the host app. |
 
@@ -54,6 +58,11 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `regularization.requested` | admins | — | ✓ | — |
 | `regularization.approved` / `regularization.rejected` | employee | employee | approved only | — |
 | `regularization.cancelled` | admins | — | ✓ | — |
+| `resignation.submitted` | admins | — | ✓ | ✓ |
+| `resignation.accepted` | resigning employee | resigning employee | ✓ | — |
+| `resignation.withdrawn` | admins | — | ✓ | — |
+| `employee.onboarded` | new hire | new hire | ✓ | — |
+| `payroll.draft_ready` (auto-draft job finished) | — | — | ✓ | ✓ |
 
 To mute or add channels for one event:
 
