@@ -75,6 +75,17 @@
       <%= f.label :declared_annual_deductions, "Declared annual deductions (old regime only)" %>
       <%= f.number_field :declared_annual_deductions, step: 0.01, value: profile.declared_annual_deductions&.to_s("F") %>
     </div>
+    <%# Only what THIS install has paid is visible to the tax projection, so a
+        mid-year start (or a joiner from another employer) needs the earlier
+        months stated here or the year under-deducts. %>
+    <div class="hrl-field">
+      <%= f.label :fy_opening_gross, "Gross already paid this FY elsewhere (previous employer, or before payroll started here)" %>
+      <%= f.number_field :fy_opening_gross, step: 0.01, value: profile.fy_opening_gross&.to_s("F") %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :fy_opening_tds, "TDS already deducted this FY elsewhere" %>
+      <%= f.number_field :fy_opening_tds, step: 0.01, value: profile.fy_opening_tds&.to_s("F") %>
+    </div>
     <div class="hrl-form-actions">
       <%= f.submit "Save profile", class: "hrl-btn hrl-btn--primary" %>
       <a class="hrl-btn" href="<%= hr_lite.admin_employees_path %>">Cancel</a>

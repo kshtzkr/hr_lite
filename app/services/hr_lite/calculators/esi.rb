@@ -1,9 +1,12 @@
 module HrLite
   module Calculators
-    # ESI: eligibility is decided on the FULL structure monthly gross
-    # (a low-attendance month must not pull someone into ESI); when
-    # eligible, contributions apply to the earned gross and round UP
-    # to the next rupee (ESIC rule).
+    # ESI: eligibility is decided on the FULL structure monthly gross (a
+    # low-attendance month must not pull someone into ESI), and specifically
+    # on the gross in force at the START of the ESIC contribution period —
+    # April–September or October–March. A rise past the ceiling mid-period
+    # does not end coverage; the caller resolves that period-start gross and
+    # passes it here. Contributions apply to the EARNED gross and round up to
+    # the next rupee (ESIC rule).
     module Esi
       Result = Struct.new(:applicable, :employee, :employer, keyword_init: true) do
         def applicable? = applicable

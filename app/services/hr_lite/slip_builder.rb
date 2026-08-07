@@ -50,7 +50,7 @@ module HrLite
         )
       end
 
-      esi = Calculators::Esi.call(monthly_gross: @structure.monthly_gross, gross_earned: gross_earned,
+      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross, gross_earned: gross_earned,
                                   applicable: @structure.esi_applicable, rates: @rates[:esi])
       if esi.applicable?
         deductions << { code: "esi_employee", label: "ESI", amount: esi.employee }
@@ -66,8 +66,12 @@ module HrLite
         regime: @profile.tax_regime,
         structure_monthly_gross: @structure.monthly_gross,
         gross_earned_this_month: gross_earned,
-        fy_gross_paid: fy[:gross],
-        fy_tds_paid: fy[:tds],
+        # Plus anything paid this FY that this install never ran — a previous
+        # employer, or the months before payroll was switched on. Without it a
+        # mid-year start projects those months as zero income and can land the
+        # whole year under the rebate cap.
+        fy_gross_paid: fy[:gross] + Money.d(@profile.fy_opening_gross),
+        fy_tds_paid: fy[:tds] + Money.d(@profile.fy_opening_tds),
         months_remaining: months_remaining_in_fy,
         declared_annual_deductions: @profile.declared_annual_deductions,
         rates: @rates[:income_tax],
@@ -115,6 +119,25 @@ module HrLite
 
     def months_between(from, to)
       (to.year * 12 + to.month) - (from.year * 12 + from.month) + 1
+    end
+
+    # ESIC contribution periods run April–September and October–March.
+    # Eligibility is fixed for the whole period, so it is decided on the
+    # salary in force on its first day — re-deciding it every month dropped
+    # someone out of ESI the moment a mid-period raise crossed the ceiling.
+    def esi_reference_gross
+      month = @run.period_month
+      start = if month.month.between?(4, 9)
+        Date.new(month.year, 4, 1)
+      elsif month.month >= 10
+        Date.new(month.year, 10, 1)
+      else
+        Date.new(month.year - 1, 10, 1)
+      end
+
+      # No structure that far back (a mid-period joiner) — their own is the
+      # only salary this period has ever had.
+      (SalaryStructure.effective_for(@user, start) || @structure).monthly_gross
     end
 
     def serialize_rows(rows)
