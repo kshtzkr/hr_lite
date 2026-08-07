@@ -7,6 +7,78 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-08-07
+
+Bug-fix release from a full audit of the engine. No migrations, no
+configuration changes required.
+
+### Fixed
+
+- **Every admin "Reject" button returned a 422.** The decision screens
+  rendered one form pointed at the approve endpoint and retargeted the
+  Reject button with `formaction:`. Rails binds the authenticity token to
+  the form's own action and method (`per_form_csrf_tokens`, the default
+  since `load_defaults 5.0`), so that token was never valid at the reject
+  path. Comp-off, leave and regularization rejections could not be made
+  from a browser at all. Each screen now renders separate Approve and
+  Reject forms.
+- **`PayrollRun#compute!` demoted any run — including a published one — to
+  `draft`.** The `raise_unless` guard raised inside the method-level
+  rescue, which then rewrote the status. Draft runs are deletable and the
+  delete cascades over every salary slip. The guard now sits outside the
+  rescue and the previous status is restored; a run stranded in
+  `processing` is recoverable.
+- **TDS was wrong on every slip from April to December**: months remaining
+  in the financial year read `15 - month` instead of `16 - month`.
+- TDS to-date counted published slips only, so a finalized-but-unpublished
+  month projected as zero income; §115BAC marginal relief above the rebate
+  cap was missing; a leaver's projection ran past their exit month.
+- Net pay is floored at zero and the run warns when deductions exceed
+  earnings. Review-stage LOP and TDS overrides are bounded.
+- **A configured superadmin absent from `leadership_emails` was locked out
+  of the money tier entirely.** `SuperadminController` no longer inherits
+  the leadership check, and the Payroll nav item hangs off the money tier.
+- Appraisal ratings and review text reached ordinary leadership through
+  the audit screen and the `policy.changed` email; money-tier subjects are
+  excluded from both.
+- Accepting a resignation stamped an exit date, which hid the only control
+  that revokes sign-in. The card stays, and access is revoked immediately
+  when the last day has already passed.
+- Onboarding created the login before validating the profile and outside
+  any transaction, leaving orphaned role-bearing accounts behind.
+- A backdated `DesignationChange` overwrote the current designation and
+  pushed it to the host; only the newest row applies now.
+- Editing a profile whose manager had exited silently cleared the
+  reporting line, because the select offered no matching option.
+- Leave: creation and approval use the same as-of date (future-dated
+  requests on monthly accrual could be filed but never approved); approval
+  locks the balance row rather than the request row; the stored adjustment
+  has one locked write path; entitlement stops accruing at the exit date;
+  the comp-off flag can be moved to a replacement leave type.
+- Attendance: a check-out with no check-in is refused; clearing both times
+  on a day with no punch no longer writes a bogus audit row or emails a
+  removal that never happened; the punch card offers yesterday's check-out
+  after midnight; `geo_status` is confined to what a browser can report.
+- The overview board counts and lists comp-off and regularization, and the
+  team attendance KPIs add up to the headcount again.
+- One bad recipient no longer drops the rest of a notification fan-out.
+- The slip PDF formats money like the web slip; amounts in words handle
+  negatives and figures above ₹100 crore; professional-tax slabs gained an
+  inclusive `from:` bound.
+
+### Added
+
+- A **More** tab on phones, opening a sheet with every nav item and every
+  group the viewer is entitled to. Below 768px the left rail is hidden and
+  the tab bar holds five items, so the rest of the app — including all
+  admin, leadership and payroll screens — was unreachable.
+- Confirmation prompts that actually run. The engine ships no Turbo, so
+  its `data-turbo-confirm` attributes were inert and destructive buttons
+  fired on the first click. A small script reads the same attribute and
+  stands aside when a host does load Turbo.
+- A retry policy on the engine's jobs, which had never inherited
+  `ApplicationJob`.
+
 ### Documentation
 
 - Reworked the README to open-source standard: a shields.io badge row, a table
@@ -217,7 +289,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kshtzkr/hr_lite/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kshtzkr/hr_lite/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/kshtzkr/hr_lite/compare/v0.2.1...v0.3.0
