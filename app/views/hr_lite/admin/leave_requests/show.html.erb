@@ -24,15 +24,29 @@
 <% if @request.pending? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Decide</h2>
+    <%# Approve and reject are two separate forms on purpose. Rails binds the
+        CSRF token to the form's OWN action, so one form retargeted with
+        `formaction:` can never pass verification on the second endpoint. %>
     <%= form_with url: hr_lite.approve_admin_leave_request_path(@request), method: :post, local: true do %>
       <div class="hrl-field">
-        <label for="decision_note">Note (required to reject)</label>
-        <textarea name="decision_note" id="decision_note" class="hrl-input"></textarea>
+        <label for="approve_note">Note (optional)</label>
+        <textarea name="decision_note" id="approve_note" class="hrl-input"></textarea>
       </div>
       <div class="hrl-form-actions">
         <button class="hrl-btn hrl-btn--primary" type="submit">Approve</button>
-        <button class="hrl-btn hrl-btn--danger" type="submit"
-                formaction="<%= hr_lite.reject_admin_leave_request_path(@request) %>">Reject</button>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Reject</h2>
+    <%= form_with url: hr_lite.reject_admin_leave_request_path(@request), method: :post, local: true do %>
+      <div class="hrl-field">
+        <label for="reject_note">Reason (required)</label>
+        <textarea name="decision_note" id="reject_note" class="hrl-input"></textarea>
+      </div>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--danger" type="submit">Reject</button>
       </div>
     <% end %>
   </section>
