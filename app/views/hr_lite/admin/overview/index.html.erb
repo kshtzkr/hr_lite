@@ -25,6 +25,27 @@
           <a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(request) %>">Decide</a>
         </div>
       <% end %>
+      <%# Comp-off and regularization are approvals too. Listing leave alone
+          left both queues invisible on the board that exists to surface work. %>
+      <% @query.pending_comp_offs.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <strong><%= hr_display_name(request.user) %></strong>
+            — comp-off for <%= request.date_worked.strftime("%d %b") %>
+            (<%= request.credit_days.to_f %> d)
+          </div>
+          <a class="hrl-btn" href="<%= hr_lite.admin_comp_off_request_path(request) %>">Decide</a>
+        </div>
+      <% end %>
+      <% @query.pending_regularizations.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
+        <div class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <strong><%= hr_display_name(request.user) %></strong>
+            — attendance fix for <%= request.date.strftime("%d %b") %>
+          </div>
+          <a class="hrl-btn" href="<%= hr_lite.admin_regularization_request_path(request) %>">Decide</a>
+        </div>
+      <% end %>
       <a class="hrl-small" href="<%= hr_lite.admin_leave_requests_path %>">All requests</a>
     </section>
   <% end %>

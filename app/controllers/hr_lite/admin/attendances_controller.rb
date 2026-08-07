@@ -35,10 +35,25 @@ module HrLite
 
         attrs = params.require(:attendance_record).permit(:check_in_at, :check_out_at, :status)
         if attrs[:check_in_at].blank? && attrs[:check_out_at].blank?
-          record.destroy if record.persisted?
+          # Nothing to remove used to still write a `destroy` audit row with
+          # subject_id 0 and email the employee that a punch was removed.
+          unless record.persisted?
+            return redirect_to admin_attendance_path(@employee.id, month: date.strftime("%Y-%m")),
+                               notice: "Nothing to remove for that day."
+          end
+
+          record.destroy
           log_regularization(record, note, removed: true)
           return redirect_to admin_attendance_path(@employee.id, month: date.strftime("%Y-%m")),
                              notice: "Punch removed."
+        end
+
+        # A check-out with no check-in produces a row every consumer reads as
+        # absent (they all key off check_in_at), so the day silently stays LOP
+        # while the screen reports the fix succeeded.
+        if attrs[:check_in_at].blank?
+          return redirect_to admin_attendance_path(@employee.id, date: date, month: date.strftime("%Y-%m")),
+                             alert: "A check-in time is required when a check-out is set."
         end
 
         record.assign_attributes(attrs)

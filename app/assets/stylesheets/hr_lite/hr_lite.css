@@ -75,6 +75,34 @@
   padding: .25rem .25rem calc(.25rem + env(safe-area-inset-bottom));
 }
 .hrl-tabbar .hrl-nav__link { flex: 1; justify-content: center; font-size: .78rem; }
+/* "More" sheet — everything five tabs cannot hold. Pure <details>: the
+   engine ships no Turbo or Stimulus and this must not need any. */
+.hrl-tabbar__more { flex: 1; display: flex; }
+.hrl-tabbar__more > summary {
+  flex: 1; justify-content: center; list-style: none; cursor: pointer;
+}
+.hrl-tabbar__more > summary::-webkit-details-marker { display: none; }
+.hrl-tabbar__more[open] > summary { color: var(--hrl-accent); font-weight: 600; }
+.hrl-sheet {
+  position: fixed; left: 0; right: 0;
+  bottom: calc(3.3rem + env(safe-area-inset-bottom));
+  max-height: 60vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
+  padding: .6rem .85rem;
+  box-shadow: 0 -6px 18px rgb(0 0 0 / 8%);
+}
+/* Left-aligned like the desktop rail — the tab-bar rule centres its own
+   links and would otherwise apply here too. */
+.hrl-sheet .hrl-nav__link {
+  display: flex; justify-content: flex-start;
+  min-height: 44px; font-size: .92rem; padding: .5rem .6rem;
+}
+.hrl-sheet .hrl-side__group {
+  color: var(--hrl-muted); font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+  margin: .7rem 0 .15rem; padding: 0 .6rem;
+}
 
 @media (min-width: 768px) {
   .hrl-tabbar { display: none; }
