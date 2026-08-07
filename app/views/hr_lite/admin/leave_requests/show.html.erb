@@ -10,7 +10,9 @@
   <dl class="hrl-deflist">
     <dt>Type</dt><dd><%= @request.leave_type.name %> (<%= @request.paid? ? "paid" : "unpaid" %>)</dd>
     <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
-    <dt>Working days</dt><dd><%= @request.days_count.to_f %></dd>
+    <%# Counted live, not from the create-time cache: a holiday added after
+        the request was filed changes what the balance is actually debited. %>
+    <dt>Working days</dt><dd><%= HrLite::LeaveDayCounter.count(@request).to_f %></dd>
     <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
     <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
     <% unless @request.leave_type.unlimited? %>

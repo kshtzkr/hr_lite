@@ -106,21 +106,11 @@ module HrLite
     # balance. The balance row is locked for the increment; two admins
     # approving two different requests for one person cannot lose an update.
     def credit_balance!(type)
-      year = LeaveYear.current_key
-      balance = LeaveBalance.for(user, type, year)
-      if balance.new_record?
-        begin
-          balance.save!
-        rescue ActiveRecord::RecordNotUnique
-          balance = LeaveBalance.for(user, type, year)
-        end
-      end
-      balance.with_lock do
-        balance.adjustment += credit_days
-        balance.adjustment_note = [ balance.adjustment_note.presence,
-                                    "+#{credit_days.to_f} comp-off for #{date_worked} (request ##{id})" ].compact.join("; ")
-        balance.save!
-      end
+      LeaveBalance.adjust!(
+        user, type, LeaveYear.current_key,
+        delta: credit_days,
+        note: "+#{credit_days.to_f} comp-off for #{date_worked} (request ##{id})"
+      )
     end
 
     def transition!(new_status, actor, note)
