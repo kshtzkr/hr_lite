@@ -9,10 +9,14 @@ module HrLite
     SKIPPED_ATTRIBUTES = %w[updated_at created_at].freeze
     REDACTED = "[changed]".freeze
 
+    # *_commit, not *_create/_update/_destroy: these callbacks write an audit
+    # row and email leadership a diff. Fired inside the transaction they
+    # announce changes that then roll back — a failed onboarding used to mail
+    # out a profile diff for a profile that was never saved.
     included do
-      after_create  { hr_lite_audit!("create") }
-      after_update  { hr_lite_audit!("update") }
-      after_destroy { hr_lite_audit!("destroy") }
+      after_create_commit  { hr_lite_audit!("create") }
+      after_update_commit  { hr_lite_audit!("update") }
+      after_destroy_commit { hr_lite_audit!("destroy") }
     end
 
     private
