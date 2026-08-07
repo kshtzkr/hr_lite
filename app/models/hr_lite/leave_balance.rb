@@ -58,7 +58,12 @@ module HrLite
       requests = LeaveRequest.approved
                              .where(user_id: user_id, leave_type_id: leave_type_id)
                              .where(start_date: range)
-      requests.sum { |request| LeaveDayCounter.count(request) }
+      # ONE calendar for the whole leave year, reused across every request.
+      # Building one per request meant a Holiday query and a Setting query
+      # each — and the admin balances grid reads this cell for every employee
+      # times every leave type.
+      calendar = WorkingCalendar.new(range)
+      requests.sum { |request| LeaveDayCounter.count(request, calendar: calendar) }
     end
 
     def available(as_of: Date.current)
