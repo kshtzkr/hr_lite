@@ -13,6 +13,8 @@ module HrLite
     validates :period_month, presence: true, uniqueness: true
     validates :status, inclusion: { in: STATUSES }
     validate :period_is_first_of_month
+    # Create-only: an existing run must stay transitionable forever.
+    validate :period_is_a_closed_month, on: :create
     before_destroy :draft_only_destroy
 
     scope :recent_first, -> { order(period_month: :desc) }
@@ -109,6 +111,16 @@ module HrLite
       return if period_month.day == 1
 
       errors.add(:period_month, "must be the 1st of a month")
+    end
+
+    # Days that have not happened yet score as `upcoming`, which payroll folds
+    # into payable — so computing a month before it ends pays for days nobody
+    # worked, and once finalized the slips are immutable.
+    def period_is_a_closed_month
+      return unless period_month
+      return if period_month.end_of_month < Date.current
+
+      errors.add(:period_month, "must be a month that has already ended")
     end
 
     def draft_only_destroy

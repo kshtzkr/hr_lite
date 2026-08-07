@@ -83,7 +83,10 @@ FactoryBot.define do
   end
 
   factory :payroll_run, class: "HrLite::PayrollRun" do
-    period_month { Date.new(2027, 6, 1) }
+    # Relative, not a fixed date: a run is only valid for a month that has
+    # ENDED, so a hardcoded year eventually becomes the future and every
+    # payroll spec starts failing on the calendar instead of on the code.
+    period_month { Date.current.prev_month.beginning_of_month }
     status { "draft" }
   end
 

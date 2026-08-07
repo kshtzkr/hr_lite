@@ -14,7 +14,9 @@ RSpec.describe "TDS projection" do
     }.each do |month, expected|
       it "counts #{expected} month(s) left from month #{month}" do
         year = month >= 4 ? 2026 : 2027
-        run = create(:payroll_run, period_month: Date.new(year, month, 1))
+        # Unsaved: this is arithmetic on period_month, and persisting would
+        # drag in the closed-month validation for no benefit.
+        run = HrLite::PayrollRun.new(period_month: Date.new(year, month, 1))
         builder = HrLite::SlipBuilder.new(run, nil, nil, nil, nil, nil)
 
         expect(builder.send(:months_remaining_in_fy)).to eq(expected)
@@ -22,7 +24,7 @@ RSpec.describe "TDS projection" do
     end
 
     it "stops at the exit month for a leaver" do
-      run = create(:payroll_run, period_month: Date.new(2026, 4, 1))
+      run = HrLite::PayrollRun.new(period_month: Date.new(2026, 4, 1))
       profile = build(:employee_profile, date_of_exit: Date.new(2026, 6, 30))
       builder = HrLite::SlipBuilder.new(run, nil, nil, profile, nil, nil)
 
