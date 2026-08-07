@@ -31,6 +31,11 @@ module HrLite
             run: @run, user: user, structure: structure, profile: profile,
             lop_override: slip.lop_override, tds_override: slip.tds_override
           )
+          if attributes[:total_deductions] > attributes[:gross_earnings]
+            warnings << "Deductions exceed earnings for #{HrLite.display_name(user)} — " \
+                        "net pay floored at zero, review the overrides"
+          end
+
           slip.assign_attributes(attributes)
           slip.save!
           keep_ids << slip.id

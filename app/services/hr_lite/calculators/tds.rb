@@ -35,7 +35,14 @@ module HrLite
         taxable = [ projected - deductions, BigDecimal(0) ].max
 
         slab_tax = slab_tax_for(taxable, table[:slabs])
-        slab_tax = BigDecimal(0) if taxable <= table[:rebate_cap] # §87A full rebate
+        if taxable <= table[:rebate_cap]
+          slab_tax = BigDecimal(0) # §87A full rebate
+        elsif table[:marginal_relief]
+          # Just past the cliff the tax may not exceed the income earned above
+          # it — without this, one rupee over ₹12,00,000 costs ~₹60,000 of tax.
+          # Old regime carries no such relief, hence the per-regime flag.
+          slab_tax = [ slab_tax, taxable - table[:rebate_cap] ].min
+        end
         annual = Money.round_to_10(slab_tax * (1 + table[:cess_rate]))
 
         monthly = Money.round_rupee((annual - Money.d(fy_tds_paid)) / months_remaining)

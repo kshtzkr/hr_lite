@@ -18,6 +18,10 @@ module HrLite
     before_save :ensure_run_editable
 
     scope :published, -> { joins(:payroll_run).where(hr_lite_payroll_runs: { status: "published" }) }
+    # What counts as already paid for tax-to-date. A finalized run is money
+    # already decided; waiting for publication made the next month's TDS
+    # projection read those earnings as zero.
+    scope :settled, -> { joins(:payroll_run).where(hr_lite_payroll_runs: { status: %w[finalized published] }) }
     scope :recent_first, -> { order(period_month: :desc) }
 
     def published?
@@ -33,13 +37,13 @@ module HrLite
       lop_override || lop_days
     end
 
-    # Indian FY (Apr 1) to-date sums of PUBLISHED slips before this period —
+    # Indian FY (Apr 1) to-date sums of SETTLED slips before this period —
     # feeds the TDS projector and the slip's YTD table.
     def self.fy_to_date(user, period_month)
       fy_start = period_month.month >= 4 ? Date.new(period_month.year, 4, 1)
                                          : Date.new(period_month.year - 1, 4, 1)
-      slips = published.where(user_id: user.id)
-                       .where(period_month: fy_start...period_month)
+      slips = settled.where(user_id: user.id)
+                     .where(period_month: fy_start...period_month)
       {
         gross: slips.sum(BigDecimal(0)) { |s| s.gross_earnings || BigDecimal(0) },
         tds: slips.sum(BigDecimal(0)) { |s| Money.d(s.deduction_amount("tds")) },

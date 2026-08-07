@@ -29,6 +29,9 @@ module HrLite
         income_tax: {
           "new" => {
             standard_deduction: r("75000"), rebate_cap: r("1200000"), cess_rate: r("0.04"),
+            # §115BAC carries marginal relief just above the rebate cap; the
+            # old regime does not, so this is a per-regime flag.
+            marginal_relief: true,
             slabs: [
               [ r("0"), r("400000"), r("0") ],
               [ r("400000"), r("800000"), r("0.05") ],

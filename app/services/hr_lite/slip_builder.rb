@@ -86,17 +86,31 @@ module HrLite
         tax_details: tds.details.to_json,
         gross_earnings: gross_earned,
         total_deductions: total_deductions,
-        net_pay: gross_earned - total_deductions,
+        # A heavy-LOP month can leave TDS (projected from the full structure)
+        # larger than what was actually earned. Nobody is paid a negative
+        # salary; PayrollRunProcessor warns when this floor bites.
+        net_pay: [ gross_earned - total_deductions, BigDecimal(0) ].max,
         computed_at: Time.current
       }
     end
 
     private
 
-    # Months left in the Indian FY including the run month itself.
+    # Months left in the Indian FY (Apr–Mar) including the run month itself:
+    # April = 12, December = 4, January = 3, March = 1. Capped at the exit
+    # month for a leaver, so a final settlement is not spread over months
+    # that will never be paid.
     def months_remaining_in_fy
       month = @run.period_month.month
-      month >= 4 ? (15 - month) : (3 - month + 1)
+      calendar = month >= 4 ? (16 - month) : (4 - month)
+      exit_date = @profile&.date_of_exit
+      return calendar if exit_date.nil? || exit_date < @run.period_month
+
+      [ calendar, months_between(@run.period_month, exit_date) ].min
+    end
+
+    def months_between(from, to)
+      (to.year * 12 + to.month) - (from.year * 12 + from.month) + 1
     end
 
     def serialize_rows(rows)
