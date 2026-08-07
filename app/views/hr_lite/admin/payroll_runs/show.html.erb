@@ -23,7 +23,9 @@
 <section class="hrl-card">
   <div class="hrl-row">
     <span class="hrl-badge"><%= @run.status.humanize %></span>
-    <% if @run.draft? || @run.review? %>
+    <%# `processing` is offered too: a run stranded there by a killed process
+        would otherwise have no control at all and block that month forever. %>
+    <% if @run.draft? || @run.review? || @run.processing? %>
       <%= button_to @run.draft? ? "Compute" : "Recompute", hr_lite.compute_admin_payroll_run_path(@run),
                     method: :post, class: "hrl-btn hrl-btn--primary" %>
     <% end %>

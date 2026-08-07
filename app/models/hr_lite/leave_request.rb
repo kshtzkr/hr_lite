@@ -44,6 +44,11 @@ module HrLite
     def approve!(actor:, note: nil)
       insufficient = false
       transition!("approved", actor, note) do
+        # Serialize on the BALANCE row. `transition!`'s own lock is on this
+        # request, and two pending requests are two different rows — so both
+        # approvals could read the same untouched balance and overdraw it.
+        LeaveBalance.lock_for(user, leave_type, LeaveYear.key_for(start_date)) unless leave_type.unlimited?
+
         if insufficient_balance_now?
           insufficient = true
           raise ActiveRecord::Rollback
@@ -120,7 +125,10 @@ module HrLite
     def insufficient_balance_now?
       return false if leave_type.unlimited?
 
-      LeaveDayCounter.count(self) > balance.available
+      # Same as-of date the create-time check used. Reading it as of TODAY
+      # meant a request validated against the balance it would have on the
+      # leave dates could never be approved on a monthly-accrual type.
+      LeaveDayCounter.count(self) > balance.available(as_of: start_date)
     end
 
     def notify_requested

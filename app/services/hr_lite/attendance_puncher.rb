@@ -4,6 +4,9 @@ module HrLite
   # without GPS or outside every office radius is recorded AND flagged —
   # denying GPS must not stop anyone from working.
   class AttendancePuncher
+    # What the browser can legitimately report (geo_punch.js).
+    GEO_STATUSES = %w[ok denied unavailable timeout insecure].freeze
+
     Result = Struct.new(:record, :error, keyword_init: true) do
       def ok? = error.nil?
     end
@@ -18,7 +21,11 @@ module HrLite
       @lat = lat.presence
       @lng = lng.presence
       @accuracy_m = accuracy_m.presence
-      @geo_status = geo_status
+      # Client-supplied and rendered straight into the admin-facing flag note.
+      # Anything outside the browser's real permission states is not evidence:
+      # a blank one (JS never ran) produced "without GPS ()", and a crafted one
+      # let an employee write reassuring text onto their own flag.
+      @geo_status = GEO_STATUSES.include?(geo_status.to_s) ? geo_status.to_s : "unavailable"
     end
 
     def call

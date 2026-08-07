@@ -5,6 +5,10 @@ RSpec.describe "Payroll over HTTP", type: :request do
   let(:admin) { create(:user, :admin) }
   let(:month) { Date.new(2027, 6, 1) }
 
+  # Payroll only accepts a month that has ENDED, so these run from a
+  # point just after the period they compute.
+  around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
+
   before { HrLite.config.leadership_emails = [ "lead@x.test" ] }
 
   describe "leadership gating" do
@@ -143,7 +147,7 @@ RSpec.describe "Payroll over HTTP", type: :request do
       delete "/hr/admin/payroll_runs/#{run.id}"
       expect(HrLite::PayrollRun.exists?(run.id)).to be(false)
 
-      other = create(:payroll_run, period_month: Date.new(2027, 7, 1))
+      other = create(:payroll_run, period_month: Date.new(2027, 5, 1))
       other.compute!(actor: leader)
       delete "/hr/admin/payroll_runs/#{other.id}"
       expect(HrLite::PayrollRun.exists?(other.id)).to be(true)

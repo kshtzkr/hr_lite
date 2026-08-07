@@ -2,7 +2,10 @@ module HrLite
   module Admin
     class AuditLogsController < LeadershipController
       def index
-        @audit_logs = paginate(AuditLog.recent.includes(:actor))
+        # Appraisal and promotion rows carry review text in plain columns:
+        # ordinary leadership governs people and policy, not pay.
+        scope = hr_superadmin? ? AuditLog.recent : AuditLog.recent.outside_money_tier
+        @audit_logs = paginate(scope.includes(:actor))
       end
     end
   end

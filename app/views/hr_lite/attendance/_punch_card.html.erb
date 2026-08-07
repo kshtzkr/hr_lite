@@ -1,4 +1,11 @@
 <% record = HrLite::AttendanceRecord.find_by(user_id: hr_current_user.id, date: Date.current) %>
+<%# A shift that runs past midnight leaves yesterday's record open.
+    AttendancePuncher already closes it, but this card looked only at today,
+    so after midnight it offered "Check in" and the night's punch never
+    closed — no worked duration, no hours on the team board. %>
+<% open_yesterday = record ? nil : HrLite::AttendanceRecord.for_date(Date.current - 1)
+                                                          .missing_checkout
+                                                          .find_by(user_id: hr_current_user.id) %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Today, <%= Date.current.strftime("%d %b") %></h2>
 
@@ -12,12 +19,25 @@
     <% if record&.flagged? %>
       <span class="hrl-badge hrl-badge--bad" title="<%= record.flag_note %>">Flagged</span>
     <% end %>
-    <% if record.nil? %>
+    <% if open_yesterday %>
+      <span class="hrl-badge hrl-badge--warn">Yesterday still open —
+        in <%= open_yesterday.check_in_at.strftime("%H:%M") %></span>
+    <% elsif record.nil? %>
       <span class="hrl-muted">Not checked in yet.</span>
     <% end %>
   </div>
 
-  <% if record&.check_in_at.blank? %>
+  <% if open_yesterday %>
+    <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
+                  html: { data: { "hrl-geo-punch": true } } do %>
+      <input type="hidden" name="lat"><input type="hidden" name="lng">
+      <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
+        Check out yesterday's shift
+      </button>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status hidden></p>
+    <% end %>
+  <% elsif record&.check_in_at.blank? %>
     <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
                   html: { data: { "hrl-geo-punch": true } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">

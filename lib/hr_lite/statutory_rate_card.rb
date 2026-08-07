@@ -24,11 +24,16 @@ module HrLite
           "none" => [],
           "uttar_pradesh" => [],
           "uttarakhand" => [],
-          "karnataka" => [ { above: r("24999"), monthly: r("200") } ]
+          # Inclusive lower bounds. `above: 24999` with a strict `>` taxed a
+          # prorated gross of ₹24,999.50, which is below the real threshold.
+          "karnataka" => [ { from: r("25000"), monthly: r("200") } ]
         },
         income_tax: {
           "new" => {
             standard_deduction: r("75000"), rebate_cap: r("1200000"), cess_rate: r("0.04"),
+            # §115BAC carries marginal relief just above the rebate cap; the
+            # old regime does not, so this is a per-regime flag.
+            marginal_relief: true,
             slabs: [
               [ r("0"), r("400000"), r("0") ],
               [ r("400000"), r("800000"), r("0.05") ],

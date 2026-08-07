@@ -52,8 +52,12 @@ module HrLite
       user_klass.where("LOWER(#{user_klass.table_name}.email) IN (?)", emails)
     end
 
+    # Every domain event that bells the admins calls this. Loading and
+    # instantiating the entire users table to run admin_check per row is fine
+    # at ten staff and silly at a thousand — so it starts from employees_scope
+    # (which a host narrows to real staff) rather than every row that exists.
     def admin_users
-      user_klass.all.select { |u| admin?(u) }
+      employees.select { |u| admin?(u) }
     end
 
     # Everyone HR tracks (host-overridable to exclude bots/test accounts),

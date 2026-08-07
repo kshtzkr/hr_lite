@@ -13,7 +13,11 @@ module HrLite
     belongs_to :manager, class_name: HrLite.config.user_class, optional: true
 
     encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc
-    encrypted_money :declared_annual_deductions
+    # fy_opening_*: income already paid this financial year that this install
+    # did not run — a previous employer, or the months before payroll was
+    # switched on here. Feeds the TDS projection so a mid-year start does not
+    # read as zero income for the months it cannot see.
+    encrypted_money :declared_annual_deductions, :fy_opening_gross, :fy_opening_tds
 
     TAX_REGIMES = %w[new old].freeze
 

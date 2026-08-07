@@ -4,7 +4,12 @@ module HrLite
   class ResignationsController < ApplicationController
     def show
       @resignation = own.recent_first.first
-      @new_resignation = Resignation.new(proposed_last_day: Date.current + 30) unless @resignation&.pending?
+      # No form once one is pending OR already accepted: an agreed exit date is
+      # not something to re-file, and accepting a second one would overwrite
+      # the date payroll and attendance already clip to.
+      unless @resignation&.pending? || @resignation&.accepted?
+        @new_resignation = Resignation.new(proposed_last_day: Date.current + 30)
+      end
     end
 
     def create

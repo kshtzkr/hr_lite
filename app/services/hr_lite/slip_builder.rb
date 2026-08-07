@@ -21,8 +21,14 @@ module HrLite
     def call
       summary = AttendanceSummary.for(user: @user, month: @run.period_month)
       days_in_month = summary[:days_in_month]
-      lop = Money.d(@lop_override || summary[:lop_days])
-      payable = [ Money.d(days_in_month) - Money.d(summary[:out_of_window]) - lop, Money.d(0) ].max
+      # Clamped defensively: a stored negative override (written before the
+      # controller bounded them) would otherwise pay more days than the month has.
+      lop = [ Money.d(@lop_override || summary[:lop_days]), BigDecimal(0) ].max
+      # `upcoming` is normally zero — PayrollRun refuses a month that has not
+      # ended — but subtracting it means a legacy run for an open month cannot
+      # pay for days nobody has worked yet.
+      payable = [ Money.d(days_in_month) - Money.d(summary[:out_of_window]) -
+                  Money.d(summary[:upcoming]) - lop, Money.d(0) ].max
 
       earnings = Calculators::Proration.call(
         structure: @structure, payable_days: payable, days_in_month: days_in_month
@@ -44,7 +50,7 @@ module HrLite
         )
       end
 
-      esi = Calculators::Esi.call(monthly_gross: @structure.monthly_gross, gross_earned: gross_earned,
+      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross, gross_earned: gross_earned,
                                   applicable: @structure.esi_applicable, rates: @rates[:esi])
       if esi.applicable?
         deductions << { code: "esi_employee", label: "ESI", amount: esi.employee }
@@ -60,8 +66,12 @@ module HrLite
         regime: @profile.tax_regime,
         structure_monthly_gross: @structure.monthly_gross,
         gross_earned_this_month: gross_earned,
-        fy_gross_paid: fy[:gross],
-        fy_tds_paid: fy[:tds],
+        # Plus anything paid this FY that this install never ran — a previous
+        # employer, or the months before payroll was switched on. Without it a
+        # mid-year start projects those months as zero income and can land the
+        # whole year under the rebate cap.
+        fy_gross_paid: fy[:gross] + Money.d(@profile.fy_opening_gross),
+        fy_tds_paid: fy[:tds] + Money.d(@profile.fy_opening_tds),
         months_remaining: months_remaining_in_fy,
         declared_annual_deductions: @profile.declared_annual_deductions,
         rates: @rates[:income_tax],
@@ -75,6 +85,9 @@ module HrLite
         period_month: @run.period_month,
         days_in_month: days_in_month,
         payable_days: payable,
+        # Recorded so the slip can say WHY a mid-month joiner's payable days
+        # are short, instead of looking like days went missing.
+        out_of_window_days: Money.d(summary[:out_of_window]),
         lop_days: Money.d(summary[:lop_days]),
         lop_override: @lop_override,
         tds_override: @tds_override,
@@ -84,17 +97,50 @@ module HrLite
         tax_details: tds.details.to_json,
         gross_earnings: gross_earned,
         total_deductions: total_deductions,
-        net_pay: gross_earned - total_deductions,
+        # A heavy-LOP month can leave TDS (projected from the full structure)
+        # larger than what was actually earned. Nobody is paid a negative
+        # salary; PayrollRunProcessor warns when this floor bites.
+        net_pay: [ gross_earned - total_deductions, BigDecimal(0) ].max,
         computed_at: Time.current
       }
     end
 
     private
 
-    # Months left in the Indian FY including the run month itself.
+    # Months left in the Indian FY (Apr–Mar) including the run month itself:
+    # April = 12, December = 4, January = 3, March = 1. Capped at the exit
+    # month for a leaver, so a final settlement is not spread over months
+    # that will never be paid.
     def months_remaining_in_fy
       month = @run.period_month.month
-      month >= 4 ? (15 - month) : (3 - month + 1)
+      calendar = month >= 4 ? (16 - month) : (4 - month)
+      exit_date = @profile&.date_of_exit
+      return calendar if exit_date.nil? || exit_date < @run.period_month
+
+      [ calendar, months_between(@run.period_month, exit_date) ].min
+    end
+
+    def months_between(from, to)
+      (to.year * 12 + to.month) - (from.year * 12 + from.month) + 1
+    end
+
+    # ESIC contribution periods run April–September and October–March.
+    # Eligibility is fixed for the whole period, so it is decided on the
+    # salary in force on its first day — re-deciding it every month dropped
+    # someone out of ESI the moment a mid-period raise crossed the ceiling.
+    def esi_reference_gross
+      month = @run.period_month
+      start = if month.month.between?(4, 9)
+        Date.new(month.year, 4, 1)
+      elsif month.month >= 10
+        Date.new(month.year, 10, 1)
+      else
+        Date.new(month.year - 1, 10, 1)
+      end
+
+      # No structure that far back (a mid-period joiner) — their own is the
+      # only salary this period has ever had.
+      (SalaryStructure.effective_for(@user, start) || @structure).monthly_gross
     end
 
     def serialize_rows(rows)

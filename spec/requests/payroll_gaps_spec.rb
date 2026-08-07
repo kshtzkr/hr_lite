@@ -5,6 +5,10 @@ RSpec.describe "Payroll screens and edge branches", type: :request do
   let(:leader) { create(:user, email: "lead@x.test") }
   let(:month) { Date.new(2027, 6, 1) }
 
+  # Payroll only accepts a month that has ENDED, so these run from a
+  # point just after the period they compute.
+  around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
+
   before do
     HrLite.config.leadership_emails = [ "lead@x.test" ]
     sign_in leader

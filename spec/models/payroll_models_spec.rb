@@ -1,6 +1,23 @@
 require "rails_helper"
 
 RSpec.describe "Payroll models" do
+  # Payroll only accepts a month that has ENDED, so these run from a point
+  # just after the fixed 2027 periods they use.
+  around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
+
+  # Marks every working day of `month` as present for `user`.
+  def punch_full_month(user, month)
+    calendar = HrLite::WorkingCalendar.new(month.beginning_of_month..month.end_of_month)
+    (month.beginning_of_month..month.end_of_month).each do |date|
+      next unless calendar.working_day?(date)
+
+      HrLite::AttendanceRecord.create!(
+        user_id: user.id, date: date, status: "present",
+        check_in_at: date.in_time_zone.change(hour: 10),
+        check_out_at: date.in_time_zone.change(hour: 19)
+      )
+    end
+  end
   describe HrLite::EmployeeProfile do
     it "validates identity formats when present" do
       expect(build(:employee_profile, pan_number: "ABCDE1234F")).to be_valid
@@ -191,6 +208,11 @@ RSpec.describe "Payroll models" do
       create(:salary_structure, user: user, basic: 150000, hra: nil, special_allowance: nil)
 
       [ Date.new(2027, 3, 1), Date.new(2027, 4, 1), Date.new(2027, 5, 1) ].each do |month|
+        # Punch every working day. Without this the months are simply absent
+        # (only weekends are payable) and the gross is a fraction of salary —
+        # they used to read as full months only because the whole period was
+        # in the future, which payroll no longer accepts.
+        punch_full_month(user, month)
         run = create(:payroll_run, period_month: month)
         run.compute!(actor: leader)
         run.finalize!(actor: leader)

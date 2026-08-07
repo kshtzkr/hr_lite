@@ -4,6 +4,10 @@ RSpec.describe "SlipBuilder + PayrollRunProcessor" do
   let(:leader) { create(:user, email: "lead@x.test") }
   let(:month) { Date.new(2027, 6, 1) } # June 2027: 30 days, 8 weekend days (sat_sun), 22 working
 
+  # Payroll only accepts a month that has ENDED, so these run from a
+  # point just after the period they compute.
+  around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
+
   describe HrLite::SlipBuilder do
     it "composes a full-attendance month end to end" do
       profile = create(:employee_profile)
@@ -43,14 +47,14 @@ RSpec.describe "SlipBuilder + PayrollRunProcessor" do
       structure = create(:salary_structure, user: profile.user, basic: 30000, hra: nil,
                                             special_allowance: nil)
       run = create(:payroll_run, period_month: month)
-      travel_to(Date.new(2027, 7, 5)) do
-        attrs = described_class.call(run: run, user: profile.user, structure: structure,
-                                     profile: profile)
-        # 15 days out of window (1-15 June); working days 16-30 June unpunched -> LOP
-        summary = HrLite::AttendanceSummary.for(user: profile.user, month: month)
-        expect(summary[:out_of_window]).to eq(15)
-        expect(attrs[:payable_days]).to eq(30 - 15 - attrs[:lop_days])
-      end
+      # The whole file already sits at 2027-07-05; travelling again from here
+      # raises "cannot travel while travelling".
+      attrs = described_class.call(run: run, user: profile.user, structure: structure,
+                                   profile: profile)
+      # 15 days out of window (1-15 June); working days 16-30 June unpunched -> LOP
+      summary = HrLite::AttendanceSummary.for(user: profile.user, month: month)
+      expect(summary[:out_of_window]).to eq(15)
+      expect(attrs[:payable_days]).to eq(30 - 15 - attrs[:lop_days])
     end
   end
 

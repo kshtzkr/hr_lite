@@ -13,6 +13,9 @@ module HrLite
     validates :annual_quota, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
     validates :carry_forward_cap, numericality: { greater_than_or_equal_to: 0 }
     validate :single_comp_off_type
+    # Retiring the flagged type hands the flag back, so a replacement can take
+    # it and `comp_off_type` (which resolves through `active`) keeps working.
+    before_save :release_comp_off_when_retired
 
     scope :active, -> { where(active: true).order(:position, :id) }
 
@@ -28,12 +31,19 @@ module HrLite
     private
 
     # Approvals credit into THE comp-off type — two flagged types would
-    # make the credit target position-order roulette.
+    # make the credit target position-order roulette. Scoped to ACTIVE rows
+    # so it agrees with `comp_off_type`, which resolves through `active`:
+    # counting a retired type here made the flag impossible to move to its
+    # replacement, and comp-off approval then failed for everyone.
     def single_comp_off_type
-      return unless comp_off
+      return unless comp_off && active
 
-      clash = self.class.where(comp_off: true).where.not(id: id)
+      clash = self.class.active.where(comp_off: true).where.not(id: id)
       errors.add(:comp_off, "is already set on #{clash.first.name}") if clash.exists?
+    end
+
+    def release_comp_off_when_retired
+      self.comp_off = false if comp_off && !active
     end
   end
 end

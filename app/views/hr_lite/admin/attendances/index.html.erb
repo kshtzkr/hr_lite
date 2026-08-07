@@ -14,7 +14,10 @@
 
 <div class="hrl-kpis">
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at } %></div><div class="hrl-kpi__label">Checked in</div></div>
-  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @employees.size - @records.size %></div><div class="hrl-kpi__label">No punch</div></div>
+  <%# Derived from the same predicate as "Checked in". Counting rows instead
+      dropped a record with no check-in out of BOTH tiles, so the numbers
+      quietly stopped adding up to the headcount. %>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @employees.size - @records.values.count { |r| r.check_in_at } %></div><div class="hrl-kpi__label">No punch</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @flagged_count %></div><div class="hrl-kpi__label">Flagged</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at && r.check_out_at.nil? } %></div><div class="hrl-kpi__label">Still in</div></div>
 </div>

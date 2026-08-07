@@ -24,6 +24,22 @@ module HrLite
         redirect_to admin_leave_request_path(request), alert: "Only pending requests can be decided."
       end
 
+      # LeaveRequest#cancellable_by? has always allowed an admin to call off
+      # approved future leave, but no route reached it — the only cancel action
+      # was the employee's own, scoped to their own rows. A trip called off
+      # while the person was unreachable, or after they were offboarded, could
+      # not be released at all, and the quota stayed spent.
+      def cancel
+        request = LeaveRequest.find(params[:id])
+        if request.cancellable_by?(hr_current_user)
+          request.cancel!(actor: hr_current_user)
+          redirect_to admin_leave_requests_path, notice: "Leave cancelled — the balance is released."
+        else
+          redirect_to admin_leave_request_path(request),
+                      alert: "Only pending leave, or approved leave that has not started, can be cancelled."
+        end
+      end
+
       def reject
         request = LeaveRequest.find(params[:id])
         note = params[:decision_note].to_s.strip

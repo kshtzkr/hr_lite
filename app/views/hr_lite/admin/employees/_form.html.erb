@@ -41,9 +41,16 @@
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
     <div class="hrl-field">
       <%= f.label :manager_id, "Reports to (their L1)" %>
+      <%# The current manager stays listed even after they exit. Dropping them
+          left the select with no matching option, so the browser preselected
+          the blank one and saving anything silently wiped the reporting line
+          of everyone whose manager had left. %>
+      <% candidates = HrLite.active_employees.reject { |u| u.id == profile.user_id } %>
+      <% if profile.manager && candidates.none? { |u| u.id == profile.manager_id } %>
+        <% candidates += [ profile.manager ] %>
+      <% end %>
       <%= f.select :manager_id,
-                   HrLite.active_employees.reject { |u| u.id == profile.user_id }
-                         .map { |u| [ HrLite.display_name(u), u.id ] },
+                   candidates.map { |u| [ HrLite.display_name(u), u.id ] },
                    include_blank: "— nobody (top of the org) —" %>
     </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
@@ -67,6 +74,17 @@
     <div class="hrl-field">
       <%= f.label :declared_annual_deductions, "Declared annual deductions (old regime only)" %>
       <%= f.number_field :declared_annual_deductions, step: 0.01, value: profile.declared_annual_deductions&.to_s("F") %>
+    </div>
+    <%# Only what THIS install has paid is visible to the tax projection, so a
+        mid-year start (or a joiner from another employer) needs the earlier
+        months stated here or the year under-deducts. %>
+    <div class="hrl-field">
+      <%= f.label :fy_opening_gross, "Gross already paid this FY elsewhere (previous employer, or before payroll started here)" %>
+      <%= f.number_field :fy_opening_gross, step: 0.01, value: profile.fy_opening_gross&.to_s("F") %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :fy_opening_tds, "TDS already deducted this FY elsewhere" %>
+      <%= f.number_field :fy_opening_tds, step: 0.01, value: profile.fy_opening_tds&.to_s("F") %>
     </div>
     <div class="hrl-form-actions">
       <%= f.submit "Save profile", class: "hrl-btn hrl-btn--primary" %>

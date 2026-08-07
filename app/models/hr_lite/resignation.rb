@@ -29,8 +29,17 @@ module HrLite
         update!(status: "accepted", decided_by_id: actor.id, decided_at: Time.current,
                 decision_note: note.presence, proposed_last_day: final_day)
         profile = EmployeeProfile.find_by(user_id: user_id)
+        # Someone can resign before HR ever created their profile. That is not
+        # a reason to refuse the resignation — but the caller has to know
+        # nothing was stamped, because the screen used to claim it was.
+        @exit_date_recorded = profile.present?
         profile&.update!(date_of_exit: final_day)
       end
+
+      # Notice periods are the normal case, so access is revoked here only
+      # when the last day has already passed. Otherwise the person keeps
+      # working it out and leadership revokes from the employee page.
+      revoke_access! if final_day <= Date.current
 
       Notifications.publish(
         "resignation.accepted",
@@ -56,7 +65,20 @@ module HrLite
       true
     end
 
+    # False when the person had no employee profile to stamp — see accept!.
+    def exit_date_recorded?
+      @exit_date_recorded
+    end
+
     private
+
+    # Best-effort, like every other call of this hook: a host that cannot
+    # revoke must not roll back an accepted resignation.
+    def revoke_access!
+      HrLite.config.offboard_user.call(user)
+    rescue => e
+      Rails.logger.error("[hr_lite] offboard_user failed: #{e.class}: #{e.message}")
+    end
 
     def notify_submitted
       Notifications.publish(
@@ -78,6 +100,11 @@ module HrLite
     def single_open_resignation
       if self.class.pending.where(user_id: user_id).exists?
         errors.add(:base, "You already have a pending resignation")
+      elsif self.class.where(user_id: user_id, status: "accepted").exists?
+        # Only `pending` used to block a second one, so someone whose exit was
+        # already agreed could resign again — and accepting the new one would
+        # overwrite the exit date payroll and attendance already clip to.
+        errors.add(:base, "Your resignation has already been accepted — talk to your manager to change the date")
       end
     end
   end

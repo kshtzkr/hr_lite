@@ -49,6 +49,14 @@ module HrLite
     # InvalidMerge with the real story so the admin knows what to fix.
     def approve!(actor:, note: nil)
       transition!("approved", actor, note) do
+        # Re-checked at approval, not only at create: leave can be approved for
+        # that day while the ticket waits in the queue, and DayStatus ranks
+        # full-day leave above any punch — so the "fix" would write a record
+        # nothing reads while telling everyone attendance had been corrected.
+        if LeaveRequest.active_on(date).where(user_id: user_id, half_day: false).exists?
+          raise InvalidMerge, "the day is now covered by approved leave — cancel the leave first"
+        end
+
         record = AttendanceRecord.find_or_initialize_by(user_id: user_id, date: date)
         record.check_in_at = check_in_at if check_in_at
         record.check_out_at = check_out_at if check_out_at

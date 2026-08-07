@@ -13,6 +13,8 @@ module HrLite
     validates :period_month, presence: true, uniqueness: true
     validates :status, inclusion: { in: STATUSES }
     validate :period_is_first_of_month
+    # Create-only: an existing run must stay transitionable forever.
+    validate :period_is_a_closed_month, on: :create
     before_destroy :draft_only_destroy
 
     scope :recent_first, -> { order(period_month: :desc) }
@@ -27,16 +29,25 @@ module HrLite
       period_month.strftime("%B %Y")
     end
 
+    # `processing` is allowed back in so a run stranded there by a killed
+    # process (deploy roll, timeout) can be recomputed instead of blocking
+    # that month forever.
     def compute!(actor:)
-      raise_unless %w[draft review]
+      raise_unless %w[draft review processing]
+      previous = status
 
-      update!(status: "processing")
-      PayrollRunProcessor.call(self)
-      update!(status: "review", processed_at: Time.current)
-      true
-    rescue => e
-      update_columns(status: "draft") # rubocop:disable Rails/SkipsModelValidations
-      raise e
+      begin
+        update!(status: "processing")
+        PayrollRunProcessor.call(self)
+        update!(status: "review", processed_at: Time.current)
+        true
+      rescue => e
+        # Restore what the run WAS. Hardcoding "draft" here used to demote a
+        # finalized or published run — which then exposed the delete-draft
+        # control, and that cascades over every salary slip.
+        update_columns(status: previous) # rubocop:disable Rails/SkipsModelValidations
+        raise e
+      end
     end
 
     def finalize!(actor:)
@@ -63,12 +74,20 @@ module HrLite
       update!(status: "published", published_at: Time.current, published_by_id: actor.id)
 
       slips = salary_slips.includes(:user).to_a
+      # Everyone is emailed — a final settlement matters most to the person who
+      # has left — but a bell is only useful to someone who can still sign in,
+      # and offboarding revokes that. Sending one pointed at a page they cannot
+      # open is just noise in a place they will never look.
+      exited = EmployeeProfile.where(user_id: slips.map(&:user_id))
+                              .where(date_of_exit: ..Date.current)
+                              .pluck(:user_id).to_set
+
       Notifications.publish(
         "payroll.published",
         title: "Your salary slip for #{label} is ready",
         body: "Open Earthly HR to view or download it.",
         path: "/salary_slips",
-        bell_to: slips.map(&:user),
+        bell_to: slips.reject { |slip| exited.include?(slip.user_id) }.map(&:user),
         email_to: slips.map(&:user)
       )
       true
@@ -100,6 +119,16 @@ module HrLite
       return if period_month.day == 1
 
       errors.add(:period_month, "must be the 1st of a month")
+    end
+
+    # Days that have not happened yet score as `upcoming`, which payroll folds
+    # into payable — so computing a month before it ends pays for days nobody
+    # worked, and once finalized the slips are immutable.
+    def period_is_a_closed_month
+      return unless period_month
+      return if period_month.end_of_month < Date.current
+
+      errors.add(:period_month, "must be a month that has already ended")
     end
 
     def draft_only_destroy

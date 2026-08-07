@@ -10,7 +10,9 @@
   <dl class="hrl-deflist">
     <dt>Type</dt><dd><%= @request.leave_type.name %> (<%= @request.paid? ? "paid" : "unpaid" %>)</dd>
     <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
-    <dt>Working days</dt><dd><%= @request.days_count.to_f %></dd>
+    <%# Counted live, not from the create-time cache: a holiday added after
+        the request was filed changes what the balance is actually debited. %>
+    <dt>Working days</dt><dd><%= HrLite::LeaveDayCounter.count(@request).to_f %></dd>
     <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
     <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
     <% unless @request.leave_type.unlimited? %>
@@ -21,18 +23,48 @@
   </dl>
 </section>
 
+<%# An approved leave that has not started yet can still be called off — the
+    balance is recomputed live, so cancelling gives the days straight back. %>
+<% if @request.cancellable_by?(hr_current_user) && !@request.pending? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Cancel</h2>
+    <p class="hrl-small hrl-muted">Releases the days back to their balance. Only possible
+      before the leave starts.</p>
+    <%= form_with url: hr_lite.cancel_admin_leave_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Cancel this approved leave?" } } do %>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--danger" type="submit">Cancel this leave</button>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
 <% if @request.pending? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Decide</h2>
+    <%# Approve and reject are two separate forms on purpose. Rails binds the
+        CSRF token to the form's OWN action, so one form retargeted with
+        `formaction:` can never pass verification on the second endpoint. %>
     <%= form_with url: hr_lite.approve_admin_leave_request_path(@request), method: :post, local: true do %>
       <div class="hrl-field">
-        <label for="decision_note">Note (required to reject)</label>
-        <textarea name="decision_note" id="decision_note" class="hrl-input"></textarea>
+        <label for="approve_note">Note (optional)</label>
+        <textarea name="decision_note" id="approve_note" class="hrl-input"></textarea>
       </div>
       <div class="hrl-form-actions">
         <button class="hrl-btn hrl-btn--primary" type="submit">Approve</button>
-        <button class="hrl-btn hrl-btn--danger" type="submit"
-                formaction="<%= hr_lite.reject_admin_leave_request_path(@request) %>">Reject</button>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Reject</h2>
+    <%= form_with url: hr_lite.reject_admin_leave_request_path(@request), method: :post, local: true do %>
+      <div class="hrl-field">
+        <label for="reject_note">Reason (required)</label>
+        <textarea name="decision_note" id="reject_note" class="hrl-input"></textarea>
+      </div>
+      <div class="hrl-form-actions">
+        <button class="hrl-btn hrl-btn--danger" type="submit">Reject</button>
       </div>
     <% end %>
   </section>

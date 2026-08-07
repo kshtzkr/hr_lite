@@ -2,8 +2,7 @@ module HrLite
   module Admin
     class LeaveBalancesController < BaseController
       def index
-        year = params[:year].to_i
-        @year = year.between?(2000, 2100) ? year : LeaveYear.current_key
+        @year = sanitized_year
         @types = LeaveType.active.where(paid: true).where.not(annual_quota: nil)
         @employees = HrLite.employees
       end
@@ -12,7 +11,9 @@ module HrLite
       def adjust
         user = HrLite.user_klass.find(params[:user_id])
         type = LeaveType.find(params[:leave_type_id])
-        year = params[:year].to_i
+        # Unsanitised, a missing param wrote the adjustment into leave year 0,
+        # where no screen can ever show it.
+        year = sanitized_year
         delta = BigDecimal(params[:delta].to_s)
         note = params[:note].to_s.strip
 
@@ -20,10 +21,7 @@ module HrLite
           return redirect_to admin_leave_balances_path(year: year), alert: "A note is required."
         end
 
-        balance = LeaveBalance.for(user, type, year)
-        balance.adjustment += delta
-        balance.adjustment_note = [ balance.adjustment_note.presence, "#{delta.to_f} — #{note}" ].compact.join("; ")
-        balance.save!
+        balance = LeaveBalance.adjust!(user, type, year, delta: delta, note: "#{delta.to_f} — #{note}")
 
         AuditLog.create!(
           actor: hr_current_user, action: "adjust",
@@ -34,7 +32,16 @@ module HrLite
         redirect_to admin_leave_balances_path(year: year),
                     notice: "Balance adjusted for #{HrLite.display_name(user)}."
       rescue ArgumentError
-        redirect_to admin_leave_balances_path, alert: "Enter a valid adjustment number."
+        # Keep the admin on the year they were looking at.
+        redirect_to admin_leave_balances_path(year: sanitized_year),
+                    alert: "Enter a valid adjustment number."
+      end
+
+      private
+
+      def sanitized_year
+        year = params[:year].to_i
+        year.between?(2000, 2100) ? year : LeaveYear.current_key
       end
     end
   end

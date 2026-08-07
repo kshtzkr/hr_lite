@@ -7,7 +7,9 @@ module HrLite
     class EmployeesController < LeadershipController
       def index
         @profiles = paginate(EmployeeProfile.includes(:user).order(:employee_code))
-        @users_without_profile = HrLite.employees.reject { |u| EmployeeProfile.exists?(user_id: u.id) }
+        # One pluck instead of an EXISTS query per employee.
+        profiled = EmployeeProfile.pluck(:user_id).to_set
+        @users_without_profile = HrLite.employees.reject { |u| profiled.include?(u.id) }
         @pending_resignations = Resignation.pending.includes(:user).recent_first
       end
 
@@ -24,17 +26,26 @@ module HrLite
       def create
         new_login = params.dig(:employee_profile, :new_user_email).present?
         @profile = EmployeeProfile.new(profile_params)
+        saved = false
 
-        if new_login
-          user = HrLite.config.onboard_user.call(
-            name: params.dig(:employee_profile, :new_user_name).to_s,
-            email: params.dig(:employee_profile, :new_user_email).to_s.strip,
-            password: params.dig(:employee_profile, :new_user_password).to_s
-          )
-          @profile.user_id = user.id
+        # One transaction: a profile that fails validation used to leave the
+        # freshly-created login committed — a role-bearing account with no HR
+        # profile, invisible on every HR screen.
+        ActiveRecord::Base.transaction do
+          if new_login
+            user = HrLite.config.onboard_user.call(
+              name: params.dig(:employee_profile, :new_user_name).to_s,
+              email: params.dig(:employee_profile, :new_user_email).to_s.strip,
+              password: params.dig(:employee_profile, :new_user_password).to_s
+            )
+            @profile.user_id = user.id
+          end
+
+          saved = @profile.save
+          raise ActiveRecord::Rollback unless saved
         end
 
-        if @profile.save
+        if saved
           if new_login
             invite_url = HrLite.config.invite_url_for&.call(@profile.user)
             Notifications.publish(
@@ -66,7 +77,7 @@ module HrLite
 
       def update
         @profile = EmployeeProfile.find(params[:id])
-        if @profile.update(profile_params)
+        if @profile.update(update_profile_params)
           redirect_to admin_employee_path(@profile), notice: "Employee profile updated."
         else
           render :edit, status: :unprocessable_entity
@@ -77,7 +88,9 @@ module HrLite
       # access via the host hook. Audited via the profile update.
       def offboard
         @profile = EmployeeProfile.find(params[:id])
-        exit_date = params[:date_of_exit].presence&.to_date || Date.current
+        # `.to_date` on a raw param raises Date::Error and 500s; the
+        # controller's own parser exists for exactly this.
+        exit_date = params[:date_of_exit].present? ? parse_date_param(params[:date_of_exit]) : Date.current
 
         @profile.update!(date_of_exit: exit_date)
         begin
@@ -87,6 +100,8 @@ module HrLite
         end
         redirect_to admin_employee_path(@profile),
                     notice: "Offboarded — last day #{exit_date.strftime('%d %b %Y')}, access revoked."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_employee_path(@profile), alert: e.record.errors.full_messages.to_sentence
       end
 
       private
@@ -95,8 +110,17 @@ module HrLite
         params.require(:employee_profile).permit(
           :user_id, :manager_id, :designation, :date_of_birth, :date_of_joining,
           :date_of_exit, :department, :work_location, :pan_number, :pf_uan, :esi_number,
-          :bank_account_number, :bank_ifsc, :bank_name, :tax_regime, :declared_annual_deductions
+          :bank_account_number, :bank_ifsc, :bank_name, :tax_regime, :declared_annual_deductions,
+          :fy_opening_gross, :fy_opening_tds
         )
+      end
+
+      # user_id says WHOSE profile this is, and salary structures, appraisals
+      # and slips all key off it independently. Repointing an existing profile
+      # hands one person's PAN, bank details and pay history to another, so it
+      # is a create-time field only.
+      def update_profile_params
+        profile_params.except(:user_id)
       end
     end
   end

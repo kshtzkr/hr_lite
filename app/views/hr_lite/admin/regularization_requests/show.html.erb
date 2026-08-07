@@ -35,15 +35,29 @@
     <h2 class="hrl-card__title">Decide</h2>
     <p class="hrl-hint">Approving writes the proposed times onto the day's attendance record
       (only the provided times overwrite) with the full regularization trail.</p>
+    <%# Approve and reject are two separate forms on purpose. Rails binds the
+        CSRF token to the form's OWN action, so one form retargeted with
+        `formaction:` can never pass verification on the second endpoint. %>
     <%= form_with url: hr_lite.approve_admin_regularization_request_path(@request), method: :post, local: true do |f| %>
       <div class="hrl-field">
-        <%= f.label :decision_note, "Note (required to reject, optional to approve)" %>
-        <%= f.text_area :decision_note %>
+        <%= f.label :decision_note, "Note (optional)", for: "approve_note" %>
+        <%= f.text_area :decision_note, id: "approve_note" %>
       </div>
       <div class="hrl-form-actions">
         <%= f.button "Approve — fix attendance", type: :submit, class: "hrl-btn hrl-btn--primary" %>
-        <%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger",
-                     formaction: hr_lite.reject_admin_regularization_request_path(@request) %>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Reject</h2>
+    <%= form_with url: hr_lite.reject_admin_regularization_request_path(@request), method: :post, local: true do |f| %>
+      <div class="hrl-field">
+        <%= f.label :decision_note, "Reason (required)", for: "reject_note" %>
+        <%= f.text_area :decision_note, id: "reject_note" %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger" %>
       </div>
     <% end %>
   </section>

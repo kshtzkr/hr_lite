@@ -6,6 +6,9 @@ require "rails_helper"
 # depend only on assigns, models and POROs — this spec renders it through a
 # bare ActionController::Base exactly like a host renderer would.
 RSpec.describe "salary slip PDF template under a host renderer" do
+  # Payroll only accepts a month that has ENDED, so these run from a point
+  # just after the fixed 2027 periods they use.
+  around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
   it "renders without engine helpers in scope" do
     leader = create(:user, :admin, email: "lead@x.test")
     HrLite.config.leadership_emails = [ "lead@x.test" ]

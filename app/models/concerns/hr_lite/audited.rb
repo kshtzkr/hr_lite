@@ -9,10 +9,14 @@ module HrLite
     SKIPPED_ATTRIBUTES = %w[updated_at created_at].freeze
     REDACTED = "[changed]".freeze
 
+    # *_commit, not *_create/_update/_destroy: these callbacks write an audit
+    # row and email leadership a diff. Fired inside the transaction they
+    # announce changes that then roll back — a failed onboarding used to mail
+    # out a profile diff for a profile that was never saved.
     included do
-      after_create  { hr_lite_audit!("create") }
-      after_update  { hr_lite_audit!("update") }
-      after_destroy { hr_lite_audit!("destroy") }
+      after_create_commit  { hr_lite_audit!("create") }
+      after_update_commit  { hr_lite_audit!("update") }
+      after_destroy_commit { hr_lite_audit!("destroy") }
     end
 
     private
@@ -63,7 +67,10 @@ module HrLite
         "policy.changed",
         title: "#{actor_name.presence || 'Someone'} #{log.action}d #{subject}",
         body: nil,
-        diff: log.audited_changes
+        # policy.changed fans out to leadership_emails, which is a WIDER list
+        # than the money tier. Leadership may know an appraisal changed; the
+        # ratings and review text inside it are not theirs to read.
+        diff: log.money_tier? ? nil : log.audited_changes
       )
     end
   end

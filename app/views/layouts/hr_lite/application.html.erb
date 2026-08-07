@@ -37,11 +37,15 @@
           <% end %>
         <% end %>
 
-        <% if hr_leadership? %>
+        <% if hr_leadership? || hr_superadmin? %>
           <span class="hrl-side__group">Organisation</span>
-          <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
-            <%= hrl_nav_link(item) %>
+          <% if hr_leadership? %>
+            <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
+              <%= hrl_nav_link(item) %>
+            <% end %>
           <% end %>
+          <%# Payroll hangs off the money tier alone — a superadmin who is not
+              in leadership_emails still needs to reach it. %>
           <% if hr_superadmin? %>
             <% hrl_nav_items(HrLite::ApplicationHelper::SUPERADMIN_NAV_ITEMS).each do |item| %>
               <%= hrl_nav_link(item) %>
@@ -78,12 +82,46 @@
     </div>
   </div>
 
+  <%# The left rail is display:none below 768px, so before the More sheet
+      existed the phone — the surface this is installed on — could reach only
+      the first five items. Org, Kudos, Slips, Career and every admin,
+      leadership and payroll screen were unreachable. <details> keeps it
+      dependency-free; the engine ships no Turbo or Stimulus. %>
   <nav class="hrl-tabbar" aria-label="HR sections">
-    <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).first(5).each do |item| %>
+    <% primary, rest = hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).partition.with_index { |_, i| i < 4 } %>
+    <% primary.each do |item| %>
       <%= hrl_nav_link(item) %>
     <% end %>
+    <details class="hrl-tabbar__more">
+      <summary class="hrl-nav__link">More</summary>
+      <div class="hrl-sheet">
+        <% rest.each do |item| %>
+          <%= hrl_nav_link(item) %>
+        <% end %>
+        <% if hr_admin? || hr_leadership? %>
+          <span class="hrl-side__group">Manage</span>
+          <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
+            <%= hrl_nav_link(item) %>
+          <% end %>
+        <% end %>
+        <% if hr_leadership? || hr_superadmin? %>
+          <span class="hrl-side__group">Organisation</span>
+          <% if hr_leadership? %>
+            <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
+              <%= hrl_nav_link(item) %>
+            <% end %>
+          <% end %>
+          <% if hr_superadmin? %>
+            <% hrl_nav_items(HrLite::ApplicationHelper::SUPERADMIN_NAV_ITEMS).each do |item| %>
+              <%= hrl_nav_link(item) %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </details>
   </nav>
 
+  <%= javascript_include_tag "hr_lite/confirm", defer: true %>
   <%= javascript_include_tag "hr_lite/mention", defer: true %>
   <%= yield :scripts %>
 </body>
