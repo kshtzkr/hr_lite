@@ -63,7 +63,10 @@ module HrLite
         "policy.changed",
         title: "#{actor_name.presence || 'Someone'} #{log.action}d #{subject}",
         body: nil,
-        diff: log.audited_changes
+        # policy.changed fans out to leadership_emails, which is a WIDER list
+        # than the money tier. Leadership may know an appraisal changed; the
+        # ratings and review text inside it are not theirs to read.
+        diff: log.money_tier? ? nil : log.audited_changes
       )
     end
   end

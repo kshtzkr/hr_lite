@@ -37,11 +37,15 @@
           <% end %>
         <% end %>
 
-        <% if hr_leadership? %>
+        <% if hr_leadership? || hr_superadmin? %>
           <span class="hrl-side__group">Organisation</span>
-          <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
-            <%= hrl_nav_link(item) %>
+          <% if hr_leadership? %>
+            <% hrl_nav_items(HrLite::ApplicationHelper::LEADERSHIP_NAV_ITEMS).each do |item| %>
+              <%= hrl_nav_link(item) %>
+            <% end %>
           <% end %>
+          <%# Payroll hangs off the money tier alone — a superadmin who is not
+              in leadership_emails still needs to reach it. %>
           <% if hr_superadmin? %>
             <% hrl_nav_items(HrLite::ApplicationHelper::SUPERADMIN_NAV_ITEMS).each do |item| %>
               <%= hrl_nav_link(item) %>
