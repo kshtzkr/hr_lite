@@ -20,11 +20,26 @@ module HrLite
         tds_override = params.dig(:salary_slip, :tds_override).presence
         profile = EmployeeProfile.find_by(user_id: slip.user_id)
         structure = SalaryStructure.effective_for(slip.user, run.period_month)
+        if structure.nil?
+          return redirect_to admin_salary_slip_path(slip),
+                             alert: "No salary structure is effective for #{run.label} — add one first."
+        end
+
+        lop = lop_override && BigDecimal(lop_override)
+        tds = tds_override && BigDecimal(tds_override)
+        # Unbounded overrides are a money bug, not a typo: a negative LOP pays
+        # for days never worked, one above the month zeroes the person out.
+        if lop && !lop.between?(0, slip.days_in_month)
+          return redirect_to admin_salary_slip_path(slip),
+                             alert: "LOP days must be between 0 and #{slip.days_in_month}."
+        end
+        if tds&.negative?
+          return redirect_to admin_salary_slip_path(slip), alert: "TDS cannot be negative."
+        end
 
         attributes = SlipBuilder.call(
           run: run, user: slip.user, structure: structure, profile: profile,
-          lop_override: lop_override && BigDecimal(lop_override),
-          tds_override: tds_override && BigDecimal(tds_override)
+          lop_override: lop, tds_override: tds
         )
         slip.update!(attributes)
 

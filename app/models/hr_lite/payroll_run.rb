@@ -27,16 +27,25 @@ module HrLite
       period_month.strftime("%B %Y")
     end
 
+    # `processing` is allowed back in so a run stranded there by a killed
+    # process (deploy roll, timeout) can be recomputed instead of blocking
+    # that month forever.
     def compute!(actor:)
-      raise_unless %w[draft review]
+      raise_unless %w[draft review processing]
+      previous = status
 
-      update!(status: "processing")
-      PayrollRunProcessor.call(self)
-      update!(status: "review", processed_at: Time.current)
-      true
-    rescue => e
-      update_columns(status: "draft") # rubocop:disable Rails/SkipsModelValidations
-      raise e
+      begin
+        update!(status: "processing")
+        PayrollRunProcessor.call(self)
+        update!(status: "review", processed_at: Time.current)
+        true
+      rescue => e
+        # Restore what the run WAS. Hardcoding "draft" here used to demote a
+        # finalized or published run — which then exposed the delete-draft
+        # control, and that cascades over every salary slip.
+        update_columns(status: previous) # rubocop:disable Rails/SkipsModelValidations
+        raise e
+      end
     end
 
     def finalize!(actor:)

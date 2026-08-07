@@ -21,7 +21,9 @@ module HrLite
     def call
       summary = AttendanceSummary.for(user: @user, month: @run.period_month)
       days_in_month = summary[:days_in_month]
-      lop = Money.d(@lop_override || summary[:lop_days])
+      # Clamped defensively: a stored negative override (written before the
+      # controller bounded them) would otherwise pay more days than the month has.
+      lop = [ Money.d(@lop_override || summary[:lop_days]), BigDecimal(0) ].max
       payable = [ Money.d(days_in_month) - Money.d(summary[:out_of_window]) - lop, Money.d(0) ].max
 
       earnings = Calculators::Proration.call(
