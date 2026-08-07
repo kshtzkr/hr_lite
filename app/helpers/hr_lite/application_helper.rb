@@ -71,19 +71,9 @@ module HrLite
       render "hr_lite/shared/pagination"
     end
 
+    # Delegates to the PORO so the host-rendered slip PDF formats identically.
     def hrl_money(amount)
-      return "—" if amount.nil?
-
-      whole, fraction = HrLite::Money.round2(amount).to_s("F").split(".")
-      sign = whole.start_with?("-") ? "-" : ""
-      whole = whole.delete_prefix("-")
-      # Indian digit grouping: last three digits together, then pairs
-      # (12,34,567 — not the western 1,234,567).
-      if whole.length > 3
-        head = whole[0..-4].reverse.scan(/\d{1,2}/).join(",").reverse
-        whole = "#{head},#{whole[-3..]}"
-      end
-      "#{sign}#{HrLite.config.currency_symbol}#{whole}.#{fraction.ljust(2, '0')}"
+      HrLite::Money.format(amount)
     end
 
     # Indian-system amount in words for the slip footer. Delegates to the

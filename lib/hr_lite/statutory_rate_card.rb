@@ -24,7 +24,9 @@ module HrLite
           "none" => [],
           "uttar_pradesh" => [],
           "uttarakhand" => [],
-          "karnataka" => [ { above: r("24999"), monthly: r("200") } ]
+          # Inclusive lower bounds. `above: 24999` with a strict `>` taxed a
+          # prorated gross of ₹24,999.50, which is below the real threshold.
+          "karnataka" => [ { from: r("25000"), monthly: r("200") } ]
         },
         income_tax: {
           "new" => {

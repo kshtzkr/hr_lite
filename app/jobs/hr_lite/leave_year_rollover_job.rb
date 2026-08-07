@@ -4,7 +4,7 @@ module HrLite
   # carry-forward into the new year's balance rows. Idempotent — a balance
   # whose carry has already been written is never touched again (manual
   # adjustments stay safe).
-  class LeaveYearRolloverJob < ActiveJob::Base
+  class LeaveYearRolloverJob < ApplicationJob
     queue_as :default
 
     def perform(year: nil)

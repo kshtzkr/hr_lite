@@ -7,7 +7,9 @@ module HrLite
     class EmployeesController < LeadershipController
       def index
         @profiles = paginate(EmployeeProfile.includes(:user).order(:employee_code))
-        @users_without_profile = HrLite.employees.reject { |u| EmployeeProfile.exists?(user_id: u.id) }
+        # One pluck instead of an EXISTS query per employee.
+        profiled = EmployeeProfile.pluck(:user_id).to_set
+        @users_without_profile = HrLite.employees.reject { |u| profiled.include?(u.id) }
         @pending_resignations = Resignation.pending.includes(:user).recent_first
       end
 

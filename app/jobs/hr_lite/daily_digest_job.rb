@@ -1,7 +1,7 @@
 module HrLite
   # Morning leadership email: who's out, what's pending, what's flagged.
   # Sends nothing on a quiet day.
-  class DailyDigestJob < ActiveJob::Base
+  class DailyDigestJob < ApplicationJob
     queue_as :default
 
     def perform(date: Date.current)
