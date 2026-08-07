@@ -74,12 +74,20 @@ module HrLite
       update!(status: "published", published_at: Time.current, published_by_id: actor.id)
 
       slips = salary_slips.includes(:user).to_a
+      # Everyone is emailed — a final settlement matters most to the person who
+      # has left — but a bell is only useful to someone who can still sign in,
+      # and offboarding revokes that. Sending one pointed at a page they cannot
+      # open is just noise in a place they will never look.
+      exited = EmployeeProfile.where(user_id: slips.map(&:user_id))
+                              .where(date_of_exit: ..Date.current)
+                              .pluck(:user_id).to_set
+
       Notifications.publish(
         "payroll.published",
         title: "Your salary slip for #{label} is ready",
         body: "Open Earthly HR to view or download it.",
         path: "/salary_slips",
-        bell_to: slips.map(&:user),
+        bell_to: slips.reject { |slip| exited.include?(slip.user_id) }.map(&:user),
         email_to: slips.map(&:user)
       )
       true

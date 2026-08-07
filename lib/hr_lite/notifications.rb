@@ -49,17 +49,27 @@ module HrLite
         DEFAULT_MATRIX.merge(HrLite.config.notification_matrix || {})
       end
 
-      def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [], diff: nil, link_url: nil)
+      # `leadership:` overrides title/body/path for the leadership copies of an
+      # event. Some events are written in the second person and point at an
+      # employee-scoped path ("Your appraisal has been shared", /appraisals/7):
+      # fanned out verbatim, leadership read them as being about themselves and
+      # followed a link their own scope 404s or resolves to their own record.
+      def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [],
+                  diff: nil, link_url: nil, leadership: {})
         row = matrix[event.to_s]
         unless row
           Rails.logger.warn("[hr_lite] unknown notification event #{event}")
           return
         end
 
+        lead_title = leadership[:title] || title
+        lead_body = leadership.key?(:body) ? leadership[:body] : body
+        lead_path = leadership[:path] || path
+
         deliver_bells(event, row, bell_to, title, body, path)
         deliver_emails(row, email_to, title, body, path, lines, link_url)
-        deliver_leadership_email(event, row, title, body, path, lines, diff)
-        deliver_leadership_bells(event, row, bell_to, title, body, path)
+        deliver_leadership_email(event, row, lead_title, lead_body, lead_path, lines, diff)
+        deliver_leadership_bells(event, row, bell_to, lead_title, lead_body, lead_path)
         nil
       end
 

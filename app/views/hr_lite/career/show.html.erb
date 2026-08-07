@@ -6,7 +6,13 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Current role</h2>
   <p><strong><%= @profile&.designation.presence || "Not set yet" %></strong>
-    <% if @profile %><span class="hrl-muted hrl-small">since <%= (@changes.first&.effective_date || @profile.date_of_joining).strftime("%b %Y") %></span><% end %>
+    <%# The most recent change IN FORCE, not simply the most recent row — a
+        promotion recorded for next quarter would otherwise date the current
+        role from a month that has not arrived yet. %>
+    <% if @profile %>
+      <% in_force = @changes.find { |change| change.effective_date <= Date.current } %>
+      <span class="hrl-muted hrl-small">since <%= (in_force&.effective_date || @profile.date_of_joining).strftime("%b %Y") %></span>
+    <% end %>
   </p>
 </section>
 

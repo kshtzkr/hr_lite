@@ -100,6 +100,11 @@ module HrLite
     def single_open_resignation
       if self.class.pending.where(user_id: user_id).exists?
         errors.add(:base, "You already have a pending resignation")
+      elsif self.class.where(user_id: user_id, status: "accepted").exists?
+        # Only `pending` used to block a second one, so someone whose exit was
+        # already agreed could resign again — and accepting the new one would
+        # overwrite the exit date payroll and attendance already clip to.
+        errors.add(:base, "Your resignation has already been accepted — talk to your manager to change the date")
       end
     end
   end

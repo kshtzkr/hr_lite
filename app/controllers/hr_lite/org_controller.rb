@@ -10,8 +10,13 @@ module HrLite
       @by_user = profiles.index_by(&:user_id)
       build_tree(profiles)
       @own_profile = @by_user[hr_current_user.id]
+      # STOPS at the first exited manager rather than skipping past them. The
+      # L-labels are positional, so dropping a link from the middle promoted
+      # everyone above it — the card then called a skip-level manager your L1,
+      # contradicting the tree below, which drops exited managers entirely and
+      # renders their reports as roots.
       exited = EmployeeProfile.where(date_of_exit: ...Date.current).pluck(:user_id).to_set
-      @own_chain = (@own_profile&.reporting_chain || []).reject { |boss| exited.include?(boss.id) }
+      @own_chain = (@own_profile&.reporting_chain || []).take_while { |boss| !exited.include?(boss.id) }
     end
 
     private

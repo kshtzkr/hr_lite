@@ -85,6 +85,9 @@ module HrLite
         period_month: @run.period_month,
         days_in_month: days_in_month,
         payable_days: payable,
+        # Recorded so the slip can say WHY a mid-month joiner's payable days
+        # are short, instead of looking like days went missing.
+        out_of_window_days: Money.d(summary[:out_of_window]),
         lop_days: Money.d(summary[:lop_days]),
         lop_override: @lop_override,
         tds_override: @tds_override,

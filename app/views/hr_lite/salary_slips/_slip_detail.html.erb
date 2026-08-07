@@ -37,7 +37,11 @@
 <section class="hrl-card">
   <dl class="hrl-deflist">
     <dt>Net pay</dt><dd><strong><%= hrl_money(slip.net_pay) %></strong> (<%= hrl_amount_in_words(slip.net_pay) %>)</dd>
-    <dt>Days</dt><dd><%= slip.payable_days %> payable / <%= slip.effective_lop_days %> LOP of <%= slip.days_in_month %></dd>
+    <%# Out-of-window days are named rather than silently dropped: without them
+        a mid-month joiner's row does not add up to the month. %>
+    <dt>Days</dt>
+    <dd><%= slip.payable_days %> payable / <%= slip.effective_lop_days %> LOP<% if slip.out_of_window_days.to_f.positive? %>
+      / <%= slip.out_of_window_days %> outside employment<% end %> of <%= slip.days_in_month %></dd>
     <% if profile %>
       <dt>Employee code</dt><dd><%= profile.employee_code %></dd>
       <% if profile.masked_uan %><dt>PF UAN</dt><dd><%= profile.masked_uan %></dd><% end %>

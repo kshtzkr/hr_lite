@@ -55,7 +55,14 @@ module HrLite
         body: "Effective #{effective_date.strftime('%d %b %Y')}.",
         path: "/career",
         bell_to: [ user ],
-        email_to: [ user ]
+        email_to: [ user ],
+        # "/career" is the reader's OWN career page, so a leadership copy of
+        # this used to link them to their own record instead of the person the
+        # promotion is about.
+        leadership: {
+          title: "#{HrLite.display_name(user)} — new role: #{to_designation}",
+          path: "/admin/employees"
+        }
       )
     end
   end

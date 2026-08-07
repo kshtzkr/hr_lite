@@ -43,7 +43,15 @@ module HrLite
         body: rating ? "Rating: #{rating}/5" : nil,
         path: "/appraisals/#{id}",
         bell_to: [ user ],
-        email_to: [ user ]
+        email_to: [ user ],
+        # Leadership gets the fact, named, pointing somewhere they can open —
+        # but not the rating: appraisal content is money-tier and this list is
+        # wider than that tier.
+        leadership: {
+          title: "#{HrLite.display_name(user)}'s appraisal for #{period_label} was shared",
+          body: nil,
+          path: "/admin/employees"
+        }
       )
       true
     end
