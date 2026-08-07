@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-08-08
+
+The rest of the audit that produced 0.5.1. **Adds three migrations** — they
+run through the host's normal `db:migrate`; each table holds a handful of
+rows per employee, so the builds are instant.
+
+### Fixed
+
+- **Payroll accepted a run for a month that had not ended.** Days that have
+  not happened score as `upcoming`, which fed straight into payable days, so
+  computing mid-month paid for every remaining day as if it had been worked —
+  and finalizing froze that into immutable slips. `parse_month_param` made it
+  easy to reach: a mangled month fell back to the current one.
+- **ESI eligibility was re-decided every month.** ESIC contribution periods run
+  April–September and October–March and eligibility holds for the whole
+  period; a mid-period raise past the ceiling used to end coverage on the spot.
+- **A mid-year install deducted no tax.** TDS projected the year only from
+  slips this install produced, so earlier months — a previous employer, or the
+  months before payroll was switched on — read as zero income and usually put
+  the year under the rebate cap. `EmployeeProfile` gains `fy_opening_gross`
+  and `fy_opening_tds`.
+- Regularization now re-checks the approved-leave conflict at approval. Leave
+  granted while the ticket waited made the fix a silent no-op, because
+  full-day leave outranks any punch — while everyone was told attendance had
+  been corrected.
+- Admins can cancel leave. `cancellable_by?` always allowed it for approved
+  leave that has not started, but no route reached it, so leave called off
+  while someone was away could not be released and the quota stayed spent.
+- One open resignation per person, one pending regularization per person per
+  day, and one leave type carrying the comp-off flag are now enforced by
+  partial unique indexes, not only by validations that race. Retiring the
+  flagged comp-off type releases the flag so a replacement can take it.
+- An employee whose resignation was already accepted can no longer file
+  another, which would have overwritten the agreed exit date.
+- `Audited` fires on commit. Firing inside the transaction announced changes
+  to leadership that then rolled back — a failed onboarding mailed out a diff
+  for a profile that was never saved.
+- Slips record and show days outside the employment window, so a mid-month
+  joiner's payslip adds up instead of looking short.
+- The career page dates the current role from the change actually in force,
+  not from a promotion recorded for next quarter.
+- The org chart's reporting line stops at the first manager who has left; it
+  used to skip them and promote everyone above a level, contradicting the
+  tree below.
+- Publishing no longer bells offboarded people at a page their revoked login
+  cannot open. They still get the email.
+- Leadership copies of employee-scoped notifications are named and point at a
+  page leadership can open. "Your appraisal has been shared" linking to
+  `/appraisals/7` was fanned out verbatim; the leadership copy also drops the
+  rating, which is money-tier.
+
+### Performance
+
+- `LeaveBalance#used` builds one working calendar for the leave year instead
+  of one per approved request — measured 11 queries down to 1 for five
+  requests, and the admin balances grid multiplies that by employees × leave
+  types.
+- `HrLite.admin_users` starts from `employees_scope` rather than loading and
+  instantiating every row in the users table on each admin notification.
+
 ## [0.5.1] - 2026-08-07
 
 Bug-fix release from a full audit of the engine. No migrations, no
@@ -289,7 +349,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kshtzkr/hr_lite/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/kshtzkr/hr_lite/compare/v0.3.0...v0.4.0
