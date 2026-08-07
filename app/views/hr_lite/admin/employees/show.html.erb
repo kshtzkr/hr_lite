@@ -35,23 +35,33 @@
   </section>
 <% end %>
 
-<% if @profile.date_of_exit.nil? %>
-  <section class="hrl-card">
-    <h2 class="hrl-card__title">Offboard</h2>
+<%# Stays on the page after an exit date is stamped. Accepting a resignation
+    stamps one, and hiding this card at that moment removed the only control
+    that revokes sign-in — during the notice period, when it is needed. %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title"><%= @profile.date_of_exit ? "Revoke access" : "Offboard" %></h2>
+  <% if @profile.date_of_exit %>
+    <p class="hrl-small hrl-muted">Last day is <%= @profile.date_of_exit.strftime("%d %b %Y") %> —
+      attendance and payroll already clip to it. Run this on or after that day to revoke
+      sign-in. Records are never deleted.</p>
+  <% else %>
     <p class="hrl-small hrl-muted">Stamps the last day (attendance and payroll clip to it) and revokes sign-in.
       Records are never deleted.</p>
-    <%= form_with url: hr_lite.offboard_admin_employee_path(@profile), method: :post, local: true,
-                  html: { data: { turbo_confirm: "Offboard #{hr_display_name(@profile.user)}?" } } do %>
-      <div class="hrl-field">
-        <label for="off_date">Last working day</label>
-        <input type="date" id="off_date" name="date_of_exit" class="hrl-input" value="<%= Date.current %>">
-      </div>
-      <div class="hrl-form-actions">
-        <button class="hrl-btn hrl-btn--danger" type="submit">Offboard employee</button>
-      </div>
-    <% end %>
-  </section>
-<% end %>
+  <% end %>
+  <%= form_with url: hr_lite.offboard_admin_employee_path(@profile), method: :post, local: true,
+                html: { data: { turbo_confirm: "Offboard #{hr_display_name(@profile.user)}?" } } do %>
+    <div class="hrl-field">
+      <label for="off_date">Last working day</label>
+      <input type="date" id="off_date" name="date_of_exit" class="hrl-input"
+             value="<%= @profile.date_of_exit || Date.current %>">
+    </div>
+    <div class="hrl-form-actions">
+      <button class="hrl-btn hrl-btn--danger" type="submit">
+        <%= @profile.date_of_exit ? "Revoke access now" : "Offboard employee" %>
+      </button>
+    </div>
+  <% end %>
+</section>
 
 <div class="hrl-grid hrl-grid--2">
   <section class="hrl-card">

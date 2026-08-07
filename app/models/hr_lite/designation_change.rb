@@ -27,7 +27,17 @@ module HrLite
       self.from_designation ||= EmployeeProfile.find_by(user_id: user_id)&.designation
     end
 
+    # Only the newest row owns the profile's designation. Backfilling an older
+    # promotion used to overwrite the current title and push the stale one to
+    # the host as well. (A future-dated promotion still applies on save — that
+    # is how sharing an appraisal announces the new role.)
+    def latest_by_effective_date?
+      self.class.where(user_id: user_id).timeline.first&.id == id
+    end
+
     def apply_to_profile
+      return unless latest_by_effective_date?
+
       profile = EmployeeProfile.find_by(user_id: user_id)
       profile&.update!(designation: to_designation)
 

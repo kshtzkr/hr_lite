@@ -41,9 +41,16 @@
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
     <div class="hrl-field">
       <%= f.label :manager_id, "Reports to (their L1)" %>
+      <%# The current manager stays listed even after they exit. Dropping them
+          left the select with no matching option, so the browser preselected
+          the blank one and saving anything silently wiped the reporting line
+          of everyone whose manager had left. %>
+      <% candidates = HrLite.active_employees.reject { |u| u.id == profile.user_id } %>
+      <% if profile.manager && candidates.none? { |u| u.id == profile.manager_id } %>
+        <% candidates += [ profile.manager ] %>
+      <% end %>
       <%= f.select :manager_id,
-                   HrLite.active_employees.reject { |u| u.id == profile.user_id }
-                         .map { |u| [ HrLite.display_name(u), u.id ] },
+                   candidates.map { |u| [ HrLite.display_name(u), u.id ] },
                    include_blank: "— nobody (top of the org) —" %>
     </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
