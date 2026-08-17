@@ -7,13 +7,19 @@ HrLite.configure do |c|
   c.current_user_method = :current_user
   c.authenticate_method = :authenticate_user!
 
-  # Operations tier (team attendance, leave decisions, overview board).
-  c.admin_check = ->(user) { user.respond_to?(:admin?) && user.admin? }
-
-  # Governing tier — ONLY these people change policy, employee profiles,
-  # salary structures, payroll and appraisals. Keep it in an env var so
-  # changing leadership never needs a deploy.
-  c.leadership_emails = ENV.fetch("HR_LEADERSHIP_EMAILS", "").split(",").map(&:strip)
+  # Access is a role table, not configuration — `rake hr_lite:seed` creates
+  # the built-in roles and you assign people from /admin/roles. The first
+  # person needs Super Admin, which the upgrade migration grants on an
+  # existing install; on a fresh one, from a console:
+  #
+  #   HrLite::RoleAssignment.create!(
+  #     user_id: User.find_by!(email: "you@example.com").id,
+  #     role: HrLite::Role.find_by!(name: HrLite::Role::SUPER_ADMIN))
+  #
+  # Upgrading from pre-0.6.0 and not ready to move? Uncomment this and keep
+  # your leadership_emails / superadmin_emails / admin_check as they were.
+  # It is honoured until 0.7.0.
+  # c.legacy_tier_checks = true
 
   # Where the portal is reachable (subdomain or path). Enables email link
   # buttons and HrLite.public_url / HrLite.public_url? for deep links.
