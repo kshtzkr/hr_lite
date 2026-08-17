@@ -24,9 +24,12 @@ module HrLite
       { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] }
     ].freeze
 
-    # Money tier — only config.superadmin_emails see these.
+    # Money screens, plus role management: granting somebody payroll is the
+    # same act as holding it, so it sits with the pay rather than with the
+    # other governing screens.
     SUPERADMIN_NAV_ITEMS = [
-      { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] }
+      { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] },
+      { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] }
     ].freeze
 
     # Only items whose routes exist yet (the nav grows with each phase).

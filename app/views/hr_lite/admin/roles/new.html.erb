@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "New role" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">New role</h1></div>
+<%= render "form", role: @role, url: hr_lite.admin_roles_path, method: :post %>
