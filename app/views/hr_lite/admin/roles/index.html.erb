@@ -29,10 +29,14 @@
               <% company_wide = role.role_grants.count { |g| g.scope == "all" } %>
               <% team = role.role_grants.count { |g| g.scope == "team" } %>
               <%= role.role_grants.size %> permission<%= "s" unless role.role_grants.size == 1 %>
-              <span class="hrl-small hrl-muted">
-                <%= "#{company_wide} company-wide" if company_wide.positive? %>
-                <%= "· #{team} own team" if team.positive? %>
-              </span>
+              <%# Joined rather than concatenated: a role with team grants and
+                  no company-wide ones rendered a leading "·" with nothing
+                  in front of it. %>
+              <% reach = [ ("#{company_wide} company-wide" if company_wide.positive?),
+                           ("#{team} own team" if team.positive?) ].compact %>
+              <% if reach.any? %>
+                <span class="hrl-small hrl-muted"><%= reach.join(" · ") %></span>
+              <% end %>
             </td>
             <td data-label="">
               <a class="hrl-small" href="<%= hr_lite.edit_admin_role_path(role) %>">Edit</a>
