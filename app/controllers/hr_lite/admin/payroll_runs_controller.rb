@@ -55,8 +55,17 @@ module HrLite
       # deliberately leadership-only PII.
       def register
         run = PayrollRun.find(params[:id])
-        send_data register_csv(run), filename: "payroll-register-#{run.period_month.strftime('%Y-%m')}.csv",
-                                     type: "text/csv"
+        csv = register_csv(run)
+        # A GET that walks out of the building with every employee's pay and
+        # bank account. Nothing else in the module leaks this much in one
+        # click, so the download itself is the auditable event.
+        AuditLog.record!(
+          action: "payroll.register_exported", subject: run, actor: hr_current_user,
+          changes: { "period" => run.label, "rows" => run.salary_slips.count,
+                     "includes_bank_details" => true }
+        )
+        send_data csv, filename: "payroll-register-#{run.period_month.strftime('%Y-%m')}.csv",
+                       type: "text/csv"
       end
 
       private

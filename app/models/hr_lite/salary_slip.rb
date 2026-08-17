@@ -40,8 +40,7 @@ module HrLite
     # Indian FY (Apr 1) to-date sums of SETTLED slips before this period —
     # feeds the TDS projector and the slip's YTD table.
     def self.fy_to_date(user, period_month)
-      fy_start = period_month.month >= 4 ? Date.new(period_month.year, 4, 1)
-                                         : Date.new(period_month.year - 1, 4, 1)
+      fy_start = FinancialYear.start_for(period_month)
       slips = settled.where(user_id: user.id)
                      .where(period_month: fy_start...period_month)
       {

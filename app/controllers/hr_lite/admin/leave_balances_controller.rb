@@ -23,11 +23,10 @@ module HrLite
 
         balance = LeaveBalance.adjust!(user, type, year, delta: delta, note: "#{delta.to_f} — #{note}")
 
-        AuditLog.create!(
-          actor: hr_current_user, action: "adjust",
-          subject_type: balance.class.name, subject_id: balance.id,
-          audited_changes: { "user" => HrLite.display_name(user), "type" => type.code,
-                             "delta" => delta.to_f, "note" => note }
+        AuditLog.record!(
+          action: "adjust", subject: balance, actor: hr_current_user,
+          changes: { "user" => HrLite.display_name(user), "type" => type.code,
+                     "delta" => delta.to_f, "note" => note }
         )
         redirect_to admin_leave_balances_path(year: year),
                     notice: "Balance adjusted for #{HrLite.display_name(user)}."

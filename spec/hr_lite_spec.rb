@@ -39,6 +39,36 @@ RSpec.describe HrLite do
     it "is false when no leadership is configured" do
       expect(described_class.leadership?(build(:user))).to be(false)
     end
+
+    # One stray comma in HR_LEADERSHIP_EMAILS put "" on the list, and a user
+    # with no email matched it and was handed the tier.
+    it "never admits a blank email, however the list is spelled" do
+      HrLite.config.leadership_emails = [ "boss@acme.test", "", "  " ]
+
+      expect(described_class.leadership?(build(:user, email: ""))).to be(false)
+      expect(described_class.leadership?(build(:user, email: nil))).to be(false)
+      expect(described_class.leadership?(build(:user, email: "   "))).to be(false)
+      expect(described_class.leadership?(build(:user, email: "boss@acme.test"))).to be(true)
+    end
+  end
+
+  describe ".superadmin?" do
+    it "never admits a blank email either" do
+      HrLite.config.superadmin_emails = [ "money@acme.test", "" ]
+
+      expect(described_class.superadmin?(build(:user, email: ""))).to be(false)
+      expect(described_class.superadmin?(build(:user, email: "money@acme.test"))).to be(true)
+    end
+
+    # A list of nothing but blanks is an EMPTY list, not a list nobody is on:
+    # it falls back to leadership, exactly as an unset list does.
+    it "treats an all-blank list as unconfigured and defers to leadership" do
+      HrLite.config.leadership_emails = [ "boss@acme.test" ]
+      HrLite.config.superadmin_emails = [ "", "  " ]
+
+      expect(described_class.superadmin?(build(:user, email: "boss@acme.test"))).to be(true)
+      expect(described_class.superadmin?(build(:user, email: ""))).to be(false)
+    end
   end
 
   describe ".leadership_users" do

@@ -3,6 +3,7 @@ require "hr_lite/engine"
 require "hr_lite/configuration"
 require "hr_lite/current"
 require "hr_lite/leave_year"
+require "hr_lite/financial_year"
 require "hr_lite/mention_parser"
 require "hr_lite/notifications"
 require "hr_lite/seeds"
@@ -42,11 +43,27 @@ module HrLite
       user.present? && !!config.superadmin_check.call(user)
     end
 
+    # An access list, cleaned. "a@x.com,,b@x.com".split(",") — one stray
+    # comma in an ENV var — used to put "" in the list, and a user whose
+    # email was blank then MATCHED it and was handed the tier.
+    def normalize_email_list(emails)
+      Array(emails).map { |e| e.to_s.downcase.strip }.reject(&:empty?)
+    end
+
+    # Whether a user's own email is on a configured access list. A blank
+    # email is never on any list, however the list is spelled.
+    def email_listed?(user, emails)
+      address = user.respond_to?(:email) ? user.email.to_s.downcase.strip : ""
+      return false if address.empty?
+
+      normalize_email_list(emails).include?(address)
+    end
+
     # Leadership members resolvable to actual user records (for bell
     # notifications). Emails configured but absent from the user table are
     # still reachable by email — see Notifications.
     def leadership_users
-      emails = config.leadership_emails.map { |e| e.to_s.downcase.strip }.reject(&:empty?)
+      emails = normalize_email_list(config.leadership_emails)
       return user_klass.none if emails.empty?
 
       user_klass.where("LOWER(#{user_klass.table_name}.email) IN (?)", emails)

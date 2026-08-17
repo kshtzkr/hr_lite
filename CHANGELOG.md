@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-08-17
+
+Correctness and traceability pass, ahead of the permissions work in 0.6.0.
+**Adds one migration** — check constraints on every status column, plus an
+index and foreign key on `hr_lite_designation_changes.appraisal_id`. It
+refuses to run, naming the table and the offending values, if a live row
+already holds a status no model declares.
+
+### Fixed
+
+- **Payroll ran silently on an out-of-date statutory card.** The lookup fell
+  back to the newest card on or before the run month with no signal, so a run
+  in a financial year the gem ships no card for computed PF, ESI, PT and TDS
+  on the previous year's figures and said nothing. It still falls back —
+  payroll cannot stop dead every 1 April — but `PayrollRunProcessor` now puts
+  a warning naming both financial years at the TOP of the run's warnings, on
+  every compute. Adding a year remains one new entry in
+  `StatutoryRateCard::CARDS`; rates are never inferred forward.
+- **A blank email could be granted the leadership tier.** `leadership_check`
+  did not drop empty entries the way `superadmin_check` did, so one stray
+  comma in `HR_LEADERSHIP_EMAILS` ("a@x.com,,b@x.com") put `""` on the list
+  and any user whose email was blank or nil matched it. Both checks now share
+  `HrLite.email_listed?`, which refuses a blank address against any list.
+- Comp-off approval no longer reaches for a plural that cannot occur — a
+  credit is 0.5 or 1 day and never more.
+
+### Added
+
+- **The money path leaves a trail.** Payroll compute, finalize, unlock and
+  publish, every leave approval, rejection and cancellation, and the payout
+  register download now write `AuditLog` rows. Previously a run could be
+  computed, finalized, unlocked, edited and republished and the audit screen
+  showed none of it.
+  - These rows are written inside the same transaction as the change they
+    describe and RAISE on failure, unlike the `Audited` concern, which stays
+    best-effort for ordinary policy edits. A payroll transition nobody can
+    account for afterwards does not happen at all.
+  - Amounts are deliberately excluded — `audit_logs` is not encrypted. Rows
+    record who moved a run, how far, and over how many people. Leave rows
+    carry the approver's note and never the employee's own reason.
+  - `HrLite::PayrollRun` and `HrLite::SalarySlip` join `MONEY_TIER_TYPES`, so
+    payroll rows stay out of the leadership audit screen.
+- `HrLite::AuditLog.record!` — the five-line `create!` that five call sites
+  had each written out.
+- `HrLite::FinancialYear` — the Indian FY (1 April) worked out in one place
+  instead of three.
+
+### Changed
+
+- Statuses are enforced by the database. `update_column`, `update_all`,
+  `insert_all` and console fixes can no longer write a value that no screen
+  renders and no transition accepts.
+- The suite enforces its own coverage: 100% line, 90% branch, 90% per file.
+  The README claimed 100% and nothing checked it; switching the floor on found
+  eight untested paths, including all three slip-override money guards (LOP
+  above the days in the month, negative LOP, negative TDS) and the offboarding
+  error path. All are covered now.
+- `docs/PAYROLL.md` no longer lists ESI contribution-period lock-in as
+  unmodelled — 0.5.2 implemented it.
+
 ## [0.5.2] - 2026-08-08
 
 The rest of the audit that produced 0.5.1. **Adds three migrations** — they
@@ -349,7 +409,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/kshtzkr/hr_lite/compare/v0.4.0...v0.5.0

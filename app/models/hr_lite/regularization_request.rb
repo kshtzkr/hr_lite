@@ -71,10 +71,9 @@ module HrLite
         raise InvalidMerge, record.errors.full_messages.to_sentence unless record.valid?
 
         record.save!
-        AuditLog.create!(
-          actor: actor, action: "regularize",
-          subject_type: record.class.name, subject_id: record.id,
-          audited_changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
+        AuditLog.record!(
+          action: "regularize", subject: record, actor: actor,
+          changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
         )
       end
 

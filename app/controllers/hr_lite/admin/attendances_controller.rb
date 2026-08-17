@@ -75,10 +75,9 @@ module HrLite
       private
 
       def log_regularization(record, note, removed:)
-        AuditLog.create!(
-          actor: hr_current_user, action: removed ? "destroy" : "regularize",
-          subject_type: record.class.name, subject_id: record.id || 0,
-          audited_changes: { "date" => record.date.to_s, "note" => note }
+        AuditLog.record!(
+          action: removed ? "destroy" : "regularize", subject: record, actor: hr_current_user,
+          changes: { "date" => record.date.to_s, "note" => note }
         )
         Notifications.publish(
           "attendance.regularized",

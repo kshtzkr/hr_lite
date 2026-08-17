@@ -39,7 +39,12 @@ module HrLite
       begin
         update!(status: "processing")
         PayrollRunProcessor.call(self)
-        update!(status: "review", processed_at: Time.current)
+        transaction do
+          update!(status: "review", processed_at: Time.current)
+          audit!("payroll.computed", actor,
+                 "slips" => salary_slips.count, "warnings" => warnings.length,
+                 "from_status" => previous)
+        end
         true
       rescue => e
         # Restore what the run WAS. Hardcoding "draft" here used to demote a
@@ -54,7 +59,12 @@ module HrLite
       raise_unless %w[review]
       raise ActiveRecord::RecordInvalid.new(self), "no slips" if salary_slips.none?
 
-      update!(status: "finalized", finalized_at: Time.current, finalized_by_id: actor.id)
+      transaction do
+        update!(status: "finalized", finalized_at: Time.current, finalized_by_id: actor.id)
+        # Finalizing freezes every slip in the run. Who did it, to how many
+        # people, is the row an investigation starts from.
+        audit!("payroll.finalized", actor, "slips" => salary_slips.count)
+      end
       Notifications.publish(
         "payroll.finalized",
         title: "Payroll #{label} finalized — #{salary_slips.count} slips, net #{Money.round2(total_net).to_s('F')}",
@@ -65,13 +75,21 @@ module HrLite
 
     def unlock!(actor:)
       raise_unless %w[finalized]
-      update!(status: "review")
+      transaction do
+        update!(status: "review")
+        # Reopening frozen slips for editing is the single most sensitive
+        # transition in the module — it is the one that has to leave a trace.
+        audit!("payroll.unlocked", actor, "slips" => salary_slips.count)
+      end
       true
     end
 
     def publish!(actor:)
       raise_unless %w[finalized]
-      update!(status: "published", published_at: Time.current, published_by_id: actor.id)
+      transaction do
+        update!(status: "published", published_at: Time.current, published_by_id: actor.id)
+        audit!("payroll.published", actor, "slips" => salary_slips.count)
+      end
 
       slips = salary_slips.includes(:user).to_a
       # Everyone is emailed — a final settlement matters most to the person who
@@ -105,6 +123,14 @@ module HrLite
     end
 
     private
+
+    # Amounts stay out of it on purpose: audit_logs is a plaintext table and
+    # every slip amount in this module is encrypted. The row records WHO
+    # moved the run and HOW FAR, never what anyone is paid.
+    def audit!(action, actor, changes)
+      AuditLog.record!(action: action, subject: self, actor: actor,
+                       changes: changes.merge("period" => label))
+    end
 
     def sum_slips(attribute)
       salary_slips.sum(BigDecimal(0)) { |slip| slip.public_send(attribute) || BigDecimal(0) }

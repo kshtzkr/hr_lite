@@ -23,6 +23,27 @@ new hash entry with a new date key (old runs keep computing on the old card).
 | PT | per-state slab table; `none`, UP and Uttarakhand ship EMPTY (₹0) |
 | Income tax | new + old regime slab tables, §87A rebate cap, 4% cess |
 
+### When no card ships for your financial year
+
+The lookup never refuses — payroll cannot stop dead every 1 April — so it
+falls back to the newest card it has. That silence is how a whole year gets
+paid on last year's ceilings and slabs, so the run says it out loud instead:
+
+- `StatutoryRateCard.stale_for?(month)` — the card in force belongs to an
+  earlier FY than the run.
+- `StatutoryRateCard.warning_for(month)` — the sentence naming both years.
+  `PayrollRunProcessor` puts it FIRST in `payroll_run.warnings`, above every
+  per-employee warning, on every compute, and it stays on the run screen
+  through review and finalize.
+
+**Adding a year is one new entry in `CARDS`** keyed to its 1 April, with the
+figures confirmed against the year's Finance Act by your accountant. Nothing
+else changes: past runs keep resolving to the card that was in force for them.
+
+Rates are deliberately NOT inferred, extrapolated or defaulted forward. A
+wrong slab is a wrong Form 16 for every employee, so the engine would rather
+carry a loud warning than a confident guess.
+
 ## Per-slip pipeline (`HrLite::SlipBuilder`)
 
 1. **Attendance summary** — `payable = days_in_month − out_of_window − LOP`.
@@ -34,9 +55,11 @@ new hash entry with a new date key (old runs keep computing on the old card).
 3. **PF** — on earned basic: wage = `min(basic_earned, ceiling)` unless
    `pf_on_full_basic`. Employee and employer totals round to the nearest rupee;
    EPS wage stays ceiling-capped even on full-basic structures.
-4. **ESI** — eligibility is decided on the FULL structure monthly gross (a
-   low-attendance month cannot pull someone into ESI); contributions apply to
-   the earned gross and round UP to the next rupee (ESIC rule).
+4. **ESI** — eligibility is decided on the FULL structure monthly gross in
+   force on the first day of the ESIC contribution period (Apr–Sep / Oct–Mar),
+   so a mid-period raise past the ceiling does not end coverage on the spot and
+   a low-attendance month cannot pull someone in. Contributions apply to the
+   earned gross and round UP to the next rupee (ESIC rule).
 5. **PT** — slab lookup on earned gross; optional `feb_extra` per slab for
    February-top-up states.
 6. **TDS** — projection basis:
@@ -67,7 +90,5 @@ admin review screen — "why is my TDS X" answers itself.
 - Surcharge above ₹50L taxable (the slip flags these and demands an override)
 - HRA exemption, perquisites, prior-employer income (old-regime declarations
   are a single lump sum)
-- ESI contribution-period lock-in (Apr–Sep / Oct–Mar continuation after a
-  mid-period raise) — re-checked monthly; `esi_applicable` is the manual lever
 - Statutory filings (ECR/ESI returns/Form 16) — the register CSV is the
   handoff to whoever files

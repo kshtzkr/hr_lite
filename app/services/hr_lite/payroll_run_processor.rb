@@ -12,7 +12,10 @@ module HrLite
     end
 
     def call
-      warnings = []
+      # First in the list on purpose: if the statutory card is from an older
+      # financial year, every number below it is computed on last year's
+      # rates and that is the thing to read first.
+      warnings = Array(StatutoryRateCard.warning_for(@run.period_month))
 
       ActiveRecord::Base.transaction do
         eligible = EmployeeProfile.active_for(@run.period_month).includes(:user).to_a
