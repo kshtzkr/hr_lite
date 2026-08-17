@@ -1,0 +1,4 @@
+<% content_for(:page_title) { "FY #{@card.financial_year}" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">FY <%= @card.financial_year %></h1></div>
+<%= render "form", card: @card,
+      url: hr_lite.admin_statutory_rate_card_path(@card), method: :patch %>

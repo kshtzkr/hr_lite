@@ -9,7 +9,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `current_user_method` | `:current_user` | Called on the controller per request. |
 | `authenticate_method` | `:authenticate_user!` | Any before_action-able method on the parent controller. |
 | `admin_check` | `user.admin?` if defined | Operations tier: team attendance, regularization, leave decisions, overview board. Leadership implies admin. |
-| `legacy_tier_checks` | `false` | Read the pre-0.6.0 lambdas below instead of roles. Removed in 0.7.0. |
+| `legacy_tier_checks` | `false` | Read the pre-0.6.0 lambdas below instead of roles. Removed in 0.8.0. |
 | `superadmin_emails` | `[]` | Money tier: salary structures, payroll, slips, appraisals, promotions. Empty = leadership keeps the money tier (pre-0.5.0). |
 | `superadmin_check` | membership in `superadmin_emails` (case-insensitive); falls back to `leadership_check` when the list is empty | Replace to derive the money tier some other way. |
 | `leadership_emails` | `[]` | THE governing list. Policy, offices, holidays, weekend setting, employee profiles, salary structures, payroll, appraisals, audit trail. |
@@ -100,6 +100,6 @@ seeded roles and the permission list.
 them matched the user's `email`, which is mutable and host-owned.
 
 They are read ONLY when `config.legacy_tier_checks = true`, are honoured for
-one minor version, and are **removed in 0.7.0**. The upgrade migration derives
+one minor version, and are **removed in 0.8.0**. The upgrade migration derives
 role assignments from them once, so most hosts never need the flag.
 

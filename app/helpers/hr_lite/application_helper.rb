@@ -29,7 +29,8 @@ module HrLite
     # other governing screens.
     SUPERADMIN_NAV_ITEMS = [
       { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] },
-      { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] }
+      { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] },
+      { label: "Rates",   path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ] }
     ].freeze
 
     # Only items whose routes exist yet (the nav grows with each phase).

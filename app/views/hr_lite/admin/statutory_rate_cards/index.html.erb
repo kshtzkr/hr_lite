@@ -1,0 +1,59 @@
+<% content_for(:page_title) { "Statutory rates" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Statutory rates</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_statutory_rate_card_path %>">Add a year</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    PF, ESI and the income-tax slabs, per financial year. Payroll resolves the
+    card that was in force for the month it is computing, so correcting a year
+    never changes an earlier one.
+  </p>
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Year</th><th>PF ceiling</th><th>ESI ceiling</th><th>Verified</th><th></th></tr></thead>
+      <tbody>
+        <% @cards.each do |card| %>
+          <tr>
+            <td data-label="Year">
+              <strong>FY <%= card.financial_year %></strong>
+              <div class="hrl-small hrl-muted">from <%= card.effective_from.strftime("%d %b %Y") %></div>
+            </td>
+            <td data-label="PF ceiling" class="hrl-num"><%= HrLite::Money.format(card.to_card[:pf][:wage_ceiling]) %></td>
+            <td data-label="ESI ceiling" class="hrl-num"><%= HrLite::Money.format(card.to_card[:esi][:gross_ceiling]) %></td>
+            <td data-label="Verified">
+              <% if card.verified? %>
+                <span class="hrl-badge"><%= card.verified_by %></span>
+                <div class="hrl-small hrl-muted"><%= card.verified_on.strftime("%d %b %Y") %></div>
+              <% else %>
+                <span class="hrl-badge hrl-badge--muted">Not checked</span>
+              <% end %>
+            </td>
+            <td data-label="">
+              <a class="hrl-small" href="<%= hr_lite.edit_admin_statutory_rate_card_path(card) %>">Edit</a>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Professional tax</h2>
+  <% if @states.empty? %>
+    <p class="hrl-muted">
+      No state bands are configured. Everybody's professional tax is being
+      deducted at ₹0 — which is right only if no state you employ in levies it.
+    </p>
+  <% else %>
+    <p class="hrl-muted hrl-small">
+      Bands are configured for: <%= @states.map(&:humanize).to_sentence %>.
+      An employee whose salary structure names any other state is deducted ₹0,
+      and payroll says so on the run.
+    </p>
+  <% end %>
+</section>

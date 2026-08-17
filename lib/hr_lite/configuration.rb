@@ -50,7 +50,7 @@ module HrLite
       # user's EMAIL — a mutable, host-owned, unverified column that a host
       # then had to remember never to let anyone edit. Roles replace them.
       # This flag hands authority back to the old lambdas for a host that has
-      # not finished migrating; honoured for one minor version, gone in 0.7.0.
+      # not finished migrating; honoured for one more minor version, gone in 0.8.0.
       @legacy_tier_checks    = false
       @leadership_emails     = []
       @leadership_check      = ->(user) { HrLite.email_listed?(user, HrLite.config.leadership_emails) }
