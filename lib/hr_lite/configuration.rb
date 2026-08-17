@@ -10,7 +10,8 @@ module HrLite
                   :leadership_emails, :leadership_check, :extra_stylesheets,
                   :superadmin_emails, :superadmin_check,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
-                  :onboard_user, :offboard_user, :invite_url_for
+                  :onboard_user, :offboard_user, :invite_url_for,
+                  :legacy_tier_checks
 
     attr_reader :leave_year_start_month
 
@@ -45,6 +46,12 @@ module HrLite
       @time_zone             = "Asia/Kolkata"
       @currency_symbol      = "₹"
       @on_designation_change = ->(user, designation) { }
+      # Access came from three lambdas before 0.6.0, two of which matched the
+      # user's EMAIL — a mutable, host-owned, unverified column that a host
+      # then had to remember never to let anyone edit. Roles replace them.
+      # This flag hands authority back to the old lambdas for a host that has
+      # not finished migrating; honoured for one minor version, gone in 0.7.0.
+      @legacy_tier_checks    = false
       @leadership_emails     = []
       @leadership_check      = ->(user) { HrLite.email_listed?(user, HrLite.config.leadership_emails) }
       # Money tier: salary structures, payroll, slips, appraisals. Empty
