@@ -15,9 +15,16 @@
 # It lives in spec/support and prepends onto the resolver, so the shipped
 # code is not aware of it and production stays strict: no roles, no access.
 module LegacyTierBridge
+  # Examples that test the roles machinery ITSELF — the upgrade migration
+  # above all — have to see the real thing, with no fixture quietly handing
+  # people roles behind them. Tag them `no_legacy_bridge: true`.
+  class << self
+    attr_accessor :disabled
+  end
+
   def resolve(user)
     resolved = super
-    return resolved if resolved.any? || user.id.nil?
+    return resolved if LegacyTierBridge.disabled || resolved.any? || user.id.nil?
 
     names = legacy_role_names(user)
     return resolved if names.empty?
@@ -64,6 +71,8 @@ HrLite::Access.singleton_class.prepend(LegacyTierBridge)
 # first — this is the test bridge paying for its own laziness.
 module LegacyFanoutBridge
   def users_holding(key, scope: :all)
+    return super if LegacyTierBridge.disabled
+
     config.employees_scope.call.find_each { |user| HrLite::Access.for(user) }
     HrLite::Current.access_cache = nil
     super
@@ -96,5 +105,9 @@ RSpec.configure do |config|
   config.include RoleHelpers
   # CurrentAttributes are reset between requests in production; between
   # examples, that is this hook's job.
-  config.before(:each) { HrLite::Current.access_cache = nil }
+  config.before(:each) do |example|
+    HrLite::Current.access_cache = nil
+    LegacyTierBridge.disabled = !!example.metadata[:no_legacy_bridge]
+  end
+  config.after(:each) { LegacyTierBridge.disabled = false }
 end

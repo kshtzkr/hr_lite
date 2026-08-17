@@ -83,6 +83,30 @@ RSpec.describe "Managing roles over HTTP", type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "re-renders an invalid EDIT rather than losing the grants being set" do
+      sign_in owner
+      # An install's own role, so the name is editable and can be blanked.
+      post "/hr/admin/roles", params: { role: { name: "Auditor" }, grants: { "audit.view" => "all" } }
+      role = HrLite::Role.find_by!(name: "Auditor")
+
+      patch "/hr/admin/roles/#{role.id}", params: { role: { name: "" }, grants: {} }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(role.reload.name).to eq("Auditor")
+      expect(role.grant_map).to eq("audit.view" => "all")
+    end
+
+    it "renders the new and edit forms" do
+      sign_in owner
+
+      get "/hr/admin/roles/new"
+      expect(response).to have_http_status(:ok)
+
+      get "/hr/admin/roles/#{HrLite::Role.find_by!(name: HrLite::Role::MANAGER).id}/edit"
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Their team&#39;s records")
+    end
   end
 
   describe "assigning people" do

@@ -16,7 +16,7 @@ if ENV["COVERAGE"] == "1" || ENV["CI"]
     #
     # Branch coverage sits below line coverage because defensive `rescue`
     # and `try` paths are deliberately unexercised; raise it, never lower it.
-    minimum_coverage line: 100, branch: 90
+    minimum_coverage line: 100, branch: 90.5
     # One thin file dragging the average up must not hide another at 40%.
     coverage(:line) { minimum_per_file 90 }
   end
