@@ -4,14 +4,18 @@ module HrLite
       # Team day view: everyone × their punch/status for one date.
       def index
         @date = parse_date_param(params[:date])
+        # A manager's board is their reports; HR's is the company. Both read
+        # the same screen — the difference is one permission scope.
+        visible = hr_access.visible_user_ids("attendance.view")
         @employees = HrLite.employees
+        @employees = @employees.select { |user| visible.include?(user.id) } if visible
         @records = AttendanceRecord.for_date(@date).where(user_id: @employees.map(&:id)).index_by(&:user_id)
         @flagged_count = @records.values.count(&:flagged?)
       end
 
       # One employee's month + the regularization form for ?date=.
       def show
-        @employee = HrLite.user_klass.find(params[:user_id])
+        @employee = find_visible_employee
         @month = parse_month_param(params[:month])
         @day_status = DayStatus.new(user: @employee, range: @month.beginning_of_month..@month.end_of_month)
         @counts = @day_status.counts
@@ -23,7 +27,7 @@ module HrLite
       # Clearing both punch times deletes the record (that is how an
       # erroneous punch is removed).
       def update
-        @employee = HrLite.user_klass.find(params[:user_id])
+        @employee = find_manageable_employee
         date = parse_date_param(params[:date])
         record = AttendanceRecord.find_or_initialize_by(user_id: @employee.id, date: date)
 
@@ -73,6 +77,18 @@ module HrLite
       end
 
       private
+
+      # Viewing somebody's month and rewriting their punches are different
+      # authorities, so they resolve through different permissions — a role
+      # can be given the board without being given the pencil.
+      def find_visible_employee = employee_within("attendance.view")
+      def find_manageable_employee = employee_within("attendance.manage")
+
+      def employee_within(permission)
+        employee = HrLite.user_klass.find(params[:user_id])
+        hr_require_reach!(permission, employee)
+        employee
+      end
 
       def log_regularization(record, note, removed:)
         AuditLog.record!(
