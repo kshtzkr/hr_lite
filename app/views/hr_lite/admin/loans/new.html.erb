@@ -1,0 +1,39 @@
+<% content_for(:page_title) { "Record a loan" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Record a loan</h1></div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    The instalment comes out of the payslip automatically from the month it
+    starts, and stops on its own when the balance runs out — the last
+    instalment is whatever is left, not a full one.
+  </p>
+  <%= form_with model: @loan, url: hr_lite.admin_loans_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @loan %>
+    <div class="hrl-field">
+      <%= f.label :user_id, "Employee" %>
+      <%= f.select :user_id, options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] },
+                                                @loan.user_id) %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :principal, "Amount lent (₹)" %>
+      <%= f.text_field :principal, value: @loan.principal&.to_s("F"), inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :monthly_instalment, "Monthly deduction (₹)" %>
+      <%= f.text_field :monthly_instalment, value: @loan.monthly_instalment&.to_s("F"),
+                       inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :starts_on, "First deduction in" %>
+      <%= f.date_field :starts_on %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :reason, "What it is for (optional)" %>
+      <%= f.text_field :reason %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Record", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_loans_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

@@ -1,0 +1,37 @@
+<% content_for(:page_title) { "Tax declarations" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Tax declarations</h1></div>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <% HrLite::TaxDeclaration::STATUSES.each do |status| %>
+      <a class="hrl-btn <%= "hrl-btn--primary" if @status == status %>"
+         href="<%= hr_lite.admin_tax_declarations_path(status: status) %>"><%= status.humanize %></a>
+    <% end %>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <% if @declarations.empty? %>
+    <p class="hrl-muted">Nothing <%= @status %>.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Person</th><th>Year</th><th>Regime</th><th>Claimed</th><th></th></tr></thead>
+        <tbody>
+          <% @declarations.each do |declaration| %>
+            <tr>
+              <td data-label="Person"><%= hr_display_name(declaration.user) %></td>
+              <td data-label="Year"><%= declaration.label %></td>
+              <td data-label="Regime"><%= declaration.regime.humanize %></td>
+              <td data-label="Claimed" class="hrl-num"><%= hrl_money(declaration.declared_total) %></td>
+              <td data-label="">
+                <a class="hrl-small" href="<%= hr_lite.admin_tax_declaration_path(declaration) %>">Check</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <%= hrl_pagination %>
+</section>

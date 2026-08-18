@@ -4,7 +4,7 @@ module HrLite
   class ApprovalFlow < ApplicationRecord
     include Audited
 
-    has_many :approval_steps, -> { order(:position) },
+    has_many :approval_steps, -> { order(:position) }, inverse_of: :flow,
              class_name: "HrLite::ApprovalStep", foreign_key: :flow_id, dependent: :destroy
     accepts_nested_attributes_for :approval_steps, allow_destroy: true
 

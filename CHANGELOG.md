@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-08-18
+
+The screens for three features that shipped as tables nobody could reach. No
+migration — the data layer was already there.
+
+### Fixed
+
+- **Documents, tax declarations and loans had no UI at all.** 0.13.0 and
+  0.14.0 shipped their models, tables, payroll integration and an expiry job,
+  and every one of them passed its specs — but there was no controller, no
+  route and no view. An employee could not upload a passport, HR could not
+  verify a PAN, and nobody could file an 80C declaration. Loans at least
+  reached a payslip; the other two were unreachable rows.
+- **A tax declaration 500ed when a real browser saved it.** The form posts a
+  line for every section, because that is what a list of claimable things
+  looks like, and the blank ones violated a NOT NULL amount. The specs had
+  only ever posted the lines they filled in. Blank sections are now dropped,
+  and clearing an existing amount withdraws that claim.
+- `TaxDeclaration` and `ApprovalFlow` were missing `inverse_of` on their
+  nested associations. The foreign key is not derived from the class name, so
+  a nested item on an unsaved parent could not see it — every first save
+  failed with "declaration must exist".
+
+### Added
+
+- **Documents.** Employees upload, see what is expiring and remove anything
+  not yet verified; HR sees what is waiting, whose file is missing which
+  category, and verifies or sends one back with a reason. Downloads go
+  through the row's own `readable_by?` and every one is audited — a file
+  leaving the building is the event worth recording.
+- **Tax declarations.** A section-by-section claim the employee files
+  themselves, replacing an admin typing one lump sum into the profile. HR
+  records what the proof actually supported, which is often less than the
+  claim. Until it is verified payroll deducts against the CLAIM: making
+  somebody overpay tax all year because paperwork is slow is its own kind of
+  wrong.
+- **Loans.** Employees see what they owe and what comes out of the next
+  payslip; the money tier records a loan, closes it, or cancels one that has
+  not been deducted from yet. Cancelling after an instalment has been taken
+  is refused — that money has already left somebody's salary.
+- Nav entries for all three, employee and admin.
+
+### Changed
+
+- Verifying a document requires being able to OPEN it. Attesting to a scan
+  you are not allowed to look at is not verification, and it keeps an
+  Aadhaar with the money tier rather than with whoever happens to run HR.
+- The spec suite deletes its sqlite file before every run. The role and
+  rate-card migrations SEED rows, and seeds never overwrite what exists —
+  right in production, wrong in a test database, where a leftover file kept
+  yesterday's definitions and a change to `RoleSeeds` silently did not apply.
+
 ## [0.14.0] - 2026-08-18
 
 The admin half, plus the two ends of employment that were still manual.
@@ -793,7 +845,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/kshtzkr/hr_lite/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/kshtzkr/hr_lite/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/kshtzkr/hr_lite/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...v0.12.0
