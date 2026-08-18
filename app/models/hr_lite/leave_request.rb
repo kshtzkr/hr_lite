@@ -78,10 +78,15 @@ module HrLite
 
     def cancel!(actor:)
       was_approved = approved?
-      self.status = "cancelled"
-      self.decided_by_id = actor.id
-      self.decided_at = Time.current
-      save!
+      transaction do
+        self.status = "cancelled"
+        self.decided_by_id = actor.id
+        self.decided_at = Time.current
+        save!
+        # Cancelling an APPROVED leave hands the days back to the balance, so
+        # it is a quota change as much as a status change.
+        audit!("cancelled", actor, was_approved ? "was approved" : nil)
+      end
 
       Notifications.publish(
         "leave.cancelled",
@@ -117,7 +122,25 @@ module HrLite
         self.decided_at = Time.current
         self.decision_note = note
         save!
+        audit!(new_status, actor, note)
       end
+    end
+
+    # Approve and reject both come through `transition!`, and `with_lock` is
+    # already a transaction — so a failed audit row rolls the decision back
+    # rather than leaving one that nobody can account for. The employee's own
+    # `reason` is deliberately not copied here; the approver's note is.
+    def audit!(action, actor, note)
+      AuditLog.record!(
+        action: "leave.#{action}", subject: self, actor: actor,
+        changes: {
+          "employee" => HrLite.display_name(user),
+          "type" => leave_type.code,
+          "dates" => date_range_label,
+          "days" => days_count&.to_s("F"),
+          "note" => note.presence
+        }.compact
+      )
     end
 
     # This request is still pending here, so balance.used excludes it:

@@ -9,8 +9,14 @@ RSpec.describe "Approval gaps", type: :request do
     # The conflict check was create-only, so leave approved while the ticket
     # waited made the fix a silent no-op: DayStatus ranks full-day leave above
     # any punch, yet everyone was told attendance had been corrected.
+    # Pinned to a real working day. `Date.current - 3` fails outright on most
+    # of the week — leave that lands on a weekend or a seeded national holiday
+    # is refused at creation ("all holidays or weekends"), so the example was
+    # red on any day this ran within three days of one.
+    around { |example| travel_to(Date.new(2027, 6, 17)) { example.run } } # Thursday
+
     it "refuses the merge instead of writing a record nothing reads" do
-      date = Date.current - 3
+      date = Date.current - 3 # Monday 14 June 2027
       ticket = create(:regularization_request, user: employee, date: date,
                       check_in_at: date.in_time_zone.change(hour: 10),
                       check_out_at: date.in_time_zone.change(hour: 19))

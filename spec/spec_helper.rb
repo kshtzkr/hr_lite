@@ -8,6 +8,17 @@ if ENV["COVERAGE"] == "1" || ENV["CI"]
     # The gem's own code only — the dummy app is a fixture, not shipped code.
     root File.expand_path("..", __dir__)
     track_files "{app,lib}/**/*.rb"
+
+    # The README claimed 100% line coverage and nothing enforced it, so the
+    # number was whatever the last local run happened to produce. These
+    # thresholds FAIL the build — a payroll engine is the wrong place to
+    # find out afterwards that a branch was never executed.
+    #
+    # Branch coverage sits below line coverage because defensive `rescue`
+    # and `try` paths are deliberately unexercised; raise it, never lower it.
+    minimum_coverage line: 100, branch: 90
+    # One thin file dragging the average up must not hide another at 40%.
+    coverage(:line) { minimum_per_file 90 }
   end
 end
 

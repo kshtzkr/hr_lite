@@ -54,7 +54,9 @@ module HrLite
 
       Notifications.publish(
         "comp_off.approved",
-        title: "Comp-off approved — #{credit_days.to_f} day#{'s' if credit_days > 1} credited for #{date_worked.strftime('%d %b')}",
+        # credit_days is 0.5 or 1 and nothing else, so there is no plural to
+        # reach for here.
+        title: "Comp-off approved — #{credit_days.to_f} day credited for #{date_worked.strftime('%d %b')}",
         body: decision_note.presence,
         path: "/comp_off_requests",
         bell_to: [ user ], email_to: [ user ]

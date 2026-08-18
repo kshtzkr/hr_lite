@@ -79,6 +79,35 @@ RSpec.describe "SlipBuilder + PayrollRunProcessor" do
       expect(run.salary_slips.reload).to be_empty
     end
 
+    # June 2027 is FY 2027-28 and the newest card ships FY 2025-26, so every
+    # run in this file is computing on old rates. That must be the first
+    # thing an operator reads, above any per-employee warning.
+    it "leads the warnings with the stale statutory card" do
+      profile = create(:employee_profile)
+      create(:salary_structure, user: profile.user)
+      create(:employee_profile) # no structure -> a second, lesser warning
+
+      run = create(:payroll_run, period_month: month)
+      run.compute!(actor: leader)
+
+      expect(run.warnings.first).to include("statutory card", "FY 2027-28")
+      expect(run.warnings.last).to include("No salary structure")
+    end
+
+    it "says nothing about the card when one covers the run's year" do
+      # Fixed to the newest card's own financial year, so this example keeps
+      # passing when a card for a later year is added.
+      newest = HrLite::StatutoryRateCard::CARDS.keys.max
+      in_card_month = Date.new(newest.year, newest.month + 1, 1)
+      profile = create(:employee_profile, date_of_joining: newest)
+      create(:salary_structure, user: profile.user, effective_from: newest)
+
+      run = create(:payroll_run, period_month: in_card_month)
+      run.compute!(actor: leader)
+
+      expect(run.warnings.join).not_to include("statutory card")
+    end
+
     it "preserves overrides across recomputes" do
       profile = create(:employee_profile)
       create(:salary_structure, user: profile.user)

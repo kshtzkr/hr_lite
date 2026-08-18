@@ -28,4 +28,37 @@ RSpec.describe HrLite::StatutoryRateCard do
     expect(card[:pf][:employee_rate]).to be_a(BigDecimal)
     expect(card[:income_tax]["new"][:slabs].flatten.compact).to all(be_a(BigDecimal))
   end
+
+  # A silent fallback is how a whole financial year gets paid on last year's
+  # PF ceiling and last year's slabs. The lookup still answers — payroll
+  # cannot stop every April — but it has to say what it did.
+  describe "staleness" do
+    let(:newest) { described_class::CARDS.keys.max }
+
+    it "is not stale inside the card's own financial year" do
+      march = Date.new(newest.year + 1, 3, 1) # same FY as an April card
+      expect(described_class).not_to be_stale_for(march)
+      expect(described_class.warning_for(march)).to be_nil
+    end
+
+    it "is stale once the run crosses into a later financial year" do
+      next_fy = Date.new(newest.year + 1, 4, 1)
+      expect(described_class).to be_stale_for(next_fy)
+      expect(described_class.warning_for(next_fy))
+        .to include("FY #{HrLite::FinancialYear.label(next_fy)}", "last year's rates", "CA-verified")
+    end
+
+    it "names both financial years so the reader can see the gap" do
+      run = Date.new(newest.year + 2, 6, 1)
+      expect(described_class.warning_for(run))
+        .to include("FY #{HrLite::FinancialYear.label(run)}",
+                    "FY #{HrLite::FinancialYear.label(newest)}")
+    end
+
+    it "warns differently for a period older than every card" do
+      ancient = described_class::CARDS.keys.min.prev_year
+      expect(described_class).to be_predates_cards(ancient)
+      expect(described_class.warning_for(ancient)).to include("no card ships for a year that early")
+    end
+  end
 end

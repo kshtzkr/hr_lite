@@ -3,9 +3,13 @@ module HrLite
   # is a one-hash edit that gets code review and a spec diff, never an
   # inline-constant hunt.
   #
-  # VERIFY WITH A CA before the first run of any new financial year; the
-  # FY 2026-27 card ships with FY 2025-26 figures pending confirmation of
-  # the Feb 2026 Finance Act.
+  # VERIFY WITH A CA before the first run of any new financial year. Adding
+  # a year is one new dated entry in CARDS; nothing else changes.
+  #
+  # When no card exists for a run's financial year the lookup falls back to
+  # the newest one it has — payroll cannot simply stop every April — but
+  # `warning_for` says so on the run, and `PayrollRunProcessor` puts that
+  # sentence in front of every other warning until a card is added.
   module StatutoryRateCard
     def self.r(value) = BigDecimal(value.to_s)
     private_class_method :r
@@ -58,8 +62,44 @@ module HrLite
     }.freeze
 
     def self.for(period_month)
-      effective = CARDS.keys.sort.reverse.find { |date| date <= period_month }
-      effective ? CARDS[effective] : CARDS[CARDS.keys.min]
+      CARDS[effective_date_for(period_month)]
+    end
+
+    # Which card a run will actually use. A month older than every card
+    # borrows the earliest one — see `predates_cards?`, which says so.
+    def self.effective_date_for(period_month)
+      CARDS.keys.sort.reverse.find { |date| date <= period_month } || CARDS.keys.min
+    end
+
+    # The card in force is from an EARLIER financial year than the run. The
+    # lookup still returns figures — it has to, or payroll would stop dead
+    # every April — so the run carries the warning instead.
+    def self.stale_for?(period_month)
+      FinancialYear.before?(effective_date_for(period_month), period_month)
+    end
+
+    # The run is older than every card we ship, so it is being computed on
+    # rates that had not been announced yet.
+    def self.predates_cards?(period_month)
+      period_month < CARDS.keys.min
+    end
+
+    # One sentence naming both the run's FY and the card's, or nil when they
+    # match. Rendered verbatim in the run's warnings list.
+    def self.warning_for(period_month)
+      card_fy = FinancialYear.label(effective_date_for(period_month))
+      run_fy  = FinancialYear.label(period_month)
+
+      if predates_cards?(period_month)
+        "Payroll for FY #{run_fy} is being computed on the FY #{card_fy} " \
+        "statutory card — no card ships for a year that early. PF, ESI, PT " \
+        "and TDS on this run are not the rates that applied. Verify with your CA."
+      elsif stale_for?(period_month)
+        "Payroll for FY #{run_fy} is being computed on the FY #{card_fy} " \
+        "statutory card — no card ships for FY #{run_fy} yet. PF, ESI, PT and " \
+        "TDS on this run use last year's rates. Add a CA-verified card for " \
+        "FY #{run_fy} before publishing."
+      end
     end
   end
 end
