@@ -1,5 +1,7 @@
 module HrLite
   class LeaveRequest < ApplicationRecord
+    include Approvable
+
     STATUSES = %w[pending approved rejected cancelled].freeze
 
     belongs_to :user, class_name: HrLite.config.user_class
@@ -38,30 +40,23 @@ module HrLite
 
     # --- transitions -------------------------------------------------------
 
+    # With a flow configured this is ONE RUNG: the request becomes `approved`
+    # only once the last rung is satisfied. With no flow — or from somebody
+    # the flow is not waiting on, such as HR overriding — the first approval
+    # settles it, exactly as before.
+    #
     # Returns false (leaving the request pending) when the balance no longer
-    # covers it — the re-check runs inside the row lock so two concurrent
+    # covers it; the re-check runs inside the row lock so two concurrent
     # approvals cannot overdraw one balance.
     def approve!(actor:, note: nil)
-      insufficient = false
-      transition!("approved", actor, note) do
-        # Serialize on the BALANCE row. `transition!`'s own lock is on this
-        # request, and two pending requests are two different rows — so both
-        # approvals could read the same untouched balance and overdraw it.
-        LeaveBalance.lock_for(user, leave_type, LeaveYear.key_for(start_date)) unless leave_type.unlimited?
+      return record_routed_decision!(actor, note, :approved) if awaiting?(actor)
 
-        if insufficient_balance_now?
-          insufficient = true
-          raise ActiveRecord::Rollback
-        end
-      end
-      return false if insufficient
-
-      notify_decision("Leave approved")
-      notify_team
-      true
+      approve_outright!(actor: actor, note: note)
     end
 
     def reject!(actor:, note:)
+      return record_routed_decision!(actor, note, :rejected) if awaiting?(actor)
+
       transition!("rejected", actor, note)
       notify_decision("Leave rejected")
       true
@@ -86,6 +81,9 @@ module HrLite
         # Cancelling an APPROVED leave hands the days back to the balance, so
         # it is a quota change as much as a status change.
         audit!("cancelled", actor, was_approved ? "was approved" : nil)
+        # And nobody should still be asked to decide a request that has been
+        # called off — it would sit in their inbox for ever.
+        approval_route.cancel_all!
       end
 
       Notifications.publish(
@@ -111,6 +109,63 @@ module HrLite
     end
 
     private
+
+    # One rung answered. The route says whether that settles the request; if
+    # it does, the ordinary transition runs and does the real work — crediting
+    # or releasing balance, notifying, auditing — so routing never becomes a
+    # second path that can drift from the first.
+    def record_routed_decision!(actor, note, intent)
+      approval = approval_for(actor)
+      result = approval_route.decide!(approval, status: intent.to_s, actor: actor, note: note)
+
+      case result.outcome
+      when :approved then approve_outright!(actor: actor, note: note)
+      when :rejected then reject_outright!(actor: actor, note: note.presence || "Rejected")
+      else
+        notify_pending_approvers
+        true
+      end
+    end
+
+    def approve_outright!(actor:, note:)
+      insufficient = false
+      transition!("approved", actor, note) do
+        # Serialize on the BALANCE row. `transition!`'s own lock is on this
+        # request, and two pending requests are two different rows — so both
+        # approvals could read the same untouched balance and overdraw it.
+        LeaveBalance.lock_for(user, leave_type, LeaveYear.key_for(start_date)) unless leave_type.unlimited?
+
+        if insufficient_balance_now?
+          insufficient = true
+          raise ActiveRecord::Rollback
+        end
+      end
+      return false if insufficient
+
+      notify_decision("Leave approved")
+      notify_team
+      true
+    end
+
+    def reject_outright!(actor:, note:)
+      transition!("rejected", actor, note)
+      notify_decision("Leave rejected")
+      true
+    end
+
+    # The next rung has just opened; tell the people it opened on.
+    def notify_pending_approvers
+      approvers = pending_approvals.map(&:approver).compact.uniq
+      return if approvers.empty?
+
+      Notifications.publish(
+        "leave.requested",
+        title: "#{HrLite.display_name(user)} — #{leave_type.name} (#{date_range_label}) needs your approval",
+        body: reason.presence,
+        path: "/admin/leave_requests/#{id}",
+        bell_to: approvers
+      )
+    end
 
     def transition!(new_status, actor, note)
       with_lock do

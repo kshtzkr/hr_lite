@@ -24,6 +24,9 @@ module HrLite
       "appraisal.shared"      => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "promotion.recorded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: true  },
       "policy.changed"        => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
+      # An approval past its deadline. Leadership hears too — a decision
+      # nobody is making is a process problem, not just one person's inbox.
+      "approval.escalated"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
       "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },

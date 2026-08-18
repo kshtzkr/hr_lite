@@ -1,0 +1,66 @@
+<% content_for(:page_title) { "Waiting on you" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Waiting on you</h1>
+</div>
+
+<% if @covering_for.any? %>
+  <section class="hrl-card">
+    <p class="hrl-small hrl-muted">
+      You are covering for
+      <%= @covering_for.map { |d| hr_display_name(d.from_user) }.to_sentence %>.
+      Their approvals appear below alongside your own.
+    </p>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <% if @approvals.empty? %>
+    <p class="hrl-muted">Nothing is waiting on you.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Request</th><th>From</th><th>Waiting</th><th></th></tr></thead>
+        <tbody>
+          <% @approvals.each do |approval| %>
+            <% subject = approval.subject %>
+            <tr>
+              <td data-label="Request">
+                <strong><%= approval.label %></strong>
+                <% if approval.overdue? %>
+                  <span class="hrl-badge hrl-badge--bad">Overdue</span>
+                <% end %>
+                <% if approval.approver_id != hr_current_user.id %>
+                  <span class="hrl-badge hrl-badge--muted">
+                    for <%= hr_display_name(approval.approver) %>
+                  </span>
+                <% end %>
+              </td>
+              <td data-label="From"><%= hr_display_name(subject&.user) %></td>
+              <td data-label="Waiting"><%= time_ago_in_words(approval.created_at) %></td>
+              <td data-label="">
+                <% if (path = hrl_approval_path(approval)) %>
+                  <a class="hrl-small" href="<%= path %>">Open</a>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% end %>
+</section>
+
+<% if @delegations.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">While you are away</h2>
+    <ul>
+      <% @delegations.each do |delegation| %>
+        <li class="hrl-small">
+          <%= hr_display_name(delegation.to_user) %> decides for you,
+          <%= delegation.starts_on.strftime("%d %b") %> – <%= delegation.ends_on.strftime("%d %b %Y") %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
