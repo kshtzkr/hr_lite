@@ -6,10 +6,19 @@ of any financial year.
 
 ## Rate card
 
-All statutory numbers live in `HrLite::StatutoryRateCard::CARDS` — a frozen
-hash keyed by effective date. `StatutoryRateCard.for(period_month)` picks the
-newest card effective on or before the run month, so a budget change is one
-new hash entry with a new date key (old runs keep computing on the old card).
+Statutory numbers live in `hr_lite_statutory_rate_cards`, effective-dated,
+edited on the rate-card screen (money tier). `StatutoryRateCard.for(month)`
+picks the newest card effective on or before the run month, so correcting this
+year never changes what an earlier month computed.
+
+`HrLite::StatutoryRateCard::CARDS` is the SEED — the figures the gem ships,
+copied in by `rake hr_lite:seed` and owned by the install from then on. It is
+also the fallback for a host that has upgraded the gem but not yet migrated.
+
+A card must start on 1 April and carry every figure payroll reads; a card
+missing one is refused at save time rather than failing half way through
+computing somebody's salary. Recording who verified it silences the
+"not been marked verified" warning on every run.
 
 **Shipping card (effective 2025-04-01) — verify each FY with a CA:**
 
@@ -20,7 +29,7 @@ new hash entry with a new date key (old runs keep computing on the old card).
 | EPS split | 8.33% of EPS wage (ceiling ₹15,000), EPF = employer − EPS |
 | EDLI / PF admin | 0.5% / 0.5% (employer cost lines) |
 | ESI employee / employer | 0.75% / 3.25%, gross ceiling ₹21,000 |
-| PT | per-state slab table; `none`, UP and Uttarakhand ship EMPTY (₹0) |
+| PT | `hr_lite_professional_tax_slabs`, per state and per date. Only Karnataka ships bands; an unconfigured state deducts ₹0 and the RUN SAYS SO |
 | Income tax | new + old regime slab tables, §87A rebate cap, 4% cess |
 
 ### When no card ships for your financial year

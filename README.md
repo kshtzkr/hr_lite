@@ -211,7 +211,7 @@ It prints who it put where, and it leaves a host that has already assigned
 roles by hand alone.
 
 Set `config.legacy_tier_checks = true` to keep the old lambdas in charge while
-you migrate. It is honoured for one minor version and removed in 0.7.0.
+you migrate. It is honoured for one minor version and removed in 0.8.0.
 
 ## Features
 

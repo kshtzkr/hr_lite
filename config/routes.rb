@@ -49,6 +49,7 @@ HrLite::Engine.routes.draw do
     resources :roles, except: :show do
       resources :assignments, only: %i[create destroy], controller: "role_assignments"
     end
+    resources :statutory_rate_cards, only: %i[index new create edit update]
     resources :leave_types, except: :show
     resources :office_locations, except: :show
     resources :holidays, only: %i[index create update destroy] do

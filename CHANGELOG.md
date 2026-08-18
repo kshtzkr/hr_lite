@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-08-18
+
+Statutory figures stop being code. **Adds one migration** (rate cards and
+professional-tax slabs) and seeds it from the figures the gem already
+shipped — no number changes on upgrade.
+
+### Fixed
+
+- **Every state except Karnataka deducted ₹0 professional tax, silently.** PT
+  is a state levy and only Karnataka had bands in code; every other state
+  resolved to an empty slab list and deducted nothing, which is a wrong answer
+  delivered confidently. Slabs are now per state and effective-dated, and a
+  run whose employees sit in a state nobody has configured says so — once per
+  state, not once per employee.
+- **Adding a financial year needed a gem release.** Every April was a deadline
+  the gem controlled and the company did not; 0.5.3 shipped a warning about
+  exactly that. Cards are rows now, entered on a screen.
+- A tax regime saved with an empty slab list validated on key presence and
+  then taxed every salary at zero. Refused.
+
+### Added
+
+- `hr_lite_statutory_rate_cards` — PF, ESI and both regimes' slabs per
+  financial year, effective-dated. A card must start on 1 April (a mid-year
+  card would mean two slab sets inside one year, and the TDS projector works
+  on an annual figure), and must carry every figure payroll reads — a card
+  missing one fails at save time rather than half way through computing
+  somebody's salary.
+- `hr_lite_professional_tax_slabs` — per state, per date, with the February
+  top-up the states that levy one need.
+- A rate-card screen (money tier). Adding a year copies the newest card, since
+  most years carry PF and ESI over untouched and move only the slabs — a blank
+  form would invite retyping eight numbers that were already right.
+- **Sign-off.** A card records who checked it and when, and payroll warns on
+  every run computed against one nobody has confirmed. Ranked below the
+  wrong-financial-year warning: bad figures matter more than missing paperwork.
+- `rake hr_lite:statutory`, and `hr_lite:seed` copies the shipped figures in.
+
+### Changed
+
+- `StatutoryRateCard.for` reads the table, falling back to the shipped hash
+  for a host that has upgraded the gem but not yet run `db:migrate` — payroll
+  must not 500 on a missing table.
+- Branch-coverage floor 90.5% -> 90.8%.
+
+### Deferred
+
+- **`config.legacy_tier_checks` and the pre-0.6.0 tier lambdas are still
+  here.** 0.6.0 said they would go in this release. They have not: removing an
+  access mechanism in the same release that rewrites where statutory figures
+  live puts two unrelated upgrade risks in one step, and this release is
+  otherwise purely additive. They go in **0.8.0**, on their own. If you are
+  still relying on the flag, the 0.6.0 migration has already created the
+  equivalent role assignments — turn it off and check the Roles screen.
+
 ## [0.6.0] - 2026-08-18
 
 Access stops being three lambdas and becomes a role table. **Breaking**, with
@@ -458,7 +513,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...v0.5.2

@@ -1,0 +1,4 @@
+<% content_for(:page_title) { "Add a financial year" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add a financial year</h1></div>
+<%= render "form", card: @card, copied_from: @copied_from,
+      url: hr_lite.admin_statutory_rate_cards_path, method: :post %>

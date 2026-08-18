@@ -1,0 +1,109 @@
+<section class="hrl-card">
+  <% if local_assigns[:copied_from] %>
+    <p class="hrl-muted hrl-small">
+      Copied from FY <%= copied_from.financial_year %>. Most years carry PF and
+      ESI over untouched and move only the slabs — change what the Finance Act
+      changed, and leave the rest.
+    </p>
+  <% end %>
+
+  <%= form_with model: card, url: url, method: method, local: true,
+                scope: :statutory_rate_card do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: card %>
+
+    <div class="hrl-field">
+      <%= f.label :effective_from, "Financial year starts (1 April)" %>
+      <%= f.date_field :effective_from %>
+    </div>
+
+    <fieldset>
+      <legend>Provident fund</legend>
+      <% { employee_rate: "Employee rate (0.12 = 12%)", employer_rate: "Employer rate",
+           eps_rate: "EPS rate", wage_ceiling: "PF wage ceiling (₹)",
+           eps_wage_ceiling: "EPS wage ceiling (₹)", edli_rate: "EDLI rate",
+           edli_ceiling: "EDLI ceiling (₹)", admin_rate: "PF admin rate" }.each do |key, label| %>
+        <div class="hrl-field">
+          <%= label_tag "statutory_rate_card_pf_#{key}", label %>
+          <%= text_field_tag "statutory_rate_card[pf][#{key}]", card.pf[key.to_s],
+                             id: "statutory_rate_card_pf_#{key}", inputmode: "decimal" %>
+        </div>
+      <% end %>
+    </fieldset>
+
+    <fieldset>
+      <legend>ESI</legend>
+      <% { employee_rate: "Employee rate", employer_rate: "Employer rate",
+           gross_ceiling: "Gross ceiling (₹)" }.each do |key, label| %>
+        <div class="hrl-field">
+          <%= label_tag "statutory_rate_card_esi_#{key}", label %>
+          <%= text_field_tag "statutory_rate_card[esi][#{key}]", card.esi[key.to_s],
+                             id: "statutory_rate_card_esi_#{key}", inputmode: "decimal" %>
+        </div>
+      <% end %>
+    </fieldset>
+
+    <% %w[new old].each do |regime| %>
+      <% table = card.income_tax[regime] || {} %>
+      <fieldset>
+        <legend><%= regime.capitalize %> regime</legend>
+        <% { "standard_deduction" => "Standard deduction (₹)",
+             "rebate_cap" => "§87A rebate cap (₹)",
+             "cess_rate" => "Cess rate (0.04 = 4%)" }.each do |key, label| %>
+          <div class="hrl-field">
+            <%= label_tag "statutory_rate_card_it_#{regime}_#{key}", label %>
+            <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][#{key}]", table[key],
+                               id: "statutory_rate_card_it_#{regime}_#{key}", inputmode: "decimal" %>
+          </div>
+        <% end %>
+        <div class="hrl-field hrl-field--check">
+          <%= hidden_field_tag "statutory_rate_card[income_tax][#{regime}][marginal_relief]", "0" %>
+          <%= check_box_tag "statutory_rate_card[income_tax][#{regime}][marginal_relief]", "1",
+                            table["marginal_relief"] %>
+          <%= label_tag "statutory_rate_card_income_tax_#{regime}_marginal_relief",
+                        "Marginal relief just above the rebate cap" %>
+        </div>
+
+        <p class="hrl-small hrl-muted">
+          Slabs, lowest first. Leave the last band's "up to" empty — that is
+          the open-ended top rate.
+        </p>
+        <% slabs = Array(table["slabs"]) %>
+        <% (slabs + [ nil, nil ]).each_with_index do |row, index| %>
+          <div class="hrl-row">
+            <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][from]",
+                               row&.first, placeholder: "From ₹", inputmode: "decimal" %>
+            <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][to]",
+                               row&.at(1), placeholder: "Up to ₹ (blank = top)", inputmode: "decimal" %>
+            <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][rate]",
+                               row&.last, placeholder: "Rate (0.05)", inputmode: "decimal" %>
+          </div>
+        <% end %>
+      </fieldset>
+    <% end %>
+
+    <fieldset>
+      <legend>Sign-off</legend>
+      <p class="hrl-small hrl-muted">
+        Until a card is signed off, every payroll run computed on it carries a
+        warning. Record the person who actually checked the figures.
+      </p>
+      <div class="hrl-field">
+        <%= f.label :verified_by, "Checked by (name)" %>
+        <%= f.text_field :verified_by %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :verified_on, "Checked on" %>
+        <%= f.date_field :verified_on %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :notes, "Notes" %>
+        <%= f.text_field :notes %>
+      </div>
+    </fieldset>
+
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_statutory_rate_cards_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

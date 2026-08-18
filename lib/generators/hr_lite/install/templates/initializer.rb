@@ -18,7 +18,7 @@ HrLite.configure do |c|
   #
   # Upgrading from pre-0.6.0 and not ready to move? Uncomment this and keep
   # your leadership_emails / superadmin_emails / admin_check as they were.
-  # It is honoured until 0.7.0.
+  # It is honoured until 0.8.0.
   # c.legacy_tier_checks = true
 
   # Where the portal is reachable (subdomain or path). Enables email link

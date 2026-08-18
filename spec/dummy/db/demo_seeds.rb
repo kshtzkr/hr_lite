@@ -6,17 +6,32 @@ module DemoSeeds
 
   def run!
     leadership = User.create!(name: "Asha (Leadership)", email: "asha.lead@demo.hr", admin: true)
-    admin = User.create!(name: "Rohan (Admin)", email: "rohan.admin@demo.hr", admin: true)
+    admin = User.create!(name: "Rohan (Manager)", email: "rohan.admin@demo.hr")
     employee = User.create!(name: "Meera (Employee)", email: "meera@demo.hr",
                             designation: "Travel Consultant")
     colleague = User.create!(name: "Dev (Employee)", email: "dev@demo.hr",
                              designation: "Operations Executive")
 
-    HrLite.config.leadership_emails = [ "asha.lead@demo.hr" ]
     HrLite.config.public_url_base = "http://localhost:#{ENV.fetch('PORT', 3999)}/hr"
     HrLite.config.company = -> { { name: "Demo Travels Pvt Ltd", address: "42 MG Road, Bengaluru", logo_path: nil } }
 
     HrLite::Seeds.run! # leave types + fixed national holidays
+    HrLite::RoleSeeds.call
+    HrLite::StatutorySeeds.call
+
+    # Access is roles now, not a list of addresses. Rohan is deliberately a
+    # MANAGER rather than a company-wide admin: the demo is the quickest way
+    # to see that a manager reaches their own reports and nobody else.
+    {
+      leadership => [ HrLite::Role::EMPLOYEE, HrLite::Role::LEADERSHIP, HrLite::Role::SUPER_ADMIN ],
+      admin => [ HrLite::Role::EMPLOYEE, HrLite::Role::MANAGER ],
+      employee => [ HrLite::Role::EMPLOYEE ],
+      colleague => [ HrLite::Role::EMPLOYEE ]
+    }.each do |user, role_names|
+      HrLite::Role.where(name: role_names).find_each do |role|
+        HrLite::RoleAssignment.create!(user_id: user.id, role: role)
+      end
+    end
 
     office = HrLite::OfficeLocation.create!(name: "Head office", lat: 12.9716, lng: 77.5946, radius_m: 300)
 
@@ -118,8 +133,12 @@ module DemoSeeds
     ).register_mentions!
   end
 
+  # Payroll only accepts a month that has ENDED (0.5.2 — computing mid-month
+  # paid for every remaining day as if it had been worked). So the published
+  # run is two months back and the draft is last month; seeding a draft for
+  # the CURRENT month raised on boot and took the whole demo down with it.
   def seed_payroll(leadership)
-    run = HrLite::PayrollRun.create!(period_month: Date.current.prev_month.beginning_of_month,
+    run = HrLite::PayrollRun.create!(period_month: 2.months.ago.to_date.beginning_of_month,
                                      created_by_id: leadership.id)
     run.compute!(actor: leadership)
     run.salary_slips.find_each { |slip| slip.update!(lop_override: BigDecimal("1")) }
@@ -127,7 +146,7 @@ module DemoSeeds
     run.finalize!(actor: leadership)
     run.publish!(actor: leadership)
 
-    HrLite::PayrollRun.create!(period_month: Date.current.beginning_of_month,
+    HrLite::PayrollRun.create!(period_month: Date.current.prev_month.beginning_of_month,
                                created_by_id: leadership.id) # draft for the demo to compute
   end
 
