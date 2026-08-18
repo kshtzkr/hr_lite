@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-08-18
+
+A reusable approval engine. **Adds one migration** (flows, steps, approvals,
+delegations). Nothing changes for a module until a flow is configured for it,
+which is what lets the four existing ones migrate one at a time.
+
+### Fixed
+
+- **Cancelling a leave request left its approval sitting in somebody's
+  inbox.** Found by the coverage floor, which flagged `cancel_all!` as
+  unreachable — it was written and never called.
+
+### Added
+
+- `HrLite::ApprovalFlow` / `ApprovalStep` / `Approval` / `ApprovalDelegation`.
+  A flow is "leave needs the manager, then HR". A step names its approver by
+  RULE — manager, manager's manager, anyone holding a permission, or one named
+  person — so a flow survives somebody leaving; the rule resolves against the
+  subject when the request is raised.
+- Multi-level, sequential routing, with a `unanimous` step for the rungs where
+  everybody has to answer rather than the first person to look.
+- **A rung nobody occupies is skipped**, not left waiting. An employee with no
+  manager recorded would otherwise have a request no living person could
+  decide.
+- **Delegation.** "I am away until the 14th — Priya decides for me." The
+  approval does not move; a stand-in may answer it, and the row records both
+  who it was addressed to and who actually decided. Two hops, so a stand-in
+  who is also away is covered, and a loop cannot hand somebody their own
+  approvals back.
+- **SLA and escalation.** A step may carry a deadline; `ApprovalEscalationJob`
+  tells an approver once per overdue row, grouped into one message per person,
+  and stamps the rows so a daily run does not nag daily. Escalation TELLS
+  somebody — it does not reassign, because a decision made by somebody who
+  never saw the request is worse than a late one.
+- **One approval inbox** (`/approvals`) replacing four places to look. Employee
+  tier: holding an approval is the authorisation, so a manager, a stand-in and
+  a director reach the same screen and each sees only their own rows. It sits
+  after Calendar in the nav — the phone tab bar shows the first four, and this
+  screen is empty for anybody who is not an approver.
+- `HrLite::Approvable` — opts a model in WITHOUT taking over what its decisions
+  mean. `LeaveRequest` keeps its own `approve!`, including the balance lock;
+  the concern only answers "is it this person's turn, and does their answer
+  settle it". A settling decision runs the ordinary transition, so routing
+  never becomes a second path that can drift from the first.
+
+### Changed
+
+- `LeaveRequest` is the first module routed. With no flow it behaves exactly
+  as before, and somebody outside the current rung who holds `leave.approve`
+  at `all` can still settle it outright — the routed path is the normal one,
+  not the only one.
+- Branch-coverage floor 90.8% -> 90.3%, deliberately, with the arithmetic
+  written into `spec_helper.rb`: the engine added ~90 branches at once, and
+  holding the percentage would have meant contriving specs for untouched
+  files. Line coverage stayed at 100%.
+
+### Not yet
+
+- Comp-off, regularization and resignation still use their own single
+  decision. They are declared approvable and migrate next, one release each.
+
 ## [0.8.0] - 2026-08-18
 
 The deprecation 0.6.0 opened, closed. **Breaking** only for an install still
@@ -549,7 +610,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...v0.6.0

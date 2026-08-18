@@ -6,6 +6,12 @@ module HrLite
       { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
       { label: "Team",       path: :team_path,           match: [ "/team" ] },
       { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ] },
+      # After Calendar deliberately: the phone tab bar shows the first four
+      # and this screen is empty for everybody who is not an approver, so it
+      # belongs in "More" rather than displacing something everybody uses.
+      # Employee tier all the same — holding an approval IS the authorisation,
+      # so a manager and a stand-in covering for one reach the same screen.
+      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ] },
       { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
@@ -69,6 +75,21 @@ module HrLite
       end
       out << ERB::Util.html_escape(rest)
       out.html_safe
+    end
+
+    # Where an approval row actually leads. Each subject type has its own
+    # decision screen; the inbox only gathers them.
+    APPROVAL_PATHS = {
+      "HrLite::LeaveRequest" => :admin_leave_request_path,
+      "HrLite::CompOffRequest" => :admin_comp_off_request_path,
+      "HrLite::RegularizationRequest" => :admin_regularization_request_path
+    }.freeze
+
+    def hrl_approval_path(approval)
+      helper = APPROVAL_PATHS[approval.subject_type]
+      return nil unless helper && hr_lite_route?(helper)
+
+      hr_lite.public_send(helper, approval.subject_id)
     end
 
     def hrl_pagination

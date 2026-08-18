@@ -19,6 +19,7 @@ HrLite::Engine.routes.draw do
   resources :regularization_requests, only: %i[index new create] do
     member { post :cancel }
   end
+  resources :approvals, only: :index
   get "team", to: "team#show"
   get "org", to: "org#show"
   resources :holidays, only: :index
