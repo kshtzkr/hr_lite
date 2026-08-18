@@ -7,11 +7,9 @@ module HrLite
                   :authenticate_method, :admin_check, :display_name_method,
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
-                  :leadership_emails, :leadership_check, :extra_stylesheets,
-                  :superadmin_emails, :superadmin_check,
+                  :leadership_emails, :extra_stylesheets, :superadmin_emails,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
-                  :onboard_user, :offboard_user, :invite_url_for,
-                  :legacy_tier_checks
+                  :onboard_user, :offboard_user, :invite_url_for
 
     attr_reader :leave_year_start_month
 
@@ -46,21 +44,20 @@ module HrLite
       @time_zone             = "Asia/Kolkata"
       @currency_symbol      = "₹"
       @on_designation_change = ->(user, designation) { }
-      # Access came from three lambdas before 0.6.0, two of which matched the
-      # user's EMAIL — a mutable, host-owned, unverified column that a host
-      # then had to remember never to let anyone edit. Roles replace them.
-      # This flag hands authority back to the old lambdas for a host that has
-      # not finished migrating; honoured for one more minor version, gone in 0.8.0.
-      @legacy_tier_checks    = false
+      # --- pre-0.6.0 access, now MIGRATION INPUT ONLY ------------------------
+      #
+      # These three governed access until 0.6.0, and two of them matched the
+      # user's EMAIL — a mutable, host-owned, unverified column that every
+      # host then had to remember never to let anybody edit. They decide
+      # nothing now: `HrLite.admin?` and friends read roles.
+      #
+      # They are still read in exactly one place — the 0.6.0 upgrade
+      # migration, which derives role assignments from whatever a 0.5.x host
+      # had configured. An install upgrading across several versions at once
+      # needs them present for that migration to have anything to read, which
+      # is why they were not deleted outright.
       @leadership_emails     = []
-      @leadership_check      = ->(user) { HrLite.email_listed?(user, HrLite.config.leadership_emails) }
-      # Money tier: salary structures, payroll, slips, appraisals. Empty
-      # list means "same as leadership" (pre-0.5.0 behaviour).
       @superadmin_emails     = []
-      @superadmin_check      = ->(user) do
-        list = HrLite.normalize_email_list(HrLite.config.superadmin_emails)
-        list.empty? ? HrLite.leadership?(user) : HrLite.email_listed?(user, list)
-      end
       @extra_stylesheets     = [] # host stylesheets linked AFTER hr_lite.css (CSS-var overrides)
       @mailer_from           = "hr@example.com"
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url

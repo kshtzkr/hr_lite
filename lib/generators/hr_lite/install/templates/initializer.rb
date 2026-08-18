@@ -15,11 +15,6 @@ HrLite.configure do |c|
   #   HrLite::RoleAssignment.create!(
   #     user_id: User.find_by!(email: "you@example.com").id,
   #     role: HrLite::Role.find_by!(name: HrLite::Role::SUPER_ADMIN))
-  #
-  # Upgrading from pre-0.6.0 and not ready to move? Uncomment this and keep
-  # your leadership_emails / superadmin_emails / admin_check as they were.
-  # It is honoured until 0.8.0.
-  # c.legacy_tier_checks = true
 
   # Where the portal is reachable (subdomain or path). Enables email link
   # buttons and HrLite.public_url / HrLite.public_url? for deep links.

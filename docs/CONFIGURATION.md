@@ -9,11 +9,8 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `current_user_method` | `:current_user` | Called on the controller per request. |
 | `authenticate_method` | `:authenticate_user!` | Any before_action-able method on the parent controller. |
 | `admin_check` | `user.admin?` if defined | Operations tier: team attendance, regularization, leave decisions, overview board. Leadership implies admin. |
-| `legacy_tier_checks` | `false` | Read the pre-0.6.0 lambdas below instead of roles. Removed in 0.8.0. |
 | `superadmin_emails` | `[]` | Money tier: salary structures, payroll, slips, appraisals, promotions. Empty = leadership keeps the money tier (pre-0.5.0). |
-| `superadmin_check` | membership in `superadmin_emails` (case-insensitive); falls back to `leadership_check` when the list is empty | Replace to derive the money tier some other way. |
 | `leadership_emails` | `[]` | THE governing list. Policy, offices, holidays, weekend setting, employee profiles, salary structures, payroll, appraisals, audit trail. |
-| `leadership_check` | membership in `leadership_emails` (case-insensitive) | Replace to derive leadership some other way. |
 | `display_name_method` | `:display_name` → `:name` → `:email` | First present value wins. |
 | `employees_scope` | `user_klass.all` | Who HR tracks — override to exclude bots/service accounts. |
 | `mentionable_users` | name/email `LIKE` on the user table | Backs the kudos @-autocomplete (`GET <mount>/users/search`). |
@@ -93,13 +90,15 @@ seeded roles and the permission list.
 - Every grant and assignment change lands in the append-only
   `hr_lite_audit_logs` trail.
 
-### The legacy tier lambdas
+### The retired tier lambdas
 
-`admin_check`, `leadership_emails` / `leadership_check` and
-`superadmin_emails` / `superadmin_check` governed access before 0.6.0. Two of
-them matched the user's `email`, which is mutable and host-owned.
+`admin_check`, `leadership_emails` and `superadmin_emails` governed access
+before 0.6.0 (with `leadership_check` / `superadmin_check`, now deleted). Two of
+them matched the user's `email` — mutable, host-owned and unverified.
 
-They are read ONLY when `config.legacy_tier_checks = true`, are honoured for
-one minor version, and are **removed in 0.8.0**. The upgrade migration derives
-role assignments from them once, so most hosts never need the flag.
+**As of 0.8.0 they decide nothing.** They are read in exactly one place: the
+0.6.0 upgrade migration, which derives role assignments from whatever a 0.5.x
+host had configured. An install jumping several versions at once still needs
+them present for that migration to have something to read, which is why they
+were not deleted outright. Setting them on a current install has no effect.
 

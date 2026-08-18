@@ -22,9 +22,13 @@ RSpec.describe HrLite::Generators::InstallGenerator do
     output = run_generator
 
     initializer = File.read(File.join(@dest, "config/initializers/hr_lite.rb"))
+    # The template used to hand a new host an env var for governing access.
+    # It points at roles now — an initializer is the wrong place to decide
+    # who runs payroll.
     expect(initializer).to include("HrLite.configure")
-      .and include("leadership_emails")
+      .and include("RoleAssignment")
       .and include("public_url_base")
+    expect(initializer).not_to include("leadership_emails")
     expect(output).to include("hr_lite:install:migrations")
       .and include("hr_lite:seed")
       .and include("db:encryption:init")

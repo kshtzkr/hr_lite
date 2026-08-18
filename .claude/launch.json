@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hr_lite demo",
+      "runtimeExecutable": "bundle",
+      "runtimeArgs": ["exec", "ruby", "bin/demo_boot.rb"],
+      "port": 3999
+    }
+  ]
+}

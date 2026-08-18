@@ -210,8 +210,9 @@ where they already were: `superadmin_emails` to Super Admin,
 It prints who it put where, and it leaves a host that has already assigned
 roles by hand alone.
 
-Set `config.legacy_tier_checks = true` to keep the old lambdas in charge while
-you migrate. It is honoured for one minor version and removed in 0.8.0.
+As of 0.8.0 those lambdas decide nothing. They are read only by that
+migration, so an install jumping several versions at once still has something
+for it to derive from; setting them on a current install has no effect.
 
 ## Features
 
