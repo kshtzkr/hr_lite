@@ -1,0 +1,34 @@
+<% content_for(:page_title) { "Policies" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Policies</h1></div>
+
+<section class="hrl-card">
+  <% if @policies.empty? %>
+    <p class="hrl-muted">No policies are published yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Policy</th><th>In force</th><th></th></tr></thead>
+        <tbody>
+          <% @policies.each do |policy| %>
+            <tr>
+              <td data-label="Policy">
+                <a href="<%= hr_lite.policy_path(policy) %>"><%= policy.title %></a>
+                <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span>
+              </td>
+              <td data-label="In force"><%= policy.effective_from.strftime("%d %b %Y") %></td>
+              <td data-label="">
+                <% if policy.acknowledgement_required %>
+                  <% if @acknowledged.include?(policy.id) %>
+                    <span class="hrl-badge hrl-badge--ok">Read</span>
+                  <% else %>
+                    <span class="hrl-badge hrl-badge--warn">Needs your acknowledgement</span>
+                  <% end %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

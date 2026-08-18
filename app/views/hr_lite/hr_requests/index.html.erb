@@ -1,0 +1,39 @@
+<% content_for(:page_title) { "Ask HR" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Ask HR</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_hr_request_path %>">New request</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @requests.empty? %>
+    <p class="hrl-muted">Nothing raised yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Request</th><th>Raised</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Request">
+                <a href="<%= hr_lite.hr_request_path(request) %>"><%= request.subject %></a>
+                <div class="hrl-small hrl-muted"><%= request.category_label %></div>
+              </td>
+              <td data-label="Raised"><%= request.created_at.to_date.strftime("%d %b %Y") %></td>
+              <td data-label="Status"><%= hrl_request_status_badge(request.status) %></td>
+              <td data-label="">
+                <% if request.open? || request.in_progress? %>
+                  <%= button_to "Withdraw", hr_lite.cancel_hr_request_path(request),
+                        class: "hrl-btn",
+                        form: { data: { turbo_confirm: "Withdraw this request?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

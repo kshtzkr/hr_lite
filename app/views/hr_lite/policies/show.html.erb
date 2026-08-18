@@ -1,0 +1,23 @@
+<% content_for(:page_title) { @policy.title } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @policy.title %></h1>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted">
+    Version <%= @policy.version %>, in force from
+    <%= @policy.effective_from.strftime("%d %b %Y") %>.
+  </p>
+  <div class="hrl-prose"><%= simple_format(@policy.body) %></div>
+</section>
+
+<% if @policy.acknowledgement_required %>
+  <section class="hrl-card">
+    <% if @policy.acknowledged_by?(hr_current_user) %>
+      <p class="hrl-muted">You acknowledged this version.</p>
+    <% else %>
+      <%= button_to "I have read this", hr_lite.acknowledge_policy_path(@policy),
+            class: "hrl-btn hrl-btn--primary" %>
+    <% end %>
+  </section>
+<% end %>

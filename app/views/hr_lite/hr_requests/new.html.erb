@@ -1,0 +1,28 @@
+<% content_for(:page_title) { "New request" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Ask HR</h1></div>
+
+<section class="hrl-card">
+  <%= form_with model: @request, url: hr_lite.hr_requests_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @request %>
+
+    <div class="hrl-field">
+      <%= f.label :category, "What is this about" %>
+      <%= f.select :category,
+            HrLite::HrRequest::CATEGORIES.map { |c| [ c.humanize, c ] },
+            { include_blank: "Choose one" } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :subject, "In one line" %>
+      <%= f.text_field :subject %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :body, "Anything else HR should know" %>
+      <%= f.text_area :body, rows: 5 %>
+    </div>
+
+    <div class="hrl-form-actions">
+      <%= f.submit "Send to HR", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.hr_requests_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>
