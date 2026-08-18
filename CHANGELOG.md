@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-18
+
+The deprecation 0.6.0 opened, closed. **Breaking** only for an install still
+setting `config.legacy_tier_checks`; no migration.
+
+### Removed
+
+- **`config.legacy_tier_checks` and the pre-0.6.0 tier lambdas no longer
+  decide access.** `HrLite.admin?`, `.leadership?` and `.superadmin?` read
+  roles, full stop. Two of those lambdas matched the user's `email` — mutable,
+  host-owned, unverified — and a host that kept the flag on kept that hole
+  open.
+- The flag is gone from the configuration object entirely, so an initializer
+  that still sets it now fails loudly at boot rather than silently doing
+  nothing. That is the intended way to find out.
+
+### Changed
+
+- `admin_check`, `leadership_emails` / `leadership_check` and
+  `superadmin_emails` / `superadmin_check` remain on the configuration, and
+  are now **migration input only**: the 0.6.0 upgrade migration reads them to
+  derive role assignments. An install jumping 0.5.x → 0.8.0 in one step still
+  needs them present for that migration to have something to read, which is
+  why they were not deleted outright. Setting them on a current install has no
+  effect on who can reach what.
+- `HrLite.leadership_users` and `.admin_users` are one query over the grant
+  tables. The legacy paths that instantiated every employee and ran a host
+  lambda per row are gone.
+
+### Upgrading
+
+If you set `legacy_tier_checks = true`, delete that line. Before you do, open
+the Roles screen and confirm the people who need access hold it — the 0.6.0
+migration will have assigned them already unless you had turned the flag on
+before it ran.
+
 ## [0.7.0] - 2026-08-18
 
 Statutory figures stop being code. **Adds one migration** (rate cards and
@@ -513,7 +549,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...v0.5.3

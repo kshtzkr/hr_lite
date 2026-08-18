@@ -51,62 +51,43 @@ module HrLite
 
     def access_for(user) = Access.for(user)
 
-    # --- legacy tier predicates --------------------------------------------
+    # --- tier predicates ----------------------------------------------------
     #
-    # Kept because views, hosts and the notification fan-out all call them.
-    # They are now READ OFF ROLES rather than off a mutable email column; the
-    # configured lambdas survive only as an explicit opt-in for a host that
-    # has not migrated yet (see Configuration#legacy_tier_checks).
+    # Shorthands over the permissions, kept because views, hosts and the
+    # notification fan-out all read better asking "is this person leadership"
+    # than "do they hold profile.manage at all scope". They are ROLES all the
+    # way down; the pre-0.6.0 lambdas no longer decide anything.
 
     def admin?(user)
       return false if user.blank?
-      return !!config.admin_check.call(user) if config.legacy_tier_checks
 
       can?(user, "leave.approve", scope: :all) || can?(user, "attendance.manage", scope: :all)
     end
 
     def leadership?(user)
       return false if user.blank?
-      return !!config.leadership_check.call(user) if config.legacy_tier_checks
 
       can?(user, "profile.manage", scope: :all)
     end
 
     def superadmin?(user)
       return false if user.blank?
-      return !!config.superadmin_check.call(user) if config.legacy_tier_checks
 
       can?(user, "payroll.manage", scope: :all)
     end
 
-    # An access list, cleaned. "a@x.com,,b@x.com".split(",") — one stray
-    # comma in an ENV var — used to put "" in the list, and a user whose
-    # email was blank then MATCHED it and was handed the tier.
+    # An access list, cleaned — read now only by the 0.6.0 upgrade migration.
+    # One stray comma in an ENV var ("a@x.com,,b@x.com") used to put "" in the
+    # list, and a user whose email was blank then MATCHED it and was handed
+    # the tier. Kept honest here so the migration cannot repeat that.
     def normalize_email_list(emails)
       Array(emails).map { |e| e.to_s.downcase.strip }.reject(&:empty?)
     end
 
-    # Whether a user's own email is on a configured access list. A blank
-    # email is never on any list, however the list is spelled.
-    def email_listed?(user, emails)
-      address = user.respond_to?(:email) ? user.email.to_s.downcase.strip : ""
-      return false if address.empty?
-
-      normalize_email_list(emails).include?(address)
-    end
-
     # Leadership members resolvable to actual user records (for bell
-    # notifications). On a legacy host, emails configured but absent from the
-    # user table are still reachable by email — see Notifications.
+    # notifications).
     def leadership_users
-      unless config.legacy_tier_checks
-        return users_holding("profile.manage", scope: :all)
-      end
-
-      emails = normalize_email_list(config.leadership_emails)
-      return user_klass.none if emails.empty?
-
-      user_klass.where("LOWER(#{user_klass.table_name}.email) IN (?)", emails)
+      users_holding("profile.manage", scope: :all)
     end
 
     # Everyone whose roles grant `key` at `scope` or wider. One query over
@@ -121,13 +102,9 @@ module HrLite
       user_klass.where(id: ids)
     end
 
-    # Every domain event that bells the admins calls this. On roles it is one
-    # query over the grant tables; on a legacy host it still has to run the
-    # host's lambda per row, which is why it starts from employees_scope
-    # (narrowed to real staff) rather than every row that exists.
+    # Every domain event that bells the admins calls this. One query over the
+    # grant tables — it used to instantiate every employee and ask each one.
     def admin_users
-      return employees.select { |u| admin?(u) } if config.legacy_tier_checks
-
       users_holding("leave.approve", scope: :all).sort_by { |u| display_name(u).downcase }
     end
 

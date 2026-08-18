@@ -19,9 +19,8 @@ RSpec.describe HrLite do
   end
 
   # The tier predicates survive because views, hosts and the notification
-  # fan-out all call them — but they read off ROLES now, not off a mutable
-  # email column. The email lambdas answer only while a host has explicitly
-  # asked for them.
+  # fan-out all read better asking "is this person leadership" than "do they
+  # hold profile.manage at all scope". They are roles all the way down.
   describe ".admin?" do
     it "is true for a role that decides anyone's leave" do
       expect(described_class.admin?(user_with_roles(HrLite::Role::HR))).to be(true)
@@ -37,10 +36,11 @@ RSpec.describe HrLite do
       expect(described_class.admin?(user_with_roles(HrLite::Role::MANAGER))).to be(false)
     end
 
-    it "defers to the configured lambda while legacy_tier_checks is on" do
-      HrLite.config.legacy_tier_checks = true
-      expect(described_class.admin?(build(:user, :admin))).to be(true)
-      expect(described_class.admin?(build(:user))).to be(false)
+    # The pre-0.6.0 lambdas are migration input now. Somebody the host's own
+    # admin_check calls an admin reaches nothing until a role says so.
+    it "ignores the configured lambda entirely", no_legacy_bridge: true do
+      HrLite.config.admin_check = ->(_user) { true }
+      expect(described_class.admin?(user_with_roles(HrLite::Role::EMPLOYEE))).to be(false)
     end
   end
 
@@ -78,49 +78,31 @@ RSpec.describe HrLite do
     end
   end
 
-  describe ".leadership? on the legacy lambdas" do
-    before { HrLite.config.legacy_tier_checks = true }
-
-    it "matches configured emails case-insensitively" do
-      HrLite.config.leadership_emails = [ "Boss@Acme.test " ]
-      expect(described_class.leadership?(build(:user, email: "boss@acme.test"))).to be(true)
-      expect(described_class.leadership?(build(:user, email: "dev@acme.test"))).to be(false)
-    end
-
-    it "is false when no leadership is configured" do
-      expect(described_class.leadership?(build(:user))).to be(false)
-    end
-
-    # One stray comma in HR_LEADERSHIP_EMAILS put "" on the list, and a user
-    # with no email matched it and was handed the tier.
-    it "never admits a blank email, however the list is spelled" do
-      HrLite.config.leadership_emails = [ "boss@acme.test", "", "  " ]
-
-      expect(described_class.leadership?(build(:user, email: ""))).to be(false)
-      expect(described_class.leadership?(build(:user, email: nil))).to be(false)
-      expect(described_class.leadership?(build(:user, email: "   "))).to be(false)
-      expect(described_class.leadership?(build(:user, email: "boss@acme.test"))).to be(true)
-    end
-  end
-
-  describe ".superadmin?" do
-    before { HrLite.config.legacy_tier_checks = true }
-
-    it "never admits a blank email either" do
-      HrLite.config.superadmin_emails = [ "money@acme.test", "" ]
-
-      expect(described_class.superadmin?(build(:user, email: ""))).to be(false)
-      expect(described_class.superadmin?(build(:user, email: "money@acme.test"))).to be(true)
-    end
-
-    # A list of nothing but blanks is an EMPTY list, not a list nobody is on:
-    # it falls back to leadership, exactly as an unset list does.
-    it "treats an all-blank list as unconfigured and defers to leadership" do
+  # Two of the three tiers used to match the user's EMAIL. Every one of these
+  # would have granted access before 0.6.0; none of them does now.
+  describe "the retired email lists", no_legacy_bridge: true do
+    it "grants nothing on their own" do
       HrLite.config.leadership_emails = [ "boss@acme.test" ]
-      HrLite.config.superadmin_emails = [ "", "  " ]
+      HrLite.config.superadmin_emails = [ "boss@acme.test" ]
+      boss = create(:user, email: "boss@acme.test")
+      grant_role(boss, HrLite::Role::EMPLOYEE)
 
-      expect(described_class.superadmin?(build(:user, email: "boss@acme.test"))).to be(true)
-      expect(described_class.superadmin?(build(:user, email: ""))).to be(false)
+      expect(described_class.leadership?(boss)).to be(false)
+      expect(described_class.superadmin?(boss)).to be(false)
+      expect(described_class.admin?(boss)).to be(false)
+    end
+
+    it "no longer lets a changed email hand somebody the money tier" do
+      owner = user_with_roles(HrLite::Role::EMPLOYEE, email: "nobody@acme.test")
+      HrLite.config.superadmin_emails = [ "money@acme.test" ]
+      owner.update!(email: "money@acme.test")
+      HrLite::Current.access_cache = nil
+
+      expect(described_class.superadmin?(owner.reload)).to be(false)
+    end
+
+    it "is gone from the configuration object" do
+      expect(HrLite.config).not_to respond_to(:legacy_tier_checks)
     end
   end
 
@@ -137,13 +119,11 @@ RSpec.describe HrLite do
       expect(described_class.leadership_users).to be_empty
     end
 
-    it "still resolves configured emails while legacy_tier_checks is on" do
-      HrLite.config.legacy_tier_checks = true
-      boss = create(:user, email: "boss@acme.test")
-      create(:user, email: "dev@acme.test")
-      HrLite.config.leadership_emails = [ "BOSS@acme.test", "ghost@acme.test", "" ]
+    it "ignores the retired email list", no_legacy_bridge: true do
+      HrLite.config.leadership_emails = [ "boss@acme.test" ]
+      create(:user, email: "boss@acme.test")
 
-      expect(described_class.leadership_users).to contain_exactly(boss)
+      expect(described_class.leadership_users).to be_empty
     end
   end
 
@@ -156,11 +136,11 @@ RSpec.describe HrLite do
       expect(described_class.admin_users).to contain_exactly(hr)
     end
 
-    it "filters by the admin_check while legacy_tier_checks is on" do
-      HrLite.config.legacy_tier_checks = true
-      admin = create(:user, :admin)
-      create(:user)
-      expect(described_class.admin_users).to contain_exactly(admin)
+    it "ignores the host's admin_check", no_legacy_bridge: true do
+      HrLite.config.admin_check = ->(_user) { true }
+      user_with_roles(HrLite::Role::EMPLOYEE)
+
+      expect(described_class.admin_users).to be_empty
     end
   end
 
