@@ -34,6 +34,14 @@ module HrLite
       # A document about to lapse — a passport or a visa is somebody's right
       # to work, and finding out late is the whole problem.
       "document.expiring"     => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
+      "expense.submitted"     => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "expense.approved"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "expense.rejected"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "expense.reimbursed"    => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "hr_request.raised"     => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "hr_request.assigned"   => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "hr_request.resolved"   => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "policy.published"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
       "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },

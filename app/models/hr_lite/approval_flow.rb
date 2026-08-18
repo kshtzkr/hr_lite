@@ -22,7 +22,7 @@ module HrLite
     def self.approvable_types
       %w[
         HrLite::LeaveRequest HrLite::CompOffRequest
-        HrLite::RegularizationRequest HrLite::Resignation
+        HrLite::RegularizationRequest HrLite::Resignation HrLite::Expense
       ].freeze
     end
 

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-08-18
+
+The four things an employee had to leave the system to do. **Adds one
+migration.**
+
+### Added
+
+- **Expenses**, with categories carrying a monthly cap and a receipt rule.
+  The cap is checked when the claim is MADE, not at approval — telling
+  somebody they are over it after a week of waiting is the wrong moment to
+  find out. A claim awaiting a decision counts against the cap; a rejected
+  one gives the room back.
+- Expenses route through the approval engine from 0.9.0 rather than growing a
+  fifth approve/reject. Configure a flow and a claim gets manager-then-finance
+  for free. `reimbursed` is a separate state from `approved`, because agreeing
+  to pay somebody and paying them are different days and the person waiting
+  cares about the second one.
+- **Benefits and enrolments.** Dependants are a COUNT, not a list — names and
+  dates of birth of somebody's family are data this engine has no reason to
+  hold, and holding them would mean protecting them.
+- **An HR help desk**: raise, assign, resolve, with the answer going back to
+  the person who asked instead of dying in somebody's inbox.
+- **Policies, versioned.** Re-issuing asks everybody again, because an
+  acknowledgement of v1 says nothing about v2 — that is the whole point of
+  versioning it. Acknowledgements are `readonly?` once written: evidence that
+  can be edited afterwards is not evidence. Clicking twice is not an error.
+- Permissions for all four, granted to the roles that should hold them, and
+  nine notification events.
+
+### Changed
+
+- `HrLite::Expense` is the second module on the approval engine, which is the
+  first real test of the claim made in 0.9.0 that a new module gets
+  multi-level approval without touching the engine. It did.
+
 ## [0.11.0] - 2026-08-18
 
 Documents, and a tax declaration that is more than one number. **Adds one
@@ -694,7 +729,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/kshtzkr/hr_lite/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...v0.9.0
