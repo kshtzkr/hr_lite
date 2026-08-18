@@ -1,0 +1,89 @@
+<% content_for(:page_title) { "Documents" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Documents</h1></div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    Seeing that a document exists and opening it are different things — a
+    passport is visible here, but the file itself only opens for whoever its
+    visibility allows.
+  </p>
+  <div class="hrl-row">
+    <a class="hrl-btn <%= "hrl-btn--primary" if @category.nil? %>"
+       href="<%= hr_lite.admin_documents_path %>">All</a>
+    <% @categories.each do |category| %>
+      <a class="hrl-btn <%= "hrl-btn--primary" if @category == category %>"
+         href="<%= hr_lite.admin_documents_path(category: category) %>"><%= category.humanize %></a>
+    <% end %>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Waiting to be checked (<%= @pending.size %>)</h2>
+  <% if @pending.empty? %>
+    <p class="hrl-muted">Nothing pending.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Person</th><th>Document</th><th>File</th><th></th></tr></thead>
+        <tbody>
+          <% @pending.each do |doc| %>
+            <tr>
+              <td data-label="Person"><%= hr_display_name(doc.user) %></td>
+              <td data-label="Document">
+                <%= doc.title %>
+                <div class="hrl-small hrl-muted"><%= doc.category.humanize %></div>
+              </td>
+              <td data-label="File">
+                <% if doc.readable_by?(hr_current_user) && doc.file.attached? %>
+                  <a class="hrl-small" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
+                <% else %>
+                  <span class="hrl-small hrl-muted">Not yours to open</span>
+                <% end %>
+              </td>
+              <td data-label="">
+                <%= button_to "Verify", hr_lite.verify_admin_document_path(doc),
+                      method: :post, class: "hrl-btn hrl-btn--primary" %>
+                <%= form_with url: hr_lite.reject_admin_document_path(doc), method: :post, local: true do %>
+                  <%= text_field_tag :note, nil, placeholder: "What is wrong with it" %>
+                  <%= submit_tag "Reject", class: "hrl-btn" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Everything on file</h2>
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Person</th><th>Document</th><th>Expires</th><th>Checked</th></tr></thead>
+      <tbody>
+        <% @documents.each do |doc| %>
+          <tr>
+            <td data-label="Person">
+              <a href="<%= hr_lite.admin_employee_documents_path(user_id: doc.user_id) %>">
+                <%= hr_display_name(doc.user) %>
+              </a>
+            </td>
+            <td data-label="Document"><%= doc.title %></td>
+            <td data-label="Expires">
+              <% if doc.expires_on %>
+                <span class="<%= "hrl-badge hrl-badge--bad" if doc.expired? %>">
+                  <%= doc.expires_on.strftime("%d %b %Y") %>
+                </span>
+              <% else %>—<% end %>
+            </td>
+            <td data-label="Checked">
+              <%= hrl_request_status_badge(doc.verification == "verified" ? "approved" : doc.verification) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= hrl_pagination %>
+</section>

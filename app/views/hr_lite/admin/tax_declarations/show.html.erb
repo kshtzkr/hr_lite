@@ -1,0 +1,54 @@
+<% content_for(:page_title) { hr_display_name(@declaration.user) } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">
+    <%= hr_display_name(@declaration.user) %> — <%= @declaration.label %>
+  </h1>
+</div>
+
+<section class="hrl-card">
+  <p>
+    Regime: <strong><%= @declaration.regime.humanize %></strong> ·
+    Status: <%= hrl_request_status_badge(@declaration.status == "verified" ? "approved" : @declaration.status) %>
+  </p>
+  <p class="hrl-muted hrl-small">
+    Until this is verified, payroll deducts against what was CLAIMED — making
+    somebody overpay tax all year because paperwork is slow is its own kind of
+    wrong. Once verified, only the amounts you enter below count.
+  </p>
+</section>
+
+<%= form_with model: @declaration, url: hr_lite.admin_tax_declaration_path(@declaration),
+              method: :patch, scope: :tax_declaration, local: true do |f| %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">What the proof supports</h2>
+    <%= f.fields_for :tax_declaration_items do |item| %>
+      <div class="hrl-field">
+        <%= item.label :verified_amount, item.object.section_label %>
+        <span class="hrl-small hrl-muted">
+          Claimed <%= hrl_money(item.object.declared_amount) %>
+          <%= "— #{item.object.label}" if item.object.label.present? %>
+        </span>
+        <%= item.text_field :verified_amount,
+              value: item.object.verified_amount&.to_s("F"), inputmode: "decimal",
+              placeholder: "Verified amount" %>
+      </div>
+    <% end %>
+    <div class="hrl-form-actions">
+      <%= f.submit "Record amounts", class: "hrl-btn" %>
+    </div>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Decide</h2>
+  <%= button_to "Verify", hr_lite.verify_admin_tax_declaration_path(@declaration),
+        method: :post, class: "hrl-btn hrl-btn--primary" %>
+  <%= form_with url: hr_lite.reject_admin_tax_declaration_path(@declaration),
+                method: :post, local: true do %>
+    <div class="hrl-field">
+      <%= label_tag :note, "What is missing (required to send back)" %>
+      <%= text_field_tag :note %>
+    </div>
+    <%= submit_tag "Send back", class: "hrl-btn" %>
+  <% end %>
+</section>

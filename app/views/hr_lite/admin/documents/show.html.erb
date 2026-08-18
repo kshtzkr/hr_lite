@@ -1,0 +1,42 @@
+<% content_for(:page_title) { hr_display_name(@employee) } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@employee) %> — documents</h1>
+</div>
+
+<% if @missing.any? %>
+  <section class="hrl-card hrl-card--warn">
+    <h2 class="hrl-card__title">Not on file</h2>
+    <p><%= @missing.map(&:humanize).to_sentence %></p>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <% if @documents.empty? %>
+    <p class="hrl-muted">Nothing uploaded.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Document</th><th>Expires</th><th>Checked</th><th></th></tr></thead>
+        <tbody>
+          <% @documents.each do |doc| %>
+            <tr>
+              <td data-label="Document">
+                <strong><%= doc.title %></strong>
+                <div class="hrl-small hrl-muted"><%= doc.category.humanize %></div>
+              </td>
+              <td data-label="Expires"><%= doc.expires_on&.strftime("%d %b %Y") || "—" %></td>
+              <td data-label="Checked">
+                <%= hrl_request_status_badge(doc.verification == "verified" ? "approved" : doc.verification) %>
+              </td>
+              <td data-label="">
+                <% if doc.readable_by?(hr_current_user) && doc.file.attached? %>
+                  <a class="hrl-small" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

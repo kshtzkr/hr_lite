@@ -19,7 +19,10 @@ module HrLite
       { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
-      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals", "/profile" ] }
+      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals", "/profile" ] },
+      { label: "Documents",  path: :documents_path,      match: [ "/documents" ] },
+      { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ] },
+      { label: "Loans",      path: :loans_path,          match: [ "/loans" ] }
     ].freeze
 
     ADMIN_NAV_ITEMS = [
@@ -36,7 +39,8 @@ module HrLite
     LEADERSHIP_NAV_ITEMS = [
       { label: "Employees", path: :admin_employees_path,        match: [ "/admin/employees" ] },
       { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting" ] },
-      { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] }
+      { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] },
+      { label: "Documents", path: :admin_documents_path,        match: [ "/admin/documents" ] }
     ].freeze
 
     # Money screens, plus role management: granting somebody payroll is the
@@ -45,7 +49,9 @@ module HrLite
     SUPERADMIN_NAV_ITEMS = [
       { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] },
       { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] },
-      { label: "Rates",   path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ] }
+      { label: "Rates",   path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ] },
+      { label: "Tax",     path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ] },
+      { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] }
     ].freeze
 
     # Only items whose routes exist yet (the nav grows with each phase).

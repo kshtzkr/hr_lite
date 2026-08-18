@@ -1,0 +1,84 @@
+<% content_for(:page_title) { "My documents" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">My documents</h1></div>
+
+<% if @expiring.any? %>
+  <section class="hrl-card hrl-card--warn">
+    <h2 class="hrl-card__title">Expiring soon</h2>
+    <ul>
+      <% @expiring.each do |doc| %>
+        <li><%= doc.title %> — <%= doc.expired? ? "expired" : "expires" %>
+          <%= doc.expires_on.strftime("%d %b %Y") %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Upload a document</h2>
+  <%= form_with model: @document, url: hr_lite.documents_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @document %>
+    <div class="hrl-field">
+      <%= f.label :category %>
+      <%= f.select :category,
+            options_for_select(HrLite::Document::SENSITIVE_CATEGORIES.map { |c| [ c.humanize, c ] } +
+                               [ [ "Offer letter", "offer_letter" ], [ "Certificate", "certificate" ],
+                                 [ "Other", "other" ] ], @document.category) %>
+    </div>
+    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title %></div>
+    <div class="hrl-field">
+      <%= f.label :reference_number, "Document number (optional)" %>
+      <%= f.text_field :reference_number %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :expires_on, "Expires on (optional — we will remind you)" %>
+      <%= f.date_field :expires_on %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :file, "File (PDF or image, up to 10 MB)" %>
+      <%= f.file_field :file %>
+    </div>
+    <div class="hrl-form-actions"><%= f.submit "Upload", class: "hrl-btn hrl-btn--primary" %></div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">On file</h2>
+  <% if @documents.empty? %>
+    <p class="hrl-muted">Nothing uploaded yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Document</th><th>Expires</th><th>Checked</th><th></th></tr></thead>
+        <tbody>
+          <% @documents.each do |doc| %>
+            <tr>
+              <td data-label="Document">
+                <strong><%= doc.title %></strong>
+                <div class="hrl-small hrl-muted"><%= doc.category.humanize %></div>
+              </td>
+              <td data-label="Expires">
+                <%= doc.expires_on ? doc.expires_on.strftime("%d %b %Y") : "—" %>
+              </td>
+              <td data-label="Checked">
+                <%= hrl_request_status_badge(doc.verification == "verified" ? "approved" : doc.verification) %>
+                <% if doc.verification_note.present? %>
+                  <div class="hrl-small hrl-muted"><%= doc.verification_note %></div>
+                <% end %>
+              </td>
+              <td data-label="">
+                <% if doc.file.attached? %>
+                  <a class="hrl-small" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
+                <% end %>
+                <% unless doc.verified? %>
+                  <%= button_to "Remove", hr_lite.document_path(doc), method: :delete,
+                        class: "hrl-btn",
+                        form: { data: { turbo_confirm: "Remove #{doc.title}?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

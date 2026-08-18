@@ -11,8 +11,11 @@ module HrLite
     STATUSES = %w[draft submitted verified rejected].freeze
     REGIMES = %w[new old].freeze
 
+    # inverse_of is load-bearing, not decoration: the foreign key is not
+    # derived from the class name, so without it a nested item on an UNSAVED
+    # declaration cannot see its parent and fails "declaration must exist".
     has_many :tax_declaration_items, -> { order(:section) },
-             class_name: "HrLite::TaxDeclarationItem",
+             class_name: "HrLite::TaxDeclarationItem", inverse_of: :declaration,
              foreign_key: :declaration_id, dependent: :destroy
     accepts_nested_attributes_for :tax_declaration_items, allow_destroy: true
 

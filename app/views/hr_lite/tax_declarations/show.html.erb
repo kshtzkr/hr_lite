@@ -1,0 +1,68 @@
+<% content_for(:page_title) { "Tax declaration" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Tax declaration — <%= @declaration.label %></h1>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    Your whole year's TDS is projected from these numbers, so a declaration
+    filed in April spreads the tax evenly instead of landing it in March.
+    Claim what you intend to invest; HR records what the proof supports when
+    you hand it over.
+  </p>
+  <p>
+    Status: <%= hrl_request_status_badge(@declaration.status == "verified" ? "approved" : @declaration.status) %>
+    <% if @declaration.note.present? %>
+      <span class="hrl-small hrl-muted">— <%= @declaration.note %></span>
+    <% end %>
+  </p>
+</section>
+
+<%= form_with model: @declaration, url: hr_lite.tax_declaration_path, method: :patch,
+              scope: :tax_declaration, local: true do |f| %>
+  <%= render "hr_lite/shared/form_errors", record: @declaration %>
+
+  <section class="hrl-card">
+    <div class="hrl-field">
+      <%= f.label :regime, "Tax regime" %>
+      <%= f.select :regime, [ [ "New regime (lower rates, no deductions)", "new" ],
+                              [ "Old regime (deductions apply)", "old" ] ] %>
+      <span class="hrl-small hrl-muted">
+        The deductions below only reduce tax under the old regime.
+      </span>
+    </div>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">What you are claiming</h2>
+    <%= f.fields_for :tax_declaration_items do |item| %>
+      <div class="hrl-field">
+        <%= item.hidden_field :section %>
+        <%= item.label :declared_amount, item.object.section_label %>
+        <%= item.text_field :declared_amount,
+              value: item.object.declared_amount&.to_s("F"), inputmode: "decimal" %>
+        <%= item.text_field :label, placeholder: "What it is (optional)" %>
+        <% if item.object.persisted? && item.object.verified_amount %>
+          <span class="hrl-small hrl-muted">
+            HR verified <%= hrl_money(item.object.verified_amount) %>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+    <p>Total claimed: <strong><%= hrl_money(@declaration.declared_total) %></strong></p>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save draft", class: "hrl-btn hrl-btn--primary" %>
+    </div>
+  </section>
+<% end %>
+
+<% if @declaration.persisted? && (@declaration.draft? || @declaration.rejected?) %>
+  <section class="hrl-card">
+    <p class="hrl-muted hrl-small">
+      Submitting locks it for HR to check. They can send it back if the proof
+      does not match.
+    </p>
+    <%= button_to "Submit to HR", hr_lite.submit_tax_declaration_path,
+          method: :post, class: "hrl-btn hrl-btn--primary" %>
+  </section>
+<% end %>

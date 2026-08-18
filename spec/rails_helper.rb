@@ -12,6 +12,13 @@ require "rspec/rails"
 # reset below must never influence class ancestry.
 Rails.application.eager_load!
 
+# A fresh database every run. The role and rate-card migrations SEED rows,
+# and seeds never overwrite what already exists — which is right in
+# production and wrong here: a sqlite file left over from a previous run
+# keeps yesterday's definitions, so a change to RoleSeeds silently does not
+# apply and the specs pass against grants nobody is shipping.
+Dir[File.expand_path("dummy/db/test.sqlite3*", __dir__)].each { |f| File.delete(f) }
+
 # Dummy-app tables (users), then the engine's own migrations.
 ActiveRecord::Migration.verbose = false
 load File.expand_path("dummy/db/schema.rb", __dir__)

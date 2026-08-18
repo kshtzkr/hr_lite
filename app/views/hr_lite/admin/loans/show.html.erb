@@ -1,0 +1,52 @@
+<% content_for(:page_title) { hr_display_name(@loan.user) } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@loan.user) %> — <%= hrl_money(@loan.principal) %></h1>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <tbody>
+        <tr><td data-label="Status"><%= @loan.status.humanize %></td></tr>
+        <tr><td data-label="Monthly instalment"><%= hrl_money(@loan.monthly_instalment) %></td></tr>
+        <tr><td data-label="Starts"><%= @loan.starts_on.strftime("%b %Y") %></td></tr>
+        <tr><td data-label="Repaid"><%= hrl_money(@loan.repaid) %></td></tr>
+        <tr><td data-label="Outstanding"><strong><%= hrl_money(@loan.outstanding) %></strong></td></tr>
+        <% if @loan.reason.present? %><tr><td data-label="Reason"><%= @loan.reason %></td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @loan.active? %>
+    <div class="hrl-row">
+      <%= button_to "Close (stop deductions)", hr_lite.close_admin_loan_path(@loan),
+            method: :post, class: "hrl-btn",
+            form: { data: { turbo_confirm: "Stop deducting? The outstanding balance stays on record." } } %>
+      <%= button_to "Cancel", hr_lite.cancel_admin_loan_path(@loan),
+            method: :post, class: "hrl-btn hrl-btn--danger",
+            form: { data: { turbo_confirm: "Cancel this loan entirely?" } } %>
+    </div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Deducted so far</h2>
+  <% repayments = @loan.loan_repayments.sort_by(&:period_month).reverse %>
+  <% if repayments.empty? %>
+    <p class="hrl-muted">Nothing deducted yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Month</th><th>Amount</th></tr></thead>
+        <tbody>
+          <% repayments.each do |r| %>
+            <tr>
+              <td data-label="Month"><%= r.period_month.strftime("%b %Y") %></td>
+              <td data-label="Amount" class="hrl-num"><%= hrl_money(r.amount) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

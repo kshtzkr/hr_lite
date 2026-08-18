@@ -30,6 +30,13 @@ HrLite::Engine.routes.draw do
     member { post :acknowledge }
   end
   resources :benefits, only: :index
+  resources :documents, only: %i[index create destroy] do
+    member { get :download }
+  end
+  resource :tax_declaration, only: %i[show update], controller: "tax_declarations" do
+    post :submit
+  end
+  resources :loans, only: :index
   get "team", to: "team#show"
   get "org", to: "org#show"
   resources :holidays, only: :index
@@ -61,6 +68,16 @@ HrLite::Engine.routes.draw do
       resources :assignments, only: %i[create destroy], controller: "role_assignments"
     end
     resources :statutory_rate_cards, only: %i[index new create edit update]
+    resources :documents, only: :index do
+      member { post :verify; post :reject }
+    end
+    get "documents/for/:user_id", to: "documents#show", as: :employee_documents
+    resources :tax_declarations, only: %i[index show update] do
+      member { post :verify; post :reject }
+    end
+    resources :loans, only: %i[index new create show] do
+      member { post :close; post :cancel }
+    end
     resources :reports, only: %i[index show]
     resources :expenses, only: :index do
       member { post :approve; post :reject; post :reimburse }

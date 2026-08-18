@@ -1,0 +1,52 @@
+<% content_for(:page_title) { "My loans" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Loans &amp; advances</h1></div>
+
+<% if @loans.empty? %>
+  <section class="hrl-card"><p class="hrl-muted">You have no loans or salary advances.</p></section>
+<% else %>
+  <section class="hrl-card">
+    <p>Outstanding across everything: <strong><%= hrl_money(@outstanding) %></strong></p>
+  </section>
+
+  <% @loans.each do |loan| %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">
+        <%= hrl_money(loan.principal) %>
+        <span class="hrl-badge <%= "hrl-badge--muted" unless loan.active? %>"><%= loan.status.humanize %></span>
+      </h2>
+      <% if loan.reason.present? %><p class="hrl-muted"><%= loan.reason %></p><% end %>
+      <div class="hrl-table-wrap">
+        <table class="hrl-table hrl-table--stack">
+          <tbody>
+            <tr><td data-label="Monthly instalment"><%= hrl_money(loan.monthly_instalment) %></td></tr>
+            <tr><td data-label="Repaid so far"><%= hrl_money(loan.repaid) %></td></tr>
+            <tr><td data-label="Outstanding"><strong><%= hrl_money(loan.outstanding) %></strong></td></tr>
+            <tr>
+              <td data-label="Next deduction">
+                <% amount = loan.instalment_for(@next_month) %>
+                <%= amount.positive? ? "#{hrl_money(amount)} in #{@next_month.strftime('%b %Y')}" : "—" %>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <% if loan.loan_repayments.any? %>
+        <h3 class="hrl-card__title">Already deducted</h3>
+        <div class="hrl-table-wrap">
+          <table class="hrl-table hrl-table--stack">
+            <thead><tr><th>Month</th><th>Amount</th></tr></thead>
+            <tbody>
+              <% loan.loan_repayments.sort_by(&:period_month).reverse.each do |r| %>
+                <tr>
+                  <td data-label="Month"><%= r.period_month.strftime("%b %Y") %></td>
+                  <td data-label="Amount" class="hrl-num"><%= hrl_money(r.amount) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>
