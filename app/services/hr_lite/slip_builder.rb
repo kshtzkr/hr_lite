@@ -76,7 +76,7 @@ module HrLite
 
       fy = SalarySlip.fy_to_date(@user, @run.period_month)
       tds = Calculators::Tds.call(
-        regime: @profile.tax_regime,
+        regime: tax_regime,
         structure_monthly_gross: @structure.monthly_gross,
         gross_earned_this_month: gross_earned,
         # Plus anything paid this FY that this install never ran — a previous
@@ -86,7 +86,7 @@ module HrLite
         fy_gross_paid: fy[:gross] + Money.d(@profile.fy_opening_gross),
         fy_tds_paid: fy[:tds] + Money.d(@profile.fy_opening_tds),
         months_remaining: months_remaining_in_fy,
-        declared_annual_deductions: @profile.declared_annual_deductions,
+        declared_annual_deductions: annual_deductions,
         rates: @rates[:income_tax],
         override: @tds_override
       )
@@ -119,6 +119,26 @@ module HrLite
     end
 
     private
+
+    # The declaration if the employee filed one, else the single figure an
+    # admin typed on the profile. Old-regime deductions came from that one
+    # opaque number, with nothing to show what it was made of and nowhere to
+    # keep the proof; a filed declaration supersedes it, and once HR has
+    # verified the proof only what the proof supported counts.
+    # A declaration names the regime the employee chose for that year, which
+    # is a per-YEAR decision; the profile column is only the fallback for
+    # somebody who never filed one.
+    def tax_regime
+      TaxDeclaration.for(@user, @run.period_month)&.regime || @profile.tax_regime
+    end
+
+    def annual_deductions
+      declaration = TaxDeclaration.for(@user, @run.period_month)
+      return @profile.declared_annual_deductions if declaration.nil?
+      return @profile.declared_annual_deductions if declaration.draft?
+
+      declaration.allowable_total
+    end
 
     # Splits this month's one-off lines into earnings and deductions, in the
     # component order an install configured. Returns [earnings, deductions].
