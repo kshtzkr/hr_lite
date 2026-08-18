@@ -33,8 +33,17 @@ module HrLite
       earnings = Calculators::Proration.call(
         structure: @structure, payable_days: payable, days_in_month: days_in_month
       )
+      # One-off heads for this month: a bonus, arrears after a backdated
+      # revision, a reimbursement. A prorated head is scaled like basic; a
+      # bonus is not halved because somebody joined mid-month.
+      extra_earnings, extra_deductions = one_off_lines(payable, days_in_month)
+      earnings += extra_earnings
+
       gross_earned = earnings.sum(BigDecimal(0)) { |row| row[:amount] }
       basic_earned = earnings.find { |row| row[:code] == "basic" }&.fetch(:amount) || BigDecimal(0)
+      # ESI is assessed on wages, and a reimbursement is not one. Heads that
+      # opt out are excluded from the gross it reads.
+      esi_gross = gross_earned - earnings.sum(BigDecimal(0)) { |row| row[:excluded_from_esi] ? row[:amount] : 0 }
 
       deductions = []
       employer_costs = {}
@@ -50,7 +59,7 @@ module HrLite
         )
       end
 
-      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross, gross_earned: gross_earned,
+      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross, gross_earned: esi_gross,
                                   applicable: @structure.esi_applicable, rates: @rates[:esi])
       if esi.applicable?
         deductions << { code: "esi_employee", label: "ESI", amount: esi.employee }
@@ -60,6 +69,10 @@ module HrLite
       pt = Calculators::ProfessionalTax.call(state: @structure.pt_state, gross_earned: gross_earned,
                                              period_month: @run.period_month, rates: @rates[:pt])
       deductions << { code: "pt", label: "Professional tax", amount: pt } if pt.positive?
+
+      deductions.concat(extra_deductions)
+      loan = loan_instalment
+      deductions << loan if loan
 
       fy = SalarySlip.fy_to_date(@user, @run.period_month)
       tds = Calculators::Tds.call(
@@ -106,6 +119,46 @@ module HrLite
     end
 
     private
+
+    # Splits this month's one-off lines into earnings and deductions, in the
+    # component order an install configured. Returns [earnings, deductions].
+    def one_off_lines(payable, days_in_month)
+      rows = PayrollLineItem.for_slip(@user, @run.period_month)
+                            .sort_by { |item| [ item.component.position, item.component.label ] }
+      earnings = []
+      deductions = []
+
+      rows.each do |item|
+        component = item.component
+        amount = if component.prorated
+          Money.round2(item.amount * (Money.d(payable) / Money.d(days_in_month)))
+        else
+          item.amount
+        end
+        next unless amount.positive?
+
+        row = { code: component.code, label: component.label, amount: amount }
+        if component.earning?
+          earnings << row.merge(excluded_from_esi: !component.counts_for_esi)
+        else
+          deductions << row
+        end
+      end
+
+      [ earnings, deductions ]
+    end
+
+    # The month's loan instalment, as one deduction line. Computed here and
+    # BOOKED only when the run is finalized — a draft is recomputed freely,
+    # and booking at compute would take a repayment on every pass.
+    def loan_instalment
+      total = Loan.active.where(user_id: @user.id).sum(BigDecimal(0)) do |loan|
+        loan.instalment_for(@run.period_month)
+      end
+      return nil unless total.positive?
+
+      { code: "loan_repayment", label: "Loan repayment", amount: total }
+    end
 
     # Months left in the Indian FY (Apr–Mar) including the run month itself:
     # April = 12, December = 4, January = 3, March = 1. Capped at the exit

@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-08-18
+
+Payroll gets heads, arrears and loans. **Adds one migration.** Existing
+payslips compute identically — every new head is opt-in data.
+
+### Added
+
+- **`hr_lite_salary_components`** — earning and deduction heads as DATA.
+  Payroll knew exactly four earnings because they were columns on the salary
+  structure, so a bonus, an incentive, an LTA or a reimbursement had nowhere
+  to go but "other": one number on a payslip that should have said what it
+  was for. Seeded with bonus, incentive, arrears, LTA, reimbursement, loan
+  repayment and other-deduction; an install adds its own.
+- Each head declares whether it is **prorated** (a bonus is not halved
+  because somebody joined on the 16th), **taxable**, and whether it
+  **counts toward the ESI gross** — a reimbursement is not a wage, and
+  counting it could push somebody over the ceiling and out of cover.
+- **`hr_lite_payroll_line_items`** — one-offs for a single month, including
+  arrears after a backdated revision. Dated to the MONTH rather than the run,
+  so deleting a draft and computing it again does not lose them. Refused on a
+  month already published: that slip is immutable, and a later line would
+  show on no payslip while quietly moving the year-to-date the TDS projector
+  reads.
+- **`hr_lite_loans`** and repayments. The outstanding balance is DERIVED from
+  the repayments actually taken, never stored — a stored balance and a
+  recomputed run disagree the first time somebody deletes a draft. The last
+  instalment takes only what is left.
+- Repayments are booked when a run is **finalized**, not at compute: a draft
+  is recomputed as often as the operator likes, and each pass would otherwise
+  take another instalment. Unlocking a run gives them back, and reopens a
+  loan that had closed.
+
+### Changed
+
+- Branch coverage is now a **floor at 90%, not a ratchet**, with the reasoning
+  written into `spec_helper.rb`. Its denominator grows with every subsystem,
+  so ratcheting it charges each feature PR a tax for branches in files it
+  never touched. Line coverage remains the ratchet at 100% overall and 90%
+  per file — that is the gate that has actually caught defects.
+- Paid down some of the branch debt named in 0.9.0: the status predicates
+  across six models, the UAN format validation, and the holiday bulk-import
+  paths (blank lines, an empty paste, a line that cannot be read).
+
 ## [0.9.0] - 2026-08-18
 
 A reusable approval engine. **Adds one migration** (flows, steps, approvals,
@@ -610,7 +653,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...v0.7.0

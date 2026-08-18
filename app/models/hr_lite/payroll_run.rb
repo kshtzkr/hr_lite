@@ -64,6 +64,7 @@ module HrLite
         # Finalizing freezes every slip in the run. Who did it, to how many
         # people, is the row an investigation starts from.
         audit!("payroll.finalized", actor, "slips" => salary_slips.count)
+        book_loan_repayments!
       end
       Notifications.publish(
         "payroll.finalized",
@@ -77,6 +78,10 @@ module HrLite
       raise_unless %w[finalized]
       transaction do
         update!(status: "review")
+        # The slips are editable again, so the repayments booked at finalize
+        # have to come back off the loans — otherwise unlocking and
+        # refinalizing takes the instalment twice.
+        unbook_loan_repayments!
         # Reopening frozen slips for editing is the single most sensitive
         # transition in the module — it is the one that has to leave a trace.
         audit!("payroll.unlocked", actor, "slips" => salary_slips.count)
@@ -123,6 +128,35 @@ module HrLite
     end
 
     private
+
+    # A repayment is booked when the run is FINALIZED, never at compute: a
+    # draft is recomputed as often as the operator likes, and each pass would
+    # otherwise take another instalment off the loan.
+    def book_loan_repayments!
+      salary_slips.includes(:user).find_each do |slip|
+        taken = slip.deduction_amount("loan_repayment")
+        next unless taken.positive?
+
+        remaining = taken
+        Loan.active.where(user_id: slip.user_id).order(:starts_on).each do |loan|
+          break unless remaining.positive?
+
+          share = [ loan.instalment_for(period_month), remaining ].min
+          next unless share.positive?
+
+          loan.record_repayment!(period_month, share)
+          remaining -= share
+        end
+      end
+    end
+
+    def unbook_loan_repayments!
+      LoanRepayment.where(period_month: period_month)
+                   .where(loan_id: Loan.where(user_id: salary_slips.select(:user_id)))
+                   .destroy_all
+      Loan.where(user_id: salary_slips.select(:user_id), status: "closed")
+          .each { |loan| loan.update!(status: "active") if loan.outstanding.positive? }
+    end
 
     # Amounts stay out of it on purpose: audit_logs is a plaintext table and
     # every slip amount in this module is encrypted. The row records WHO

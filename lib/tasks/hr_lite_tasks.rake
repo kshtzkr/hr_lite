@@ -4,7 +4,8 @@ namespace :hr_lite do
     require "hr_lite/seeds"
     require "hr_lite/role_seeds"
     require "hr_lite/statutory_seeds"
-    created = HrLite::Seeds.run! + HrLite::RoleSeeds.call + HrLite::StatutorySeeds.call
+    created = HrLite::Seeds.run! + HrLite::RoleSeeds.call + HrLite::StatutorySeeds.call +
+              HrLite::SalaryComponent.seed_defaults!
     puts created.any? ? "hr_lite:seed created: #{created.join(', ')}" : "hr_lite:seed — nothing to do"
   end
 
