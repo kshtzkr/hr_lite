@@ -26,7 +26,11 @@ module HrLite
       { label: "Overview",        path: :admin_overview_path,        match: [ "/admin/overview" ] },
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
       { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests" ] },
-      { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] }
+      { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] },
+      { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ] },
+      { label: "Help desk",       path: :admin_hr_requests_path,     match: [ "/admin/hr_requests" ] },
+      { label: "Assets",          path: :admin_assets_path,          match: [ "/admin/assets" ] },
+      { label: "Joining & exits", path: :admin_checklists_path,      match: [ "/admin/checklists" ] }
     ].freeze
 
     LEADERSHIP_NAV_ITEMS = [

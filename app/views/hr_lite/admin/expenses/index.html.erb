@@ -1,0 +1,54 @@
+<% content_for(:page_title) { "Claims" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Expense claims</h1></div>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <% HrLite::Expense::STATUSES.each do |status| %>
+      <a class="hrl-btn <%= "hrl-btn--primary" if status == @status %>"
+         href="<%= hr_lite.admin_expenses_path(status: status) %>"><%= status.humanize %></a>
+    <% end %>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <% if @expenses.empty? %>
+    <p class="hrl-muted">Nothing <%= @status %>.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Who</th><th>What</th><th>Amount</th><th></th></tr></thead>
+        <tbody>
+          <% @expenses.each do |expense| %>
+            <tr>
+              <td data-label="Who"><%= hr_display_name(expense.user) %></td>
+              <td data-label="What">
+                <%= expense.category.name %>
+                <div class="hrl-small hrl-muted">
+                  <%= expense.description %> · <%= expense.spent_on.strftime("%d %b %Y") %>
+                </div>
+              </td>
+              <td data-label="Amount" class="hrl-num"><%= hrl_money(expense.amount) %></td>
+              <td data-label="">
+                <% if expense.submitted? %>
+                  <%= form_with url: hr_lite.approve_admin_expense_path(expense), method: :post do %>
+                    <%= submit_tag "Approve", class: "hrl-btn hrl-btn--primary" %>
+                  <% end %>
+                  <%= form_with url: hr_lite.reject_admin_expense_path(expense), method: :post do %>
+                    <%= text_field_tag :decision_note, nil, placeholder: "Why not" %>
+                    <%= submit_tag "Reject", class: "hrl-btn" %>
+                  <% end %>
+                <% elsif expense.approved? %>
+                  <%= form_with url: hr_lite.reimburse_admin_expense_path(expense), method: :post do %>
+                    <%= text_field_tag :period_month, Date.current.strftime("%Y-%m"), size: 8 %>
+                    <%= submit_tag "Mark reimbursed", class: "hrl-btn" %>
+                  <% end %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

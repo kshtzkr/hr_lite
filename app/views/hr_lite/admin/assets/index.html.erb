@@ -1,0 +1,59 @@
+<% content_for(:page_title) { "Assets" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Assets</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_asset_path %>">Add asset</a>
+  </div>
+</div>
+
+<% if @outstanding.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Currently out</h2>
+    <ul>
+      <% @outstanding.each do |assignment| %>
+        <li class="hrl-small">
+          <strong><%= assignment.asset.name %></strong> —
+          <%= hr_display_name(assignment.user) %>,
+          since <%= assignment.assigned_on.strftime("%d %b %Y") %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Asset</th><th>Status</th><th>With</th><th></th></tr></thead>
+      <tbody>
+        <% @assets.each do |asset| %>
+          <tr>
+            <td data-label="Asset">
+              <strong><%= asset.name %></strong>
+              <div class="hrl-small hrl-muted">
+                <%= asset.category.humanize %><%= " · #{asset.serial_number}" if asset.serial_number.present? %>
+              </div>
+            </td>
+            <td data-label="Status"><%= hrl_request_status_badge(asset.status) %></td>
+            <td data-label="With"><%= asset.holder ? hr_display_name(asset.holder) : "—" %></td>
+            <td data-label="">
+              <% if asset.assigned? %>
+                <%= form_with url: hr_lite.take_back_admin_asset_path(asset), method: :post do %>
+                  <%= text_field_tag :condition_note, nil, placeholder: "Condition" %>
+                  <%= submit_tag "Take back", class: "hrl-btn" %>
+                <% end %>
+              <% elsif asset.available? %>
+                <%= form_with url: hr_lite.assign_admin_asset_path(asset), method: :post do %>
+                  <%= select_tag :user_id,
+                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }) %>
+                  <%= submit_tag "Hand over", class: "hrl-btn" %>
+                <% end %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= hrl_pagination %>
+</section>

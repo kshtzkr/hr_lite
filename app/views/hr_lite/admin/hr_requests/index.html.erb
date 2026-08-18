@@ -1,0 +1,41 @@
+<% content_for(:page_title) { "Help desk" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Help desk</h1></div>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <% HrLite::HrRequest::STATUSES.each do |status| %>
+      <a class="hrl-btn <%= "hrl-btn--primary" if status == @status %>"
+         href="<%= hr_lite.admin_hr_requests_path(status: status) %>"><%= status.humanize %></a>
+    <% end %>
+  </div>
+</section>
+
+<section class="hrl-card">
+  <% if @requests.empty? %>
+    <p class="hrl-muted">Nothing <%= @status.humanize.downcase %>.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Request</th><th>Who</th><th>With</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Request">
+                <a href="<%= hr_lite.admin_hr_request_path(request) %>"><%= request.subject %></a>
+                <div class="hrl-small hrl-muted"><%= request.category_label %></div>
+              </td>
+              <td data-label="Who"><%= hr_display_name(request.user) %></td>
+              <td data-label="With">
+                <%= request.assigned_to ? hr_display_name(request.assigned_to) : "—" %>
+              </td>
+              <td data-label="">
+                <a class="hrl-small" href="<%= hr_lite.admin_hr_request_path(request) %>">Open</a>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

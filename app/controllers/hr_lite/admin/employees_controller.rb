@@ -93,6 +93,10 @@ module HrLite
         exit_date = params[:date_of_exit].present? ? parse_date_param(params[:date_of_exit]) : Date.current
 
         @profile.update!(date_of_exit: exit_date)
+        # The last day has a list too — and it is the one that matters most,
+        # since an unreturned laptop and un-revoked access both outlive the
+        # employment.
+        ChecklistItem.open_for!(@profile.user, kind: "offboarding", anchor_date: exit_date)
         begin
           HrLite.config.offboard_user.call(@profile.user)
         rescue => e
