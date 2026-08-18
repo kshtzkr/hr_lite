@@ -1,0 +1,25 @@
+<% content_for(:page_title) { @request.subject } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @request.subject %></h1>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted">
+    <%= @request.category_label %> · raised
+    <%= @request.created_at.to_date.strftime("%d %b %Y") %> ·
+    <%= hrl_request_status_badge(@request.status) %>
+  </p>
+  <% if @request.body.present? %>
+    <div class="hrl-prose"><%= simple_format(@request.body) %></div>
+  <% end %>
+</section>
+
+<% if @request.resolution.present? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">HR's answer</h2>
+    <div class="hrl-prose"><%= simple_format(@request.resolution) %></div>
+    <p class="hrl-small hrl-muted">
+      <%= @request.resolved_at&.to_date&.strftime("%d %b %Y") %>
+    </p>
+  </section>
+<% end %>

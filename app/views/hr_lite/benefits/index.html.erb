@@ -1,0 +1,33 @@
+<% content_for(:page_title) { "Benefits" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Your benefits</h1></div>
+
+<section class="hrl-card">
+  <% if @enrolments.empty? %>
+    <p class="hrl-muted">You are not enrolled in any benefit yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Benefit</th><th>Cover</th><th>Since</th><th>Dependants</th></tr></thead>
+        <tbody>
+          <% @enrolments.each do |enrolment| %>
+            <% benefit = enrolment.benefit %>
+            <tr>
+              <td data-label="Benefit">
+                <strong><%= benefit.name %></strong>
+                <div class="hrl-small hrl-muted">
+                  <%= benefit.kind.humanize %><%= " · #{benefit.provider}" if benefit.provider.present? %>
+                  <%= " · policy #{benefit.policy_number}" if benefit.policy_number.present? %>
+                </div>
+              </td>
+              <td data-label="Cover" class="hrl-num">
+                <%= benefit.coverage ? hrl_money(benefit.coverage) : "—" %>
+              </td>
+              <td data-label="Since"><%= enrolment.enrolled_on.strftime("%d %b %Y") %></td>
+              <td data-label="Dependants" class="hrl-num"><%= enrolment.dependants %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

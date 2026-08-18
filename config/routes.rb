@@ -20,6 +20,16 @@ HrLite::Engine.routes.draw do
     member { post :cancel }
   end
   resources :approvals, only: :index
+  resources :expenses, only: %i[index new create] do
+    member { post :cancel }
+  end
+  resources :hr_requests, only: %i[index show new create] do
+    member { post :cancel }
+  end
+  resources :policies, only: %i[index show] do
+    member { post :acknowledge }
+  end
+  resources :benefits, only: :index
   get "team", to: "team#show"
   get "org", to: "org#show"
   resources :holidays, only: :index
@@ -51,6 +61,7 @@ HrLite::Engine.routes.draw do
       resources :assignments, only: %i[create destroy], controller: "role_assignments"
     end
     resources :statutory_rate_cards, only: %i[index new create edit update]
+    resources :reports, only: %i[index show]
     resources :leave_types, except: :show
     resources :office_locations, except: :show
     resources :holidays, only: %i[index create update destroy] do

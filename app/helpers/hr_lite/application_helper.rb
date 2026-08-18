@@ -12,6 +12,10 @@ module HrLite
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
       { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ] },
+      { label: "Expenses",   path: :expenses_path,       match: [ "/expenses" ] },
+      { label: "Benefits",   path: :benefits_path,       match: [ "/benefits" ] },
+      { label: "Policies",   path: :policies_path,       match: [ "/policies" ] },
+      { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ] },
       { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
@@ -21,7 +25,8 @@ module HrLite
     ADMIN_NAV_ITEMS = [
       { label: "Overview",        path: :admin_overview_path,        match: [ "/admin/overview" ] },
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
-      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests" ] }
+      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests" ] },
+      { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] }
     ].freeze
 
     LEADERSHIP_NAV_ITEMS = [

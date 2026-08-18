@@ -1,0 +1,32 @@
+<% content_for(:page_title) { @reports_title = HrLite::Admin::ReportsController::REPORTS[@name] } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= HrLite::Admin::ReportsController::REPORTS[@name] %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn"
+       href="<%= hr_lite.admin_report_path(@name, month: @month.strftime("%Y-%m"), format: :csv) %>">Download CSV</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted"><%= @month.strftime("%B %Y") %></p>
+  <% if @rows.empty? %>
+    <p class="hrl-muted">Nothing to report for this month.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead>
+          <tr><% @rows.first.keys.each do |header| %><th><%= header %></th><% end %></tr>
+        </thead>
+        <tbody>
+          <% @rows.each do |row| %>
+            <tr>
+              <% row.each do |header, value| %>
+                <td data-label="<%= header %>"><%= value %></td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

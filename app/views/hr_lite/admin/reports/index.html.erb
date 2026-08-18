@@ -1,0 +1,40 @@
+<% content_for(:page_title) { "Reports" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Reports</h1></div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    Each report reaches exactly as far as the screen it summarises — a manager
+    sees their own team, HR sees everybody.
+  </p>
+  <%= form_with url: hr_lite.admin_reports_path, method: :get, local: true do %>
+    <div class="hrl-field">
+      <%= label_tag :month, "Month" %>
+      <%= text_field_tag :month, @month.strftime("%Y-%m"), placeholder: "YYYY-MM" %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= submit_tag "Change month", class: "hrl-btn" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Report</th><th></th></tr></thead>
+      <tbody>
+        <% @reports.each do |name, label| %>
+          <tr>
+            <td data-label="Report"><%= label %></td>
+            <td data-label="">
+              <a class="hrl-small"
+                 href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m")) %>">Open</a>
+              &nbsp;
+              <a class="hrl-small"
+                 href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m"), format: :csv) %>">CSV</a>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

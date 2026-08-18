@@ -63,6 +63,7 @@ module DemoSeeds
     seed_tickets(employee, colleague)
     seed_payroll(leadership)
     seed_career(employee, leadership)
+    seed_services(employee, colleague, leadership)
   end
 
   def seed_attendance(user, office, flagged: false)
@@ -161,6 +162,37 @@ module DemoSeeds
       improvements: "Delegate vendor follow-ups instead of absorbing them."
     )
     appraisal.share!(actor: leadership)
+  end
+
+  # Expenses, benefits, a policy and an open HR request, so the new
+  # self-service screens have something on them at first boot.
+  def seed_services(employee, colleague, leadership)
+    travel = HrLite::ExpenseCategory.create!(name: "Travel", monthly_cap: 10_000,
+                                             receipt_required: false)
+    HrLite::ExpenseCategory.create!(name: "Client entertainment", monthly_cap: 5_000)
+    claim = HrLite::Expense.create!(user_id: employee.id, category: travel, amount: 2_450,
+                                    spent_on: Date.current - 3,
+                                    description: "Airport transfers for the Bali group")
+    claim.submit!(actor: employee)
+
+    health = HrLite::Benefit.create!(name: "Group health cover", kind: "health",
+                                     provider: "Acme Insure", policy_number: "AC-99213",
+                                     coverage: 500_000, employer_premium: 14_400,
+                                     effective_from: Date.current.prev_year)
+    [ employee, colleague ].each do |user|
+      HrLite::BenefitEnrolment.create!(benefit: health, user_id: user.id,
+                                       enrolled_on: Date.current.prev_year, dependants: 2)
+    end
+
+    HrLite::Policy.create!(title: "Code of conduct", version: 1, published: true,
+                           acknowledgement_required: true,
+                           effective_from: Date.current.prev_month,
+                           body: "Treat colleagues and travellers with the same care.\n\n" \
+                                 "Escalate early. Nobody is judged for asking.")
+
+    HrLite::HrRequest.create!(user_id: colleague.id, category: "salary_certificate",
+                              subject: "Salary certificate for a rental agreement",
+                              body: "Landlord needs it before the 30th.")
   end
 
   def next_working_day(date)

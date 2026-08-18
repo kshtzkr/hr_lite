@@ -1,0 +1,68 @@
+<% content_for(:page_title) { "Expenses" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Expenses</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_expense_path %>">New claim</a>
+  </div>
+</div>
+
+<% if @categories.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">What is left this month</h2>
+    <ul>
+      <% @categories.each do |category| %>
+        <% remaining = category.remaining_for(hr_current_user) %>
+        <li class="hrl-small">
+          <strong><%= category.name %></strong> —
+          <%= remaining.nil? ? "no cap" : "#{hrl_money(remaining)} left" %>
+          <% if category.receipt_required %>
+            <span class="hrl-badge hrl-badge--muted">Receipt needed</span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <% if @expenses.empty? %>
+    <p class="hrl-muted">No claims yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Spent</th><th>Category</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @expenses.each do |expense| %>
+            <tr>
+              <td data-label="Spent"><%= expense.spent_on.strftime("%d %b %Y") %></td>
+              <td data-label="Category">
+                <%= expense.category.name %>
+                <div class="hrl-small hrl-muted"><%= expense.description %></div>
+              </td>
+              <td data-label="Amount" class="hrl-num"><%= hrl_money(expense.amount) %></td>
+              <td data-label="Status">
+                <%= hrl_request_status_badge(expense.status) %>
+                <% if expense.reimbursed_in %>
+                  <div class="hrl-small hrl-muted">
+                    with <%= expense.reimbursed_in.strftime("%B %Y") %> payroll
+                  </div>
+                <% end %>
+                <% if expense.decision_note.present? %>
+                  <div class="hrl-small hrl-muted"><%= expense.decision_note %></div>
+                <% end %>
+              </td>
+              <td data-label="">
+                <% if expense.draft? || expense.submitted? %>
+                  <%= button_to "Withdraw", hr_lite.cancel_expense_path(expense),
+                        class: "hrl-btn",
+                        form: { data: { turbo_confirm: "Withdraw this claim?" } } %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

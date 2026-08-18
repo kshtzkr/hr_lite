@@ -1,0 +1,38 @@
+<% content_for(:page_title) { "New claim" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">New claim</h1></div>
+
+<section class="hrl-card">
+  <%= form_with model: @expense, url: hr_lite.expenses_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @expense %>
+
+    <div class="hrl-field">
+      <%= f.label :category_id, "What kind of expense" %>
+      <%= f.select :category_id, @categories.map { |c| [ c.name, c.id ] },
+                   { include_blank: "Choose one" } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :amount, "Amount (₹)" %>
+      <%= f.text_field :amount, inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :spent_on, "When you spent it" %>
+      <%= f.date_field :spent_on, max: Date.current.to_s %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :description, "What it was for" %>
+      <%= f.text_field :description %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :receipt, "Receipt (PDF or photo)" %>
+      <%= f.file_field :receipt, accept: "application/pdf,image/*" %>
+      <span class="hrl-small hrl-muted">
+        Some categories need one — the form will say so if yours does.
+      </span>
+    </div>
+
+    <div class="hrl-form-actions">
+      <%= f.submit "Submit claim", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.expenses_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

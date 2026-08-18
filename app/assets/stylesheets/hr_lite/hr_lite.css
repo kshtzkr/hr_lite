@@ -318,3 +318,9 @@
 .hrl-mt { margin-top: .85rem; }
 .hrl-right { margin-left: auto; }
 .hrl-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+/* Long-form policy text. Constrained measure — a policy read across the
+   full width of a laptop is a policy nobody finishes. */
+.hrl-prose { max-width: 68ch; }
+.hrl-prose p { margin: 0 0 .8rem; line-height: 1.6; }
+.hrl-prose p:last-child { margin-bottom: 0; }

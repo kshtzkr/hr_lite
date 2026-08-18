@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-08-18
+
+The screens. No migration.
+
+### Added
+
+- **Employee self-service for everything built since 0.11.0**: claim an
+  expense (with what is left of each cap shown before you type an amount),
+  see what you are covered for, read and acknowledge a policy, ask HR a
+  question and read the answer.
+- **A reports hub** — headcount, joiners and leavers, leave balances,
+  attendance and expenses — each with a CSV download, and each **scoped by
+  the same permission that guards the screen its data comes from**. A report
+  is not a side door into rows somebody cannot otherwise reach: a manager's
+  headcount is their own team. The hub lists only the reports the reader can
+  actually open, since a list of links that turn you away is worse than a
+  short list.
+- CSV downloads are audited, the same way the payout register is.
+
+### Fixed
+
+- **The reports hub locked Finance out of the expense report.** It inherited
+  the operations gate, and Finance approves expenses but runs none of the
+  operations screens. Found by writing the spec for it.
+
+### Changed
+
+- `.hrl-prose` for long-form policy text, capped at 68 characters a line — a
+  policy read across the full width of a laptop is a policy nobody finishes.
+- The demo sandbox seeds an expense claim, a benefit enrolment, a policy
+  awaiting acknowledgement and an open HR request, so the new screens have
+  something on them at first boot.
+
 ## [0.12.0] - 2026-08-18
 
 The four things an employee had to leave the system to do. **Adds one
@@ -729,7 +762,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/kshtzkr/hr_lite/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/kshtzkr/hr_lite/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...v0.10.0
