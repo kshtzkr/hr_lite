@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-08-18
+
+The admin half, plus the two ends of employment that were still manual.
+**Adds one migration.**
+
+### Added
+
+- **Admin screens for everything shipped since 0.11.0**: decide a claim and
+  record the payroll month it was paid with, answer or hand on a help-desk
+  request, hand out and take back an asset. The engine had all of this; there
+  was no way to do any of it.
+- **Assets.** One live holder at a time, enforced by a partial unique index —
+  two open assignments would mean the laptop is in two places, which it is
+  not. Assignments are append-only and record what condition it came back in,
+  because "screen cracked" is the difference between an asset returned and an
+  asset written off.
+- **Joining and leaving checklists**, from templates. The joining list opens
+  when a profile is created and the leaving list when an exit date is
+  stamped — the checklist nobody remembers to start is the one that does not
+  happen. Opening is idempotent, so adding a template later adds only what is
+  new. A failure to build one can never stop an employee being created.
+- Each step names the permission its owner should hold, so IT taking back a
+  laptop and HR collecting a document are not the same person by accident.
+- Permissions `asset.view`, `asset.manage`, `checklist.manage`.
+
+### Why it matters
+
+An asset that is never returned is a cost nobody notices, and access that is
+never revoked is a security problem that outlives the employment. Both were
+previously somebody's memory.
+
 ## [0.13.0] - 2026-08-18
 
 The screens. No migration.
@@ -762,7 +793,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/kshtzkr/hr_lite/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/kshtzkr/hr_lite/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/kshtzkr/hr_lite/compare/v0.10.0...v0.11.0

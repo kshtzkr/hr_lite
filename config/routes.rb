@@ -62,6 +62,18 @@ HrLite::Engine.routes.draw do
     end
     resources :statutory_rate_cards, only: %i[index new create edit update]
     resources :reports, only: %i[index show]
+    resources :expenses, only: :index do
+      member { post :approve; post :reject; post :reimburse }
+    end
+    resources :hr_requests, only: %i[index show] do
+      member { post :assign; post :resolve }
+    end
+    resources :assets, only: %i[index new create] do
+      member { post :assign; post :take_back }
+    end
+    resources :checklists, only: :index do
+      member { post :complete; post :reopen }
+    end
     resources :leave_types, except: :show
     resources :office_locations, except: :show
     resources :holidays, only: %i[index create update destroy] do

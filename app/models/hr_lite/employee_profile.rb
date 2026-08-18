@@ -6,6 +6,7 @@ module HrLite
   class EmployeeProfile < ApplicationRecord
     include EncryptedMoney
     include Audited
+    after_create_commit :open_onboarding_checklist
 
     belongs_to :user, class_name: HrLite.config.user_class
     # Reporting line (L1). Optional; the org chart treats manager-less
@@ -151,6 +152,18 @@ module HrLite
       return if date_of_exit >= date_of_joining
 
       errors.add(:date_of_exit, "must be after joining")
+    end
+
+    private
+
+    # Day one has a list, and it is the same list every time. Opened on
+    # create rather than by hand, because the one nobody remembers to start
+    # is the one that does not happen.
+    def open_onboarding_checklist
+      ChecklistItem.open_for!(user, kind: "onboarding", anchor_date: date_of_joining)
+    rescue => e
+      # A checklist must never be the reason an employee cannot be created.
+      Rails.logger.error("[hr_lite] onboarding checklist failed: #{e.class}: #{e.message}")
     end
   end
 end

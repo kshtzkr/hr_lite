@@ -1,0 +1,47 @@
+<% content_for(:page_title) { @request.subject } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title"><%= @request.subject %></h1></div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted">
+    <%= @request.category_label %> · <%= hr_display_name(@request.user) %> ·
+    <%= @request.created_at.to_date.strftime("%d %b %Y") %> ·
+    <%= hrl_request_status_badge(@request.status) %>
+  </p>
+  <% if @request.body.present? %>
+    <div class="hrl-prose"><%= simple_format(@request.body) %></div>
+  <% end %>
+</section>
+
+<% unless @request.resolved? || @request.closed? || @request.cancelled? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Answer</h2>
+    <%= form_with url: hr_lite.resolve_admin_hr_request_path(@request), method: :post do %>
+      <div class="hrl-field">
+        <%= label_tag :resolution, "What you did" %>
+        <%= text_area_tag :resolution, nil, rows: 4 %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= submit_tag "Send answer", class: "hrl-btn hrl-btn--primary" %>
+      </div>
+    <% end %>
+
+    <%= form_with url: hr_lite.assign_admin_hr_request_path(@request), method: :post do %>
+      <div class="hrl-field">
+        <%= label_tag :assignee_id, "Or hand it to somebody" %>
+        <%= select_tag :assignee_id,
+              options_for_select(HrLite.users_holding("hr_request.manage")
+                                       .map { |u| [ hr_display_name(u), u.id ] }) %>
+      </div>
+      <div class="hrl-form-actions">
+        <%= submit_tag "Assign", class: "hrl-btn" %>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @request.resolution.present? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Answered</h2>
+    <div class="hrl-prose"><%= simple_format(@request.resolution) %></div>
+  </section>
+<% end %>

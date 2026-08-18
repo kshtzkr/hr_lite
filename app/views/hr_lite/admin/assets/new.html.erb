@@ -1,0 +1,23 @@
+<% content_for(:page_title) { "Add asset" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add asset</h1></div>
+
+<section class="hrl-card">
+  <%= form_with model: @asset, url: hr_lite.admin_assets_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @asset %>
+    <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+    <div class="hrl-field">
+      <%= f.label :category %>
+      <%= f.select :category, HrLite::Asset::CATEGORIES.map { |c| [ c.humanize, c ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :serial_number, "Serial number (optional)" %>
+      <%= f.text_field :serial_number %>
+    </div>
+    <div class="hrl-field"><%= f.label :purchased_on %><%= f.date_field :purchased_on %></div>
+    <div class="hrl-field"><%= f.label :notes %><%= f.text_field :notes %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_assets_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

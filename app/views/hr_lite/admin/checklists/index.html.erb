@@ -1,0 +1,50 @@
+<% content_for(:page_title) { "Joining & exits" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Joining &amp; exits</h1></div>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <% HrLite::ChecklistTemplate::KINDS.each do |kind| %>
+      <a class="hrl-btn <%= "hrl-btn--primary" if kind == @kind %>"
+         href="<%= hr_lite.admin_checklists_path(kind: kind) %>"><%= kind.humanize %></a>
+    <% end %>
+  </div>
+</section>
+
+<% if @overdue.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title"><%= @overdue.size %> overdue</h2>
+    <p class="hrl-small hrl-muted">
+      An unreturned laptop and un-revoked access both outlive the employment.
+    </p>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <% if @items.empty? %>
+    <p class="hrl-muted">Nothing outstanding.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Step</th><th>Who</th><th>Due</th><th></th></tr></thead>
+        <tbody>
+          <% @items.each do |item| %>
+            <tr>
+              <td data-label="Step">
+                <%= item.title %>
+                <% if item.overdue? %><span class="hrl-badge hrl-badge--bad">Overdue</span><% end %>
+              </td>
+              <td data-label="Who"><%= hr_display_name(item.user) %></td>
+              <td data-label="Due"><%= item.due_on&.strftime("%d %b %Y") || "—" %></td>
+              <td data-label="">
+                <%= form_with url: hr_lite.complete_admin_checklist_path(item), method: :post do %>
+                  <%= text_field_tag :note, nil, placeholder: "Note" %>
+                  <%= submit_tag "Done", class: "hrl-btn hrl-btn--primary" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>
