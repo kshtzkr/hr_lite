@@ -17,7 +17,7 @@ module HrLite
           "leave.request" => "self", "leave.view" => "self",
           "attendance.view" => "self", "payroll.view" => "self",
           "profile.view" => "self", "appraisal.view" => "self",
-          "resignation.view" => "self"
+          "resignation.view" => "self", "document.view" => "self", "tax.view" => "self"
         }
       },
       Role::MANAGER => {
@@ -35,7 +35,8 @@ module HrLite
           "leave.request" => "self", "leave.view" => "all", "leave.approve" => "all",
           "leave.manage" => "all", "attendance.view" => "all", "attendance.manage" => "all",
           "profile.view" => "all", "payroll.view" => "self",
-          "appraisal.view" => "self", "resignation.view" => "all"
+          "appraisal.view" => "self", "resignation.view" => "all",
+          "document.view" => "all", "tax.view" => "self"
         }
       },
       Role::FINANCE => {
@@ -45,6 +46,7 @@ module HrLite
           "attendance.view" => "all", "profile.view" => "all",
           "payroll.view" => "all", "payroll.manage" => "all", "payroll.export" => "all",
           "salary.view" => "all", "salary.manage" => "all",
+          "tax.view" => "all", "tax.manage" => "all",
           "audit.view" => "all", "audit.view_money" => "all"
         }
       },
@@ -55,7 +57,8 @@ module HrLite
           "leave.manage" => "all", "attendance.view" => "all", "attendance.manage" => "all",
           "profile.view" => "all", "profile.manage" => "all",
           "resignation.view" => "all", "resignation.manage" => "all",
-          "settings.manage" => "all", "audit.view" => "all", "payroll.view" => "self"
+          "settings.manage" => "all", "audit.view" => "all", "payroll.view" => "self",
+          "document.view" => "all"
         }
       },
       Role::SUPER_ADMIN => {

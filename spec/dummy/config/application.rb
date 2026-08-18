@@ -4,6 +4,7 @@ require "rails"
 require "active_model/railtie"
 require "active_job/railtie"
 require "active_record/railtie"
+require "active_storage/engine"
 require "action_controller/railtie"
 require "action_mailer/railtie"
 require "action_view/railtie"
@@ -27,6 +28,12 @@ module Dummy
     config.action_mailer.delivery_method = :test
     config.action_mailer.default_url_options = { host: "hr.example.com" }
     config.active_job.queue_adapter = :test
+    # Employee documents attach through Active Storage, as they would on a
+    # real host after `rails active_storage:install`.
+    config.active_storage.service = :test
+    config.active_storage.service_configurations = {
+      "test" => { "service" => "Disk", "root" => File.expand_path("../tmp/storage", __dir__) }
+    }
 
     config.secret_key_base = "dummy-secret-key-base-for-tests"
   end

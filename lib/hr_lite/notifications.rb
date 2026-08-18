@@ -27,6 +27,13 @@ module HrLite
       # An approval past its deadline. Leadership hears too — a decision
       # nobody is making is a process problem, not just one person's inbox.
       "approval.escalated"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
+      # Tax declarations. The submission bells whoever verifies them; the
+      # decision goes back to the employee, whose year's TDS depends on it.
+      "tax.declaration_submitted" => { bell: true, email: false, leadership_email: false, leadership_bell: false },
+      "tax.declaration_decided"   => { bell: true, email: true,  leadership_email: false, leadership_bell: false },
+      # A document about to lapse — a passport or a visa is somebody's right
+      # to work, and finding out late is the whole problem.
+      "document.expiring"     => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
       "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },

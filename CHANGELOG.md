@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-08-18
+
+Documents, and a tax declaration that is more than one number. **Adds one
+migration.** Requires Active Storage on the host (`rails active_storage:install`).
+
+### Added
+
+- **`hr_lite_documents`** — there was nowhere to keep an employee's documents
+  at all. Files attach through Active Storage, which content-sniffs via
+  Marcel, so the type allowlist checks real bytes rather than what the client
+  claimed. SVG and HTML stay out: both carry script and both render in a
+  browser. 10 MB cap.
+- **Visibility is a property of the row**, and an identity document defaults
+  to the tightest setting rather than the convenient one — an Aadhaar, PAN,
+  passport or bank mandate is money-tier by default, not HR's to browse. A
+  default nobody thinks about is the one that leaks. An explicit choice always
+  wins, which is why the column carries no default of its own.
+- Verification with a named checker, and expiry with a job that warns at 30
+  days and again at 7 — not daily, because a warning that arrives every day
+  is one nobody reads by the third.
+- **`hr_lite_tax_declarations`** and items, replacing
+  `declared_annual_deductions`: ONE opaque figure an admin typed in, that
+  nobody could see the makeup of, that the employee could not submit
+  themselves, and that had nowhere to keep the proof. It is the number the
+  whole year's TDS is projected from.
+- Sections (80C, 80D, 80CCD(1B), 24(b), HRA), each with what was **declared**
+  and what the proof actually **supported**. Until HR has looked, the declared
+  figure stands — asking somebody to overpay tax all year because paperwork is
+  slow is its own kind of wrong. Once verified, only the supported figure
+  counts.
+- The regime follows the declaration, because choosing one is a per-YEAR
+  decision and the profile column cannot express that.
+- Permissions `document.view`, `document.manage`, `tax.view`, `tax.manage`,
+  granted to the roles that should hold them.
+
+### Changed
+
+- `SlipBuilder` reads the declaration when one exists for the run's financial
+  year, falling back to the profile figure otherwise. A DRAFT declaration is
+  ignored — a draft is not a claim.
+
+## [0.10.0] - 2026-08-18
+
+Payroll gets heads, arrears and loans. **Adds one migration.** Existing
+payslips compute identically — every new head is opt-in data.
+
+### Added
+
+- **`hr_lite_salary_components`** — earning and deduction heads as DATA.
+  Payroll knew exactly four earnings because they were columns on the salary
+  structure, so a bonus, an incentive, an LTA or a reimbursement had nowhere
+  to go but "other": one number on a payslip that should have said what it
+  was for. Seeded with bonus, incentive, arrears, LTA, reimbursement, loan
+  repayment and other-deduction; an install adds its own.
+- Each head declares whether it is **prorated** (a bonus is not halved
+  because somebody joined on the 16th), **taxable**, and whether it
+  **counts toward the ESI gross** — a reimbursement is not a wage, and
+  counting it could push somebody over the ceiling and out of cover.
+- **`hr_lite_payroll_line_items`** — one-offs for a single month, including
+  arrears after a backdated revision. Dated to the MONTH rather than the run,
+  so deleting a draft and computing it again does not lose them. Refused on a
+  month already published: that slip is immutable, and a later line would
+  show on no payslip while quietly moving the year-to-date the TDS projector
+  reads.
+- **`hr_lite_loans`** and repayments. The outstanding balance is DERIVED from
+  the repayments actually taken, never stored — a stored balance and a
+  recomputed run disagree the first time somebody deletes a draft. The last
+  instalment takes only what is left.
+- Repayments are booked when a run is **finalized**, not at compute: a draft
+  is recomputed as often as the operator likes, and each pass would otherwise
+  take another instalment. Unlocking a run gives them back, and reopens a
+  loan that had closed.
+
+### Changed
+
+- Branch coverage is now a **floor at 90%, not a ratchet**, with the reasoning
+  written into `spec_helper.rb`. Its denominator grows with every subsystem,
+  so ratcheting it charges each feature PR a tax for branches in files it
+  never touched. Line coverage remains the ratchet at 100% overall and 90%
+  per file — that is the gate that has actually caught defects.
+- Paid down some of the branch debt named in 0.9.0: the status predicates
+  across six models, the UAN format validation, and the holiday bulk-import
+  paths (blank lines, an empty paste, a line that cannot be read).
+
 ## [0.9.0] - 2026-08-18
 
 A reusable approval engine. **Adds one migration** (flows, steps, approvals,
@@ -610,7 +694,9 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/kshtzkr/hr_lite/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/kshtzkr/hr_lite/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kshtzkr/hr_lite/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kshtzkr/hr_lite/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...v0.7.0
