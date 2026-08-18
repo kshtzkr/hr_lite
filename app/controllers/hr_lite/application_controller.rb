@@ -10,9 +10,47 @@ module HrLite
     before_action :hr_set_current_actor
     around_action :hr_use_time_zone
 
-    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_display_name
+    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_display_name,
+                  :hr_can?, :hr_reaches?, :hr_access
 
     private
+
+    # --- authorization -----------------------------------------------------
+
+    def hr_access
+      HrLite::Access.for(hr_current_user)
+    end
+
+    # May the signed-in person do this at all, at `scope` or wider?
+    def hr_can?(key, scope: :self)
+      hr_access.can?(key, scope: scope)
+    end
+
+    # May they do it to THIS person's records? The question the module could
+    # not ask before roles, and whose absence let any admin approve anybody's
+    # leave.
+    def hr_reaches?(key, subject_user)
+      hr_access.reaches?(key, subject_user)
+    end
+
+    # Gate a whole controller or action. `scope` is the weakest scope that can
+    # reach the screen at all — a manager reaching a team screen still has
+    # every ROW checked separately by `hr_require_reach!`.
+    def hr_require_permission!(key, scope: :self)
+      hr_access_denied unless hr_can?(key, scope: scope)
+    end
+
+    # Gate one record. Deliberately a 404, not a 403: whether a particular
+    # person exists is not something a stranger gets to learn from us.
+    def hr_require_reach!(key, subject_user)
+      raise ActiveRecord::RecordNotFound unless hr_reaches?(key, subject_user)
+    end
+
+    # Narrow a relation to the rows this permission reaches, so an index
+    # never renders a row the member action would refuse.
+    def hr_scope(relation, key, column: :user_id)
+      hr_access.scope_relation(relation, key, column: column)
+    end
 
     def hr_authenticate!
       send(HrLite.config.authenticate_method)

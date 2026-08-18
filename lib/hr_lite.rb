@@ -4,6 +4,8 @@ require "hr_lite/configuration"
 require "hr_lite/current"
 require "hr_lite/leave_year"
 require "hr_lite/financial_year"
+require "hr_lite/permissions"
+require "hr_lite/role_seeds"
 require "hr_lite/mention_parser"
 require "hr_lite/notifications"
 require "hr_lite/seeds"
@@ -31,16 +33,49 @@ module HrLite
       config.user_class.constantize
     end
 
+    # --- authorization -----------------------------------------------------
+
+    # The question every gate now asks. `scope:` is what the CALLER needs;
+    # a holder with a wider scope satisfies it.
+    def can?(user, key, scope: :self)
+      Access.for(user).can?(key, scope: scope)
+    end
+
+    # Whether `user` may exercise `key` over `subject`'s rows. This is the
+    # question that did not exist before roles, and its absence is why any
+    # admin could approve anybody's leave.
+    def reaches?(user, key, subject)
+      Access.for(user).reaches?(key, subject)
+    end
+
+    def access_for(user) = Access.for(user)
+
+    # --- legacy tier predicates --------------------------------------------
+    #
+    # Kept because views, hosts and the notification fan-out all call them.
+    # They are now READ OFF ROLES rather than off a mutable email column; the
+    # configured lambdas survive only as an explicit opt-in for a host that
+    # has not migrated yet (see Configuration#legacy_tier_checks).
+
     def admin?(user)
-      user.present? && !!config.admin_check.call(user)
+      return false if user.blank?
+      return !!config.admin_check.call(user) if config.legacy_tier_checks
+
+      can?(user, "leave.approve", scope: :all) || can?(user, "attendance.manage", scope: :all)
     end
 
     def leadership?(user)
-      user.present? && !!config.leadership_check.call(user)
+      return false if user.blank?
+      return !!config.leadership_check.call(user) if config.legacy_tier_checks
+
+      can?(user, "profile.manage", scope: :all)
     end
 
     def superadmin?(user)
-      user.present? && !!config.superadmin_check.call(user)
+      return false if user.blank?
+      return !!config.superadmin_check.call(user) if config.legacy_tier_checks
+
+      can?(user, "payroll.manage", scope: :all)
     end
 
     # An access list, cleaned. "a@x.com,,b@x.com".split(",") — one stray
@@ -60,21 +95,39 @@ module HrLite
     end
 
     # Leadership members resolvable to actual user records (for bell
-    # notifications). Emails configured but absent from the user table are
-    # still reachable by email — see Notifications.
+    # notifications). On a legacy host, emails configured but absent from the
+    # user table are still reachable by email — see Notifications.
     def leadership_users
+      unless config.legacy_tier_checks
+        return users_holding("profile.manage", scope: :all)
+      end
+
       emails = normalize_email_list(config.leadership_emails)
       return user_klass.none if emails.empty?
 
       user_klass.where("LOWER(#{user_klass.table_name}.email) IN (?)", emails)
     end
 
-    # Every domain event that bells the admins calls this. Loading and
-    # instantiating the entire users table to run admin_check per row is fine
-    # at ten staff and silly at a thousand — so it starts from employees_scope
-    # (which a host narrows to real staff) rather than every row that exists.
+    # Everyone whose roles grant `key` at `scope` or wider. One query over
+    # the grant tables rather than instantiating every user and asking.
+    def users_holding(key, scope: :all)
+      wide = Permissions::SCOPE_RANK.select { |_, rank| rank >= Permissions::SCOPE_RANK.fetch(scope) }
+      ids = RoleAssignment.joins(role: :role_grants)
+                          .where(hr_lite_role_grants: {
+                            permission_key: Permissions.validate!(key), scope: wide.keys.map(&:to_s)
+                          })
+                          .distinct.pluck(:user_id)
+      user_klass.where(id: ids)
+    end
+
+    # Every domain event that bells the admins calls this. On roles it is one
+    # query over the grant tables; on a legacy host it still has to run the
+    # host's lambda per row, which is why it starts from employees_scope
+    # (narrowed to real staff) rather than every row that exists.
     def admin_users
-      employees.select { |u| admin?(u) }
+      return employees.select { |u| admin?(u) } if config.legacy_tier_checks
+
+      users_holding("leave.approve", scope: :all).sort_by { |u| display_name(u).downcase }
     end
 
     # Everyone HR tracks (host-overridable to exclude bots/test accounts),

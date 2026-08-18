@@ -14,8 +14,8 @@ auth, it does the HR.
 
 - Mountable engine, isolated namespace (`HrLite`), tables prefixed `hr_lite_`.
 - Bring your own users: any user model and auth (Devise or otherwise) via config hooks.
-- Access tiers: employee (self-service), admin (day-to-day operations),
-  leadership (policy and people), and an optional superadmin tier for money.
+- Roles and permissions: a seeded role table you re-cut, where each grant
+  carries the scope it reaches — their own records, their team's, or everyone's.
 - One event bus routes every HR event to in-app bells, employee emails and a
   leadership fan-out, with an append-only audit trail of governing changes.
 - Self-contained UI: mobile-first, dependency-free JS, theming through CSS
@@ -28,7 +28,7 @@ auth, it does the HR.
 - [Installation](#installation)
 - [Quick start (sandbox)](#quick-start-sandbox)
 - [Configuration](#configuration)
-- [Access tiers](#access-tiers)
+- [Roles and permissions](#roles-and-permissions)
 - [Features](#features)
   - [Attendance and geolocation](#attendance-and-geolocation)
   - [Leave, comp-off and regularization](#leave-comp-off-and-regularization)
@@ -148,34 +148,70 @@ end
 override it, plus the full event/notification matrix. `parent_controller` is
 resolved once at boot — restart after changing it.
 
-## Access tiers
+## Roles and permissions
 
-Authorization is layered on top of the checks you provide. There is no separate
-role table; a user's tier is derived per request.
+Authorization is a **role table**, seeded and then yours to re-cut. A
+permission is a KEY plus a SCOPE:
 
-- **Employee** — every signed-in user. All self-service screens are scoped to
-  `current_user` (asking for someone else's record 404s), so a new hire is
-  never locked out.
-- **Admin** (`admin_check`, or anyone in leadership) — day-to-day operations:
-  team attendance, leave and regularization decisions, the overview board.
-- **Leadership** (`leadership_check` only — admin is not enough) — policy and
-  people: leave types, offices, holidays, the weekend rule, employee profiles,
-  onboarding/offboarding, the audit trail. Every leadership mutation writes an
-  append-only `hr_lite_audit_logs` row and emails leadership with the diff.
-- **Superadmin (money)** (`superadmin_check`) — salary structures, payroll
-  runs, salary-slip administration, appraisals and promotions. Set
-  `superadmin_emails` to a subset of leadership to separate money from policy.
-  Left empty (the default), the money tier is the leadership tier.
+| | |
+|---|---|
+| key | what the action is — `leave.approve`, `payroll.manage`, `attendance.view` |
+| scope | whose records it reaches — `self`, `team` (their reports) or `all` |
 
-Leadership is a list you control, not code. The generated initializer reads it
-from `HR_LEADERSHIP_EMAILS` (a comma-separated list) so you can change who
-governs without a deploy — that env var is a convention in the initializer the
-generator writes, not something the gem reads on its own. You can drop the env
-var and assign `c.leadership_emails` directly, or replace `c.leadership_check`
-to derive leadership some other way.
+That is why there is no `leave.approve_own` / `_team` / `_all` triple. One key
+with three possible scopes says the same thing with a third of the surface,
+and it is what makes a **Manager** expressible: `leave.approve` at `team`.
 
-`HrLite.admin?(user)`, `HrLite.leadership?(user)` and `HrLite.superadmin?(user)`
-are available if you need the same checks in host code.
+Six roles ship. They are a starting point, not a ladder — `hr_lite:seed`
+creates any that are missing and never touches one you have tuned.
+
+| Role | Reaches |
+|---|---|
+| Employee | their own leave, attendance, profile and payslips |
+| Manager | the above, plus their reports' leave and attendance |
+| HR | leave, attendance, holidays and tickets for everyone |
+| Finance | payroll, salary structures, the payout register, the money audit |
+| Leadership | people and policy for everyone — deliberately **not** pay |
+| Super Admin | everything, including who holds which role |
+
+Grants are edited on the Roles screen (`/admin/roles`, behind `role.manage`).
+Built-in roles cannot be renamed or deleted — the seed and the upgrade path
+identify them by name — but every permission inside them can change. The last
+person who can manage roles cannot be removed from the role that lets them;
+there is no way back from that without a console.
+
+### In your own code
+
+```ruby
+HrLite.can?(user, "leave.approve", scope: :team)  # may they, at all?
+HrLite.reaches?(user, "leave.approve", employee)  # may they, for THIS person?
+HrLite.users_holding("payroll.manage")            # everyone who can
+```
+
+Controllers get `hr_can?`, `hr_reaches?`, `hr_require_permission!`,
+`hr_require_reach!` and `hr_scope(relation, key)`. Reaching a screen and
+reaching a particular person's row are separate questions — an index is
+narrowed with `hr_scope` and each member action re-checks with
+`hr_require_reach!`, which 404s rather than 403s so a stranger does not learn
+that the other person exists.
+
+`HrLite.admin?`, `HrLite.leadership?` and `HrLite.superadmin?` still work and
+are read off roles.
+
+### Upgrading from the email lists (pre-0.6.0)
+
+Access used to come from three lambdas, two of which matched the user's
+`email` — a mutable, host-owned, unverified column that every host then had to
+remember never to let anybody edit.
+
+The upgrade migration reads your existing configuration and lands everybody
+where they already were: `superadmin_emails` to Super Admin,
+`leadership_emails` to Leadership, `admin_check` to HR, everyone to Employee.
+It prints who it put where, and it leaves a host that has already assigned
+roles by hand alone.
+
+Set `config.legacy_tier_checks = true` to keep the old lambdas in charge while
+you migrate. It is honoured for one minor version and removed in 0.7.0.
 
 ## Features
 

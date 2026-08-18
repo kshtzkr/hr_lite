@@ -1,0 +1,49 @@
+<% content_for(:page_title) { "Roles" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Roles &amp; permissions</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_role_path %>">Add role</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    A permission is what somebody may do; its scope is whose records they may
+    do it to — only their own, their reports', or everyone's.
+  </p>
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Role</th><th>People</th><th>Reaches</th><th></th></tr></thead>
+      <tbody>
+        <% @roles.each do |role| %>
+          <tr>
+            <td data-label="Role">
+              <strong><%= role.name %></strong>
+              <% if role.system? %><span class="hrl-badge hrl-badge--muted">Built-in</span><% end %>
+              <% if role.description.present? %>
+                <div class="hrl-small hrl-muted"><%= role.description %></div>
+              <% end %>
+            </td>
+            <td data-label="People" class="hrl-num"><%= role.role_assignments.size %></td>
+            <td data-label="Reaches">
+              <% company_wide = role.role_grants.count { |g| g.scope == "all" } %>
+              <% team = role.role_grants.count { |g| g.scope == "team" } %>
+              <%= role.role_grants.size %> permission<%= "s" unless role.role_grants.size == 1 %>
+              <%# Joined rather than concatenated: a role with team grants and
+                  no company-wide ones rendered a leading "·" with nothing
+                  in front of it. %>
+              <% reach = [ ("#{company_wide} company-wide" if company_wide.positive?),
+                           ("#{team} own team" if team.positive?) ].compact %>
+              <% if reach.any? %>
+                <span class="hrl-small hrl-muted"><%= reach.join(" · ") %></span>
+              <% end %>
+            </td>
+            <td data-label="">
+              <a class="hrl-small" href="<%= hr_lite.edit_admin_role_path(role) %>">Edit</a>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

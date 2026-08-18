@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-18
+
+Access stops being three lambdas and becomes a role table. **Breaking**, with
+an upgrade path that is designed not to be: the migration reads your own
+configuration and lands everybody where they already were.
+
+**Adds two migrations.** The first creates the role tables; the second seeds
+the built-in roles and derives assignments from your existing email lists,
+printing who it put where.
+
+### Fixed
+
+- **Any admin could approve anybody's leave.** Every admin screen gated on a
+  tier and then acted on `Model.find(params[:id])`, so whoever could decide
+  leave could decide everyone's. `manager_id` sat on the profile driving
+  nothing but the org chart. There is now a Manager role at `team` scope,
+  every list is narrowed through the relation, and every member action
+  re-checks the row.
+- **Two of the three tiers were a string match on `user.email`** — a mutable,
+  host-owned, unverified column that each host had to remember never to let
+  anybody edit. Roles are rows now.
+
+### Added
+
+- `HrLite::Permissions` — the declared vocabulary. A grant is a (role, key,
+  scope) row, so an unknown key cannot be stored, and asking about one raises
+  rather than quietly answering "no".
+- `HrLite::Access` — resolves what somebody may do and whose rows it reaches,
+  memoized per request. `can?`, `reaches?`, `visible_user_ids`,
+  `scope_relation`.
+- Controller helpers `hr_can?`, `hr_reaches?`, `hr_require_permission!`,
+  `hr_require_reach!`, `hr_scope`.
+- `HrLite.can?`, `HrLite.reaches?`, `HrLite.users_holding` for host code.
+- A Roles screen (`/admin/roles`, behind `role.manage`) for grants and
+  assignments. Built-in roles cannot be renamed or deleted, and the last
+  person able to manage roles cannot be removed from the role that lets them.
+- `rake hr_lite:roles`, and `hr_lite:seed` now seeds roles too.
+
+### Changed
+
+- `HrLite.admin?`, `.leadership?` and `.superadmin?` read off roles. They
+  still exist because views, hosts and the notification fan-out call them.
+- `config.legacy_tier_checks` (default `false`) hands authority back to the
+  pre-0.6.0 lambdas for a host mid-migration. Honoured for one minor version;
+  **removed in 0.7.0**.
+- `HrLite.admin_users` is one query over the grant tables rather than
+  instantiating every employee and asking.
+- Branch-coverage floor 90% -> 90.5%.
+
 ## [0.5.3] - 2026-08-17
 
 Correctness and traceability pass, ahead of the permissions work in 0.6.0.
@@ -409,7 +458,8 @@ Initial release.
   bus with per-event channel matrix (bell, email, leadership email/bell),
   daily leadership digest and an append-only audit trail.
 
-[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...HEAD
+[Unreleased]: https://github.com/kshtzkr/hr_lite/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/kshtzkr/hr_lite/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/kshtzkr/hr_lite/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/kshtzkr/hr_lite/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/kshtzkr/hr_lite/compare/v0.5.0...v0.5.1

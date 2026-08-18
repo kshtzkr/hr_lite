@@ -46,6 +46,9 @@ HrLite::Engine.routes.draw do
     resources :regularization_requests, only: %i[index show] do
       member { post :approve; post :reject }
     end
+    resources :roles, except: :show do
+      resources :assignments, only: %i[create destroy], controller: "role_assignments"
+    end
     resources :leave_types, except: :show
     resources :office_locations, except: :show
     resources :holidays, only: %i[index create update destroy] do

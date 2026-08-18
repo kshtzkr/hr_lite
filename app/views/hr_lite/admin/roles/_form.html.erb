@@ -1,0 +1,47 @@
+<section class="hrl-card">
+  <%= form_with model: role, url: url, method: method, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: role %>
+
+    <div class="hrl-field">
+      <%= f.label :name %>
+      <% if role.system? %>
+        <%= f.text_field :name, disabled: true %>
+        <span class="hrl-small hrl-muted">
+          Built-in roles keep their name — the upgrade path and the seed both
+          identify them by it. The permissions below are yours to change.
+        </span>
+      <% else %>
+        <%= f.text_field :name %>
+      <% end %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :description, "Description (shown on the roles list)" %>
+      <%= f.text_field :description %>
+    </div>
+
+    <% HrLite::Permissions.grouped.each do |group, keys| %>
+      <fieldset>
+        <legend><%= group %></legend>
+        <% keys.each do |key| %>
+          <% held = role.grant_map[key] || "none" %>
+          <div class="hrl-field">
+            <%= label_tag "grants_#{key.tr('.', '_')}", HrLite::Permissions.description(key) %>
+            <%= select_tag "grants[#{key}]",
+                  options_for_select([
+                    [ "Not granted", "none" ],
+                    [ "Their own records", "self" ],
+                    [ "Their team's records", "team" ],
+                    [ "Everyone's records", "all" ]
+                  ], held),
+                  id: "grants_#{key.tr('.', '_')}" %>
+          </div>
+        <% end %>
+      </fieldset>
+    <% end %>
+
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_roles_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

@@ -1,0 +1,53 @@
+<% content_for(:page_title) { @role.name } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @role.name %></h1>
+  <% unless @role.system? %>
+    <div class="hrl-page__actions">
+      <%= button_to "Delete role", hr_lite.admin_role_path(@role), method: :delete,
+            class: "hrl-btn hrl-btn--danger",
+            form: { data: { turbo_confirm: "Delete #{@role.name}? Everyone holding it loses that access." } } %>
+    </div>
+  <% end %>
+</div>
+
+<%= render "form", role: @role, url: hr_lite.admin_role_path(@role), method: :patch %>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Who holds this role</h2>
+  <% assignments = @role.role_assignments.includes(:user).sort_by { |a| hr_display_name(a.user).downcase } %>
+  <% if assignments.empty? %>
+    <p class="hrl-muted">Nobody yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Person</th><th>Added</th><th></th></tr></thead>
+        <tbody>
+          <% assignments.each do |assignment| %>
+            <tr>
+              <td data-label="Person"><%= hr_display_name(assignment.user) %></td>
+              <td data-label="Added"><%= assignment.created_at.to_date.strftime("%d %b %Y") %></td>
+              <td data-label="">
+                <%= button_to "Remove", hr_lite.admin_role_assignment_path(@role, assignment),
+                      method: :delete, class: "hrl-btn",
+                      form: { data: { turbo_confirm: "Remove #{hr_display_name(assignment.user)} from #{@role.name}?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <%= form_with url: hr_lite.admin_role_assignments_path(@role), method: :post, local: true do %>
+    <div class="hrl-field">
+      <%= label_tag :user_id, "Add somebody to this role" %>
+      <% held = @role.role_assignments.map(&:user_id) %>
+      <%= select_tag :user_id,
+            options_for_select(HrLite.employees.reject { |u| held.include?(u.id) }
+                                     .map { |u| [ hr_display_name(u), u.id ] }) %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= submit_tag "Add", class: "hrl-btn hrl-btn--primary" %>
+    </div>
+  <% end %>
+</section>
