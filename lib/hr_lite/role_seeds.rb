@@ -17,7 +17,9 @@ module HrLite
           "leave.request" => "self", "leave.view" => "self",
           "attendance.view" => "self", "payroll.view" => "self",
           "profile.view" => "self", "appraisal.view" => "self",
-          "resignation.view" => "self", "document.view" => "self", "tax.view" => "self"
+          "resignation.view" => "self", "document.view" => "self", "tax.view" => "self",
+          "expense.claim" => "self", "benefit.view" => "self",
+          "hr_request.raise" => "self", "policy.view" => "all"
         }
       },
       Role::MANAGER => {
@@ -36,7 +38,9 @@ module HrLite
           "leave.manage" => "all", "attendance.view" => "all", "attendance.manage" => "all",
           "profile.view" => "all", "payroll.view" => "self",
           "appraisal.view" => "self", "resignation.view" => "all",
-          "document.view" => "all", "tax.view" => "self"
+          "document.view" => "all", "tax.view" => "self",
+          "expense.claim" => "self", "benefit.view" => "all", "benefit.manage" => "all",
+          "hr_request.raise" => "self", "hr_request.manage" => "all", "policy.view" => "all"
         }
       },
       Role::FINANCE => {
@@ -47,6 +51,8 @@ module HrLite
           "payroll.view" => "all", "payroll.manage" => "all", "payroll.export" => "all",
           "salary.view" => "all", "salary.manage" => "all",
           "tax.view" => "all", "tax.manage" => "all",
+          "expense.claim" => "self", "expense.approve" => "all", "expense.reimburse" => "all",
+          "policy.view" => "all",
           "audit.view" => "all", "audit.view_money" => "all"
         }
       },
@@ -58,7 +64,8 @@ module HrLite
           "profile.view" => "all", "profile.manage" => "all",
           "resignation.view" => "all", "resignation.manage" => "all",
           "settings.manage" => "all", "audit.view" => "all", "payroll.view" => "self",
-          "document.view" => "all"
+          "document.view" => "all", "expense.approve" => "all", "benefit.manage" => "all",
+          "hr_request.manage" => "all", "policy.view" => "all", "policy.manage" => "all"
         }
       },
       Role::SUPER_ADMIN => {
