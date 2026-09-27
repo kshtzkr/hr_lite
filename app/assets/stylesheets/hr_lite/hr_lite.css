@@ -324,3 +324,71 @@
 .hrl-prose { max-width: 68ch; }
 .hrl-prose p { margin: 0 0 .8rem; line-height: 1.6; }
 .hrl-prose p:last-child { margin-bottom: 0; }
+
+/* ID card. Every length is N × --u, where N is the design's pixel value at
+   360px wide — so one variable fits a phone, the desktop, and a CR80 print. */
+.hrl-idcard-faces { container-type: inline-size; display: flex; flex-wrap: wrap; gap: 3.5rem; justify-content: center; }
+.hrl-idcard-face { display: flex; flex-direction: column; align-items: center; gap: .85rem; }
+.hrl-idcard__label { font: 600 11px/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .14em; color: #64748B; }
+.hrl-idcard {
+  --u: min(1px, 100cqi / 360);
+  --blue: #0057A8; --green: #00A24F; --red: #ED1C24;
+  width: calc(360 * var(--u)); height: calc(570 * var(--u));
+  background: #fff; border: calc(1.4 * var(--u)) solid #D9D9D9; border-radius: calc(22 * var(--u));
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .08), 0 24px 48px rgba(15, 23, 42, .08);
+  overflow: hidden; position: relative; display: flex; flex-direction: column;
+  font-family: var(--hrl-card-body, var(--hrl-font)); color: #0F172A; print-color-adjust: exact; -webkit-print-color-adjust: exact;
+}
+.hrl-idcard--back { align-items: center; }
+.hrl-idcard__band { height: calc(176 * var(--u)); background: var(--blue); display: flex; flex-direction: column; align-items: center; padding-top: calc(18 * var(--u)); }
+.hrl-idcard__slot { width: calc(64 * var(--u)); height: calc(10 * var(--u)); border-radius: 9999px; background: #F9F9F9; box-shadow: inset 0 1px 3px rgba(0, 0, 0, .25); }
+.hrl-idcard__slot--back { margin-top: calc(18 * var(--u)); background: #F1F5F9; box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2); }
+.hrl-idcard__logo { margin-top: calc(18 * var(--u)); background: #fff; border-radius: 9999px; padding: calc(8 * var(--u)) calc(18 * var(--u)); display: flex; align-items: center; font: 700 calc(13 * var(--u)) var(--hrl-card-display, var(--hrl-font)); color: var(--blue); }
+.hrl-idcard__logo img { height: calc(26 * var(--u)); display: block; }
+.hrl-idcard__kicker { margin-top: calc(12 * var(--u)); font: 600 calc(10 * var(--u))/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .2em; color: rgba(255, 255, 255, .85); }
+.hrl-idcard__photo {
+  position: absolute; top: calc(126 * var(--u)); left: 50%; transform: translateX(-50%);
+  width: calc(140 * var(--u)); height: calc(164 * var(--u)); border-radius: calc(26 * var(--u));
+  border: calc(5 * var(--u)) solid #fff; box-shadow: 0 6px 18px rgba(15, 23, 42, .15); background: #F8FAFC; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font: 700 calc(34 * var(--u)) var(--hrl-card-display, var(--hrl-font)); color: #64748B;
+}
+.hrl-idcard__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hrl-idcard__who { margin-top: calc(124 * var(--u)); text-align: center; padding: 0 calc(24 * var(--u)); }
+.hrl-idcard__name { font: 800 calc(25 * var(--u))/1.1 var(--hrl-card-display, var(--hrl-font)); letter-spacing: -.02em; text-wrap: balance; }
+.hrl-idcard__role { margin-top: calc(6 * var(--u)); font: 500 calc(13 * var(--u))/1.3 var(--hrl-card-body, var(--hrl-font)); color: #334155; }
+.hrl-idcard__green { color: var(--green); }
+.hrl-idcard__blue { color: var(--blue); }
+.hrl-idcard__red { color: var(--red) !important; }
+.hrl-idcard__facts {
+  margin: calc(18 * var(--u)) calc(24 * var(--u)) 0; display: grid; grid-template-columns: 1fr 1fr; gap: calc(12 * var(--u)) calc(16 * var(--u));
+  padding: calc(14 * var(--u)) calc(16 * var(--u)); background: #F8FAFC; border-radius: calc(16 * var(--u)); border: 1px solid #E2E8F0;
+}
+.hrl-idcard__facts dt { font: 600 calc(9 * var(--u))/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .14em; color: #64748B; }
+.hrl-idcard__facts dd { margin: calc(5 * var(--u)) 0 0; font: 600 calc(13 * var(--u))/1.2 var(--hrl-card-body, var(--hrl-font)); color: #0F172A; }
+.hrl-idcard__strip { margin-top: auto; height: calc(10 * var(--u)); display: grid; grid-template-columns: 2fr 1fr 1fr; }
+.hrl-idcard__strip span:nth-child(1) { background: var(--blue); }
+.hrl-idcard__strip span:nth-child(2) { background: var(--green); }
+.hrl-idcard__strip span:nth-child(3) { background: var(--red); }
+.hrl-idcard__title { margin-top: calc(26 * var(--u)); font: 800 calc(18 * var(--u))/1.1 var(--hrl-card-display, var(--hrl-font)); letter-spacing: -.01em; }
+.hrl-idcard__qr { margin-top: calc(16 * var(--u)); padding: calc(14 * var(--u)); border-radius: calc(24 * var(--u)); border: calc(1.4 * var(--u)) solid #D9D9D9; box-shadow: 0 6px 18px rgba(15, 23, 42, .08); }
+.hrl-idcard__qr svg { width: calc(176 * var(--u)); height: calc(176 * var(--u)); display: block; }
+.hrl-idcard__code { margin-top: calc(12 * var(--u)); font: 600 calc(12 * var(--u))/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .16em; }
+.hrl-idcard__rows { margin: calc(22 * var(--u)) calc(28 * var(--u)) 0; align-self: stretch; display: flex; flex-direction: column; gap: calc(10 * var(--u)); }
+.hrl-idcard__rows div { display: flex; justify-content: space-between; gap: calc(12 * var(--u)); font: 400 calc(12 * var(--u))/1.4 var(--hrl-card-body, var(--hrl-font)); color: #475569; }
+.hrl-idcard__rows b { font-weight: 600; color: #0F172A; text-align: right; }
+.hrl-idcard__rows hr { margin: 0; border: 0; height: 1px; background: #E2E8F0; }
+.hrl-idcard__note { margin: calc(20 * var(--u)) calc(28 * var(--u)) 0; text-align: center; font: 400 calc(11 * var(--u))/1.5 var(--hrl-card-body, var(--hrl-font)); color: #64748B; text-wrap: pretty; }
+.hrl-idcard__foot { margin-top: auto; align-self: stretch; background: var(--blue); padding: calc(14 * var(--u)) calc(24 * var(--u)); display: flex; justify-content: space-between; align-items: center; }
+.hrl-idcard__foot b { font: 700 calc(13 * var(--u))/1 var(--hrl-card-display, var(--hrl-font)); color: #fff; }
+.hrl-idcard__foot span { font: 500 calc(10 * var(--u))/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .14em; color: rgba(255, 255, 255, .85); }
+.hrl-idcard-actions { display: flex; flex-wrap: wrap; gap: .85rem; align-items: flex-start; justify-content: center; margin-top: 1.5rem; }
+
+/* Print: one CR80 face per page, nothing else. */
+@media print {
+  @page { size: 54mm 85.6mm; margin: 0; }
+  .hrl-side, .hrl-appbar, .hrl-tabbar, .hrl-flash, .hrl-page__head, .hrl-idcard__label, .hrl-idcard-actions { display: none !important; }
+  .hrl-body { background: #fff; }
+  .hrl-main { padding: 0; margin: 0; }
+  .hrl-idcard-faces { display: block; }
+  .hrl-idcard { --u: calc(54mm / 360); box-shadow: none; break-after: page; }
+}

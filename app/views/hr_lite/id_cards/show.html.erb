@@ -1,0 +1,80 @@
+<% content_for(:page_title) { "ID card" } %>
+<% company = HrLite.config.company.call %>
+<% brand = company[:brand].presence || company[:name].presence || "HR" %>
+<% own = @user == hr_current_user %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= own ? "My ID card" : "ID card — #{hr_display_name(@user)}" %></h1>
+</div>
+
+<% if @profile.nil? %>
+  <p class="hrl-card hrl-card--empty"><%= own ? "Your HR profile has not been set up yet, so there is no card to show." : "No HR profile yet." %></p>
+<% else %>
+  <% first, rest = hr_display_name(@user).to_s.split(" ", 2) %>
+  <div class="hrl-idcard-faces">
+    <div class="hrl-idcard-face">
+      <span class="hrl-idcard__label">FRONT</span>
+      <div class="hrl-idcard">
+        <div class="hrl-idcard__band">
+          <span class="hrl-idcard__slot"></span>
+          <span class="hrl-idcard__logo">
+            <% if company[:logo_url].present? %><img src="<%= company[:logo_url] %>" alt="<%= brand %>"><% else %><%= brand %><% end %>
+          </span>
+          <span class="hrl-idcard__kicker">EMPLOYEE IDENTITY CARD</span>
+        </div>
+        <div class="hrl-idcard__photo">
+          <% if @profile.photo.attached? %>
+            <img src="<%= Rails.application.routes.url_helpers.rails_blob_path(@profile.photo, disposition: "inline", only_path: true) %>" alt="<%= hr_display_name(@user) %>">
+          <% else %>
+            <span><%= hr_display_name(@user).to_s.scan(/\b[[:alpha:]]/).first(2).join.upcase %></span>
+          <% end %>
+        </div>
+        <div class="hrl-idcard__who">
+          <div class="hrl-idcard__name"><span class="hrl-idcard__green"><%= first %></span> <span class="hrl-idcard__blue"><%= rest %></span></div>
+          <div class="hrl-idcard__role"><%= @profile.designation %></div>
+        </div>
+        <dl class="hrl-idcard__facts">
+          <div><dt>EMPLOYEE ID</dt><dd><%= @profile.employee_code %></dd></div>
+          <div><dt>DEPARTMENT</dt><dd><%= @profile.department.presence || "—" %></dd></div>
+          <div><dt>BLOOD GROUP</dt><dd class="hrl-idcard__red"><%= @profile.blood_group.presence || "—" %></dd></div>
+          <div><dt>JOINED</dt><dd><%= @profile.date_of_joining.strftime("%b %Y") %></dd></div>
+        </dl>
+        <div class="hrl-idcard__strip"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+
+    <div class="hrl-idcard-face">
+      <span class="hrl-idcard__label">BACK</span>
+      <div class="hrl-idcard hrl-idcard--back">
+        <span class="hrl-idcard__slot hrl-idcard__slot--back"></span>
+        <div class="hrl-idcard__title"><span class="hrl-idcard__green">Scan to</span> <span class="hrl-idcard__blue">Verify</span></div>
+        <div class="hrl-idcard__qr"><%= hrl_office_qr_svg(company, brand) %></div>
+        <div class="hrl-idcard__code"><%= @profile.employee_code %></div>
+        <div class="hrl-idcard__rows">
+          <div><span>Emergency contact</span><b><%= @profile.emergency_contact.presence || "—" %></b></div>
+          <hr>
+          <div><span>Issued</span><b><%= @issued_on&.strftime("%b %Y") || "Not yet issued" %></b></div>
+        </div>
+        <p class="hrl-idcard__note">This card is the property of <%= brand %>. If found, please return it to our office<%= " or call #{company[:phone]}" if company[:phone].present? %>.</p>
+        <div class="hrl-idcard__foot"><b><%= brand %></b><span>AUTHORISED SIGNATORY</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hrl-idcard-actions">
+    <button type="button" class="hrl-btn hrl-btn--primary" data-hrl-print>Print</button>
+    <% if own %>
+      <%= form_with url: hr_lite.id_card_photo_path, method: :patch, multipart: true, class: "hrl-row" do |f| %>
+        <div class="hrl-field">
+          <label for="photo">Change photo</label>
+          <%= f.file_field :photo, id: "photo", accept: HrLite::EmployeeProfile::PHOTO_TYPES.join(","), required: true %>
+          <p class="hrl-hint">Face centred, plain background. JPG, PNG or WebP, under <%= HrLite::EmployeeProfile::PHOTO_MAX_BYTES / 1.megabyte %> MB.</p>
+        </div>
+        <%= f.submit "Upload photo", class: "hrl-btn" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/print", defer: true %>
+<% end %>

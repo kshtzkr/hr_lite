@@ -7,7 +7,7 @@ module HrLite
 
     validates :weekend_policy, inclusion: { in: WEEKEND_POLICIES }
     validates :employee_code_prefix, presence: true,
-                                     format: { with: /\A[A-Za-z]{1,10}\z/, message: "letters only, max 10" }
+                                     format: { with: /\A[A-Za-z]{1,10}-?\z/, message: "letters only (max 10), optionally ending in -" }
 
     def self.instance
       first_or_create!

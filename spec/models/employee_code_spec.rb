@@ -4,22 +4,22 @@ RSpec.describe HrLite::EmployeeProfile, "system-assigned employee codes" do
   it "assigns prefix + zero-padded sequence automatically" do
     first = described_class.create!(user_id: create(:user).id, date_of_joining: Date.new(2026, 1, 5))
     second = described_class.create!(user_id: create(:user).id, date_of_joining: Date.new(2026, 2, 5))
-    expect(first.employee_code).to eq("EMP001")
-    expect(second.employee_code).to eq("EMP002")
+    expect(first.employee_code).to eq("EMP000001")
+    expect(second.employee_code).to eq("EMP000002")
   end
 
   it "continues after the highest existing number, ignoring foreign prefixes" do
     create(:employee_profile, employee_code: "EMP041")
     create(:employee_profile, employee_code: "OLD999")
     fresh = described_class.create!(user_id: create(:user).id, date_of_joining: Date.current)
-    expect(fresh.employee_code).to eq("EMP042")
+    expect(fresh.employee_code).to eq("EMP000042")
   end
 
   it "restarts a fresh sequence when leadership changes the prefix" do
     create(:employee_profile, employee_code: "EMP007")
     HrLite::Setting.instance.update!(employee_code_prefix: "ESC")
     fresh = described_class.create!(user_id: create(:user).id, date_of_joining: Date.current)
-    expect(fresh.employee_code).to eq("ESC001")
+    expect(fresh.employee_code).to eq("ESC000001")
   end
 
   it "never overwrites an explicitly-set code (seeds, imports)" do
@@ -32,5 +32,14 @@ RSpec.describe HrLite::EmployeeProfile, "system-assigned employee codes" do
     expect(setting.update(employee_code_prefix: "123")).to be(false)
     expect(setting.update(employee_code_prefix: "")).to be(false)
     expect(setting.update(employee_code_prefix: "ESC")).to be(true)
+    expect(setting.update(employee_code_prefix: "ES--")).to be(false)
+    expect(setting.update(employee_code_prefix: "-ESA")).to be(false)
+  end
+
+  it "reads ESA-000001 with a hyphenated prefix" do
+    HrLite::Setting.instance.update!(employee_code_prefix: "ESA-")
+    create(:employee_profile, employee_code: "ESA-000426")
+    fresh = described_class.create!(user_id: create(:user).id, date_of_joining: Date.current)
+    expect(fresh.employee_code).to eq("ESA-000427")
   end
 end
