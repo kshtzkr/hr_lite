@@ -54,7 +54,7 @@ HrLite::Engine.routes.draw do
   namespace :admin do
     get "overview", to: "overview#index"
     resources :attendances, only: %i[index show update], param: :user_id
-    resources :leave_requests, only: %i[index show] do
+    resources :leave_requests, only: %i[index show new create] do
       member { post :approve; post :reject; post :cancel }
     end
     resources :leave_balances, only: :index do

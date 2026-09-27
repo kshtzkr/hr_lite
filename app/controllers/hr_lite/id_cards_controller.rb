@@ -6,6 +6,9 @@ module HrLite
       @user = params[:user_id] ? HrLite.user_klass.find(params[:user_id]) : hr_current_user
       hr_require_reach!("profile.view", @user) unless @user == hr_current_user
       @profile = EmployeeProfile.find_by(user_id: @user.id)
+      card_requests = HrRequest.where(user_id: @user.id, category: "id_card")
+      @issued_on = card_requests.where(status: "resolved").maximum(:resolved_at)
+      @print_requested = card_requests.open_requests.pick(:created_at)
     end
 
     def photo

@@ -62,6 +62,12 @@
 
   <div class="hrl-idcard-actions">
     <button type="button" class="hrl-btn hrl-btn--primary" data-hrl-print>Print</button>
+    <% if own && @print_requested %>
+      <p class="hrl-small hrl-muted">Printed card requested on <%= @print_requested.to_date.strftime("%d %b %Y") %>.</p>
+    <% elsif own %>
+      <%= button_to "Request printed card", hr_lite.hr_requests_path, class: "hrl-btn",
+            params: { hr_request: { category: "id_card", subject: "Please print my ID card" } } %>
+    <% end %>
     <% if own %>
       <%= form_with url: hr_lite.id_card_photo_path, method: :patch, multipart: true, class: "hrl-row" do |f| %>
         <div class="hrl-field">

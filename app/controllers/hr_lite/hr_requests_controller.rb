@@ -19,6 +19,8 @@ module HrLite
       @request = HrRequest.new(request_params.merge(user_id: hr_current_user.id))
       if @request.save
         redirect_to hr_requests_path, notice: "Sent to HR."
+      elsif @request.category == "id_card"
+        redirect_to id_card_path, alert: @request.errors.full_messages.to_sentence
       else
         render :new, status: :unprocessable_entity
       end

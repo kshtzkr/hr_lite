@@ -34,6 +34,8 @@ module HrLite
     attr_accessor :new_user_name, :new_user_email, :new_user_password
 
     before_validation :assign_employee_code, on: :create
+    # Without a role a new hire cannot see policies or raise an HR request.
+    after_create { (role = Role.find_by(name: Role::EMPLOYEE)) && RoleAssignment.find_or_create_by!(user_id:, role:) }
 
     validates :employee_code, presence: true, uniqueness: true
     validates :user_id, uniqueness: true

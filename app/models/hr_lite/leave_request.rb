@@ -7,6 +7,8 @@ module HrLite
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :leave_type
     belongs_to :decided_by, class_name: HrLite.config.user_class, optional: true
+    # Set when HR records leave the employee forgot to apply for.
+    belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
 
     validates :start_date, :end_date, presence: true
     validates :status, inclusion: { in: STATUSES }
@@ -22,7 +24,7 @@ module HrLite
     end
 
     before_validation :cache_days_count, on: :create
-    after_create :notify_requested
+    after_create :notify_requested, unless: :recorded_by_hr?
 
     scope :pending, -> { where(status: "pending") }
     scope :approved, -> { where(status: "approved") }
@@ -209,13 +211,20 @@ module HrLite
       LeaveDayCounter.count(self) > balance.available(as_of: start_date)
     end
 
+    def recorded_by_hr? = created_by_id.present? && created_by_id != user_id
+
+    # Recorded leave is approved in the same transaction, so there is nothing
+    # left for a flow to route.
+    def open_approval_route = pending? && super
+
     def notify_requested
       Notifications.publish(
         "leave.requested",
         title: "#{HrLite.display_name(user)} applied for #{leave_type.name} (#{date_range_label})",
         body: reason.presence,
         path: "/admin/leave_requests/#{id}",
-        bell_to: HrLite.admin_users
+        bell_to: HrLite.admin_users,
+        email_to: HrLite.admin_users
       )
     end
 
@@ -224,6 +233,8 @@ module HrLite
     # channel). Deliberately excludes the reason: dates are team-relevant,
     # the why is not.
     def notify_team
+      return if end_date < Date.current # nobody needs to hear who was out
+
       team = HrLite.active_employees.reject { |member| member.id == user_id }
       return if team.empty?
 
@@ -285,7 +296,7 @@ module HrLite
       clash = self.class.where(user_id: user_id, status: %w[pending approved])
                   .where.not(id: id)
                   .overlapping_range(start_date, end_date)
-      errors.add(:base, "You already have leave overlapping these dates") if clash.exists?
+      errors.add(:base, "Leave already overlaps these dates") if clash.exists?
     end
 
     # A full-day leave over a day that already has a check-in makes no
@@ -296,7 +307,7 @@ module HrLite
 
       punched = AttendanceRecord.where(user_id: user_id, date: start_date..end_date)
                                 .where.not(check_in_at: nil)
-      errors.add(:base, "You have marked attendance in this period") if punched.exists?
+      errors.add(:base, "Attendance is marked in this period") if punched.exists?
     end
 
     def sufficient_balance
