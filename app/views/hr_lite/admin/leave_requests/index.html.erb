@@ -1,6 +1,9 @@
 <% content_for(:page_title) { "Leave approvals" } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Leave approvals</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.new_admin_leave_request_path %>">Record leave</a>
+  </div>
 </div>
 
 <%= render "hr_lite/admin/shared/approvals_tabs", active: :leaves %>

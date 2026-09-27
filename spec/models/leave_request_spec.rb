@@ -42,7 +42,7 @@ RSpec.describe HrLite::LeaveRequest do
       create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday + 2)
       overlap = build_request(start_date: monday + 2, end_date: monday + 3)
       expect(overlap).not_to be_valid
-      expect(overlap.errors[:base].join).to include("overlapping")
+      expect(overlap.errors[:base].join).to include("overlaps these dates")
     end
 
     it "allows overlap with rejected/cancelled requests and other users" do

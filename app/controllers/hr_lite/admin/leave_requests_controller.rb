@@ -16,6 +16,27 @@ module HrLite
         @balance = @request.balance
       end
 
+      # HR records leave somebody forgot to apply for. Approved on save, by the
+      # person recording it; the balance check still applies.
+      def new
+        @request = LeaveRequest.new(start_date: Date.current, end_date: Date.current)
+        @people = recordable
+      end
+
+      def create
+        profile = recordable.find_by(employee_code: params[:employee_code].to_s.strip)
+        @request = LeaveRequest.new(params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :reason)
+                                          .merge(user_id: profile&.user_id, created_by_id: hr_current_user.id))
+        recorded = profile && LeaveRequest.transaction do
+          (@request.save && @request.approve!(actor: hr_current_user, note: "Recorded by HR")) || raise(ActiveRecord::Rollback)
+        end
+        return redirect_to(admin_leave_request_path(@request), notice: "Leave recorded and approved.") if recorded
+
+        @request.errors.add(:base, profile ? "Not enough balance — adjust it first or use unpaid leave" : "Pick an employee from the list") if @request.errors.empty?
+        @people = recordable
+        render :new, status: :unprocessable_entity
+      end
+
       def approve
         request = find_decidable
         if request.approve!(actor: hr_current_user, note: params[:decision_note].presence)
@@ -68,6 +89,8 @@ module HrLite
       end
 
       def find_decidable = decidable.find(params[:id])
+
+      def recordable = hr_scope(EmployeeProfile.includes(:user), "leave.approve")
     end
   end
 end
