@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-09-27
+
+Employee ID cards, print requests through Ask HR, recording leave for
+somebody, and notices that reach the right people. Two migrations, both
+additive (`blood_group`/`emergency_contact` on profiles, `created_by_id` on
+leave requests). New runtime dependency: `rqrcode`.
+
 ### Added
 
 - **Employee ID card.** `/id_card` shows the card front and back; `/id_card/:user_id`
