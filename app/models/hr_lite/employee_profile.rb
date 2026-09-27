@@ -13,7 +13,7 @@ module HrLite
     # profiles as roots (founders/directors).
     belongs_to :manager, class_name: HrLite.config.user_class, optional: true
 
-    encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc
+    encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc, :blood_group, :emergency_contact
     # fy_opening_*: income already paid this financial year that this install
     # did not run — a previous employer, or the months before payroll was
     # switched on here. Feeds the TDS projection so a mid-year start does not
@@ -21,6 +21,13 @@ module HrLite
     encrypted_money :declared_annual_deductions, :fy_opening_gross, :fy_opening_tds
 
     TAX_REGIMES = %w[new old].freeze
+    BLOOD_GROUPS = %w[A+ A- B+ B- AB+ AB- O+ O-].freeze
+    # The ID-card photo. Images a browser can print; content-sniffed like
+    # Document, so the check is on the real bytes.
+    PHOTO_TYPES = %w[image/jpeg image/png image/webp].freeze
+    PHOTO_MAX_BYTES = 5.megabytes
+
+    has_one_attached :photo
 
     # Onboarding-form virtuals (the controller hands them to
     # config.onboard_user; never persisted, never audited).
@@ -37,6 +44,8 @@ module HrLite
     validates :bank_ifsc, format: { with: /\A[A-Z]{4}0[A-Z0-9]{6}\z/, message: "is not a valid IFSC" },
                           allow_blank: true
     validates :pf_uan, format: { with: /\A\d{12}\z/, message: "must be 12 digits" }, allow_blank: true
+    validates :blood_group, inclusion: { in: BLOOD_GROUPS }, allow_blank: true
+    validate :photo_is_a_small_image
     validate :exit_after_joining
     validate :manager_chain_acyclic
     validate :manager_is_active_staff, if: :manager_id_changed?
@@ -138,6 +147,13 @@ module HrLite
         seen[current] = true
         current = EmployeeProfile.where(user_id: current).pick(:manager_id)
       end
+    end
+
+    def photo_is_a_small_image
+      return unless photo.attached?
+      return errors.add(:photo, "must be a JPG, PNG or WebP image") unless PHOTO_TYPES.include?(photo.blob.content_type)
+
+      errors.add(:photo, "must be under #{PHOTO_MAX_BYTES / 1.megabyte} MB") if photo.blob.byte_size > PHOTO_MAX_BYTES
     end
 
     def mask_middle(value)

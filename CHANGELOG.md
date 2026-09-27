@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Employee ID card.** `/id_card` shows the card front and back; `/id_card/:user_id`
+  lets anyone whose `profile.view` reaches that person open it to print. Print
+  gives one CR80 (54 × 85.6 mm) face per page. The QR holds the company brand,
+  address and phone as plain text — no URL, nothing to host.
+- **ID photo.** The one field an employee edits on their own profile. JPG, PNG
+  or WebP under 5 MB, content-sniffed; every change is audited.
+- Blood group and emergency contact on the leadership employee form, encrypted
+  like the other personal fields so the audit email reads `[changed]`.
+- `config.company` may return `brand:` and `phone:`.
+
+### Changed
+
+- Employee codes are zero-padded to six digits, and the prefix may end in one
+  hyphen — `ESA-` gives `ESA-000001`. Existing codes are left as they are.
+
 ## [0.15.0] - 2026-08-18
 
 The screens for three features that shipped as tables nobody could reach. No

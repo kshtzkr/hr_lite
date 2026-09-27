@@ -21,6 +21,7 @@ module HrLite
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
       { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals", "/profile" ] },
       { label: "Documents",  path: :documents_path,      match: [ "/documents" ] },
+      { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ] },
       { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ] },
       { label: "Loans",      path: :loans_path,          match: [ "/loans" ] }
     ].freeze
@@ -53,6 +54,13 @@ module HrLite
       { label: "Tax",     path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ] },
       { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] }
     ].freeze
+
+    # The ID card's QR: office address and phone as plain text, so any phone
+    # camera shows who to call about a found card. No URL, nothing to host.
+    def hrl_office_qr_svg(company, brand)
+      text = [ brand, company[:address], company[:phone] ].compact_blank.join("\n")
+      RQRCode::QRCode.new(text).as_svg(use_path: true, viewbox: true, color: "0F172A").html_safe
+    end
 
     # Only items whose routes exist yet (the nav grows with each phase).
     def hrl_nav_items(items)

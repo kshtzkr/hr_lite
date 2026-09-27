@@ -1,5 +1,6 @@
 require "hr_lite/version"
 require "hr_lite/engine"
+require "rqrcode"
 require "hr_lite/configuration"
 require "hr_lite/current"
 require "hr_lite/leave_year"

@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 8.0"
   spec.add_dependency "csv" # payout register export; no longer a default gem since Ruby 3.4
+  spec.add_dependency "rqrcode", "~> 3.0" # ID card QR, drawn as inline SVG
 end

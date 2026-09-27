@@ -3,6 +3,7 @@
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">
     <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
+    <a class="hrl-btn" href="<%= hr_lite.id_card_path(user_id: @profile.user_id) %>">ID card</a>
     <% if hr_superadmin? %>
       <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
       <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>

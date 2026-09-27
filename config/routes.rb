@@ -43,6 +43,8 @@ HrLite::Engine.routes.draw do
   get "calendar", to: "calendar#show"
   resources :salary_slips, only: %i[index show]
   resource :employee_profile, only: :show, path: "profile"
+  patch "id_card/photo", to: "id_cards#photo", as: :id_card_photo
+  get "id_card(/:user_id)", to: "id_cards#show", as: :id_card
   resource :resignation, only: %i[show create], controller: "resignations" do
     post :withdraw
   end
