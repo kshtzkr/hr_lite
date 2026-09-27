@@ -1,0 +1,27 @@
+<% content_for(:page_title) { "Policies and announcements" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Policies and announcements</h1>
+  <div class="hrl-page__actions"><a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_policy_path %>">Publish</a></div>
+</div>
+
+<section class="hrl-card">
+  <% if @policies.empty? %>
+    <p class="hrl-muted">Nothing published yet.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Title</th><th>Kind</th><th>In force</th><th>Still to acknowledge</th></tr></thead>
+        <tbody>
+          <% @policies.each do |policy| %>
+            <tr>
+              <td data-label="Title"><%= policy.title %> <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span></td>
+              <td data-label="Kind"><%= policy.announcement? ? "Announcement" : "Policy" %></td>
+              <td data-label="In force"><%= policy.effective_from.strftime("%d %b %Y") %></td>
+              <td data-label="Still to acknowledge"><%= policy.announcement? ? "—" : policy.outstanding_for.count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</section>

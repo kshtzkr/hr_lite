@@ -11,6 +11,7 @@ module HrLite
       def create
         @holiday = Holiday.new(holiday_params)
         if @holiday.save
+          announce("Holiday added: #{@holiday.name} on #{@holiday.date.strftime('%a %d %b %Y')}")
           redirect_to admin_holidays_path(year: @holiday.date.year), notice: "Holiday added."
         else
           redirect_to admin_holidays_path, alert: @holiday.errors.full_messages.to_sentence
@@ -55,12 +56,18 @@ module HrLite
           created += 1
         end
 
+        announce("#{created} holiday#{'s' unless created == 1} added to the calendar") if created.positive?
         message = "#{created} holiday#{'s' unless created == 1} added."
         message += " Problems: #{problems.join('; ')}" if problems.any?
         redirect_to admin_holidays_path, problems.any? ? { alert: message } : { notice: message }
       end
 
       private
+
+      def announce(title)
+        staff = HrLite.active_employees
+        Notifications.publish("holiday.published", title: title, path: "/holidays", bell_to: staff, email_to: staff)
+      end
 
       def holiday_params
         params.require(:holiday).permit(:date, :name, :optional)

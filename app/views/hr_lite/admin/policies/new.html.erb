@@ -1,0 +1,22 @@
+<% content_for(:page_title) { "Publish" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Publish a policy or announcement</h1>
+  <p class="hrl-page__sub">Every employee gets an email and a notification. Reusing a title publishes the next version and asks everyone again.</p>
+</div>
+
+<section class="hrl-card">
+  <%= form_with model: @policy, url: hr_lite.admin_policies_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @policy %>
+    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title, required: true %></div>
+    <div class="hrl-field"><%= f.label :body, "Text" %><%= f.text_area :body, rows: 10, required: true %></div>
+    <div class="hrl-field"><%= f.label :effective_from, "In force from" %><%= f.date_field :effective_from %></div>
+    <div class="hrl-field hrl-field--check">
+      <%= f.check_box :acknowledgement_required %>
+      <%= f.label :acknowledgement_required, "Policy — everyone must acknowledge it (untick for an announcement)" %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Publish", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_policies_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>
