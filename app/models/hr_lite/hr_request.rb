@@ -8,7 +8,7 @@ module HrLite
 
     CATEGORIES = %w[
       salary_certificate employment_certificate address_change bank_change
-      document_request payroll_query tax_query insurance_query policy_query other
+      document_request payroll_query tax_query insurance_query policy_query id_card other
     ].freeze
 
     belongs_to :user, class_name: HrLite.config.user_class
@@ -17,6 +17,7 @@ module HrLite
     validates :subject, presence: true
     validates :category, inclusion: { in: CATEGORIES }
     validates :status, inclusion: { in: STATUSES }
+    validate :id_card_can_be_printed, on: :create, if: -> { category == "id_card" }
 
     scope :open_requests, -> { where(status: %w[open in_progress]) }
     scope :recent_first, -> { order(created_at: :desc) }
@@ -25,7 +26,7 @@ module HrLite
 
     after_create_commit :notify_desk
 
-    def category_label = category.humanize
+    def category_label = category.humanize.sub(/\AId\b/, "ID")
 
     def assign!(actor:, assignee:)
       update!(assigned_to_id: assignee.id, status: "in_progress")
@@ -68,8 +69,16 @@ module HrLite
       Notifications.publish(
         "hr_request.raised",
         title: "#{HrLite.display_name(user)} asked: #{subject}",
-        body: body.presence, path: "/admin/hr_requests/#{id}", bell_to: desk
+        body: body.presence, path: "/admin/hr_requests/#{id}", bell_to: desk, email_to: desk
       )
+    end
+
+    def id_card_can_be_printed
+      if !EmployeeProfile.find_by(user_id: user_id)&.photo&.attached?
+        errors.add(:base, "Add your photo to the ID card first")
+      elsif self.class.open_requests.exists?(user_id: user_id, category: "id_card")
+        errors.add(:base, "Your ID card print is already requested")
+      end
     end
   end
 end

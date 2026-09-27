@@ -38,7 +38,7 @@ module HrLite
       "expense.approved"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "expense.rejected"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "expense.reimbursed"    => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
-      "hr_request.raised"     => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "hr_request.raised"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "hr_request.assigned"   => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
       "hr_request.resolved"   => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "policy.published"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },

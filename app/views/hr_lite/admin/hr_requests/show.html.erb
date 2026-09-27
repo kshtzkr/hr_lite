@@ -7,6 +7,9 @@
     <%= @request.created_at.to_date.strftime("%d %b %Y") %> ·
     <%= hrl_request_status_badge(@request.status) %>
   </p>
+  <% if @request.category == "id_card" %>
+    <a class="hrl-btn hrl-mt" href="<%= hr_lite.id_card_path(user_id: @request.user_id) %>">Open the ID card to print</a>
+  <% end %>
   <% if @request.body.present? %>
     <div class="hrl-prose"><%= simple_format(@request.body) %></div>
   <% end %>
