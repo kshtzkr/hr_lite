@@ -18,9 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Blood group and emergency contact on the leadership employee form, encrypted
   like the other personal fields so the audit email reads `[changed]`.
 - `config.company` may return `brand:` and `phone:`.
+- **Request a printed ID card.** One tap on the card raises an Ask-HR request
+  in the new `id_card` category. It needs a photo first, and only one can be
+  open at a time. The desk opens the card from the request to print it;
+  answering the request stamps "Issued" on the card.
+- **Record leave for somebody.** Approvals → Record leave, for leave taken but
+  never applied for. It is saved approved by whoever records it, keeps the
+  balance check, stores `created_by_id`, and emails the employee — not the
+  approvers. The employee is picked by typing a name or code.
+- A new hire gets the Employee role with their profile, so Ask HR and
+  Policies work from day one.
 
 ### Changed
 
+- Notification defaults: a leave application and an Ask-HR request now EMAIL
+  every approver / desk holder as well as belling them; the team "on leave"
+  notice is a bell only, and is not sent at all for leave already over.
+- Overlap and attendance errors on a leave request no longer say "you" — HR
+  sees them too now.
 - Employee codes are zero-padded to six digits, and the prefix may end in one
   hyphen — `ESA-` gives `ESA-000001`. Existing codes are left as they are.
 
