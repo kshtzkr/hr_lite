@@ -1,0 +1,3 @@
+<% if (bell = HrLite.config.notifications&.call(hr_current_user)) %>
+  <a class="hrl-bell" href="<%= bell[:url] %>">Notifications<% if bell[:unread].to_i.positive? %> <span class="hrl-bell__count"><%= bell[:unread] %></span><% end %></a>
+<% end %>

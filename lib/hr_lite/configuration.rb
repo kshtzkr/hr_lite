@@ -9,7 +9,10 @@ module HrLite
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :extra_stylesheets, :superadmin_emails,
                   :mailer_from, :public_url_base, :notification_matrix, :back_link,
-                  :onboard_user, :offboard_user, :invite_url_for
+                  :onboard_user, :offboard_user, :invite_url_for,
+                  # ->(user) { { url:, unread: } } — shows a notifications link in
+                  # the HR shell; nil (default) shows nothing.
+                  :notifications
 
     attr_reader :leave_year_start_month
 
