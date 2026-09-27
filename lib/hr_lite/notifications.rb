@@ -42,6 +42,7 @@ module HrLite
       "hr_request.assigned"   => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
       "hr_request.resolved"   => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "policy.published"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "holiday.published"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
       "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },

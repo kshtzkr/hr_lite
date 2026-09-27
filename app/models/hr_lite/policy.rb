@@ -12,6 +12,8 @@ module HrLite
     validates :effective_from, presence: true
     validates :version, numericality: { greater_than: 0 }
 
+    after_create_commit :announce, if: :published?
+
     scope :published, -> { where(published: true) }
     scope :live_on, ->(date) { published.where(effective_from: ..date) }
     scope :newest_first, -> { order(effective_from: :desc, version: :desc) }
@@ -34,6 +36,8 @@ module HrLite
       )
     end
 
+    def announcement? = !acknowledgement_required
+
     def acknowledged_by?(user)
       policy_acknowledgements.exists?(user_id: user.id)
     end
@@ -54,6 +58,17 @@ module HrLite
       end
     rescue ActiveRecord::RecordNotUnique
       policy_acknowledgements.find_by!(user_id: user.id)
+    end
+
+    private
+
+    def announce
+      staff = HrLite.active_employees
+      Notifications.publish(
+        "policy.published",
+        title: "#{announcement? ? 'Announcement' : 'Policy'}: #{title}#{' (please read and acknowledge)' unless announcement?}",
+        body: body.truncate(300), path: "/policies/#{id}", bell_to: staff, email_to: staff
+      )
     end
   end
 end

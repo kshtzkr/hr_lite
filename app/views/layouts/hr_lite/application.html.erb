@@ -56,6 +56,7 @@
 
       <div class="hrl-side__foot">
         <span class="hrl-side__user" title="<%= hr_current_user&.email %>"><%= hr_display_name(hr_current_user) %></span>
+        <%= render "hr_lite/shared/bell" %>
         <% if HrLite.config.back_link %>
           <a class="hrl-side__back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
         <% end %>
@@ -71,6 +72,7 @@
             <%= company[:name].presence || "HR" %>
           <% end %>
         </a>
+        <%= render "hr_lite/shared/bell" %>
         <span class="hrl-appbar__user"><%= hr_display_name(hr_current_user) %></span>
       </header>
 

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-09-27
+
+Employee ID cards, print requests through Ask HR, recording leave for
+somebody, and notices that reach the right people. Two migrations, both
+additive (`blood_group`/`emergency_contact` on profiles, `created_by_id` on
+leave requests). New runtime dependency: `rqrcode`.
+
 ### Added
 
 - **Employee ID card.** `/id_card` shows the card front and back; `/id_card/:user_id`
@@ -28,6 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   approvers. The employee is picked by typing a name or code.
 - A new hire gets the Employee role with their profile, so Ask HR and
   Policies work from day one.
+- **Publish policies and announcements.** Leadership (`policy.manage`) writes
+  one at `/admin/policies`; every current employee gets an email and a bell.
+  A policy asks to be acknowledged, an announcement does not, and reusing a
+  title publishes the next version. The list shows who still has to
+  acknowledge.
+- **Holiday notices.** Adding a holiday tells everyone; a pasted list sends one
+  notice, not one per line (new matrix row `holiday.published`).
+- `config.notifications = ->(user) { { url:, unread: } }` puts a notifications
+  link with the unread count in the HR shell. Off by default.
 
 ### Changed
 

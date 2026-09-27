@@ -52,6 +52,7 @@ HrLite::Engine.routes.draw do
   resources :appraisals, only: %i[index show]
 
   namespace :admin do
+    resources :policies, only: %i[index new create]
     get "overview", to: "overview#index"
     resources :attendances, only: %i[index show update], param: :user_id
     resources :leave_requests, only: %i[index show new create] do
