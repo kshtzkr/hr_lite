@@ -97,7 +97,7 @@ module HrLite
     private
 
     # Codes are system-assigned: Settings prefix + zero-padded next number
-    # (EMP001, EMP002, ...). Scans the highest existing suffix for the
+    # (ESA-000001, ESA-000002, ...). Scans the highest existing suffix for the
     # CURRENT prefix so changing the prefix restarts a fresh sequence
     # without colliding with history.
     def assign_employee_code
@@ -108,7 +108,7 @@ module HrLite
                  .pluck(:employee_code)
                  .filter_map { |code| code.delete_prefix(prefix)[/\A\d+\z/]&.to_i }
                  .max || 0
-      self.employee_code = format("%s%03d", prefix, last + 1)
+      self.employee_code = format("%s%06d", prefix, last + 1)
     end
 
     def sanitize_sql_like(value)

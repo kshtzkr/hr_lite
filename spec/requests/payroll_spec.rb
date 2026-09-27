@@ -42,7 +42,7 @@ RSpec.describe "Payroll over HTTP", type: :request do
       } }
       expect(HrLite::SalaryStructure.count).to eq(1)
       follow_redirect!
-      expect(response.body).to include("EMP001")
+      expect(response.body).to include("EMP000001")
     end
 
     it "re-renders invalid submissions" do
