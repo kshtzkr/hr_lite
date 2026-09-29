@@ -41,9 +41,10 @@ module HrLite
     end
 
     # Days this request would take past the balance — the loss of pay
-    # approving it today would fix. 0 for unlimited types.
+    # approving it today would fix, or did fix once approved. 0 for unlimited types.
     def days_beyond_balance
       return 0 if leave_type.unlimited?
+      return paid_days ? LeaveDayCounter.count(self) - paid_days : 0 if approved?
 
       [ LeaveDayCounter.count(self) - covered_by(balance.available(as_of: start_date)), 0 ].max
     end
