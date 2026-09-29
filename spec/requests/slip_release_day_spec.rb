@@ -17,6 +17,12 @@ RSpec.describe "Salary slips before and after config.slip_release_day", type: :r
     end
   end
 
+  it "tells an employee with no slip yet when slips open" do
+    sign_in user
+    get "/hr/salary_slips"
+    expect(response.body).to include("opens on the 10th of the next month")
+  end
+
   it "hides October's slip until 10 November in IST" do
     october && september
     sign_in user
