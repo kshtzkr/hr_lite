@@ -75,6 +75,29 @@ RSpec.describe "One-off payroll items over HTTP", type: :request do
       expect(HrLite::PayrollLineItem.exists?(item.id)).to be(false)
       expect(response).to redirect_to("/hr/admin/payroll_line_items?month=2027-06")
     end
+
+    it "keeps an item once its month is paid" do
+      add("bonus", "5000")
+      item = HrLite::PayrollLineItem.last
+      run = create(:payroll_run, period_month: month)
+      run.compute!(actor: owner)
+      run.finalize!(actor: owner)
+
+      delete "/hr/admin/payroll_line_items/#{item.id}"
+
+      expect(HrLite::PayrollLineItem.exists?(item.id)).to be(true)
+      expect(flash[:alert]).to include("already been paid")
+    end
+
+    it "refuses the loan repayment line, which only the loan books" do
+      expect { add("loan_repayment", "2000") }.not_to change(HrLite::PayrollLineItem, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it "keeps the amount out of the leadership audit email" do
+      add("bonus", "5000")
+      expect(HrLite::AuditLog.where(subject_type: "HrLite::PayrollLineItem").sole).to be_money_tier
+    end
   end
 
   it "keeps HR out — a bonus is pay" do

@@ -16,7 +16,9 @@ module HrLite
       def create
         @item = PayrollLineItem.new(item_params.merge(
           period_month: parse_month_param(params.dig(:payroll_line_item, :period_month)),
-          created_by_id: hr_current_user.id
+          created_by_id: hr_current_user.id,
+          # Same list the form offers: loan repayments come from the loan itself.
+          component: addable_components.find_by(id: params.dig(:payroll_line_item, :component_id))
         ))
         if @item.save
           redirect_to admin_payroll_line_items_path(month: @item.period_month.strftime("%Y-%m")),
@@ -28,16 +30,18 @@ module HrLite
 
       def destroy
         item = PayrollLineItem.find(params[:id])
-        item.destroy!
-        redirect_to admin_payroll_line_items_path(month: item.period_month.strftime("%Y-%m")),
-                    notice: "Removed.", status: :see_other
+        removed = item.destroy
+        redirect_to admin_payroll_line_items_path(month: item.period_month.strftime("%Y-%m")), status: :see_other,
+                    **(removed ? { notice: "Removed." } : { alert: "That month has already been paid — it can't change now." })
       end
 
       private
 
       def item_params
-        params.require(:payroll_line_item).permit(:user_id, :component_id, :amount, :note)
+        params.require(:payroll_line_item).permit(:user_id, :amount, :note)
       end
+
+      def addable_components = SalaryComponent.active.where.not(code: "loan_repayment")
     end
   end
 end
