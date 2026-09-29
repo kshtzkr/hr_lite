@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-09-29
+
+Screens for the things other screens were waiting on. An audit of every HR
+screen found four that could never show anything, because the rows they list
+could only be created from a console. No migration.
+
+### Added
+
+- **Expense categories** (Settings → Expense categories, leadership). Until
+  now nothing created one, so the claim form had no categories and every
+  expense claim failed with "Category must exist". Add or edit name, monthly
+  cap, receipt rule and active; untick Active to retire one (no delete —
+  claims point at it).
+- **One-off pay items** (Payroll → a run → One-off pay items, money tier): a
+  bonus, incentive, arrears, reimbursement or one-time deduction for a person
+  and month, carried by that month's computed slip. A month already paid
+  refuses both adding and removing an item; the loan repayment line stays
+  with the loan. Items are money-tier in the audit trail, so the leadership
+  email no longer carries the amount.
+- **Benefits admin** (Manage → Benefits, `benefit.manage`): add a benefit,
+  enrol somebody with their dependants, end their cover. Employees' Benefits
+  page was always empty before.
+
+### Fixed
+
+- **A manager could adjust anybody's leave balance.** The adjust action never
+  asked whose balance it was. It now needs `leave.manage` reaching that person;
+  the balances grid lists only people the viewer can see, and the adjust form
+  shows only to someone who holds `leave.manage`.
+- The professional-tax state picker on the salary structure form had no
+  options.
+- Sidebar links that led nowhere: the employee Approvals inbox shows only once
+  an approval flow exists; Claims shows to whoever approves claims (Finance
+  sees it, HR no longer lands on access denied); Profile is linked, and with it
+  Resignation; both leave balance pages are linked.
+
 ## [0.16.0] - 2026-09-27
 
 Employee ID cards, print requests through Ask HR, recording leave for
