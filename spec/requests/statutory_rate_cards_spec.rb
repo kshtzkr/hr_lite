@@ -169,5 +169,23 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
 
       expect(response.body).to include("deducted at ₹0")
     end
+
+    # A stored card carries no PT, so the structure form once offered no state at all.
+    it "offers the configured states on the salary structure form" do
+      profile = create(:employee_profile)
+      sign_in owner
+      get "/hr/admin/employees/#{profile.id}/salary_structures/new"
+
+      expect(response.body).to include('selected="selected" value="none"', 'value="karnataka">Karnataka')
+    end
+
+    it "keeps a structure's own state selectable when it has no slabs" do
+      profile = create(:employee_profile)
+      structure = create(:salary_structure, user: profile.user, pt_state: "maharashtra")
+      sign_in owner
+      get "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}/edit"
+
+      expect(response.body).to include('selected="selected" value="maharashtra"')
+    end
   end
 end
