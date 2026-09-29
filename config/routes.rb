@@ -91,6 +91,9 @@ HrLite::Engine.routes.draw do
     resources :assets, only: %i[index new create] do
       member { post :assign; post :take_back }
     end
+    resources :benefits, only: %i[index new create] do
+      member { post :enrol; post :unenrol }
+    end
     resources :checklists, only: :index do
       member { post :complete; post :reopen }
     end

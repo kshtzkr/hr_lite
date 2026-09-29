@@ -1,0 +1,37 @@
+<% content_for(:page_title) { "Add benefit" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add benefit</h1></div>
+
+<section class="hrl-card">
+  <%= form_with model: @benefit, url: hr_lite.admin_benefits_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @benefit %>
+    <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+    <div class="hrl-field">
+      <%= f.label :kind %>
+      <%= f.select :kind, HrLite::Benefit::KINDS.map { |k| [ k.humanize, k ] } %>
+    </div>
+    <div class="hrl-field"><%= f.label :provider, "Provider (optional)" %><%= f.text_field :provider %></div>
+    <div class="hrl-field">
+      <%= f.label :policy_number, "Policy number (optional)" %>
+      <%= f.text_field :policy_number %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :coverage, "Cover (₹)" %>
+      <%= f.text_field :coverage, value: @benefit.coverage&.to_s("F"), inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :employer_premium, "Premium the company pays (₹)" %>
+      <%= f.text_field :employer_premium, value: @benefit.employer_premium&.to_s("F"), inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :employee_premium, "Premium the employee pays (₹)" %>
+      <%= f.text_field :employee_premium, value: @benefit.employee_premium&.to_s("F"), inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field"><%= f.label :effective_from, "Starts" %><%= f.date_field :effective_from %></div>
+    <div class="hrl-field"><%= f.label :expires_on, "Expires" %><%= f.date_field :expires_on %></div>
+    <div class="hrl-field"><%= f.label :notes %><%= f.text_field :notes %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_benefits_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

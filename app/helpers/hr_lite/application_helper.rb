@@ -37,6 +37,7 @@ module HrLite
         if: -> { hr_can?("expense.approve", scope: :team) } },
       { label: "Help desk",       path: :admin_hr_requests_path,     match: [ "/admin/hr_requests" ] },
       { label: "Assets",          path: :admin_assets_path,          match: [ "/admin/assets" ] },
+      { label: "Benefits",        path: :admin_benefits_path,        match: [ "/admin/benefits" ] },
       { label: "Joining & exits", path: :admin_checklists_path,      match: [ "/admin/checklists" ] }
     ].freeze
 
