@@ -1,7 +1,7 @@
 module HrLite
   # Monthly automation: on the 1st, draft + compute the previous month's
-  # payroll from attendance and the policy, then tell leadership it is
-  # waiting for review. Publishing stays a deliberate human action —
+  # payroll from attendance and the policy, then tell whoever runs payroll
+  # (payroll.manage) it is waiting for review — leadership cannot open it. Publishing stays a deliberate human action —
   # the system prepares, people approve.
   class PayrollAutoDraftJob < ApplicationJob
     queue_as :default
@@ -16,10 +16,11 @@ module HrLite
       return unless run.draft? && run.salary_slips.none?
 
       run.compute!(actor: nil)
+      payroll = HrLite.users_holding("payroll.manage", scope: :all).to_a
       Notifications.publish(
         "payroll.draft_ready",
         title: "Payroll #{run.label} computed from attendance — #{run.salary_slips.count} slips await review",
-        path: "/admin/payroll_runs/#{run.id}"
+        path: "/admin/payroll_runs/#{run.id}", bell_to: payroll, email_to: payroll
       )
     end
   end

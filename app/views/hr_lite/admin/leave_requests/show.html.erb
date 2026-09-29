@@ -18,6 +18,9 @@
     <% unless @request.leave_type.unlimited? %>
       <dt>Balance</dt>
       <dd><%= @balance.available.to_f %> of <%= @balance.entitled.to_f %> available</dd>
+      <% if (@request.pending? || @request.approved?) && (short = @request.days_beyond_balance).positive? %>
+        <dt>Loss of pay</dt><dd><%= short.to_s("F") %> day(s) beyond the balance will be unpaid</dd>
+      <% end %>
     <% end %>
     <% if @request.decision_note.present? %><dt>Decision note</dt><dd><%= @request.decision_note %></dd><% end %>
   </dl>

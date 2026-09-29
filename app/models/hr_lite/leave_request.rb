@@ -40,6 +40,26 @@ module HrLite
       leave_type.paid
     end
 
+    # Days this request would take past the balance — the loss of pay
+    # approving it today would fix, or did fix once approved. 0 for unlimited types.
+    def days_beyond_balance
+      return 0 if leave_type.unlimited?
+      return paid_days ? LeaveDayCounter.count(self) - paid_days : 0 if approved?
+
+      [ LeaveDayCounter.count(self) - covered_by(balance.available(as_of: start_date)), 0 ].max
+    end
+
+    # Unpaid share (0, 0.5 or 1) of `date`: the balance covered the leave's
+    # EARLIEST working days (paid_days of them), so the rest are loss of pay.
+    def unpaid_on(date)
+      return 0 if paid_days.nil?
+
+      @leave_calendar ||= WorkingCalendar.new(start_date..end_date)
+      through = LeaveDayCounter.count_range(start_date: start_date, end_date: date, half_day: half_day,
+                                            calendar: @leave_calendar)
+      (through - paid_days).clamp(0, half_day ? BigDecimal("0.5") : 1)
+    end
+
     # --- transitions -------------------------------------------------------
 
     # With a flow configured this is ONE RUNG: the request becomes `approved`
@@ -47,9 +67,10 @@ module HrLite
     # the flow is not waiting on, such as HR overriding — the first approval
     # settles it, exactly as before.
     #
-    # Returns false (leaving the request pending) when the balance no longer
-    # covers it; the re-check runs inside the row lock so two concurrent
-    # approvals cannot overdraw one balance.
+    # Days beyond the balance are approved as loss of pay (paid_days); only
+    # comp-off returns false (still pending) when its credit no longer covers
+    # it. The balance is read inside the row lock, so two concurrent
+    # approvals cannot both spend it.
     def approve!(actor:, note: nil)
       return record_routed_decision!(actor, note, :approved) if awaiting?(actor)
 
@@ -132,15 +153,20 @@ module HrLite
     def approve_outright!(actor:, note:)
       insufficient = false
       transition!("approved", actor, note) do
+        next if leave_type.unlimited?
+
         # Serialize on the BALANCE row. `transition!`'s own lock is on this
         # request, and two pending requests are two different rows — so both
         # approvals could read the same untouched balance and overdraw it.
-        LeaveBalance.lock_for(user, leave_type, LeaveYear.key_for(start_date)) unless leave_type.unlimited?
+        # As of start_date: the same date the create-time check uses.
+        covered = covered_by(LeaveBalance.lock_for(user, leave_type, LeaveYear.key_for(start_date)).available(as_of: start_date))
+        next if LeaveDayCounter.count(self) <= covered
 
-        if insufficient_balance_now?
+        if leave_type.comp_off
           insufficient = true
           raise ActiveRecord::Rollback
         end
+        self.paid_days = covered
       end
       return false if insufficient
 
@@ -195,23 +221,16 @@ module HrLite
           "type" => leave_type.code,
           "dates" => date_range_label,
           "days" => days_count&.to_s("F"),
+          "paid_days" => paid_days&.to_s("F"),
           "note" => note.presence
         }.compact
       )
     end
 
-    # This request is still pending here, so balance.used excludes it:
-    # approving is valid iff the request fits the remaining balance.
-    def insufficient_balance_now?
-      return false if leave_type.unlimited?
-
-      # Same as-of date the create-time check used. Reading it as of TODAY
-      # meant a request validated against the balance it would have on the
-      # leave dates could never be approved on a monthly-accrual type.
-      LeaveDayCounter.count(self) > balance.available(as_of: start_date)
-    end
-
     def recorded_by_hr? = created_by_id.present? && created_by_id != user_id
+
+    # The balance covers whole half-days only, never less than nothing.
+    def covered_by(available) = [ (BigDecimal(available.to_s) * 2).floor / BigDecimal(2), 0 ].max
 
     # Recorded leave is approved in the same transaction, so there is nothing
     # left for a flow to route.
@@ -310,9 +329,11 @@ module HrLite
       errors.add(:base, "Attendance is marked in this period") if punched.exists?
     end
 
+    # Only comp-off is refused past its balance: it is earned credit, never
+    # borrowed. Any other type's excess becomes loss of pay at approval.
     def sufficient_balance
       return unless start_date && end_date && leave_type
-      return if leave_type.unlimited? || errors.any?
+      return if leave_type.unlimited? || !leave_type.comp_off || errors.any?
 
       if LeaveDayCounter.count(self) > balance.available(as_of: start_date)
         errors.add(:base, "Not enough #{leave_type.name} balance")

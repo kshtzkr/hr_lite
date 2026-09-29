@@ -4,6 +4,7 @@
 </div>
 
 <%= render "hr_lite/leave_requests/balance_chips" %>
+<p class="hrl-small hrl-muted">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.</p>
 
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.leave_requests_path, local: true do |f| %>

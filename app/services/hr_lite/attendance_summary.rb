@@ -2,7 +2,8 @@ module HrLite
   # Month roll-up per user — the payroll contract. Exact math per date:
   #
   #   holiday / weekend / present / paid full-day leave  -> payable +1
-  #   unpaid full-day leave (LWP) / absent               -> lop +1
+  #   unpaid full-day leave (LWP, or a paid-type day beyond the balance —
+  #     LeaveRequest#unpaid_on) / absent                 -> lop +1
   #   half-day punch (no leave)                          -> payable +0.5, lop +0.5
   #   half-day PAID leave: leave half payable; other half payable if
   #     punched, else lop (unpaid half-day leave: leave half is lop too)
@@ -54,13 +55,11 @@ module HrLite
           summary[:payable_days] += BigDecimal("0.5")
           summary[:lop_days] += BigDecimal("0.5")
         when :leave
-          if day.leave.paid?
-            summary[:paid_leave] += 1
-            summary[:payable_days] += 1
-          else
-            summary[:unpaid_leave] += 1
-            summary[:lop_days] += 1
-          end
+          unpaid = day.leave.paid? ? day.leave.unpaid_on(date) : 1
+          summary[:paid_leave] += 1 - unpaid
+          summary[:payable_days] += 1 - unpaid
+          summary[:unpaid_leave] += unpaid
+          summary[:lop_days] += unpaid
         when :half_day_leave
           apply_half_day_leave(summary, day)
         when :upcoming
@@ -77,13 +76,11 @@ module HrLite
     def self.apply_half_day_leave(summary, day)
       half = BigDecimal("0.5")
 
-      if day.leave.paid?
-        summary[:paid_leave] += half
-        summary[:payable_days] += half
-      else
-        summary[:unpaid_leave] += half
-        summary[:lop_days] += half
-      end
+      unpaid = day.leave.paid? ? day.leave.unpaid_on(day.leave.start_date) : half
+      summary[:paid_leave] += half - unpaid
+      summary[:payable_days] += half - unpaid
+      summary[:unpaid_leave] += unpaid
+      summary[:lop_days] += unpaid
 
       if day.record&.check_in_at
         summary[:present] += half

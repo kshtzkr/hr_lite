@@ -47,15 +47,16 @@ RSpec.describe "Admin leave management", type: :request do
       expect(request_row.reload).to be_rejected
     end
 
-    it "reports an unapprovable request (balance drained)" do
-      tight = create(:leave_type, annual_quota: 1)
-      first = create(:leave_request, user: employee, leave_type: tight, start_date: monday + 1, end_date: monday + 1)
-      second = create(:leave_request, user: employee, leave_type: tight, start_date: monday + 2, end_date: monday + 2)
+    it "reports comp-off whose credit is gone" do
+      comp_off = create(:leave_type, :comp_off)
+      HrLite::LeaveBalance.adjust!(employee, comp_off, HrLite::LeaveYear.key_for(monday), delta: 1, note: "worked Sunday")
+      first = create(:leave_request, user: employee, leave_type: comp_off, start_date: monday + 1, end_date: monday + 1)
+      second = create(:leave_request, user: employee, leave_type: comp_off, start_date: monday + 2, end_date: monday + 2)
       first.approve!(actor: admin)
 
       post "/hr/admin/leave_requests/#{second.id}/approve"
       expect(second.reload).to be_pending
-      expect(flash[:alert]).to include("balance no longer covers")
+      expect(flash[:alert]).to include("comp-off credit no longer covers")
     end
 
     it "rejects double decisions politely" do

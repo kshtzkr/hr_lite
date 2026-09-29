@@ -101,11 +101,18 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       expect(response.body).to include("Pick an employee from the list")
     end
 
-    it "refuses leave the balance does not cover and saves nothing" do
+    it "records leave the balance does not cover as loss of pay" do
       sign_in hr
       tight = create(:leave_type, name: "Tight", annual_quota: 0)
-      expect { record(leave_type: tight) }.not_to change(HrLite::LeaveRequest, :count)
-      expect(response.body).to include("Not enough Tight balance")
+      record(leave_type: tight)
+      expect(HrLite::LeaveRequest.last).to have_attributes(status: "approved", paid_days: 0)
+    end
+
+    it "refuses comp-off with no credit and saves nothing" do
+      sign_in hr
+      comp_off = create(:leave_type, :comp_off, name: "Comp off")
+      expect { record(leave_type: comp_off) }.not_to change(HrLite::LeaveRequest, :count)
+      expect(response.body).to include("Not enough Comp off balance")
     end
 
     it "lists the people HR can record leave for" do
