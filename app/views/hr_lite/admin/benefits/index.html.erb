@@ -6,7 +6,7 @@
   </div>
 </div>
 
-<% people = HrLite.employees.map { |u| [ hr_display_name(u), u.id ] } %>
+<% people = HrLite.active_employees.map { |u| [ hr_display_name(u), u.id ] } %>
 <% @benefits.each do |benefit| %>
   <section class="hrl-card">
     <h2 class="hrl-card__title"><%= benefit.name %></h2>

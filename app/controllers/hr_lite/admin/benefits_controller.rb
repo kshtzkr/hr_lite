@@ -8,7 +8,7 @@ module HrLite
 
       def index
         @benefits = Benefit.order(:name)
-        @enrolments = paginate(BenefitEnrolment.where(ended_on: nil).includes(:benefit, :user).order(:enrolled_on))
+        @enrolments = paginate(covered.includes(:benefit, :user).order(:enrolled_on))
       end
 
       def new
@@ -27,7 +27,7 @@ module HrLite
       def enrol
         benefit = Benefit.find(params[:id])
         user = HrLite.user_klass.find(params[:user_id])
-        benefit.benefit_enrolments.create!(user_id: user.id, enrolled_on: params[:enrolled_on].presence || Date.current,
+        benefit.benefit_enrolments.create!(user_id: user.id, enrolled_on: parse_date_param(params[:enrolled_on]),
                                            dependants: params[:dependants].presence || 0)
         redirect_to admin_benefits_path, notice: "#{HrLite.display_name(user)} enrolled in #{benefit.name}."
       rescue ActiveRecord::RecordInvalid => e
@@ -37,8 +37,8 @@ module HrLite
       # Ends cover rather than deleting the row: who was covered when is
       # the record an insurance claim gets checked against.
       def unenrol
-        enrolment = Benefit.find(params[:id]).benefit_enrolments.find_by!(user_id: params[:user_id], ended_on: nil)
-        enrolment.update!(ended_on: params[:ended_on].presence || Date.current)
+        enrolment = covered.where(benefit_id: params[:id]).find_by!(user_id: params[:user_id])
+        enrolment.update!(ended_on: parse_date_param(params[:ended_on]))
         redirect_to admin_benefits_path, notice: "Cover ended for #{HrLite.display_name(enrolment.user)}."
       rescue ActiveRecord::RecordInvalid => e
         redirect_to admin_benefits_path, alert: e.record.errors.full_messages.to_sentence
@@ -47,6 +47,10 @@ module HrLite
       private
 
       def require_benefits! = hr_require_permission!("benefit.manage", scope: :all)
+
+      # Still covered today — including cover that ends on a future date, which
+      # HR must still be able to see and change.
+      def covered = BenefitEnrolment.where("ended_on IS NULL OR ended_on >= ?", Date.current)
 
       def benefit_params
         params.require(:benefit).permit(:name, :kind, :provider, :policy_number, :coverage, :employer_premium,

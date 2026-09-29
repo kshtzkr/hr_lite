@@ -64,6 +64,24 @@ RSpec.describe "Benefits admin", type: :request, no_legacy_bridge: true do
         .to change(HrLite::Benefit, :count).by(1)
     end
 
+    it "keeps cover that ends later on the list, and lets HR change its end" do
+      enrol
+      post "/hr/admin/benefits/#{benefit.id}/unenrol", params: { user_id: employee.id, ended_on: Date.current + 30 }
+      get "/hr/admin/benefits"
+      expect(response.body).to include("unenrol")
+
+      post "/hr/admin/benefits/#{benefit.id}/unenrol", params: { user_id: employee.id, ended_on: Date.current + 5 }
+      expect(HrLite::BenefitEnrolment.sole.ended_on).to eq(Date.current + 5)
+    end
+
+    it "offers only people still employed" do
+      gone = create(:user, name: "Gone Person")
+      create(:employee_profile, user: gone, date_of_joining: Date.new(2020, 1, 1), date_of_exit: Date.new(2021, 1, 1))
+      benefit
+      get "/hr/admin/benefits"
+      expect(response.body).not_to include("Gone Person")
+    end
+
     it "opens the add-benefit form" do
       get "/hr/admin/benefits/new"
       expect(response.body).to include("Premium the company pays")
