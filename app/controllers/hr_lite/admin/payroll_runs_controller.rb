@@ -48,7 +48,9 @@ module HrLite
       end
 
       def publish
-        transition { |run| run.publish!(actor: hr_current_user) && "Published — employees notified." }
+        day = HrLite.config.slip_release_day
+        opens = day && "Published — employees can open it, and are notified, from the #{day.ordinalize} of next month."
+        transition { |run| run.publish!(actor: hr_current_user) && (opens || "Published — employees notified.") }
       end
 
       # Payout register: the full money sheet including bank details —

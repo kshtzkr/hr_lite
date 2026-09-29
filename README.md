@@ -141,6 +141,7 @@ HrLite.configure do |c|
   c.render_pdf = ->(template:, assigns:, cache_key:) {
     PdfRenderer.render(template: template, assigns: assigns, cache_key: cache_key)
   }
+  c.slip_release_day = 10 # employees see a slip from the 10th of the next month; nil (default) = on publish
 
   # Mirror promotions into your own user model (optional).
   c.on_designation_change = ->(user, designation) { user.update!(designation: designation) }

@@ -24,6 +24,6 @@
     </div>
     <%= hrl_pagination %>
   <% else %>
-    <p class="hrl-card--empty">No published salary slips yet.</p>
+    <p class="hrl-card--empty">No published salary slips yet.<% if (day = HrLite.config.slip_release_day) %> Each month's slip opens on the <%= day.ordinalize %> of the next month.<% end %></p>
   <% end %>
 </section>

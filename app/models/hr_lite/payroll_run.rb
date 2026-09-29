@@ -96,7 +96,23 @@ module HrLite
         audit!("payroll.published", actor, "slips" => salary_slips.count)
       end
 
-      slips = salary_slips.includes(:user).to_a
+      # config.slip_release_day holds the employee notice until the slip opens
+      # (SalarySlip.released); leadership still hears at publish.
+      day = HrLite.config.slip_release_day
+      release_at = day && period_month.next_month.change(day: day).in_time_zone(HrLite.config.time_zone)
+      if release_at&.future?
+        notify_slips_ready(employees: false)
+        SlipsReadyJob.set(wait_until: release_at).perform_later(self)
+      else
+        notify_slips_ready
+      end
+      true
+    end
+
+    # "Your salary slip is ready". SlipsReadyJob sends the employee half on
+    # the release day, without repeating the leadership copy.
+    def notify_slips_ready(employees: true, leadership: true)
+      slips = employees ? salary_slips.includes(:user).to_a : []
       # Everyone is emailed — a final settlement matters most to the person who
       # has left — but a bell is only useful to someone who can still sign in,
       # and offboarding revokes that. Sending one pointed at a page they cannot
@@ -111,9 +127,9 @@ module HrLite
         body: "Open Earthly HR to view or download it.",
         path: "/salary_slips",
         bell_to: slips.reject { |slip| exited.include?(slip.user_id) }.map(&:user),
-        email_to: slips.map(&:user)
+        email_to: slips.map(&:user),
+        skip_leadership: !leadership
       )
-      true
     end
 
     # Ruby-side aggregates (amounts are encrypted — no SQL sums).
