@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "Expense categories" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Expense categories</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_expense_category_path %>">Add category</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @expense_categories.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Name</th><th>Monthly cap</th><th>Receipt</th><th>Active</th><th></th></tr></thead>
+        <tbody>
+          <% @expense_categories.each do |category| %>
+            <tr>
+              <td data-label="Name"><%= category.name %></td>
+              <td data-label="Monthly cap" class="hrl-num"><%= category.uncapped? ? "No cap" : hrl_money(category.monthly_cap) %></td>
+              <td data-label="Receipt"><%= category.receipt_required ? "Required" : "Optional" %></td>
+              <td data-label="Active"><%= category.active ? "Yes" : "No" %></td>
+              <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_expense_category_path(category) %>">Edit</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="hrl-card--empty">No categories yet — nobody can file an expense claim until one exists.</p>
+  <% end %>
+</section>
