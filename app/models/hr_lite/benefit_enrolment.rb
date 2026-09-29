@@ -9,7 +9,7 @@ module HrLite
     belongs_to :user, class_name: HrLite.config.user_class
 
     validates :enrolled_on, presence: true
-    validates :user_id, uniqueness: { scope: :benefit_id }
+    validates :user_id, uniqueness: { scope: :benefit_id, message: "is already enrolled" }
     validates :dependants, numericality: { greater_than_or_equal_to: 0 }
     validate :ended_after_it_started
 
