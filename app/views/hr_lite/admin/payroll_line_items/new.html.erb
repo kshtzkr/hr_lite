@@ -1,0 +1,42 @@
+<% content_for(:page_title) { "Add a pay item" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add a pay item</h1></div>
+
+<section class="hrl-card">
+  <p class="hrl-muted hrl-small">
+    A bonus, incentive, arrears, reimbursement or one-time deduction on one
+    month's payslip. Payroll picks it up when that month's run is computed —
+    add it first, or recompute the run while it is in review. A month that
+    has already been paid is refused.
+  </p>
+  <%= form_with model: @item, url: hr_lite.admin_payroll_line_items_path, method: :post, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @item %>
+    <div class="hrl-field">
+      <%= f.label :user_id, "Employee" %>
+      <%= f.select :user_id, options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] },
+                                                @item.user_id) %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :component_id, "Item" %>
+      <%# Loan repayment is left out: finalize books that line against the person's loans. %>
+      <%= f.select :component_id,
+                   HrLite::SalaryComponent.active.ordered.where.not(code: "loan_repayment")
+                                          .map { |c| [ "#{c.label} (#{c.kind})", c.id ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :period_month, "Month" %>
+      <%= f.month_field :period_month, value: @item.period_month&.strftime("%Y-%m") %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :amount, "Amount (₹)" %>
+      <%= f.text_field :amount, value: @item.amount&.to_s("F"), inputmode: "decimal" %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :note, "Note (optional)" %>
+      <%= f.text_field :note %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Add", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_payroll_line_items_path(month: @item.period_month&.strftime("%Y-%m")) %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

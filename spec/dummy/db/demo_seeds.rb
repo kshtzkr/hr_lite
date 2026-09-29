@@ -61,6 +61,7 @@ module DemoSeeds
     seed_leaves(employee, admin)
     seed_kudos(employee, colleague, admin)
     seed_tickets(employee, colleague)
+    HrLite::SalaryComponent.seed_defaults! # a real host gets these from hr_lite:seed
     seed_payroll(leadership)
     seed_career(employee, leadership)
     seed_services(employee, colleague, leadership)

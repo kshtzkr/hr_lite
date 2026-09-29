@@ -18,6 +18,8 @@ module HrLite
     validate :period_is_first_of_month
     validate :amount_is_positive
     validate :period_is_not_already_paid, on: :create
+    # Removing a line from a paid month rewrites a settled payslip just the same.
+    before_destroy { throw :abort if paid_month? }
 
     scope :for_month, ->(month) { where(period_month: month) }
 
@@ -47,11 +49,11 @@ module HrLite
     # TDS projector reads.
     def period_is_not_already_paid
       return if user_id.nil? || period_month.nil?
-
-      settled = SalarySlip.settled.exists?(user_id: user_id, period_month: period_month)
-      return unless settled
+      return unless paid_month?
 
       errors.add(:period_month, "has already been paid — put this on the next open month")
     end
+
+    def paid_month? = SalarySlip.settled.exists?(user_id: user_id, period_month: period_month)
   end
 end

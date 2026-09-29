@@ -14,7 +14,11 @@
     <div class="hrl-field hrl-field--check"><%= f.check_box :esi_applicable %><%= f.label :esi_applicable, "ESI applicable (auto-exempt above gross ceiling)" %></div>
     <div class="hrl-field">
       <%= f.label :pt_state, "Professional tax state" %>
-      <%= f.select :pt_state, HrLite::StatutoryRateCard.for(Date.current)[:pt].keys.map { |s| [ s.humanize, s ] } %>
+      <%# A stored rate card carries no PT (slabs live in their own table), so list those states too. %>
+      <% pt_states = [ HrLite::ProfessionalTaxSlab::NO_LEVY, structure.pt_state ] |
+                     HrLite::ProfessionalTaxSlab.distinct.order(:state).pluck(:state) |
+                     HrLite::StatutoryRateCard.for(Date.current)[:pt].keys %>
+      <%= f.select :pt_state, pt_states.map { |s| [ s.humanize, s ] } %>
     </div>
     <div class="hrl-field"><%= f.label :notes %><%= f.text_area :notes %></div>
     <div class="hrl-form-actions">

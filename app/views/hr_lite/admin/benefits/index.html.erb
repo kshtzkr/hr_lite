@@ -1,0 +1,65 @@
+<% content_for(:page_title) { "Benefits" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Benefits</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_benefit_path %>">Add benefit</a>
+  </div>
+</div>
+
+<% if @benefits.none? %>
+  <section class="hrl-card"><p class="hrl-card--empty">No benefits yet — add one, then enrol people here.</p></section>
+<% end %>
+<% people = HrLite.active_employees.map { |u| [ hr_display_name(u), u.id ] } %>
+<% @benefits.each do |benefit| %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title"><%= benefit.name %></h2>
+    <p class="hrl-small hrl-muted">
+      <%= benefit.kind.humanize %><%= " · #{benefit.provider}" if benefit.provider.present? %>
+      · cover <%= hrl_money(benefit.coverage) %>
+    </p>
+    <%= form_with url: hr_lite.enrol_admin_benefit_path(benefit), method: :post, local: true do %>
+      <div class="hrl-field">
+        <%= label_tag "enrol_user_#{benefit.id}", "Employee" %>
+        <%= select_tag :user_id, options_for_select(people), id: "enrol_user_#{benefit.id}" %>
+      </div>
+      <div class="hrl-field">
+        <%= label_tag "enrol_on_#{benefit.id}", "Covered from" %>
+        <%= date_field_tag :enrolled_on, Date.current, id: "enrol_on_#{benefit.id}" %>
+      </div>
+      <div class="hrl-field">
+        <%= label_tag "enrol_dependants_#{benefit.id}", "Dependants covered" %>
+        <%= number_field_tag :dependants, 0, min: 0, id: "enrol_dependants_#{benefit.id}" %>
+      </div>
+      <div class="hrl-form-actions"><%= submit_tag "Enrol", class: "hrl-btn hrl-btn--primary" %></div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @enrolments.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Enrolled</h2>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Who</th><th>Benefit</th><th>Since</th><th>Dependants</th><th></th></tr></thead>
+        <tbody>
+          <% @enrolments.each do |enrolment| %>
+            <tr>
+              <td data-label="Who"><%= hr_display_name(enrolment.user) %></td>
+              <td data-label="Benefit"><%= enrolment.benefit.name %></td>
+              <td data-label="Since"><%= enrolment.enrolled_on.strftime("%d %b %Y") %></td>
+              <td data-label="Dependants" class="hrl-num"><%= enrolment.dependants %></td>
+              <td data-label="">
+                <%= form_with url: hr_lite.unenrol_admin_benefit_path(enrolment.benefit), method: :post do %>
+                  <%= hidden_field_tag :user_id, enrolment.user_id %>
+                  <%= date_field_tag :ended_on, Date.current, class: "hrl-input", "aria-label": "Last day of cover" %>
+                  <%= submit_tag "End cover", class: "hrl-btn" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  </section>
+<% end %>

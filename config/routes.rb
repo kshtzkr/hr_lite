@@ -91,6 +91,9 @@ HrLite::Engine.routes.draw do
     resources :assets, only: %i[index new create] do
       member { post :assign; post :take_back }
     end
+    resources :benefits, only: %i[index new create] do
+      member { post :enrol; post :unenrol }
+    end
     resources :checklists, only: :index do
       member { post :complete; post :reopen }
     end
@@ -120,6 +123,7 @@ HrLite::Engine.routes.draw do
         get :register
       end
     end
+    resources :payroll_line_items, only: %i[index new create destroy]
     resources :salary_slips, only: %i[show update]
     resource :setting, only: %i[edit update]
     resources :audit_logs, only: :index
