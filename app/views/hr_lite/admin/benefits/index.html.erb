@@ -6,6 +6,9 @@
   </div>
 </div>
 
+<% if @benefits.none? %>
+  <section class="hrl-card"><p class="hrl-card--empty">No benefits yet — add one, then enrol people here.</p></section>
+<% end %>
 <% people = HrLite.active_employees.map { |u| [ hr_display_name(u), u.id ] } %>
 <% @benefits.each do |benefit| %>
   <section class="hrl-card">

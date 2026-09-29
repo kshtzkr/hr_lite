@@ -12,6 +12,11 @@ RSpec.describe "Benefits admin", type: :request, no_legacy_bridge: true do
   describe "as HR" do
     before { sign_in hr }
 
+    it "says so when no benefit has been added yet" do
+      get "/hr/admin/benefits"
+      expect(response.body).to include("No benefits yet")
+    end
+
     it "adds a benefit, enrols somebody, and ends their cover" do
       post "/hr/admin/benefits", params: { benefit: { name: "Group health", kind: "health",
                                                       provider: "Acme", coverage: "500000" } }
