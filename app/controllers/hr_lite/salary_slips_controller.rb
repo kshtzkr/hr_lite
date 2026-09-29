@@ -1,13 +1,13 @@
 module HrLite
-  # Employee surface: strictly own PUBLISHED slips — a foreign or
-  # unpublished id 404s through the scoped relation, never 403s.
+  # Employee surface: strictly own RELEASED slips — a foreign, unpublished
+  # or not-yet-released id 404s through the scoped relation, never 403s.
   class SalarySlipsController < ApplicationController
     def index
-      @slips = paginate(own_published.recent_first)
+      @slips = paginate(own_released.recent_first)
     end
 
     def show
-      @slip = own_published.find(params[:id])
+      @slip = own_released.find(params[:id])
 
       respond_to do |format|
         format.html
@@ -17,8 +17,8 @@ module HrLite
 
     private
 
-    def own_published
-      SalarySlip.published.where(user_id: hr_current_user.id)
+    def own_released
+      SalarySlip.released.where(user_id: hr_current_user.id)
     end
 
     def send_slip_pdf(slip)

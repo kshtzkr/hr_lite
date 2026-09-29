@@ -18,6 +18,12 @@ module HrLite
     before_save :ensure_run_editable
 
     scope :published, -> { joins(:payroll_run).where(hr_lite_payroll_runs: { status: "published" }) }
+    # What an employee may open: published, and with config.slip_release_day
+    # only from that day of the next month (day 10: October's slip on 10 Nov).
+    scope :released, ->(on: Date.current) {
+      day = HrLite.config.slip_release_day
+      day ? published.where(period_month: ..(on - (day - 1)).beginning_of_month.prev_month) : published
+    }
     # What counts as already paid for tax-to-date. A finalized run is money
     # already decided; waiting for publication made the next month's TDS
     # projection read those earnings as zero.

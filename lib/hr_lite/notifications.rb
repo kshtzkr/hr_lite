@@ -73,8 +73,10 @@ module HrLite
       # employee-scoped path ("Your appraisal has been shared", /appraisals/7):
       # fanned out verbatim, leadership read them as being about themselves and
       # followed a link their own scope 404s or resolves to their own record.
+      # `skip_leadership:` is for a delayed employee half of an event whose
+      # leadership copy already went out.
       def publish(event, title:, body: nil, path: nil, bell_to: [], email_to: [], lines: [],
-                  diff: nil, link_url: nil, leadership: {})
+                  diff: nil, link_url: nil, leadership: {}, skip_leadership: false)
         row = matrix[event.to_s]
         unless row
           Rails.logger.warn("[hr_lite] unknown notification event #{event}")
@@ -87,6 +89,8 @@ module HrLite
 
         deliver_bells(event, row, bell_to, title, body, path)
         deliver_emails(row, email_to, title, body, path, lines, link_url)
+        return if skip_leadership
+
         deliver_leadership_email(event, row, lead_title, lead_body, lead_path, lines, diff)
         deliver_leadership_bells(event, row, bell_to, lead_title, lead_body, lead_path)
         nil

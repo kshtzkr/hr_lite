@@ -14,7 +14,7 @@ module HrLite
                   # the HR shell; nil (default) shows nothing.
                   :notifications
 
-    attr_reader :leave_year_start_month
+    attr_reader :leave_year_start_month, :slip_release_day
 
     # Misconfiguration must fail at boot, not as production 500s on every
     # balance screen. Accepts "7" (ENV-friendly) and validates 1..12.
@@ -25,6 +25,15 @@ module HrLite
       raise ArgumentError, "leave_year_start_month must be 1..12, got #{value.inspect}" unless (1..12).cover?(month)
 
       @leave_year_start_month = month
+    end
+
+    # nil = an employee sees a slip the moment it is published; 10 = the
+    # October slip opens on 10 November. 1..28 so every month has that day.
+    def slip_release_day=(value)
+      day = value.presence && Integer(value)
+      raise ArgumentError, "slip_release_day must be 1..28 or nil, got #{value.inspect}" if day && !(1..28).cover?(day)
+
+      @slip_release_day = day
     end
 
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
@@ -67,6 +76,7 @@ module HrLite
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
       @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
+      @slip_release_day       = nil # e.g. 10 = slips open on the 10th of the next month
 
       # Leadership onboarding/offboarding. onboard_user must return a saved
       # user record (default: create on user_class with whatever of
