@@ -1,0 +1,47 @@
+<% content_for(:page_title) { "One-off pay items" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">One-off pay items</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_payroll_line_item_path(month: @month.strftime("%Y-%m")) %>">Add an item</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-row">
+    <a class="hrl-btn" href="<%= hr_lite.admin_payroll_line_items_path(month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <strong><%= @month.strftime("%B %Y") %></strong>
+    <a class="hrl-btn" href="<%= hr_lite.admin_payroll_line_items_path(month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
+  </div>
+  <p class="hrl-muted hrl-small">
+    Payroll reads these when the month's run is computed. Add them before
+    computing, or recompute the run while it is still in review.
+  </p>
+</section>
+
+<section class="hrl-card">
+  <% if @items.empty? %>
+    <p class="hrl-muted">Nothing added for <%= @month.strftime("%B %Y") %>.</p>
+  <% else %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Person</th><th>Item</th><th>Amount</th><th>Note</th><th></th></tr></thead>
+        <tbody>
+          <% @items.each do |item| %>
+            <tr>
+              <td data-label="Person"><%= hr_display_name(item.user) %></td>
+              <td data-label="Item"><%= item.component.label %> (<%= item.component.kind %>)</td>
+              <td data-label="Amount" class="hrl-num"><%= hrl_money(item.amount) %></td>
+              <td data-label="Note"><%= item.note %></td>
+              <td data-label="">
+                <%= button_to "Remove", hr_lite.admin_payroll_line_item_path(item),
+                      method: :delete, class: "hrl-btn hrl-btn--danger",
+                      form: { data: { turbo_confirm: "Remove this item?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+  <%= hrl_pagination %>
+</section>

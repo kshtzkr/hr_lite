@@ -120,6 +120,7 @@ HrLite::Engine.routes.draw do
         get :register
       end
     end
+    resources :payroll_line_items, only: %i[index new create destroy]
     resources :salary_slips, only: %i[show update]
     resource :setting, only: %i[edit update]
     resources :audit_logs, only: :index

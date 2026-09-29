@@ -2,6 +2,7 @@
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Payroll — <%= @run.label %></h1>
   <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_payroll_line_items_path(month: @run.period_month.strftime("%Y-%m")) %>">One-off items</a>
     <a class="hrl-btn" href="<%= hr_lite.admin_payroll_runs_path %>">All runs</a>
   </div>
 </div>
