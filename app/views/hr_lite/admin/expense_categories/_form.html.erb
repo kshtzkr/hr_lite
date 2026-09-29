@@ -1,0 +1,16 @@
+<section class="hrl-card">
+  <%= form_with model: expense_category, url: url, method: method, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: expense_category %>
+    <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+    <div class="hrl-field">
+      <%= f.label :monthly_cap, "Monthly cap per person (₹, blank = no cap)" %>
+      <%= f.number_field :monthly_cap, step: 0.01, min: 0, value: expense_category.monthly_cap&.to_s("F") %>
+    </div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :receipt_required %><%= f.label :receipt_required, "Receipt required" %></div>
+    <div class="hrl-field hrl-field--check"><%= f.check_box :active %><%= f.label :active, "Active (offered on the claim form)" %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_expense_categories_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

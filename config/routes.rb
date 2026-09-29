@@ -96,6 +96,7 @@ HrLite::Engine.routes.draw do
     end
     resources :leave_types, except: :show
     resources :office_locations, except: :show
+    resources :expense_categories, except: %i[show destroy]
     resources :holidays, only: %i[index create update destroy] do
       collection { post :bulk_create }
     end

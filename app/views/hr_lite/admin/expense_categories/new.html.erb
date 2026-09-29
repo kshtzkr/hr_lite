@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "Add expense category" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Add expense category</h1></div>
+<%= render "form", expense_category: @expense_category, url: hr_lite.admin_expense_categories_path, method: :post %>
