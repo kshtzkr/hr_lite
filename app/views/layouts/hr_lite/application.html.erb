@@ -30,10 +30,10 @@
           <%= hrl_nav_link(item) %>
         <% end %>
 
-        <% if hr_admin? || hr_leadership? %>
+        <% if hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) %>
           <span class="hrl-side__group">Manage</span>
           <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
-            <%= hrl_nav_link(item) %>
+            <%= hrl_nav_link(item) if item[:if] || hr_admin? || hr_leadership? %>
           <% end %>
         <% end %>
 
@@ -100,10 +100,10 @@
         <% rest.each do |item| %>
           <%= hrl_nav_link(item) %>
         <% end %>
-        <% if hr_admin? || hr_leadership? %>
+        <% if hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) %>
           <span class="hrl-side__group">Manage</span>
           <% hrl_nav_items(HrLite::ApplicationHelper::ADMIN_NAV_ITEMS).each do |item| %>
-            <%= hrl_nav_link(item) %>
+            <%= hrl_nav_link(item) if item[:if] || hr_admin? || hr_leadership? %>
           <% end %>
         <% end %>
         <% if hr_leadership? || hr_superadmin? %>

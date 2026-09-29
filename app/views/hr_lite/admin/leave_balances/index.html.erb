@@ -3,6 +3,8 @@
   <h1 class="hrl-page__title">Team leave balances <%= HrLite::LeaveYear.label(@year) %></h1>
 </div>
 
+<%= render "hr_lite/admin/shared/approvals_tabs", active: :balances %>
+
 <section class="hrl-card">
   <div class="hrl-table-wrap">
     <table class="hrl-table">
