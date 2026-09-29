@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-09-29
+
+Salary follows leave. One migration (`paid_days` on leave requests, nullable;
+existing rows read as fully paid).
+
+### Changed
+
+- **Leave beyond the balance is loss of pay, not refused.** On approval —
+  applied by the employee or recorded by HR — the balance covers the leave's
+  earliest working days in half-day steps (`paid_days`), and payroll cuts the
+  rest at the month's gross divided by its calendar days. The balance is never
+  overdrawn by it, so next month's accrual is not swallowed. Each unpaid day is
+  cut in its own month when a leave spans two. The split is fixed at approval;
+  correct it with the slip's LOP override while the run is in review.
+- Comp-off is still refused past its earned credit.
+- The monthly draft alert on the 1st goes to whoever runs payroll
+  (`payroll.manage`), with email, instead of leadership — who cannot open it.
+
+### Added
+
+- The employee is told on applying how many days will be unpaid; the approver
+  sees it on the request before approving.
+- `config.slip_release_day` (1..28): employees see a published slip from that
+  day of the following month, and the "slip ready" bell and email wait until
+  then. `nil` (default) keeps today's behaviour. Needs an ActiveJob backend
+  that runs scheduled jobs.
+
 ## [0.17.0] - 2026-09-29
 
 Screens for the things other screens were waiting on. An audit of every HR
