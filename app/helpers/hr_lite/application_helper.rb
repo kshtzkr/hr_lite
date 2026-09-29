@@ -42,7 +42,7 @@ module HrLite
 
     LEADERSHIP_NAV_ITEMS = [
       { label: "Employees", path: :admin_employees_path,        match: [ "/admin/employees" ] },
-      { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting" ] },
+      { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ] },
       { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] },
       { label: "Policies",  path: :admin_policies_path,         match: [ "/admin/policies" ] },
       { label: "Documents", path: :admin_documents_path,        match: [ "/admin/documents" ] }
