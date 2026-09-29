@@ -24,6 +24,7 @@
   </div>
 </section>
 
+<% if hr_can?("leave.manage", scope: :team) %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Adjust a balance</h2>
   <p class="hrl-small hrl-muted">Positive credits (comp-off), negative debits. Fully audited.</p>
@@ -56,3 +57,4 @@
     </div>
   <% end %>
 </section>
+<% end %>
