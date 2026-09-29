@@ -73,6 +73,14 @@ RSpec.describe "Leave beyond the balance is loss of pay" do
     expect(request.paid_days).to eq(1)
   end
 
+  it "shows the approver how many days will be unpaid", type: :request do
+    credit(1)
+    request = create(:leave_request, user: user, leave_type: type, start_date: Date.new(2027, 7, 12), end_date: Date.new(2027, 7, 14))
+    sign_in admin
+    get "/hr/admin/leave_requests/#{request.id}"
+    expect(response.body).to include("2.0 day(s) beyond the balance will be unpaid")
+  end
+
   it "warns the employee on applying that days past the balance will be unpaid", type: :request do
     credit(1)
     sign_in user
