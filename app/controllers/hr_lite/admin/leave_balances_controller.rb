@@ -4,12 +4,15 @@ module HrLite
       def index
         @year = sanitized_year
         @types = LeaveType.active.where(paid: true).where.not(annual_quota: nil)
-        @employees = HrLite.employees
+        @employees = HrLite.employees.select { |employee| hr_reaches?("leave.view", employee) }
       end
 
       # Manual credit/debit — also the comp-off credit mechanism.
       def adjust
         user = HrLite.user_klass.find(params[:user_id])
+        # A manager reaches this screen through leave.approve; changing
+        # somebody's quota is leave.manage, for THAT person.
+        hr_require_reach!("leave.manage", user)
         type = LeaveType.find(params[:leave_type_id])
         # Unsanitised, a missing param wrote the adjustment into leave year 0,
         # where no screen can ever show it.

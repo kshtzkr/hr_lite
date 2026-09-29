@@ -11,7 +11,8 @@ module HrLite
       # belongs in "More" rather than displacing something everybody uses.
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
-      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ] },
+      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ],
+        if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
       { label: "Expenses",   path: :expenses_path,       match: [ "/expenses" ] },
       { label: "Benefits",   path: :benefits_path,       match: [ "/benefits" ] },
       { label: "Policies",   path: :policies_path,       match: [ "/policies" ] },
@@ -19,7 +20,8 @@ module HrLite
       { label: "Org",        path: :org_path,            match: [ "/org" ] },
       { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
       { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
-      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals", "/profile" ] },
+      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ] },
+      { label: "Profile",    path: :employee_profile_path, match: [ "/profile", "/resignation" ] },
       { label: "Documents",  path: :documents_path,      match: [ "/documents" ] },
       { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ] },
       { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ] },
@@ -31,7 +33,8 @@ module HrLite
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
       { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests" ] },
       { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] },
-      { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ] },
+      { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ],
+        if: -> { hr_can?("expense.approve", scope: :team) } },
       { label: "Help desk",       path: :admin_hr_requests_path,     match: [ "/admin/hr_requests" ] },
       { label: "Assets",          path: :admin_assets_path,          match: [ "/admin/assets" ] },
       { label: "Joining & exits", path: :admin_checklists_path,      match: [ "/admin/checklists" ] }
@@ -63,9 +66,11 @@ module HrLite
       RQRCode::QRCode.new(text).as_svg(use_path: true, viewbox: true, color: "0F172A").html_safe
     end
 
-    # Only items whose routes exist yet (the nav grows with each phase).
+    # Only items whose routes exist yet (the nav grows with each phase), and
+    # whose optional `if:` holds — a link that always lands on "access
+    # denied" or an empty page is worse than no link.
     def hrl_nav_items(items)
-      items.select { |item| hr_lite_route?(item[:path]) }
+      items.select { |item| hr_lite_route?(item[:path]) && (item[:if].nil? || instance_exec(&item[:if])) }
     end
 
     def hr_lite_route?(helper_name)
