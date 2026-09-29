@@ -19,7 +19,9 @@ module HrLite
     def create
       @request = LeaveRequest.new(request_params.merge(user_id: hr_current_user.id))
       if @request.save
-        redirect_to leave_requests_path, notice: "Leave request submitted."
+        # Say it now, not on the payslip: days past the balance are unpaid.
+        short = @request.days_beyond_balance
+        redirect_to leave_requests_path, notice: "Leave request submitted.#{" #{short.to_s('F')} day(s) are beyond your balance and will be unpaid if approved." if short.positive?}"
       else
         @balances = balance_cards
         render :new, status: :unprocessable_entity

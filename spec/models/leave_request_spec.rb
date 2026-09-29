@@ -58,11 +58,14 @@ RSpec.describe HrLite::LeaveRequest do
       expect(build_request(half_day: true)).to be_valid
     end
 
-    it "rejects when balance is insufficient (skipping unlimited types)" do
+    it "lets leave run past the balance, but not comp-off past its credit" do
       small = create(:leave_type, annual_quota: 1)
       create(:leave_request, :approved, user: user, leave_type: small,
              start_date: monday, end_date: monday)
-      over = build_request(leave_type: small, start_date: monday + 1, end_date: monday + 1)
+      expect(build_request(leave_type: small, start_date: monday + 1, end_date: monday + 1)).to be_valid
+
+      comp_off = create(:leave_type, :comp_off)
+      over = build_request(leave_type: comp_off, start_date: monday + 1, end_date: monday + 1)
       expect(over).not_to be_valid
       expect(over.errors[:base].join).to include("Not enough")
 
@@ -98,11 +101,22 @@ RSpec.describe HrLite::LeaveRequest do
       expect(bells.map { |b| b[:kind] }).to include("leave.approved")
     end
 
-    it "refuses when the balance was drained since submission" do
+    it "approves past a drained balance as loss of pay" do
       tight = create(:leave_type, annual_quota: 1)
       first = create(:leave_request, user: user, leave_type: tight, start_date: monday, end_date: monday)
       second = create(:leave_request, user: user, leave_type: tight,
                       start_date: monday + 1, end_date: monday + 1)
+      first.approve!(actor: admin)
+
+      expect(second.approve!(actor: admin)).to be(true)
+      expect(second.reload.paid_days).to eq(0)
+    end
+
+    it "still refuses comp-off whose credit was drained since submission" do
+      comp_off = create(:leave_type, :comp_off)
+      HrLite::LeaveBalance.adjust!(user, comp_off, HrLite::LeaveYear.key_for(monday), delta: 1, note: "worked Sunday")
+      first = create(:leave_request, user: user, leave_type: comp_off, start_date: monday, end_date: monday)
+      second = create(:leave_request, user: user, leave_type: comp_off, start_date: monday + 1, end_date: monday + 1)
       first.approve!(actor: admin)
 
       expect(second.approve!(actor: admin)).to be(false)

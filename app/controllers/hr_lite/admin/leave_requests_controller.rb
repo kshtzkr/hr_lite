@@ -17,7 +17,7 @@ module HrLite
       end
 
       # HR records leave somebody forgot to apply for. Approved on save, by the
-      # person recording it; the balance check still applies.
+      # person recording it; days beyond the balance become loss of pay.
       def new
         @request = LeaveRequest.new(start_date: Date.current, end_date: Date.current)
         @people = recordable
@@ -32,7 +32,7 @@ module HrLite
         end
         return redirect_to(admin_leave_request_path(@request), notice: "Leave recorded and approved.") if recorded
 
-        @request.errors.add(:base, profile ? "Not enough balance — adjust it first or use unpaid leave" : "Pick an employee from the list") if @request.errors.empty?
+        @request.errors.add(:base, profile ? "Not enough comp-off credit" : "Pick an employee from the list") if @request.errors.empty?
         @people = recordable
         render :new, status: :unprocessable_entity
       end
@@ -43,7 +43,7 @@ module HrLite
           redirect_to admin_leave_requests_path, notice: "Leave approved."
         else
           redirect_to admin_leave_request_path(request),
-                      alert: "Cannot approve — balance no longer covers this request."
+                      alert: "Cannot approve — comp-off credit no longer covers this request."
         end
       rescue ActiveRecord::RecordInvalid
         redirect_to admin_leave_request_path(request), alert: "Only pending requests can be decided."
