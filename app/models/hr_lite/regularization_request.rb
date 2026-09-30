@@ -64,7 +64,7 @@ module HrLite
           raise InvalidMerge, "the day has no check-in — the ticket needs a check-in time too"
         end
 
-        record.status = "present" if record.status.blank?
+        record.status = "present" # the ticket states the real times; lifts an auto-close half day
         record.regularized_by_id = actor.id
         record.regularized_at = Time.current
         record.regularization_note = "Ticket ##{id}: #{reason}"

@@ -30,8 +30,11 @@ module HrLite
       AttendanceRecord.for_date(@date).flagged.includes(:user)
     end
 
+    # AttendanceCloseJob fills check_out_at at 23:55, so the days it closed count too.
     def missing_checkout_yesterday
-      AttendanceRecord.for_date(@date - 1).missing_checkout.includes(:user)
+      yesterday = AttendanceRecord.for_date(@date - 1)
+      yesterday.missing_checkout.or(yesterday.where(regularization_note: AttendanceRecord::AUTO_CHECKOUT_NOTE))
+               .includes(:user)
     end
 
     def kpis

@@ -95,6 +95,17 @@ RSpec.describe HrLite::RegularizationRequest do
       expect(record.check_out_at).to eq(request.check_out_at)
     end
 
+    it "lifts a day the nightly close marked half day back to present" do
+      record = create(:attendance_record, user: user, date: tuesday, status: "half_day",
+                      check_in_at: tuesday.in_time_zone.change(hour: 9),
+                      check_out_at: tuesday.in_time_zone.change(hour: 23, min: 55))
+      request = build_request(check_in_at: nil)
+      request.save!
+
+      request.approve!(actor: admin)
+      expect(record.reload.status).to eq("present")
+    end
+
     it "refuses to decide twice" do
       request = build_request
       request.save!

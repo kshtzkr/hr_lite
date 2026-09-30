@@ -142,6 +142,9 @@ HrLite.configure do |c|
     PdfRenderer.render(template: template, assigns: assigns, cache_key: cache_key)
   }
   c.slip_release_day = 10 # employees see a slip from the 10th of the next month; nil (default) = on publish
+  # Self-fix: employees correct their own missed punch within 2 days, at most
+  # 2 a week. nil (default) = only HR fixes it, via a regularization ticket.
+  c.self_regularization = { within_days: 2, per_week: 2 }
 
   # Mirror promotions into your own user model (optional).
   c.on_designation_change = ->(user, designation) { user.update!(designation: designation) }
@@ -353,6 +356,7 @@ whatever you run). Each is idempotent and sends nothing on a quiet day.
 | `HrLite::DailyDigestJob` | each morning | Leadership digest: who is out today, pending approvals, flagged punches, missing checkouts |
 | `HrLite::PayrollAutoDraftJob` | monthly, on the 1st | Draft and compute the previous month's payroll from attendance, then notify leadership for review (publishing stays a human action) |
 | `HrLite::LeaveYearRolloverJob` | leave year's first day (Jan 1, or Jul 1 for a July–June year) | Materialize carry-forward into the new year's balances |
+| `HrLite::AttendanceCloseJob` | nightly, `55 23 * * * Asia/Kolkata` | Close the working day: an open punch is checked out and marked half day; nobody checked in stays absent. Each is emailed how to fix it. Skips weekends, holidays and approved leave. Run it once a day — a re-run tells the no-shows again. |
 
 ## Rake tasks
 
