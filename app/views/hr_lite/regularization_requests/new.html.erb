@@ -6,6 +6,9 @@
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.regularization_requests_path, scope: :regularization_request, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
+    <% if (rule = HrLite.config.self_regularization) %>
+      <p class="hrl-small hrl-muted">A missed punch on a working day from today back to <%= rule[:within_days] %> days ago is fixed as soon as you submit, up to <%= rule[:per_week] %> times a week. Anything else goes to HR as a ticket.</p>
+    <% end %>
     <div class="hrl-field">
       <%= f.label :date, "Which day needs fixing?" %>
       <%= f.date_field :date, value: @request.date&.strftime("%Y-%m-%d"), max: Date.current %>

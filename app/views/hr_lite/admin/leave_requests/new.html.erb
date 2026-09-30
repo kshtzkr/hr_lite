@@ -9,12 +9,19 @@
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
       <%= label_tag :employee_code, "Employee (type a name or code)" %>
-      <%= text_field_tag :employee_code, params[:employee_code], list: "hrl-employees", required: true, autocomplete: "off" %>
+      <%= text_field_tag :employee_code, params[:employee_code], list: "hrl-employees", required: true, autocomplete: "off", placeholder: "Start typing a name or code…" %>
       <datalist id="hrl-employees">
         <% @people.each do |p| %>
           <option value="<%= p.employee_code %>"><%= hr_display_name(p.user) %></option>
         <% end %>
       </datalist>
+      <p class="hrl-small hrl-muted">Someone missing? Only people with an HR profile are listed.
+        <% if hr_leadership? %>
+          <a href="<%= hr_lite.admin_employees_path %>">Set up their profile</a>
+        <% else %>
+          Ask leadership to set up their HR profile.
+        <% end %>
+      </p>
     </div>
     <div class="hrl-field">
       <%= f.label :leave_type_id, "Type" %>

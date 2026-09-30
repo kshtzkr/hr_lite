@@ -143,7 +143,7 @@
 .hrl-page__head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .25rem 0 .9rem; }
 .hrl-page__title { font-size: 1.25rem; font-weight: 700; margin: 0; }
 .hrl-page__sub { color: var(--hrl-muted); font-size: .86rem; margin: .15rem 0 0; width: 100%; }
-.hrl-page__actions { margin-left: auto; display: flex; gap: .5rem; }
+.hrl-page__actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
 
 /* Cards */
 .hrl-card {

@@ -34,4 +34,32 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect(response.body).to include('href="/hr/admin/expenses"')
       expect(response.body).not_to include('href="/hr/admin/overview"')
     end
+
+    it "loads the script that scrolls the menu to the current screen" do
+      sign_in employee
+      get "/hr/"
+      expect(response.body).to include("hr_lite/nav")
+    end
+
+    it "offers Record leave on the Leaves page to whoever can record it, and only them" do
+      sign_in employee
+      get "/hr/leave_requests"
+      expect(response.body).not_to include("Record leave for someone")
+
+      sign_in hr
+      get "/hr/leave_requests"
+      expect(response.body).to include('href="/hr/admin/leave_requests/new"')
+    end
+
+    it "tells the recorder why someone may be missing, and links the fix to whoever can make it" do
+      sign_in hr
+      get "/hr/admin/leave_requests/new"
+      expect(response.body).to include('placeholder="Start typing a name or code…"')
+        .and include("Only people with an HR profile are listed.")
+        .and include("Ask leadership to set up their HR profile.")
+
+      sign_in user_with_roles(HrLite::Role::LEADERSHIP, name: "Lata")
+      get "/hr/admin/leave_requests/new"
+      expect(response.body).to include("Set up their profile")
+    end
 end

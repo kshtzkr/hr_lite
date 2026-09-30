@@ -21,7 +21,7 @@ module HrLite
       validate :no_approved_leave_conflict
     end
 
-    after_create :notify_requested
+    after_create :self_fix_or_notify
 
     scope :pending, -> { where(status: "pending") }
     scope :recent_first, -> { order(date: :desc, id: :desc) }
@@ -39,6 +39,27 @@ module HrLite
       AttendanceRecord.find_by(user_id: user_id, date: date)
     end
 
+    # config.self_regularization: a missed punch on a recent working day, under
+    # the weekly cap, is fixed by the employee without HR. A real punch, or a
+    # day HR already decided or rejected, stays HR's call.
+    def self_fixable?
+      rule = HrLite.config.self_regularization
+      return false unless rule && date >= Date.current - rule[:within_days] && WorkingCalendar.new(date..date).working_day?(date)
+
+      day = punch
+      fills_gap = (check_in_at.nil? || !day&.check_in_at) &&
+                  (check_out_at.nil? || !day&.check_out_at || day.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE)
+      fills_gap && !day&.regularized? && !self.class.exists?(user_id: user_id, date: date, status: "rejected") &&
+        self_fixes_left.positive?
+    end
+
+    # Self-fixes the user still has in this ticket's Mon–Sun week.
+    def self_fixes_left
+      week = date.beginning_of_week(:monday)..date.end_of_week(:monday)
+      used = self.class.where(user_id: user_id, decided_by_id: user_id, status: "approved", date: week).count
+      HrLite.config.self_regularization[:per_week] - used
+    end
+
     # --- transitions -------------------------------------------------------
 
     # Applies the proposed times to the day's record (creating it if the
@@ -47,7 +68,7 @@ module HrLite
     # A merge that would produce a nonsense record (checkout before the
     # existing check-in, or a checkout with no check-in at all) raises
     # InvalidMerge with the real story so the admin knows what to fix.
-    def approve!(actor:, note: nil)
+    def approve!(actor:, note: nil, notify: true)
       transition!("approved", actor, note) do
         # Re-checked at approval, not only at create: leave can be approved for
         # that day while the ticket waits in the queue, and DayStatus ranks
@@ -64,7 +85,8 @@ module HrLite
           raise InvalidMerge, "the day has no check-in — the ticket needs a check-in time too"
         end
 
-        record.status = "present" if record.status.blank?
+        # Lifts only the close job's half day; one HR set on purpose stays.
+        record.status = "present" if record.status.blank? || record.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE
         record.regularized_by_id = actor.id
         record.regularized_at = Time.current
         record.regularization_note = "Ticket ##{id}: #{reason}"
@@ -75,7 +97,12 @@ module HrLite
           action: "regularize", subject: record, actor: actor,
           changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
         )
+        # A slip computed before this fix still counts the old day; a recompute clears the note.
+        run = PayrollRun.find_by(period_month: date.beginning_of_month, status: "review")
+        run&.update!(warnings: run.warnings + [ "#{HrLite.display_name(user)}'s attendance on #{date.strftime('%d %b')} " \
+                                               "was fixed after compute — recompute" ])
       end
+      return true unless notify # self-fix: the flash and the audit row are the trail
 
       Notifications.publish(
         "regularization.approved",
@@ -172,6 +199,16 @@ module HrLite
 
       leave = LeaveRequest.active_on(date).where(user_id: user_id, half_day: false)
       errors.add(:date, "is covered by your approved leave — cancel the leave first") if leave.exists?
+    end
+
+    # A self-fix approve! can't merge (e.g. no check-in yet) -> an ordinary ticket.
+    def self_fix_or_notify
+      user.lock! if HrLite.config.self_regularization # one user's tickets at once can't both spend the last fix
+      return approve!(actor: user, note: "Self-fixed", notify: false) if self_fixable?
+
+      notify_requested
+    rescue InvalidMerge
+      notify_requested
     end
 
     def notify_requested

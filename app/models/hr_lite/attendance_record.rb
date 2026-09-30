@@ -1,6 +1,7 @@
 module HrLite
   class AttendanceRecord < ApplicationRecord
     STATUSES = %w[present half_day].freeze
+    AUTO_CHECKOUT_NOTE = "Auto check-out: no check-out punched".freeze
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :regularized_by, class_name: HrLite.config.user_class, optional: true

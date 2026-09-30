@@ -4,6 +4,9 @@
   <div class="hrl-page__actions">
     <a class="hrl-btn" href="<%= hr_lite.leave_balances_path %>">Balances</a>
     <a class="hrl-btn" href="<%= hr_lite.comp_off_requests_path %>">Comp-off</a>
+    <% if hr_can?("leave.approve", scope: :team) %>
+      <a class="hrl-btn" href="<%= hr_lite.new_admin_leave_request_path %>">Record leave for someone</a>
+    <% end %>
     <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_leave_request_path %>">Apply</a>
   </div>
 </div>

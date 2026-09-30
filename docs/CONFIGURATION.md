@@ -20,6 +20,7 @@ Every `HrLite.configure` key, its default, and when to override it.
 | `notification_matrix` | `Notifications::DEFAULT_MATRIX` | Per-event channel routing — see below. |
 | `leave_year_start_month` | `1` | First month of the leave year. `7` = July–June: balances, accrual, rollover, split rule and comp-off credits all follow it; schedule `LeaveYearRolloverJob` on that month's 1st. Entitlement always prorates from the joining date (≤ 15th counts that month). **Set once at install time** — balance rows are keyed by leave year, and changing the start month later reinterprets every stored balance. Validated 1..12 at assignment. |
 | `slip_release_day` | `nil` | `10` = an employee sees a published slip from the 10th of the following month, and the "slip ready" bell/email waits until then (leadership still hears at publish). `nil` = on publish. Validated 1..28 at assignment. Needs an ActiveJob backend that runs scheduled jobs (Solid Queue, Sidekiq, GoodJob). |
+| `self_regularization` | `nil` | Used by self-fix: `{ within_days: 2, per_week: 2 }` = an employee corrects their own missed punch up to 2 days after it, at most 2 a week. `nil` = only HR fixes it, via a regularization ticket. The nightly `AttendanceCloseJob` email says which applies. Validated at assignment (both positive integers). |
 | `render_pdf` | `nil` | `->(template:, assigns:, cache_key:)` returning PDF bytes. Unset: built-in WickedPdf if the gem is present, else PDF is disabled with a flash. |
 | `company` | `{name: "Company"}` | Lambda → `{name:, address:, logo_path:}` for slips/emails/shell brand. |
 | `time_zone` | `Asia/Kolkata` | Wraps every HR request (`Time.use_zone`). |
@@ -43,6 +44,7 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `leave.cancelled` | admins | — | ✓ | — |
 | `attendance.flagged` | admins | — | — (daily digest) | — |
 | `attendance.regularized` | employee | employee | ✓ | — |
+| `attendance.missed_check_in` / `attendance.missed_check_out` (nightly `AttendanceCloseJob`) | employee | employee | — | — |
 | `payroll.finalized` | — | — | ✓ | ✓ |
 | `payroll.published` | each employee | each employee | ✓ | — |
 | `kudos.mentioned` | mentioned | mentioned | — | — |

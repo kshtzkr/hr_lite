@@ -18,6 +18,8 @@ module HrLite
       "leave.cancelled"       => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
       "attendance.flagged"    => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
       "attendance.regularized" => { bell: true, email: true,  leadership_email: true,  leadership_bell: false },
+      "attendance.missed_check_in"  => { bell: true, email: true, leadership_email: false, leadership_bell: false },
+      "attendance.missed_check_out" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "payroll.finalized"     => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
       "payroll.published"     => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "kudos.mentioned"       => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
