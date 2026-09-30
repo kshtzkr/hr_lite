@@ -270,6 +270,12 @@ approved; regularization tickets (`/regularization_requests`) let someone who
 forgot to punch propose the real times for admin approval, which writes them
 onto the attendance record with a full audit trail.
 
+With `config.self_regularization = { within_days: 2, per_week: 2 }`, a ticket for
+today or up to 2 days back is approved on submit, by the employee, at most twice
+per Mon–Sun week. No approver is notified; the audit row is the trail. Older days,
+the third fix of a week, or a fix that cannot apply (no check-in that day) stay
+ordinary tickets for HR.
+
 ### Holidays and calendar
 
 `bin/rails hr_lite:seed` inserts the three fixed-date national holidays

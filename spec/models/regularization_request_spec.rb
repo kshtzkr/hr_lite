@@ -192,6 +192,58 @@ RSpec.describe HrLite::RegularizationRequest do
     expect(requested.first[:title]).to include("10:00 – 19:00")
   end
 
+  describe "self-fix (config.self_regularization)" do
+    let(:bells) { [] }
+
+    before do
+      admin
+      HrLite.config.notify = ->(**kw) { bells << kw }
+      HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
+    end
+
+    it "fixes a recent day at once, with no notice to approvers or the requester" do
+      request = build_request
+      request.save!
+
+      expect(request).to be_approved
+      expect(request.decided_by_id).to eq(user.id)
+      record = HrLite::AttendanceRecord.find_by!(user_id: user.id, date: tuesday)
+      expect(record.status).to eq("present")
+      expect(record.check_in_at).to eq(request.check_in_at)
+      expect(bells).to be_empty
+      expect(request.self_fixes_left).to eq(1)
+    end
+
+    def request_on(day)
+      build_request(date: day, check_in_at: day.in_time_zone.change(hour: 10), check_out_at: day.in_time_zone.change(hour: 19))
+    end
+
+    it "sends the third fix of the week to HR" do
+      request_on(tuesday).save!
+      request_on(tuesday + 1).save!
+      request = request_on(tuesday + 2)
+      request.save!
+
+      expect(request).to be_pending
+      expect(bells.map { |b| b[:kind] }).to eq([ "regularization.requested" ])
+    end
+
+    it "sends a day older than within_days to HR" do
+      request = request_on(tuesday - 1)
+      request.save!
+      expect(request).to be_pending
+    end
+
+    it "leaves an unmergeable fix (no check-in that day) as a pending ticket" do
+      request = build_request(check_in_at: nil)
+      request.save!
+
+      expect(request.reload).to be_pending
+      expect(HrLite::AttendanceRecord.exists?(user_id: user.id, date: tuesday)).to be(false)
+      expect(bells.map { |b| b[:kind] }).to eq([ "regularization.requested" ])
+    end
+  end
+
   it "shows the current punch to the approver" do
     record = create(:attendance_record, user: user, date: tuesday,
                     check_in_at: tuesday.in_time_zone.change(hour: 9))

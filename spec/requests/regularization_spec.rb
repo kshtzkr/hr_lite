@@ -24,6 +24,26 @@ RSpec.describe "Regularization tickets", type: :request do
       expect(response.body).to include("Ticket raised").and include("09:30 – 18:30")
     end
 
+    it "fixes a recent day at once when self-fix is on, and says what is left" do
+      HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
+      get "/hr/regularization_requests/new"
+      expect(response.body).to include("back to 2 days ago is fixed as soon as you submit, up to 2 times a week")
+
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: tuesday, check_in_at: "2027-07-06T09:30", reason: "Forgot" }
+      }
+      follow_redirect!
+      expect(response.body).to include("Fixed. 1 self-fix left this week.")
+      expect(HrLite::AttendanceRecord.find_by!(user_id: user.id, date: tuesday).status).to eq("present")
+
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: tuesday - 1, check_in_at: "2027-07-05T09:30", reason: "Forgot" }
+      }
+      follow_redirect!
+      expect(response.body).to include("Sent to HR as a ticket — you can fix only the last 2 days yourself, 2 times a week.")
+      expect(HrLite::RegularizationRequest.find_by!(date: tuesday - 1)).to be_pending
+    end
+
     it "prefills the date from the query param" do
       get "/hr/regularization_requests/new", params: { date: "2027-07-06" }
       expect(response.body).to include(%(value="2027-07-06"))

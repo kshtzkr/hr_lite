@@ -21,7 +21,7 @@ module HrLite
       validate :no_approved_leave_conflict
     end
 
-    after_create :notify_requested
+    after_create :self_fix_or_notify
 
     scope :pending, -> { where(status: "pending") }
     scope :recent_first, -> { order(date: :desc, id: :desc) }
@@ -37,6 +37,20 @@ module HrLite
     # Current punch state for the approver's context.
     def punch
       AttendanceRecord.find_by(user_id: user_id, date: date)
+    end
+
+    # config.self_regularization: a recent day, under the weekly cap, is fixed
+    # by the employee without HR.
+    def self_fixable?
+      rule = HrLite.config.self_regularization
+      rule.present? && date >= Date.current - rule[:within_days] && self_fixes_left.positive?
+    end
+
+    # Self-fixes the user still has in this ticket's Mon–Sun week.
+    def self_fixes_left
+      week = date.beginning_of_week(:monday)..date.end_of_week(:monday)
+      used = self.class.where(user_id: user_id, decided_by_id: user_id, status: "approved", date: week).count
+      HrLite.config.self_regularization[:per_week] - used
     end
 
     # --- transitions -------------------------------------------------------
@@ -76,6 +90,7 @@ module HrLite
           changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
         )
       end
+      return true if actor.id == user_id # self-fix: the flash and the audit row are the trail
 
       Notifications.publish(
         "regularization.approved",
@@ -172,6 +187,15 @@ module HrLite
 
       leave = LeaveRequest.active_on(date).where(user_id: user_id, half_day: false)
       errors.add(:date, "is covered by your approved leave — cancel the leave first") if leave.exists?
+    end
+
+    # A self-fix approve! can't merge (e.g. no check-in yet) -> an ordinary ticket.
+    def self_fix_or_notify
+      return approve!(actor: user, note: "Self-fixed") if self_fixable?
+
+      notify_requested
+    rescue InvalidMerge
+      notify_requested
     end
 
     def notify_requested
