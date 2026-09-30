@@ -6,10 +6,12 @@ RSpec.describe HrLite::AttendanceCloseJob do
 
   before do
     HrLite.config.notify = ->(**kw) { bells << kw }
-    travel_to(Time.find_zone("Asia/Kolkata").local(2027, 7, 6, 23, 55))
+    travel_to(ist(2027, 7, 7, 6)) # the morning after Tuesday
   end
 
   after { travel_back }
+
+  def ist(*args) = Time.find_zone("Asia/Kolkata").local(*args)
 
   def open_punch(**attrs)
     create(:attendance_record, date: tuesday, check_in_at: tuesday.in_time_zone.change(hour: 10), **attrs)
@@ -23,7 +25,7 @@ RSpec.describe HrLite::AttendanceCloseJob do
     expect { described_class.perform_now }.to have_enqueued_mail(HrLite::EventMailer, :event).twice
 
     open.reload
-    expect(open.check_out_at).to eq(Time.current)
+    expect(open.check_out_at).to be_within(1.second).of(tuesday.end_of_day)
     expect(open.status).to eq("half_day")
     expect(open.regularization_note).to eq(HrLite::AttendanceRecord::AUTO_CHECKOUT_NOTE)
     expect(open).not_to be_regularized
@@ -36,6 +38,20 @@ RSpec.describe HrLite::AttendanceCloseJob do
                                    path: "/regularization_requests/new?date=2027-07-06")
     # The next morning's board still counts the day it closed.
     expect(HrLite::OverviewQuery.new(date: tuesday + 1).kpis[:missing_checkout]).to eq(1)
+  end
+
+  it "lets a shift past midnight check out first, and a late run still closes yesterday" do
+    user = create(:user)
+    travel_to(ist(2027, 7, 6, 20))
+    HrLite::AttendancePuncher.call(user: user, kind: :check_in, lat: 12.9, lng: 77.6)
+    travel_to(ist(2027, 7, 7, 0, 30))
+    expect(HrLite::AttendancePuncher.call(user: user, kind: :check_out, lat: 12.9, lng: 77.6)).to be_ok
+    travel_to(ist(2027, 7, 7, 6, 7)) # a retry, minutes after the schedule
+
+    described_class.perform_now
+    record = HrLite::AttendanceRecord.find_by!(user: user, date: tuesday)
+    expect([ record.status, record.check_out_at ]).to eq([ "present", ist(2027, 7, 7, 0, 30) ])
+    expect(bells).to be_empty
   end
 
   it "points at self-fix when the host allows it" do

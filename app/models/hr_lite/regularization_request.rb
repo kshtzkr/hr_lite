@@ -39,11 +39,18 @@ module HrLite
       AttendanceRecord.find_by(user_id: user_id, date: date)
     end
 
-    # config.self_regularization: a recent day, under the weekly cap, is fixed
-    # by the employee without HR.
+    # config.self_regularization: a missed punch on a recent working day, under
+    # the weekly cap, is fixed by the employee without HR. A real punch, or a
+    # day HR already decided or rejected, stays HR's call.
     def self_fixable?
       rule = HrLite.config.self_regularization
-      rule.present? && date >= Date.current - rule[:within_days] && self_fixes_left.positive?
+      return false unless rule && date >= Date.current - rule[:within_days] && WorkingCalendar.new(date..date).working_day?(date)
+
+      day = punch
+      fills_gap = (check_in_at.nil? || !day&.check_in_at) &&
+                  (check_out_at.nil? || !day&.check_out_at || day.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE)
+      fills_gap && !day&.regularized? && !self.class.exists?(user_id: user_id, date: date, status: "rejected") &&
+        self_fixes_left.positive?
     end
 
     # Self-fixes the user still has in this ticket's Mon–Sun week.
@@ -61,7 +68,7 @@ module HrLite
     # A merge that would produce a nonsense record (checkout before the
     # existing check-in, or a checkout with no check-in at all) raises
     # InvalidMerge with the real story so the admin knows what to fix.
-    def approve!(actor:, note: nil)
+    def approve!(actor:, note: nil, notify: true)
       transition!("approved", actor, note) do
         # Re-checked at approval, not only at create: leave can be approved for
         # that day while the ticket waits in the queue, and DayStatus ranks
@@ -78,7 +85,8 @@ module HrLite
           raise InvalidMerge, "the day has no check-in — the ticket needs a check-in time too"
         end
 
-        record.status = "present" # the ticket states the real times; lifts an auto-close half day
+        # Lifts only the close job's half day; one HR set on purpose stays.
+        record.status = "present" if record.status.blank? || record.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE
         record.regularized_by_id = actor.id
         record.regularized_at = Time.current
         record.regularization_note = "Ticket ##{id}: #{reason}"
@@ -89,8 +97,12 @@ module HrLite
           action: "regularize", subject: record, actor: actor,
           changes: { "date" => record.date.to_s, "ticket" => id, "note" => reason }
         )
+        # A slip computed before this fix still counts the old day; a recompute clears the note.
+        run = PayrollRun.find_by(period_month: date.beginning_of_month, status: "review")
+        run&.update!(warnings: run.warnings + [ "#{HrLite.display_name(user)}'s attendance on #{date.strftime('%d %b')} " \
+                                               "was fixed after compute — recompute" ])
       end
-      return true if actor.id == user_id # self-fix: the flash and the audit row are the trail
+      return true unless notify # self-fix: the flash and the audit row are the trail
 
       Notifications.publish(
         "regularization.approved",
@@ -191,7 +203,8 @@ module HrLite
 
     # A self-fix approve! can't merge (e.g. no check-in yet) -> an ordinary ticket.
     def self_fix_or_notify
-      return approve!(actor: user, note: "Self-fixed") if self_fixable?
+      user.lock! if HrLite.config.self_regularization # one user's tickets at once can't both spend the last fix
+      return approve!(actor: user, note: "Self-fixed", notify: false) if self_fixable?
 
       notify_requested
     rescue InvalidMerge

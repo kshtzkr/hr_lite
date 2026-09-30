@@ -9,24 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.19.0] - 2026-09-30
 
-The day closes at 23:55. A missed check-out becomes a half day, and employees
-can fix a recent missed punch themselves. No migration.
+Each morning closes yesterday. A missed check-out becomes a half day, and
+employees can fix a recent missed punch themselves. No migration.
 
 ### Added
 
-- **`HrLite::AttendanceCloseJob`**, scheduled by the host. On a working day it
-  checks out every punch still open, marks the day `half_day` (payroll pays
+- **`HrLite::AttendanceCloseJob`**, scheduled by the host each morning for
+  yesterday, so a shift past midnight can still check out first. On a working
+  day it checks out every punch still open at the day's end (23:59), marks the
+  day `half_day` (payroll pays
   half and counts half as loss of pay), and emails the employee. Anyone who
   never checked in is emailed that the day is absent; no record is written.
   Weekends, holidays and approved leave (full or half day) are skipped. Run it
   once a day: a re-run emails the no-shows again.
 - **Self-fix.** With `config.self_regularization = { within_days:, per_week: }`,
-  a regularization ticket for today or up to `within_days` back is approved as
-  soon as the employee submits it, for up to `per_week` days in a Monday–Sunday
-  week. The punch is written the way an HR approval writes it, with the usual
-  audit row, and nobody is notified. Older days, and fixes past the weekly
-  limit, go to HR as ordinary tickets; the flash says which happened. A
-  check-out-only ticket for a day with no check-in stays pending for HR.
+  a ticket that fills a missed punch on a working day, today or up to
+  `within_days` back, is approved as soon as the employee submits it, for up to
+  `per_week` days in a Monday–Sunday week. The punch is written the way an HR
+  approval writes it, with the usual audit row, and nobody is notified. Older
+  days, off days, fixes past the weekly limit, a change to a real punch, and a
+  day HR already regularized or rejected go to HR as ordinary tickets; the
+  flash says which happened. A check-out-only ticket for a day with no check-in
+  stays pending for HR.
   `nil` (default) keeps HR as the only one who fixes punches. The ticket form
   states the rule when it is on.
 - The Leaves page links "Record leave for someone" for anyone who can approve
@@ -36,8 +40,10 @@ can fix a recent missed punch themselves. No migration.
 
 ### Changed
 
-- Approving a regularization ticket always sets the day to present, so a fixed
-  day loses the half-day penalty.
+- Approving a regularization ticket on a day the close job marked half day
+  sets it back to present. A half day HR set on purpose stays.
+- Approving a ticket for a month whose payroll run is in review adds a warning
+  to that run, so the slip is recomputed before it is finalized.
 - The admin overview and daily digest still count a day the close job checked
   out as a missing checkout.
 
@@ -50,8 +56,8 @@ can fix a recent missed punch themselves. No migration.
 
 ### Upgrading
 
-Schedule `HrLite::AttendanceCloseJob` daily at `55 23 * * * Asia/Kolkata` in
-your job scheduler. To let employees fix their own recent misses, set
+Schedule `HrLite::AttendanceCloseJob` daily at `0 6 * * * Asia/Kolkata` in
+your job scheduler, before `PayrollAutoDraftJob` on the 1st. To let employees fix their own recent misses, set
 `c.self_regularization = { within_days: 2, per_week: 2 }` in the initializer.
 No migration.
 

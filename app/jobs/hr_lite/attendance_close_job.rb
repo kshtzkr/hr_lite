@@ -1,9 +1,11 @@
 module HrLite
-  # Closes the working day; the host schedules it at 23:55. A punch left open
-  # is checked out and paid as a half day. Nobody punched in already reads as
-  # absent (DayStatus), so they are only told. Leave days are left alone.
+  # Closes yesterday's working day; the host schedules it early each morning,
+  # so a shift past midnight can still check out first (AttendancePuncher) and
+  # a retry or late run closes the same day. A punch left open is checked out
+  # at the day's end and paid as a half day. Nobody punched in already reads
+  # as absent (DayStatus), so they are only told. Leave days are left alone.
   class AttendanceCloseJob < ApplicationJob
-    def perform(date: Date.current)
+    def perform(date: Date.current - 1)
       return unless WorkingCalendar.new(date..date).working_day?(date)
 
       on_leave = LeaveRequest.active_on(date).pluck(:user_id)
@@ -16,7 +18,7 @@ module HrLite
         if record.nil? || record.check_in_at.nil?
           tell(user, date, "attendance.missed_check_in", "You didn't check in on #{day} — marked absent")
         elsif record.check_out_at.nil?
-          record.update!(check_out_at: Time.current, status: "half_day",
+          record.update!(check_out_at: date.end_of_day, status: "half_day",
                          regularization_note: AttendanceRecord::AUTO_CHECKOUT_NOTE)
           tell(user, date, "attendance.missed_check_out", "You didn't check out on #{day} — marked half day")
         end

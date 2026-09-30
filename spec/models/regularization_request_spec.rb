@@ -95,15 +95,38 @@ RSpec.describe HrLite::RegularizationRequest do
       expect(record.check_out_at).to eq(request.check_out_at)
     end
 
-    it "lifts a day the nightly close marked half day back to present" do
+    it "lifts a day the nightly close marked half day back to present, and keeps one HR set" do
       record = create(:attendance_record, user: user, date: tuesday, status: "half_day",
-                      check_in_at: tuesday.in_time_zone.change(hour: 9),
-                      check_out_at: tuesday.in_time_zone.change(hour: 23, min: 55))
-      request = build_request(check_in_at: nil)
+                      check_in_at: tuesday.in_time_zone.change(hour: 9), check_out_at: tuesday.end_of_day,
+                      regularization_note: HrLite::AttendanceRecord::AUTO_CHECKOUT_NOTE)
+      hr_set = create(:attendance_record, user: user, date: tuesday - 1, status: "half_day",
+                      check_in_at: (tuesday - 1).in_time_zone.change(hour: 9), regularization_note: "HR: left at 1pm")
+      [ build_request(check_in_at: nil), build_request(date: tuesday - 1, check_in_at: nil,
+                                                       check_out_at: (tuesday - 1).in_time_zone.change(hour: 18)) ]
+        .each { |request| request.tap(&:save!).approve!(actor: admin) }
+
+      expect([ record.reload.status, hr_set.reload.status ]).to eq(%w[present half_day])
+    end
+
+    it "tells the owner (and leadership) when an admin approves their own ticket" do
+      bells = []
+      HrLite.config.notify = ->(**kw) { bells << kw }
+      request = build_request(user: admin)
       request.save!
 
       request.approve!(actor: admin)
-      expect(record.reload.status).to eq("present")
+      expect(bells.map { |b| b[:kind] }).to include("regularization.approved")
+    end
+
+    it "warns a payroll run already computed for that month" do
+      june = Date.new(2027, 6, 30)
+      run = create(:payroll_run, period_month: june.beginning_of_month, status: "review")
+      request = build_request(date: june, check_in_at: june.in_time_zone.change(hour: 10),
+                              check_out_at: june.in_time_zone.change(hour: 19))
+      request.save!
+
+      request.approve!(actor: admin)
+      expect(run.reload.warnings).to eq([ "Dev's attendance on 30 Jun was fixed after compute — recompute" ])
     end
 
     it "refuses to decide twice" do
@@ -232,6 +255,45 @@ RSpec.describe HrLite::RegularizationRequest do
       request = request_on(tuesday - 1)
       request.save!
       expect(request).to be_pending
+    end
+
+    it "fixes a check-out the close job filled in, back to present" do
+      record = create(:attendance_record, user: user, date: tuesday, status: "half_day",
+                      check_in_at: tuesday.in_time_zone.change(hour: 9), check_out_at: tuesday.end_of_day,
+                      regularization_note: HrLite::AttendanceRecord::AUTO_CHECKOUT_NOTE)
+      request = build_request(check_in_at: nil)
+      request.save!
+
+      expect(request).to be_approved
+      expect([ record.reload.status, record.check_out_at ]).to eq([ "present", request.check_out_at ])
+    end
+
+    it "sends a day HR decided, an off day, and a rewrite of a real punch to HR" do
+      hr_day = create(:attendance_record, user: user, date: tuesday, status: "half_day", regularized_at: 1.day.ago,
+                      check_in_at: tuesday.in_time_zone.change(hour: 9))
+      create(:holiday, date: tuesday + 1)
+      real = create(:attendance_record, user: user, date: tuesday + 2, check_in_at: (tuesday + 2).in_time_zone.change(hour: 11, min: 30))
+      requests = [ build_request(check_in_at: nil), request_on(tuesday + 1),
+                   build_request(date: tuesday + 2, check_in_at: (tuesday + 2).in_time_zone.change(hour: 9), check_out_at: nil) ]
+      requests.each(&:save!)
+
+      expect(requests.map(&:status)).to eq(%w[pending pending pending])
+      expect([ hr_day.reload.status, real.reload.check_in_at.hour ]).to eq([ "half_day", 11 ])
+    end
+
+    it "sends a day HR rejected back to HR" do
+      first = build_request(check_in_at: nil)
+      first.save!
+      first.reject!(actor: admin, note: "You were not in")
+
+      again = build_request
+      again.save!
+      expect(again).to be_pending
+    end
+
+    it "locks the user while it counts the weekly cap" do
+      expect(user).to receive(:lock!).and_call_original
+      build_request.save!
     end
 
     it "leaves an unmergeable fix (no check-in that day) as a pending ticket" do

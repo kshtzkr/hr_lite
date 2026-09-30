@@ -270,11 +270,12 @@ approved; regularization tickets (`/regularization_requests`) let someone who
 forgot to punch propose the real times for admin approval, which writes them
 onto the attendance record with a full audit trail.
 
-With `config.self_regularization = { within_days: 2, per_week: 2 }`, a ticket for
-today or up to 2 days back is approved on submit, by the employee, at most twice
-per Mon–Sun week. No approver is notified; the audit row is the trail. Older days,
-the third fix of a week, or a fix that cannot apply (no check-in that day) stay
-ordinary tickets for HR.
+With `config.self_regularization = { within_days: 2, per_week: 2 }`, a ticket that
+fills a missed punch on a working day, today or up to 2 days back, is approved on
+submit, by the employee, at most twice per Mon–Sun week. No approver is notified;
+the audit row is the trail. Older days, off days, the third fix of a week, a change
+to a real punch, a day HR already regularized or rejected, or a fix that cannot
+apply (no check-in that day) stay ordinary tickets for HR.
 
 ### Holidays and calendar
 
@@ -362,7 +363,7 @@ whatever you run). Each is idempotent and sends nothing on a quiet day.
 | `HrLite::DailyDigestJob` | each morning | Leadership digest: who is out today, pending approvals, flagged punches, missing checkouts |
 | `HrLite::PayrollAutoDraftJob` | monthly, on the 1st | Draft and compute the previous month's payroll from attendance, then notify leadership for review (publishing stays a human action) |
 | `HrLite::LeaveYearRolloverJob` | leave year's first day (Jan 1, or Jul 1 for a July–June year) | Materialize carry-forward into the new year's balances |
-| `HrLite::AttendanceCloseJob` | nightly, `55 23 * * * Asia/Kolkata` | Close the working day: an open punch is checked out and marked half day; nobody checked in stays absent. Each is emailed how to fix it. Skips weekends, holidays and approved leave. Run it once a day — a re-run tells the no-shows again. |
+| `HrLite::AttendanceCloseJob` | each morning, `0 6 * * * Asia/Kolkata` (before `PayrollAutoDraftJob`) | Close yesterday's working day: an open punch is checked out at 23:59 and marked half day (a shift past midnight checks out before it runs); nobody checked in stays absent. Each is emailed how to fix it. Skips weekends, holidays and approved leave. Run it once a day — a re-run tells the no-shows again. |
 
 ## Rake tasks
 
