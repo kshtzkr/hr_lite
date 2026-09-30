@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-09-30
+
+The day closes at 23:55. A missed check-out becomes a half day, and employees
+can fix a recent missed punch themselves. No migration.
+
+### Added
+
+- **`HrLite::AttendanceCloseJob`**, scheduled by the host. On a working day it
+  checks out every punch still open, marks the day `half_day` (payroll pays
+  half and counts half as loss of pay), and emails the employee. Anyone who
+  never checked in is emailed that the day is absent; no record is written.
+  Weekends, holidays and approved leave (full or half day) are skipped. Run it
+  once a day: a re-run emails the no-shows again.
+- **Self-fix.** With `config.self_regularization = { within_days:, per_week: }`,
+  a regularization ticket for today or up to `within_days` back is approved as
+  soon as the employee submits it, for up to `per_week` days in a Monday–Sunday
+  week. The punch is written the way an HR approval writes it, with the usual
+  audit row, and nobody is notified. Older days, and fixes past the weekly
+  limit, go to HR as ordinary tickets; the flash says which happened. A
+  check-out-only ticket for a day with no check-in stays pending for HR.
+  `nil` (default) keeps HR as the only one who fixes punches. The ticket form
+  states the rule when it is on.
+- The Leaves page links "Record leave for someone" for anyone who can approve
+  leave.
+- The record-leave form says why somebody may be missing from the employee
+  list (no HR profile yet). Leadership gets a link to set one up.
+
+### Changed
+
+- Approving a regularization ticket always sets the day to present, so a fixed
+  day loses the half-day penalty.
+- The admin overview and daily digest still count a day the close job checked
+  out as a missing checkout.
+
+### Fixed
+
+- The sidebar, and the phone's More sheet, open scrolled to the current screen
+  instead of the top. A Manage item such as Approvals is no longer below the
+  fold.
+- Page action buttons wrap on a narrow phone instead of running off the screen.
+
+### Upgrading
+
+Schedule `HrLite::AttendanceCloseJob` daily at `55 23 * * * Asia/Kolkata` in
+your job scheduler. To let employees fix their own recent misses, set
+`c.self_regularization = { within_days: 2, per_week: 2 }` in the initializer.
+No migration.
+
 ## [0.18.0] - 2026-09-29
 
 Salary follows leave. One migration (`paid_days` on leave requests, nullable;
