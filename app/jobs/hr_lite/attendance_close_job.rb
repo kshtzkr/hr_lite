@@ -1,11 +1,11 @@
 module HrLite
-  # Closes yesterday's working day; the host schedules it early each morning,
-  # so a shift past midnight can still check out first (AttendancePuncher) and
-  # a retry or late run closes the same day. A punch left open is checked out
-  # at the day's end and paid as a half day. Nobody punched in already reads
-  # as absent (DayStatus), so they are only told. Leave days are left alone.
+  # Closes the working day that ended last: a run at 23:55 closes today, and a
+  # retry or late run after midnight (or a morning schedule) closes yesterday.
+  # A punch left open is checked out at the day's end and paid as a half day.
+  # Nobody punched in already reads as absent (DayStatus), so they are only
+  # told. Leave days are left alone.
   class AttendanceCloseJob < ApplicationJob
-    def perform(date: Date.current - 1)
+    def perform(date: (Time.current - 12.hours).to_date)
       return unless WorkingCalendar.new(date..date).working_day?(date)
 
       on_leave = LeaveRequest.active_on(date).pluck(:user_id)

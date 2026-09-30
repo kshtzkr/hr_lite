@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.19.0] - 2026-09-30
 
-Each morning closes yesterday. A missed check-out becomes a half day, and
+Each night closes the day. A missed check-out becomes a half day, and
 employees can fix a recent missed punch themselves. No migration.
 
 ### Added
 
-- **`HrLite::AttendanceCloseJob`**, scheduled by the host each morning for
-  yesterday, so a shift past midnight can still check out first. On a working
+- **`HrLite::AttendanceCloseJob`**, scheduled by the host each night (a run
+  before noon closes the previous day, so retries are safe). On a working
   day it checks out every punch still open at the day's end (23:59), marks the
   day `half_day` (payroll pays
   half and counts half as loss of pay), and emails the employee. Anyone who
@@ -56,8 +56,8 @@ employees can fix a recent missed punch themselves. No migration.
 
 ### Upgrading
 
-Schedule `HrLite::AttendanceCloseJob` daily at `0 6 * * * Asia/Kolkata` in
-your job scheduler, before `PayrollAutoDraftJob` on the 1st. To let employees fix their own recent misses, set
+Schedule `HrLite::AttendanceCloseJob` daily at `55 23 * * * Asia/Kolkata` in
+your job scheduler (a run before noon closes the previous day). To let employees fix their own recent misses, set
 `c.self_regularization = { within_days: 2, per_week: 2 }` in the initializer.
 No migration.
 

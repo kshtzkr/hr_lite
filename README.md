@@ -363,7 +363,7 @@ whatever you run). Each is idempotent and sends nothing on a quiet day.
 | `HrLite::DailyDigestJob` | each morning | Leadership digest: who is out today, pending approvals, flagged punches, missing checkouts |
 | `HrLite::PayrollAutoDraftJob` | monthly, on the 1st | Draft and compute the previous month's payroll from attendance, then notify leadership for review (publishing stays a human action) |
 | `HrLite::LeaveYearRolloverJob` | leave year's first day (Jan 1, or Jul 1 for a July–June year) | Materialize carry-forward into the new year's balances |
-| `HrLite::AttendanceCloseJob` | each morning, `0 6 * * * Asia/Kolkata` (before `PayrollAutoDraftJob`) | Close yesterday's working day: an open punch is checked out at 23:59 and marked half day (a shift past midnight checks out before it runs); nobody checked in stays absent. Each is emailed how to fix it. Skips weekends, holidays and approved leave. Run it once a day — a re-run tells the no-shows again. |
+| `HrLite::AttendanceCloseJob` | each night, `55 23 * * * Asia/Kolkata` | Close the day: an open punch is checked out at 23:59 and marked half day; a run before noon (a retry, or a morning schedule that lets night shifts check out first) closes the previous day instead; nobody checked in stays absent. Each is emailed how to fix it. Skips weekends, holidays and approved leave. Run it once a day — a re-run tells the no-shows again. |
 
 ## Rake tasks
 

@@ -40,7 +40,14 @@ RSpec.describe HrLite::AttendanceCloseJob do
     expect(HrLite::OverviewQuery.new(date: tuesday + 1).kpis[:missing_checkout]).to eq(1)
   end
 
-  it "lets a shift past midnight check out first, and a late run still closes yesterday" do
+  it "closes today when it runs at 23:55" do
+    open = open_punch
+    travel_to(ist(2027, 7, 6, 23, 55))
+    described_class.perform_now
+    expect(open.reload.status).to eq("half_day")
+  end
+
+  it "closes yesterday when a retry runs after midnight" do
     user = create(:user)
     travel_to(ist(2027, 7, 6, 20))
     HrLite::AttendancePuncher.call(user: user, kind: :check_in, lat: 12.9, lng: 77.6)
