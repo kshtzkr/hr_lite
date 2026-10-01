@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-10-01
+
+Salary as CTC, and who is out today. No migration.
+
+### Added
+
+- **Fill from CTC.** The salary structure form takes an annual CTC, and
+  "Fill from CTC" splits it: Basic is half the monthly CTC, HRA is 40% of
+  Basic, the employer's PF and ESI are paid out of the CTC, and Special
+  allowance takes the rest, rounding included. Nothing is saved until Save,
+  which stores the lines shown; the CTC itself is never stored. A CTC too low
+  for the split is refused. The form shows the monthly gross and CTC a
+  structure works out to, and prefills the CTC on edit.
+- **`SalaryStructure#breakup`** gives one month of a structure: earnings, the
+  employee's PF, ESI and professional tax, the employer's PF and ESI, gross,
+  CTC and in-hand, from the existing statutory calculators.
+- **My salary.** The salary slips page opens with the employee's current
+  structure as a Monthly | Yearly table, a structure HR has saved for a later
+  month ("New salary from …"), and earlier ones with their yearly CTC. Income
+  tax stays on the slips. Slip release day does not hide the card.
+- **Out today** on Home: everyone on approved leave today, by name, with the
+  leave's dates (`01 Oct – 05 Oct`, or `01 Oct (half day)`), and a link to the
+  Team board. The leave type is not shown, and staff who have left are not
+  listed.
+
+### Fixed
+
+- Form action buttons wrap on a narrow phone, so a third button no longer
+  pushes the salary structure form sideways.
+
+### Upgrading
+
+No migration, no config.
+
 ## [0.19.0] - 2026-09-30
 
 Each night closes the day. A missed check-out becomes a half day, and
