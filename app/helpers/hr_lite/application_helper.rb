@@ -131,6 +131,9 @@ module HrLite
       HrLite::Money.format(amount)
     end
 
+    # Whole rupees, for salary figures that are planned rather than paid.
+    def hrl_rupees(amount) = hrl_money(amount.round).delete_suffix(".00")
+
     # Indian-system amount in words for the slip footer. Delegates to the
     # PORO so host-rendered templates (config.render_pdf) work too.
     def hrl_amount_in_words(amount)

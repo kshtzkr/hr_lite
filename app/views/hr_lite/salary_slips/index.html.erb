@@ -8,7 +8,8 @@
   <% if (breakup = @structure&.breakup) %>
     <p class="hrl-small hrl-muted">Current salary from <%= @structure.effective_from.strftime("%d %b %Y") %></p>
     <div class="hrl-table-wrap">
-      <table class="hrl-table hrl-table--stack">
+      <%# Three narrow columns fit a 320px phone; stacking repeated the headings on every line. %>
+      <table class="hrl-table hrl-table--tight hrl-small">
         <thead><tr><th>Component</th><th class="hrl-num">Monthly</th><th class="hrl-num">Yearly</th></tr></thead>
         <tbody>
           <% { "Earnings" => breakup[:earnings].merge("Gross" => breakup[:monthly_gross]),
@@ -19,8 +20,8 @@
               <% weight = label == lines.keys.last ? :strong : :span %>
               <tr>
                 <td data-label="Component"><%= content_tag(weight, label) %></td>
-                <td data-label="Monthly" class="hrl-num"><%= content_tag(weight, hrl_money(amount)) %></td>
-                <td data-label="Yearly" class="hrl-num"><%= content_tag(weight, hrl_money(breakup[:yearly].fetch(label, amount * 12))) %></td>
+                <td data-label="Monthly" class="hrl-num"><%= content_tag(weight, hrl_rupees(amount)) %></td>
+                <td data-label="Yearly" class="hrl-num"><%= content_tag(weight, hrl_rupees(breakup[:yearly].fetch(label, amount * 12))) %></td>
               </tr>
             <% end %>
           <% end %>
@@ -33,9 +34,9 @@
     <% upcoming = structure.breakup(on: structure.effective_from) %>
     <h3 class="hrl-card__title">New salary from <%= structure.effective_from.strftime("%d %b %Y") %></h3>
     <dl class="hrl-deflist">
-      <dt>CTC</dt><dd><%= hrl_money(upcoming[:annual_ctc]) %> a year</dd>
-      <dt>Gross</dt><dd><%= hrl_money(upcoming[:monthly_gross]) %> a month</dd>
-      <dt>In-hand before tax</dt><dd><%= hrl_money(upcoming[:in_hand]) %> a month</dd>
+      <dt>CTC</dt><dd><%= hrl_rupees(upcoming[:annual_ctc]) %> a year</dd>
+      <dt>Gross</dt><dd><%= hrl_rupees(upcoming[:monthly_gross]) %> a month</dd>
+      <dt>In-hand before tax</dt><dd><%= hrl_rupees(upcoming[:in_hand]) %> a month</dd>
     </dl>
   <% end %>
   <% if @structure.nil? && @upcoming.empty? %>
@@ -44,7 +45,7 @@
   <% if @past.any? %>
     <h3 class="hrl-card__title">Earlier revisions</h3>
     <% @past.each do |structure| %>
-      <p class="hrl-small">From <%= structure.effective_from.strftime("%d %b %Y") %> — <%= hrl_money(structure.breakup(on: structure.effective_from)[:annual_ctc]) %> a year CTC</p>
+      <p class="hrl-small">From <%= structure.effective_from.strftime("%d %b %Y") %> — <%= hrl_rupees(structure.breakup(on: structure.effective_from)[:annual_ctc]) %> a year CTC</p>
     <% end %>
   <% end %>
 </section>

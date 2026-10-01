@@ -195,6 +195,7 @@
 .hrl-table th, .hrl-table td { text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--hrl-line); vertical-align: top; }
 .hrl-table th { color: var(--hrl-muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .03em; }
 .hrl-table td.hrl-num, .hrl-table th.hrl-num { text-align: right; font-variant-numeric: tabular-nums; }
+.hrl-table--tight th, .hrl-table--tight td { padding: .5rem .35rem; }
 @media (max-width: 640px) {
   .hrl-table--stack thead { display: none; }
   .hrl-table--stack tr { display: block; border-bottom: 6px solid var(--hrl-bg); }
