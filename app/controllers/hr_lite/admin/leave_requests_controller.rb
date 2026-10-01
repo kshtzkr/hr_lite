@@ -84,13 +84,14 @@ module HrLite
       # somebody else's report gets a 404 through the scoped relation rather
       # than a 403 — the same shape every employee-tier screen already uses,
       # and it does not confirm that the other person exists.
+      # Nobody decides their own request: team scope includes the approver.
       def decidable
-        hr_scope(LeaveRequest.all, "leave.approve")
+        hr_scope(LeaveRequest.all, "leave.approve").where.not(user_id: hr_current_user.id)
       end
 
       def find_decidable = decidable.find(params[:id])
 
-      def recordable = hr_scope(EmployeeProfile.includes(:user), "leave.approve")
+      def recordable = hr_scope(EmployeeProfile.includes(:user), "leave.approve").where.not(user_id: hr_current_user.id)
     end
   end
 end
