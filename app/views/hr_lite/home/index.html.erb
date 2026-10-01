@@ -14,7 +14,7 @@
       <div class="hrl-feed">
         <% @out_today.first(10).each do |leave| %>
           <div class="hrl-feed__item">
-            <div class="hrl-feed__body"><strong><%= hr_display_name(leave.user) %></strong>
+            <div class="hrl-feed__body"><%= tag.strong hr_display_name(leave.user), title: "On leave: #{leave.date_range_label}" %>
               <div class="hrl-feed__meta"><%= leave.date_range_label %></div></div>
           </div>
         <% end %>

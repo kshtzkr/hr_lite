@@ -149,7 +149,7 @@ module HrLite
       case row.kind
       when :holiday then hrl_status_badge("Holiday", "hrl-badge--muted", worked_hint(row))
       when :weekend then hrl_status_badge("Weekend", "hrl-badge--muted", worked_hint(row))
-      when :leave then hrl_status_badge("On leave (#{row.leave.leave_type.code})", "hrl-badge--warn")
+      when :leave then hrl_status_badge("On leave (#{row.leave.leave_type.code})", "hrl-badge--warn", row.leave.date_range_label)
       when :half_day_leave then hrl_status_badge("Half-day leave (#{row.leave.leave_type.code})", "hrl-badge--warn", worked_hint(row))
       when :upcoming then hrl_status_badge("\u2014", "hrl-badge--muted")
       when :absent

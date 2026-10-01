@@ -35,6 +35,8 @@ Salary as CTC, and who is out today. No migration.
   leave's dates (`01 Oct – 05 Oct`, or `01 Oct (half day)`), and a link to the
   Team board. The leave type is not shown, and staff who have left are not
   listed.
+- **Team board** shows each leave's dates next to "On leave", and hovering a
+  name on the board or on Out today reads "On leave: 30 Sep – 03 Oct".
 
 ### Fixed
 

@@ -29,7 +29,7 @@
           <% @board.rows.each do |row| %>
             <tr>
               <td data-label="Name">
-                <span><strong><%= hr_display_name(row.user) %></strong><% if row.profile&.designation.present? %>
+                <span><%= tag.strong hr_display_name(row.user), title: ("On leave: #{row.leave.date_range_label}" if row.leave) %><% if row.profile&.designation.present? %>
                   <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span><% end %></span>
               </td>
               <td data-label="Status"><%= hrl_team_status(row) %></td>

@@ -21,10 +21,19 @@ RSpec.describe "Out today on Home", type: :request do
     get "/hr/"
 
     expect(response.body).to include("Priya").and include("08 Jul – 12 Jul")
+    expect(response.body).to include('title="On leave: 08 Jul – 12 Jul"')
     expect(response.body).not_to include("Ravi")
     expect(response.body).not_to include("Kiran")
     expect(response.body).not_to include("Gone")
     expect(response.body).not_to include("Sick leave")
+  end
+
+  it "shows the leave's dates on the team board, visibly and on hover over the name" do
+    leave("Priya", today - 1, today + 1)
+
+    get "/hr/team"
+
+    expect(response.body).to include("07 Jul – 09 Jul").and include('title="On leave: 07 Jul – 09 Jul"')
   end
 
   it "says everyone is in when nobody is on leave" do
