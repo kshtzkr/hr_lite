@@ -4,6 +4,52 @@
 </div>
 
 <section class="hrl-card">
+  <h2 class="hrl-card__title">My salary</h2>
+  <% if (breakup = @structure&.breakup) %>
+    <p class="hrl-small hrl-muted">Current salary from <%= @structure.effective_from.strftime("%d %b %Y") %></p>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Component</th><th class="hrl-num">Monthly</th><th class="hrl-num">Yearly</th></tr></thead>
+        <tbody>
+          <% { "Earnings" => breakup[:earnings].merge("Gross" => breakup[:monthly_gross]),
+               "Deductions" => breakup[:deductions].merge("In-hand before tax" => breakup[:in_hand]),
+               "Employer contributions" => breakup[:employer].merge("CTC" => breakup[:monthly_ctc]) }.each do |section, lines| %>
+            <tr><th colspan="3"><%= section %></th></tr>
+            <% lines.each do |label, amount| %>
+              <% weight = label == lines.keys.last ? :strong : :span %>
+              <tr>
+                <td data-label="Component"><%= content_tag(weight, label) %></td>
+                <td data-label="Monthly" class="hrl-num"><%= content_tag(weight, hrl_money(amount)) %></td>
+                <td data-label="Yearly" class="hrl-num"><%= content_tag(weight, hrl_money(amount * 12)) %></td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <p class="hrl-small hrl-muted">Income tax (TDS) depends on your declarations and is shown on each slip.</p>
+  <% end %>
+  <% @upcoming.each do |structure| %>
+    <% upcoming = structure.breakup(on: structure.effective_from) %>
+    <h3 class="hrl-card__title">New salary from <%= structure.effective_from.strftime("%d %b %Y") %></h3>
+    <dl class="hrl-deflist">
+      <dt>CTC</dt><dd><%= hrl_money(upcoming[:annual_ctc]) %> a year</dd>
+      <dt>Gross</dt><dd><%= hrl_money(upcoming[:monthly_gross]) %> a month</dd>
+      <dt>In-hand before tax</dt><dd><%= hrl_money(upcoming[:in_hand]) %> a month</dd>
+    </dl>
+  <% end %>
+  <% if @structure.nil? && @upcoming.empty? %>
+    <p class="hrl-card--empty">Your salary structure hasn't been set up yet.</p>
+  <% end %>
+  <% if @past.any? %>
+    <h3 class="hrl-card__title">Earlier revisions</h3>
+    <% @past.each do |structure| %>
+      <p class="hrl-small">From <%= structure.effective_from.strftime("%d %b %Y") %> — <%= hrl_money(structure.breakup(on: structure.effective_from)[:annual_ctc]) %> a year CTC</p>
+    <% end %>
+  <% end %>
+</section>
+
+<section class="hrl-card">
   <% if @slips.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
