@@ -1,6 +1,8 @@
 <section class="hrl-card">
   <%= form_with model: structure, url: url, method: method, scope: :salary_structure, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: structure %>
+    <% breakup = structure.breakup if structure.basic %>
+    <div class="hrl-field"><%= f.label :annual_ctc, "Annual CTC (₹ a year)" %><%= f.number_field :annual_ctc, step: 1, value: (structure.annual_ctc || breakup&.dig(:annual_ctc))&.round %></div>
     <div class="hrl-field">
       <%= f.label :effective_from, "Effective from (1st of month)" %>
       <%= f.date_field :effective_from %>
@@ -21,8 +23,10 @@
       <%= f.select :pt_state, pt_states.map { |s| [ s.humanize, s ] } %>
     </div>
     <div class="hrl-field"><%= f.label :notes %><%= f.text_area :notes %></div>
+    <% if breakup %><p class="hrl-muted hrl-small">Monthly gross <%= hrl_money(breakup[:monthly_gross]) %> · CTC <%= hrl_money(breakup[:monthly_ctc]) %> a month</p><% end %>
     <div class="hrl-form-actions">
       <%= f.submit "Save structure", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit "Fill from CTC", name: "fill_from_ctc", class: "hrl-btn" %>
       <a class="hrl-btn" href="<%= hr_lite.admin_employee_path(@profile) %>">Cancel</a>
     </div>
   <% end %>

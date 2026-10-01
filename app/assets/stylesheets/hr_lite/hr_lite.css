@@ -227,7 +227,7 @@
 .hrl-field--check label { margin-bottom: 0; font-weight: 600; }
 .hrl-errors { background: var(--hrl-bad-bg); color: var(--hrl-bad); border-radius: var(--hrl-radius-sm); padding: .7rem .9rem; margin-bottom: .85rem; font-size: .86rem; }
 .hrl-errors ul { margin: .3rem 0 0; padding-left: 1.1rem; }
-.hrl-form-actions { display: flex; gap: .6rem; margin-top: 1rem; }
+.hrl-form-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
 .hrl-form-actions .hrl-btn { flex: 1; }
 @media (min-width: 700px) { .hrl-form-actions .hrl-btn { flex: 0 0 auto; min-width: 9rem; } }
 

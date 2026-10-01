@@ -45,6 +45,26 @@ RSpec.describe "Payroll over HTTP", type: :request do
       expect(response.body).to include("EMP000001")
     end
 
+    it "fills the lines from an annual CTC without saving, then saves what was shown" do
+      profile = create(:employee_profile)
+      lines = { effective_from: "2027-01-01", pf_applicable: "1", esi_applicable: "0", pt_state: "none" }
+      post "/hr/admin/employees/#{profile.id}/salary_structures",
+           params: { fill_from_ctc: "Fill from CTC", salary_structure: lines.merge(annual_ctc: "420000") }
+      expect(response.body).to include("Filled from CTC").and include('value="8700.0"')
+      expect(HrLite::SalaryStructure.count).to eq(0)
+
+      post "/hr/admin/employees/#{profile.id}/salary_structures",
+           params: { salary_structure: lines.merge(basic: "17500", hra: "7000", special_allowance: "8700") }
+      structure = HrLite::SalaryStructure.sole
+      expect(structure.special_allowance).to eq(8700)
+
+      patch "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}",
+            params: { fill_from_ctc: "Fill from CTC", salary_structure: { annual_ctc: "420000", other_earnings: "20000" } }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("CTC is too low for this split")
+      expect(structure.reload.other_earnings).to be_nil
+    end
+
     it "re-renders invalid submissions" do
       post "/hr/admin/employees", params: { employee_profile: { employee_code: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
