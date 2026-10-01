@@ -65,6 +65,17 @@ RSpec.describe "Payroll over HTTP", type: :request do
       expect(structure.reload.other_earnings).to be_nil
     end
 
+    it "splits a CTC on the rate card of the month it takes effect" do
+      allow(HrLite::StatutoryRateCard).to receive(:for).and_wrap_original do |original, month|
+        month < Date.new(2028, 4, 1) ? original.call(month) : original.call(month).deep_merge(pf: { wage_ceiling: 25_000 })
+      end
+      post "/hr/admin/employees/#{create(:employee_profile).id}/salary_structures", params: { fill_from_ctc: "Fill from CTC",
+        salary_structure: { effective_from: "2028-04-01", annual_ctc: "420000", pf_applicable: "1", esi_applicable: "0", pt_state: "none" } }
+
+      # Employer PF on the April card's ₹25,000 ceiling is ₹2,100, not today's ₹1,800.
+      expect(response.body).to include('value="8400.0"').and include("CTC ₹35,000.00 a month")
+    end
+
     it "re-renders invalid submissions" do
       post "/hr/admin/employees", params: { employee_profile: { employee_code: "" } }
       expect(response).to have_http_status(:unprocessable_entity)

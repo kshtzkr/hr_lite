@@ -1,7 +1,7 @@
 <section class="hrl-card">
   <%= form_with model: structure, url: url, method: method, scope: :salary_structure, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: structure %>
-    <% breakup = structure.breakup if structure.basic %>
+    <% breakup = structure.breakup(on: structure.effective_from || Date.current) if structure.basic %>
     <div class="hrl-field"><%= f.label :annual_ctc, "Annual CTC (₹ a year)" %><%= f.number_field :annual_ctc, step: 1, value: (structure.annual_ctc || breakup&.dig(:annual_ctc))&.round %></div>
     <div class="hrl-field">
       <%= f.label :effective_from, "Effective from (1st of month)" %>

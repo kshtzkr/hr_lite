@@ -124,6 +124,22 @@ RSpec.describe "Payroll models" do
       expect(structure).not_to be_valid
       expect(structure.errors[:base]).to include("CTC is too low for this split")
     end
+
+    it "keeps a typed CTC out of the plaintext audit trail" do
+      structure = create(:salary_structure, annual_ctc: 420_000)
+
+      expect(HrLite::AuditLog.where(subject_type: described_class.name).sole.audited_changes).not_to have_key("annual_ctc")
+      expect { structure.update!(annual_ctc: 424_800) }.not_to change(HrLite::AuditLog, :count)
+    end
+
+    it "decides ESI on the salary that opened the ESIC period, as payroll does" do
+      user = create(:user)
+      create(:salary_structure, user: user, effective_from: Date.new(2026, 4, 1), basic: 20_000, hra: nil, special_allowance: nil)
+      raised = create(:salary_structure, user: user, effective_from: Date.new(2026, 7, 1), basic: 25_000, hra: nil, special_allowance: nil)
+
+      expect(raised.breakup(on: Date.new(2026, 8, 1))[:employer]).to have_key("ESI")
+      expect(raised.breakup(on: Date.new(2026, 10, 1))[:employer]).not_to have_key("ESI")
+    end
   end
 
   describe HrLite::PayrollRun do

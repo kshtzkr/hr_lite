@@ -19,10 +19,14 @@ Salary as CTC, and who is out today. No migration.
   allowance takes the rest, rounding included. Nothing is saved until Save,
   which stores the lines shown; the CTC itself is never stored. A CTC too low
   for the split is refused. The form shows the monthly gross and CTC a
-  structure works out to, and prefills the CTC on edit.
+  structure works out to, and prefills the CTC on edit. Both use the rate
+  card of the month the structure takes effect, and the typed CTC never
+  reaches the audit log.
 - **`SalaryStructure#breakup`** gives one month of a structure: earnings, the
   employee's PF, ESI and professional tax, the employer's PF and ESI, gross,
-  CTC and in-hand, from the existing statutory calculators.
+  CTC and in-hand, from the existing statutory calculators. ESI is decided on
+  the salary that opened the ESIC period, as payroll does, and the yearly
+  professional tax is summed month by month so a February top-up counts once.
 - **My salary.** The salary slips page opens with the employee's current
   structure as a Monthly | Yearly table, a structure HR has saved for a later
   month ("New salary from …"), and earlier ones with their yearly CTC. Income

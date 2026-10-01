@@ -20,7 +20,7 @@
               <tr>
                 <td data-label="Component"><%= content_tag(weight, label) %></td>
                 <td data-label="Monthly" class="hrl-num"><%= content_tag(weight, hrl_money(amount)) %></td>
-                <td data-label="Yearly" class="hrl-num"><%= content_tag(weight, hrl_money(amount * 12)) %></td>
+                <td data-label="Yearly" class="hrl-num"><%= content_tag(weight, hrl_money(breakup[:yearly].fetch(label, amount * 12))) %></td>
               </tr>
             <% end %>
           <% end %>

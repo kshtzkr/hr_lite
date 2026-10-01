@@ -59,7 +59,7 @@ module HrLite
         )
       end
 
-      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross, gross_earned: esi_gross,
+      esi = Calculators::Esi.call(monthly_gross: @structure.esi_reference_gross(@run.period_month), gross_earned: esi_gross,
                                   applicable: @structure.esi_applicable, rates: @rates[:esi])
       if esi.applicable?
         deductions << { code: "esi_employee", label: "ESI", amount: esi.employee }
@@ -195,25 +195,6 @@ module HrLite
 
     def months_between(from, to)
       (to.year * 12 + to.month) - (from.year * 12 + from.month) + 1
-    end
-
-    # ESIC contribution periods run April–September and October–March.
-    # Eligibility is fixed for the whole period, so it is decided on the
-    # salary in force on its first day — re-deciding it every month dropped
-    # someone out of ESI the moment a mid-period raise crossed the ceiling.
-    def esi_reference_gross
-      month = @run.period_month
-      start = if month.month.between?(4, 9)
-        Date.new(month.year, 4, 1)
-      elsif month.month >= 10
-        Date.new(month.year, 10, 1)
-      else
-        Date.new(month.year - 1, 10, 1)
-      end
-
-      # No structure that far back (a mid-period joiner) — their own is the
-      # only salary this period has ever had.
-      (SalaryStructure.effective_for(@user, start) || @structure).monthly_gross
     end
 
     def serialize_rows(rows)
