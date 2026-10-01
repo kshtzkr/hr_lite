@@ -12,6 +12,8 @@ module HrLite
         @structure = SalaryStructure.new(structure_params.merge(
           user_id: @profile.user_id, created_by_id: hr_current_user.id
         ))
+        return fill_from_ctc(:new) if params[:fill_from_ctc]
+
         if @structure.save
           redirect_to admin_employee_path(@profile), notice: "Salary structure saved."
         else
@@ -25,7 +27,10 @@ module HrLite
 
       def update
         @structure = SalaryStructure.where(user_id: @profile.user_id).find(params[:id])
-        if @structure.update(structure_params)
+        @structure.assign_attributes(structure_params)
+        return fill_from_ctc(:edit) if params[:fill_from_ctc]
+
+        if @structure.save
           redirect_to admin_employee_path(@profile), notice: "Salary structure updated."
         else
           render :edit, status: :unprocessable_entity
@@ -34,13 +39,22 @@ module HrLite
 
       private
 
+      # Shows the split for a check; only the Save button writes it.
+      def fill_from_ctc(view)
+        @structure.fill_from_ctc
+        return render(view, status: :unprocessable_entity) unless @structure.valid?
+
+        flash.now[:notice] = "Filled from CTC — check the lines, then Save."
+        render view
+      end
+
       def set_profile
         @profile = EmployeeProfile.find(params[:employee_id])
       end
 
       def structure_params
         params.require(:salary_structure).permit(
-          :effective_from, :basic, :hra, :special_allowance, :other_earnings,
+          :annual_ctc, :effective_from, :basic, :hra, :special_allowance, :other_earnings,
           :pf_applicable, :pf_on_full_basic, :esi_applicable, :pt_state, :notes
         )
       end

@@ -46,7 +46,8 @@ module HrLite
       when "destroy"
         { "_destroyed" => hr_lite_audit_label }
       else
-        saved_changes.except(*SKIPPED_ATTRIBUTES).to_h do |attr, (from, to)|
+        # Columns only: a virtual attribute (a typed annual CTC) is form input, not a stored change.
+        saved_changes.slice(*self.class.column_names).except(*SKIPPED_ATTRIBUTES).to_h do |attr, (from, to)|
           if encrypted.include?(attr)
             [ attr, REDACTED ]
           else

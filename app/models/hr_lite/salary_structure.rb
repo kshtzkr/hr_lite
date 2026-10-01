@@ -11,12 +11,15 @@ module HrLite
     belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
 
     encrypted_money :basic, :hra, :special_allowance, :other_earnings
+    # Typed on the form to fill the lines; CTC is always derived, never stored.
+    attribute :annual_ctc, :decimal
 
     validates :effective_from, presence: true, uniqueness: { scope: :user_id }
     validates :basic, presence: true
     validate :basic_positive
     validate :effective_from_is_first_of_month
     validates :pt_state, presence: true
+    validate { errors.add(:base, "CTC is too low for this split") if special_allowance&.negative? }
 
     def self.effective_for(user, period_month)
       where(user_id: user.id)
@@ -31,6 +34,60 @@ module HrLite
 
     def annual_gross
       monthly_gross * 12
+    end
+
+    # A month of this structure: earnings, the employee's statutory
+    # deductions and the employer's contributions, via the payroll calculators.
+    def breakup(on: Date.current)
+      month = on.beginning_of_month
+      rates = StatutoryRateCard.for(month)
+      gross = monthly_gross
+      pf = Calculators::Pf.call(basic_earned: basic, on_full_basic: pf_on_full_basic, rates: rates[:pf]) if pf_applicable
+      esi = Calculators::Esi.call(monthly_gross: esi_reference_gross(month), gross_earned: gross, applicable: esi_applicable, rates: rates[:esi])
+      # Not flat: some states top up February, so the year is summed month by month.
+      pts = (0..11).map { |i| Calculators::ProfessionalTax.call(state: pt_state, gross_earned: gross, period_month: month >> i, rates: rates[:pt]) }
+      earnings, deductions, employer = [
+        { "Basic" => basic, "HRA" => hra, "Special allowance" => special_allowance, "Other" => other_earnings },
+        { "PF" => pf&.employee, "ESI" => esi.employee, "Professional tax" => pts.first },
+        { "PF" => pf && (pf.employer_eps + pf.employer_epf), "ESI" => esi.employer }
+      ].map { |rows| rows.select { |_, amount| Money.d(amount).positive? } }
+      monthly_ctc = gross + employer.values.sum(BigDecimal(0))
+      in_hand = gross - deductions.values.sum(BigDecimal(0))
+      { earnings: earnings, deductions: deductions, employer: employer,
+        monthly_gross: gross, monthly_ctc: monthly_ctc, annual_ctc: monthly_ctc * 12, in_hand: in_hand,
+        yearly: { "Professional tax" => pts.sum, "In-hand before tax" => (in_hand + pts.first) * 12 - pts.sum } }
+    end
+
+    # ESIC contribution periods run April–September and October–March.
+    # Eligibility is fixed for the whole period, so it is decided on the
+    # salary in force on its first day — re-deciding it every month dropped
+    # someone out of ESI the moment a mid-period raise crossed the ceiling.
+    def esi_reference_gross(month)
+      start = if month.month.between?(4, 9)
+        Date.new(month.year, 4, 1)
+      elsif month.month >= 10
+        Date.new(month.year, 10, 1)
+      else
+        Date.new(month.year - 1, 10, 1)
+      end
+
+      # Started mid-period: the structure in force when it opened decides (a mid-period joiner has none).
+      earlier = self.class.effective_for(user, start) if effective_from&.after?(start)
+      (earlier || self).monthly_gross
+    end
+
+    # Owner's split of annual_ctc: Basic 50% of the monthly CTC, HRA 40% of
+    # Basic, employer PF and ESI paid out of the CTC; Special takes the rest.
+    def fill_from_ctc(on: effective_from || Date.current)
+      monthly_ctc = Money.round_rupee(Money.d(annual_ctc) / 12)
+      self.basic = Money.round_rupee(monthly_ctc / 2)
+      self.hra = Money.round_rupee(basic * BigDecimal("0.4"))
+      self.special_allowance = 0
+      rest = monthly_ctc - Money.d(breakup(on: on).dig(:employer, "PF"))
+      # Employer ESI is a share of the gross beside it: gross + ESI = rest.
+      gross = (rest / (1 + StatutoryRateCard.for(on.beginning_of_month)[:esi][:employer_rate])).floor
+      self.special_allowance = gross - basic - hra - Money.d(other_earnings)
+      self.special_allowance += rest - gross unless breakup(on: on)[:employer].key?("ESI")
     end
 
     private

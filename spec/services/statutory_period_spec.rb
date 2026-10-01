@@ -14,12 +14,9 @@ RSpec.describe "Statutory periods and opening balances" do
              basic: 18000, hra: nil, special_allowance: nil, esi_applicable: true)
       raised = create(:salary_structure, user: user, effective_from: Date.new(2026, 7, 1),
                       basic: 40000, hra: nil, special_allowance: nil, esi_applicable: true)
-      run = HrLite::PayrollRun.new(period_month: Date.new(2026, 8, 1))
-
-      builder = HrLite::SlipBuilder.new(run, user, raised, profile, nil, nil)
 
       # August sits in the April–September period, which opened at ₹18,000.
-      expect(builder.send(:esi_reference_gross)).to eq(BigDecimal("18000"))
+      expect(raised.esi_reference_gross(Date.new(2026, 8, 1))).to eq(BigDecimal("18000"))
     end
 
     it "re-reads the salary at the next period boundary" do
@@ -27,22 +24,16 @@ RSpec.describe "Statutory periods and opening balances" do
              basic: 18000, hra: nil, special_allowance: nil, esi_applicable: true)
       raised = create(:salary_structure, user: user, effective_from: Date.new(2026, 7, 1),
                       basic: 40000, hra: nil, special_allowance: nil, esi_applicable: true)
-      run = HrLite::PayrollRun.new(period_month: Date.new(2026, 11, 1))
-
-      builder = HrLite::SlipBuilder.new(run, user, raised, profile, nil, nil)
 
       # November sits in October–March, which opened at the raised salary.
-      expect(builder.send(:esi_reference_gross)).to eq(BigDecimal("40000"))
+      expect(raised.esi_reference_gross(Date.new(2026, 11, 1))).to eq(BigDecimal("40000"))
     end
 
     it "falls back to the current salary for someone who joined mid-period" do
       structure = create(:salary_structure, user: user, effective_from: Date.new(2026, 8, 1),
                          basic: 25000, hra: nil, special_allowance: nil)
-      run = HrLite::PayrollRun.new(period_month: Date.new(2026, 8, 1))
 
-      builder = HrLite::SlipBuilder.new(run, user, structure, profile, nil, nil)
-
-      expect(builder.send(:esi_reference_gross)).to eq(BigDecimal("25000"))
+      expect(structure.esi_reference_gross(Date.new(2026, 8, 1))).to eq(BigDecimal("25000"))
     end
   end
 

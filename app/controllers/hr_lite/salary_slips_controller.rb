@@ -4,6 +4,11 @@ module HrLite
   class SalarySlipsController < ApplicationController
     def index
       @slips = paginate(own_released.recent_first)
+      # Structures show as soon as HR saves them; slip_release_day gates slips only.
+      @upcoming, started = SalaryStructure.where(user_id: hr_current_user.id).order(:effective_from)
+                                          .partition { |s| s.effective_from > Date.current }
+      @structure = started.pop
+      @past = started.reverse
     end
 
     def show

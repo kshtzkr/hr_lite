@@ -97,6 +97,49 @@ RSpec.describe "Payroll models" do
       expect(described_class.effective_for(user, Date.new(2027, 4, 1))).to eq(new_one)
       expect(described_class.effective_for(user, Date.new(2025, 1, 1))).to be_nil
     end
+
+    it "splits an annual CTC with employer PF inside it" do
+      structure = build(:salary_structure, annual_ctc: 420_000, esi_applicable: false)
+      structure.fill_from_ctc
+
+      expect([ structure.basic, structure.hra, structure.special_allowance ]).to eq([ 17_500, 7000, 8700 ])
+      expect(structure.breakup).to include(employer: { "PF" => 1800 }, monthly_gross: 33_200, monthly_ctc: 35_000)
+    end
+
+    it "keeps employer ESI inside a low CTC" do
+      structure = build(:salary_structure, annual_ctc: 180_000)
+      structure.fill_from_ctc
+      breakup = structure.breakup
+
+      expect(breakup[:employer]).to eq("PF" => 900, "ESI" => 444)
+      expect(breakup[:monthly_gross]).to eq(13_656)
+      expect(breakup[:monthly_ctc]).to be_within(1).of(15_000)
+      expect(breakup[:in_hand]).to eq(13_656 - 900 - 103)
+    end
+
+    it "refuses a CTC too low for the split" do
+      structure = build(:salary_structure, annual_ctc: 420_000, other_earnings: 20_000)
+      structure.fill_from_ctc
+
+      expect(structure).not_to be_valid
+      expect(structure.errors[:base]).to include("CTC is too low for this split")
+    end
+
+    it "keeps a typed CTC out of the plaintext audit trail" do
+      structure = create(:salary_structure, annual_ctc: 420_000)
+
+      expect(HrLite::AuditLog.where(subject_type: described_class.name).sole.audited_changes).not_to have_key("annual_ctc")
+      expect { structure.update!(annual_ctc: 424_800) }.not_to change(HrLite::AuditLog, :count)
+    end
+
+    it "decides ESI on the salary that opened the ESIC period, as payroll does" do
+      user = create(:user)
+      create(:salary_structure, user: user, effective_from: Date.new(2026, 4, 1), basic: 20_000, hra: nil, special_allowance: nil)
+      raised = create(:salary_structure, user: user, effective_from: Date.new(2026, 7, 1), basic: 25_000, hra: nil, special_allowance: nil)
+
+      expect(raised.breakup(on: Date.new(2026, 8, 1))[:employer]).to have_key("ESI")
+      expect(raised.breakup(on: Date.new(2026, 10, 1))[:employer]).not_to have_key("ESI")
+    end
   end
 
   describe HrLite::PayrollRun do

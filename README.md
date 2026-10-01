@@ -277,6 +277,9 @@ the audit row is the trail. Older days, off days, the third fix of a week, a cha
 to a real punch, a day HR already regularized or rejected, or a fix that cannot
 apply (no check-in that day) stay ordinary tickets for HR.
 
+Home has an "Out today" card: everyone on approved leave today, with the leave's
+dates, so the team knows who is away and until when. The leave type is not shown.
+
 ### Holidays and calendar
 
 `bin/rails hr_lite:seed` inserts the three fixed-date national holidays
@@ -305,6 +308,12 @@ Salary-slip PDFs render through `config.render_pdf`, or through a built-in
 WickedPdf path if `wicked_pdf` is in the bundle. The exact math, rounding rules
 and what is deliberately not modelled are in `docs/PAYROLL.md` — read it with
 your accountant before the first run.
+
+HR can enter a structure as an annual CTC: "Fill from CTC" sets Basic to half the
+monthly CTC and HRA to 40% of Basic, pays the employer's PF and ESI out of the CTC,
+and puts the rest in Special allowance. Employees see their own breakup, monthly
+and yearly, at the top of `/salary_slips`, along with any revision HR has saved
+for a later month.
 
 ### Kudos and @mentions
 

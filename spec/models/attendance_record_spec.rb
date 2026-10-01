@@ -17,6 +17,10 @@ RSpec.describe HrLite::AttendanceRecord do
   end
 
   describe "scopes" do
+    # Mid-month, so yesterday and the day before stay in this month's scope.
+    before { travel_to(Time.zone.local(2027, 7, 15, 12)) }
+    after { travel_back }
+
     it "filters by date, month, flagged and missing checkout" do
       today = create(:attendance_record, user: user, date: Date.current, check_in_at: Time.current)
       flagged = create(:attendance_record, date: Date.current - 1, flagged: true)
