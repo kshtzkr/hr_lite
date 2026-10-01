@@ -8,6 +8,27 @@
   <%= render "hr_lite/holidays/next_holiday" %>
 
   <section class="hrl-card">
+    <h2 class="hrl-card__title">Out today</h2>
+    <% if @out_today.any? %>
+      <%# Name and dates only — the leave type (sick leave) is the employee's own business. %>
+      <div class="hrl-feed">
+        <% @out_today.first(10).each do |leave| %>
+          <div class="hrl-feed__item">
+            <div class="hrl-feed__body"><strong><%= hr_display_name(leave.user) %></strong>
+              <div class="hrl-feed__meta"><%= leave.date_range_label %></div></div>
+          </div>
+        <% end %>
+      </div>
+      <% if @out_today.size > 10 %>
+        <p class="hrl-muted hrl-small">+<%= @out_today.size - 10 %> more</p>
+      <% end %>
+    <% else %>
+      <p class="hrl-muted hrl-small">Everyone's in today.</p>
+    <% end %>
+    <a class="hrl-small" href="<%= hr_lite.team_path %>">Team board</a>
+  </section>
+
+  <section class="hrl-card">
     <h2 class="hrl-card__title">Latest kudos</h2>
     <% if @latest_kudos.any? %>
       <div class="hrl-feed">
