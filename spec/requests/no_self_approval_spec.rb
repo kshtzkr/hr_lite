@@ -12,7 +12,7 @@ RSpec.describe "Nobody decides their own request", type: :request do
   it "refuses a manager approving their own leave" do
     leave_type = create(:leave_type, code: "CL", name: "Casual", annual_quota: 12)
     leave = create(:leave_request, user: manager, leave_type: leave_type,
-                                   start_date: Date.current + 8, end_date: Date.current + 8)
+                                   start_date: (Date.current + 8).next_occurring(:wednesday), end_date: (Date.current + 8).next_occurring(:wednesday))
     sign_in manager
 
     post "/hr/admin/leave_requests/#{leave.id}/approve"
