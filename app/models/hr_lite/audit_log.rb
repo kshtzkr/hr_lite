@@ -14,7 +14,7 @@ module HrLite
     # leadership audit screen or the policy.changed email.
     MONEY_TIER_TYPES = %w[
       HrLite::Appraisal HrLite::DesignationChange HrLite::SalaryStructure
-      HrLite::PayrollRun HrLite::SalarySlip HrLite::PayrollLineItem
+      HrLite::PayrollRun HrLite::SalarySlip HrLite::PayrollLineItem HrLite::Loan
     ].freeze
 
     scope :recent, -> { order(created_at: :desc) }

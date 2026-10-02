@@ -3,36 +3,38 @@ module HrLite
   # one source, so they always agree. Sections return Relations (callers
   # paginate or cap as they see fit).
   class OverviewQuery
-    def initialize(date: Date.current)
+    # user_ids nil = everyone; a team-scoped viewer sees only the people they reach.
+    def initialize(date: Date.current, user_ids: nil)
       @date = date
+      @user_ids = user_ids
     end
 
     def pending_requests
-      LeaveRequest.pending.includes(:leave_type, :user).order(:created_at)
+      reach(LeaveRequest.pending.includes(:leave_type, :user).order(:created_at))
     end
 
     def on_leave_today
-      LeaveRequest.active_on(@date).includes(:leave_type, :user).order(:start_date)
+      reach(LeaveRequest.active_on(@date).includes(:leave_type, :user).order(:start_date))
     end
 
     # Comp-off and regularization are approvals too. Counting leave alone made
     # the board announce "All present and accounted for" while both queues
     # still had work in them.
     def pending_comp_offs
-      CompOffRequest.pending.includes(:user).recent_first
+      reach(CompOffRequest.pending.includes(:user).recent_first)
     end
 
     def pending_regularizations
-      RegularizationRequest.pending.includes(:user).recent_first
+      reach(RegularizationRequest.pending.includes(:user).recent_first)
     end
 
     def flagged_today
-      AttendanceRecord.for_date(@date).flagged.includes(:user)
+      reach(AttendanceRecord.for_date(@date).flagged.includes(:user))
     end
 
     # AttendanceCloseJob fills check_out_at, so the days it closed count too.
     def missing_checkout_yesterday
-      yesterday = AttendanceRecord.for_date(@date - 1)
+      yesterday = reach(AttendanceRecord.for_date(@date - 1))
       yesterday.missing_checkout.or(yesterday.where(regularization_note: AttendanceRecord::AUTO_CHECKOUT_NOTE))
                .includes(:user)
     end
@@ -49,5 +51,9 @@ module HrLite
     def empty?
       kpis.values.all?(&:zero?)
     end
+
+    private
+
+    def reach(relation) = @user_ids ? relation.where(user_id: @user_ids) : relation
   end
 end

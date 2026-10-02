@@ -23,6 +23,7 @@ module HrLite
     validate :spent_on_is_not_in_the_future
     validate :within_the_category_cap, on: :create
     validate :receipt_is_present_when_the_category_demands_one
+    validate :receipt_is_a_small_pdf_or_image
 
     scope :awaiting_reimbursement, -> { where(status: "approved") }
     scope :recent_first, -> { order(spent_on: :desc, id: :desc) }
@@ -137,6 +138,13 @@ module HrLite
       return if receipt.attached?
 
       errors.add(:receipt, "is required for #{category.name}")
+    end
+
+    def receipt_is_a_small_pdf_or_image
+      return unless receipt.attached?
+      return errors.add(:receipt, "must be a PDF or an image") unless Document::ALLOWED_TYPES.include?(receipt.blob.content_type)
+
+      errors.add(:receipt, "must be under #{Document::MAX_BYTES / 1.megabyte} MB") if receipt.blob.byte_size > Document::MAX_BYTES
     end
   end
 end

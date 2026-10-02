@@ -141,9 +141,11 @@ module HrLite
         require "csv"
         return "" if rows.empty?
 
+        # A cell opening with = + - @ runs as a formula; names are staff-typed.
+        safe = ->(v) { v.is_a?(String) && v.match?(/\A[=+\-@\t\r]/) ? "'#{v}" : v }
         CSV.generate do |csv|
           csv << rows.first.keys
-          rows.each { |row| csv << row.values }
+          rows.each { |row| csv << row.values.map(&safe) }
         end
       end
     end

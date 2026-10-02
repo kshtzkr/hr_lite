@@ -82,7 +82,8 @@ module HrLite
       # authorities, so they resolve through different permissions — a role
       # can be given the board without being given the pencil.
       def find_visible_employee = employee_within("attendance.view")
-      def find_manageable_employee = employee_within("attendance.manage")
+      # Nobody rewrites their own punches: team and company scope include the holder.
+      def find_manageable_employee = employee_within("attendance.manage").tap { |e| raise ActiveRecord::RecordNotFound if e.id == hr_current_user.id }
 
       def employee_within(permission)
         employee = HrLite.user_klass.find(params[:user_id])

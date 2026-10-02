@@ -135,7 +135,8 @@ module HrLite
     def annual_deductions
       declaration = TaxDeclaration.for(@user, @run.period_month)
       return @profile.declared_annual_deductions if declaration.nil?
-      return @profile.declared_annual_deductions if declaration.draft?
+      # A rejected declaration lowers nothing: its self-declared total stays editable and unchecked.
+      return @profile.declared_annual_deductions if declaration.draft? || declaration.rejected?
 
       declaration.allowable_total
     end
