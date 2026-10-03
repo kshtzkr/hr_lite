@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-10-03
+
+Security fixes. No migration.
+
+### Upgrading
+
+Document numbers are now encrypted with Active Record Encryption. Rows
+saved before this release are plain text, so the host needs
+`config.active_record.encryption.support_unencrypted_data = true` to keep
+reading them, and should re-save each `HrLite::Document` once to encrypt
+the old numbers.
+
+### Security
+
+- **Nobody decides their own request.** A manager could approve their own
+  leave, comp-off and attendance fixes, Finance its own expense claims, and
+  anyone recording leave for someone else could record their own as
+  approved. HR could verify or reject its own documents. All refused now.
+- **Nobody edits their own records from the admin screens.** HR rewriting
+  its own attendance, adjusting its own leave balance, or Finance verifying
+  its own tax declaration is refused.
+- **Document numbers are encrypted.** Aadhaar, PAN and passport numbers
+  were stored in plain text and copied into audit diffs and the leadership
+  audit email. Loans join the money tier for audit mail.
+- **A rejected tax declaration no longer lowers TDS.**
+- **Payroll CSVs defuse formulas.** Register and report cells that open
+  with `=`, `+`, `-` or `@` are escaped, since names are staff-typed.
+- **The payout register needs `payroll.export`**, not just
+  `payroll.manage`.
+- **The admin overview respects reach.** A team-scoped manager sees only
+  the people they reach, not the whole company.
+- **Expense receipts** take the same type and size rule as documents.
+
 ## [0.20.0] - 2026-10-01
 
 Salary as CTC, and who is out today. No migration.
