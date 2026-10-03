@@ -62,6 +62,7 @@ module HrLite
       def find_manageable
         declaration = TaxDeclaration.find(params[:id])
         hr_require_reach!("tax.manage", declaration.user)
+        raise ActiveRecord::RecordNotFound if declaration.user_id == hr_current_user.id # never one's own
         declaration
       end
 

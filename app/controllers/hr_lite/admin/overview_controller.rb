@@ -4,7 +4,7 @@ module HrLite
       SECTION_CAP = 10
 
       def index
-        @query = OverviewQuery.new
+        @query = OverviewQuery.new(user_ids: hr_access.visible_user_ids("leave.view"))
         @kpis = @query.kpis
       end
     end

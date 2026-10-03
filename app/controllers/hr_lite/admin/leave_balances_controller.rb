@@ -13,6 +13,7 @@ module HrLite
         # A manager reaches this screen through leave.approve; changing
         # somebody's quota is leave.manage, for THAT person.
         hr_require_reach!("leave.manage", user)
+        raise ActiveRecord::RecordNotFound if user.id == hr_current_user.id # never one's own quota
         type = LeaveType.find(params[:leave_type_id])
         # Unsanitised, a missing param wrote the adjustment into leave year 0,
         # where no screen can ever show it.

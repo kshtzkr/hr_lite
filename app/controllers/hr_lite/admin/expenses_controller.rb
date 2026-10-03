@@ -39,7 +39,8 @@ module HrLite
 
       def require_deciding! = hr_require_permission!("expense.approve", scope: :team)
 
-      def decidable = hr_scope(Expense.all, "expense.approve")
+      # Nobody approves their own claim: team scope includes the approver.
+      def decidable = hr_scope(Expense.all, "expense.approve").where.not(user_id: hr_current_user.id)
     end
   end
 end

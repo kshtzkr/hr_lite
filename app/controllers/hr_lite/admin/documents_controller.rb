@@ -54,6 +54,8 @@ module HrLite
       # whoever happens to run HR.
       def find_manageable
         document = Document.find(params[:id])
+        # readable_by? always admits the owner, and nobody verifies their own paperwork.
+        raise ActiveRecord::RecordNotFound if document.user_id == hr_current_user.id
         raise ActiveRecord::RecordNotFound unless document.readable_by?(hr_current_user)
 
         document

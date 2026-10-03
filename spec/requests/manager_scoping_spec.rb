@@ -20,7 +20,7 @@ RSpec.describe "A manager reaches their own reports and no further", type: :requ
 
   def leave_for(user)
     create(:leave_request, user: user, leave_type: leave_type,
-                           start_date: Date.current + 8, end_date: Date.current + 8)
+                           start_date: (Date.current + 8).next_occurring(:wednesday), end_date: (Date.current + 8).next_occurring(:wednesday))
   end
 
   describe "the leave queue" do

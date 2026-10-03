@@ -1,6 +1,8 @@
 module HrLite
   module Admin
     class PayrollRunsController < SuperadminController
+      # The register carries every bank account: its own key, not just payroll.manage.
+      before_action -> { hr_require_permission!("payroll.export", scope: :all) }, only: :register
       def index
         @runs = paginate(PayrollRun.recent_first)
       end
@@ -82,6 +84,8 @@ module HrLite
 
       def register_csv(run)
         require "csv"
+        # A cell opening with = + - @ runs as a formula; names are staff-typed.
+        safe = ->(v) { v.is_a?(String) && v.match?(/\A[=+\-@\t\r]/) ? "'#{v}" : v }
         CSV.generate do |csv|
           csv << [ "Code", "Name", "Days", "LOP", "Gross", "PF", "ESI", "PT", "TDS",
                    "Net pay", "Bank", "Account", "IFSC" ]
@@ -95,7 +99,7 @@ module HrLite
               deductions.dig("esi_employee", "amount") || 0, deductions.dig("pt", "amount") || 0,
               deductions.dig("tds", "amount") || 0, slip.net_pay,
               profile&.bank_name, profile&.bank_account_number, profile&.bank_ifsc
-            ]
+            ].map(&safe)
           end
         end
       end

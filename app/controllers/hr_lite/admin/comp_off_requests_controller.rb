@@ -40,8 +40,9 @@ module HrLite
       # A manager decides for their own reports; HR decides for everyone.
       # Scoped through the relation, so reaching for somebody else's report
       # is a 404 rather than a 403 that confirms the person exists.
+      # Nobody decides their own request: team scope includes the approver.
       def decidable
-        hr_scope(CompOffRequest.all, "leave.approve")
+        hr_scope(CompOffRequest.all, "leave.approve").where.not(user_id: hr_current_user.id)
       end
 
       def find_decidable = decidable.find(params[:id])

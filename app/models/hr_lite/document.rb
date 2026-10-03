@@ -5,6 +5,9 @@ module HrLite
   class Document < ApplicationRecord
     include Audited
 
+    # An Aadhaar, PAN or passport number: encrypted, which also redacts it from audit diffs and their emails.
+    encrypts :reference_number
+
     VISIBILITIES = %w[self hr money].freeze
     VERIFICATIONS = %w[pending verified rejected].freeze
 
