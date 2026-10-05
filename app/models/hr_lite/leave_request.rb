@@ -25,6 +25,7 @@ module HrLite
 
     before_validation :cache_days_count, on: :create
     after_create :notify_requested, unless: :recorded_by_hr?
+    after_create :notify_team
 
     scope :pending, -> { where(status: "pending") }
     scope :approved, -> { where(status: "approved") }
@@ -171,7 +172,6 @@ module HrLite
       return false if insufficient
 
       notify_decision("Leave approved")
-      notify_team
       true
     end
 
@@ -247,8 +247,8 @@ module HrLite
       )
     end
 
-    # Everyone should know a colleague will be away — bell + email to the
-    # whole team (matrix row "leave.team_notice"; hosts can mute either
+    # Everyone should know a colleague will be away, the moment they apply —
+    # bell + email to the whole team (matrix row "leave.team_notice"; hosts can mute either
     # channel). Deliberately excludes the reason: dates are team-relevant,
     # the why is not.
     def notify_team

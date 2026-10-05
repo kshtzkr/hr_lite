@@ -51,7 +51,7 @@ module HrLite
       "resignation.withdrawn" => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
       "employee.onboarded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "payroll.draft_ready"   => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
-      "leave.team_notice"     => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "leave.team_notice"     => { bell: true,  email: true,   leadership_email: false, leadership_bell: false },
       "comp_off.requested"    => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "comp_off.approved"     => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "comp_off.rejected"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },

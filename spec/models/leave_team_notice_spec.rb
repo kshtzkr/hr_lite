@@ -17,7 +17,7 @@ RSpec.describe "Leave team notice" do
     request
   end
 
-  it "bells the whole team except the requester, without the reason, and emails nobody" do
+  it "bells and emails the whole team except the requester on apply, without the reason" do
     bells = []
     HrLite.config.notify = ->(**kw) { bells << kw }
     emails = []
@@ -26,15 +26,18 @@ RSpec.describe "Leave team notice" do
       instance_double(ActionMailer::MessageDelivery, deliver_later: true)
     end
 
-    approved_request
+    create(:leave_request, user: requester, leave_type: type,
+           start_date: monday, end_date: monday, reason: "medical thing")
 
     notices = bells.select { |b| b[:kind] == "leave.team_notice" }
-    expect(notices.map { |b| b[:user] }).to include(colleague, admin)
+    expect(notices.map { |b| b[:user] }).to include(colleague)
     expect(notices.map { |b| b[:user] }).not_to include(requester)
     expect(notices.first[:title]).to include("Meera is on leave").and include("Casual")
     expect(notices.first[:title]).not_to include("medical")
 
-    expect(emails.select { |e| e[:subject].to_s.include?("is on leave") }).to be_empty
+    notice_emails = emails.select { |e| e[:subject].to_s.include?("is on leave") }
+    expect(notice_emails.map { |e| e[:to] }).to include("dev@x.test")
+    expect(notice_emails.map { |e| e[:to] }).not_to include("meera@x.test")
   end
 
   it "never notifies exited staff" do

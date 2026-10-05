@@ -6,7 +6,7 @@
 //     <button type="submit">…</button>
 //     <span data-hrl-geo-status hidden></span>
 //   </form>
-// The punch NEVER blocks on GPS: denied/timeout/unavailable submit anyway
+// A denied permission holds the punch; timeout/unavailable submit anyway
 // with geo_status set; the server flags them.
 (function () {
   "use strict";
@@ -45,7 +45,15 @@
           send("ok");
         },
         function (err) {
-          send(err && err.code === 1 ? "denied" : "timeout");
+          // Browsers ask only once; a past "Don't allow" denies silently forever.
+          // Hold the punch so it is never filed (and flagged) without GPS.
+          if (err && err.code === 1) {
+            locating = false;
+            if (button) { button.disabled = false; button.removeAttribute("aria-busy"); }
+            if (label) label.textContent = "Location is blocked. Allow location for this site in your browser settings, then tap again.";
+            return;
+          }
+          send("timeout");
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
