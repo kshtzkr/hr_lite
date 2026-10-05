@@ -25,7 +25,7 @@ module HrLite
 
       def create
         profile = recordable.find_by(employee_code: params[:employee_code].to_s.strip)
-        @request = LeaveRequest.new(params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :reason)
+        @request = LeaveRequest.new(params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :half_day_part, :reason)
                                           .merge(user_id: profile&.user_id, created_by_id: hr_current_user.id))
         recorded = profile && LeaveRequest.transaction do
           (@request.save && @request.approve!(actor: hr_current_user, note: "Recorded by HR")) || raise(ActiveRecord::Rollback)

@@ -8,6 +8,7 @@ module HrLite
 
     validates :date, presence: true, uniqueness: { scope: :user_id }
     validates :status, inclusion: { in: STATUSES }
+    validates :half_day_part, inclusion: { in: %w[first second] }, allow_blank: true
     validate :check_out_after_check_in
 
     scope :for_date, ->(date) { where(date: date) }

@@ -38,9 +38,8 @@
         <p class="hrl-hint">Clear both times to remove the punch entirely.</p>
       </div>
       <div class="hrl-field">
-        <%= f.label :status %>
-        <%= f.select :status, HrLite::AttendanceRecord::STATUSES.map { |s| [ s.humanize, s ] },
-                     selected: @edit_record.status %>
+        <%= f.label :half_day_part, "Day" %>
+        <%= f.select :half_day_part, HrLite::DAY_PARTS, selected: @edit_record.half_day_part.to_s %>
       </div>
       <div class="hrl-field">
         <%= f.label :regularization_note, "Why is this being fixed? (required)" %>

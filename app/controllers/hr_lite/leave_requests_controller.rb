@@ -52,7 +52,7 @@ module HrLite
     end
 
     def request_params
-      params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :reason)
+      params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :half_day_part, :reason)
     end
   end
 end

@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.21.0] - 2026-10-06
 
-One migration: `hr_lite_employee_profiles.probation_until` (date).
+Three migrations: `hr_lite_employee_profiles.probation_until` (date),
+`hr_lite_leave_requests.half_day_part` and
+`hr_lite_attendance_records.half_day_part` (string).
 
 ### Added
 
@@ -21,6 +23,10 @@ One migration: `hr_lite_employee_profiles.probation_until` (date).
   A "Probation" badge shows on the employee list, the admin profile and the
   employee's own profile, and drops off by itself after the date.
   Existing employees are not tagged — the host backfills or HR sets them.
+- **Full day / First half / Second half.** The leave forms (employee and
+  HR-recorded) and HR's attendance day form use one "Day" picker instead
+  of a half-day checkbox / status select. A half still counts 0.5; the
+  label reads "05 Jul (first half)", and the team board shows which half.
 
 ## [0.20.2] - 2026-10-05
 

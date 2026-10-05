@@ -36,7 +36,7 @@
             <% if record&.flagged? %>
               <span class="hrl-badge hrl-badge--bad" title="<%= record.flag_note %>">Flagged</span>
             <% elsif record&.check_in_at %>
-              <span class="hrl-badge hrl-badge--ok"><%= record.status.humanize %></span>
+              <span class="hrl-badge hrl-badge--ok"><%= record.status.humanize %><%= " (#{record.half_day_part} half)" if record.half_day_part %></span>
             <% else %>
               <span class="hrl-badge hrl-badge--muted">No punch</span>
             <% end %>

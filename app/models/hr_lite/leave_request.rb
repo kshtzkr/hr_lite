@@ -12,6 +12,7 @@ module HrLite
 
     validates :start_date, :end_date, presence: true
     validates :status, inclusion: { in: STATUSES }
+    validates :half_day_part, inclusion: { in: %w[first second] }, allow_blank: true
 
     with_options on: :create do
       validate :end_after_start
@@ -24,6 +25,7 @@ module HrLite
       validate :within_probation_cap
     end
 
+    before_validation { self.half_day = true if half_day_part.present? }
     before_validation :cache_days_count, on: :create
     after_create :notify_requested, unless: :recorded_by_hr?
     after_create :notify_team
@@ -123,7 +125,7 @@ module HrLite
 
     def date_range_label
       if start_date == end_date
-        "#{start_date.strftime('%d %b')}#{half_day ? ' (half day)' : ''}"
+        "#{start_date.strftime('%d %b')}#{half_day ? " (#{half_day_part.present? ? "#{half_day_part} half" : 'half day'})" : ''}"
       else
         "#{start_date.strftime('%d %b')} – #{end_date.strftime('%d %b')}"
       end
