@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-10-05
+
+No migration.
+
+### Changed
+
+- **Leave team notice goes out on apply, by email too.** The whole team
+  (minus the applicant) gets the bell and an email the moment leave is
+  applied, not after approval. The reason is still left out. Hosts can
+  mute either channel with the `leave.team_notice` matrix row.
+- **A blocked location holds the punch.** Browsers ask for location once;
+  after a "Don't allow" every later punch was filed without GPS and
+  flagged. The punch now waits and tells the employee to allow location,
+  then tap again. Timeout and no-GPS devices still punch (and flag).
+- Team attendance board: "Fix / month" is now "Edit / half day", the
+  screen where HR changes a marked day to a half day.
+
 ## [0.20.1] - 2026-10-03
 
 Security fixes. No migration.
