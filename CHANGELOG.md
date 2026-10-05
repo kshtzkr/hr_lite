@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-10-06
+
+One migration: `hr_lite_employee_profiles.probation_until` (date).
+
+### Added
+
+- **Probation.** `config.probation_months` (e.g. 6) gives every new hire a
+  `probation_until` date of joining + N months. HR edits it per employee on
+  the profile form: blank removes the tag, a date adds or extends it.
+  While on probation an employee can take at most 1 day of leave (any type,
+  half days count 0.5) per calendar month; the request is refused at apply.
+  A "Probation" badge shows on the employee list, the admin profile and the
+  employee's own profile, and drops off by itself after the date.
+  Existing employees are not tagged — the host backfills or HR sets them.
+
 ## [0.20.2] - 2026-10-05
 
 No migration.

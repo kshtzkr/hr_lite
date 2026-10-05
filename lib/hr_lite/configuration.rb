@@ -12,7 +12,9 @@ module HrLite
                   :onboard_user, :offboard_user, :invite_url_for,
                   # ->(user) { { url:, unread: } } — shows a notifications link in
                   # the HR shell; nil (default) shows nothing.
-                  :notifications
+                  :notifications,
+                  # e.g. 6 — default probation for new hires (admin edits per employee)
+                  :probation_months
 
     attr_reader :leave_year_start_month, :slip_release_day, :self_regularization
 

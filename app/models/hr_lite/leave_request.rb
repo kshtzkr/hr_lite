@@ -21,6 +21,7 @@ module HrLite
       validate :no_overlap_with_own_requests
       validate :no_punch_conflict
       validate :sufficient_balance
+      validate :within_probation_cap
     end
 
     before_validation :cache_days_count, on: :create
@@ -327,6 +328,16 @@ module HrLite
       punched = AttendanceRecord.where(user_id: user_id, date: start_date..end_date)
                                 .where.not(check_in_at: nil)
       errors.add(:base, "Attendance is marked in this period") if punched.exists?
+    end
+
+    # Probation: at most one day of leave (any type) in a calendar month.
+    def within_probation_cap
+      return unless start_date && days_count
+      return unless EmployeeProfile.find_by(user_id: user_id)&.on_probation?(start_date)
+
+      taken = self.class.where(user_id: user_id, status: %w[pending approved])
+                  .where(start_date: start_date.all_month).sum(:days_count)
+      errors.add(:base, "During probation only 1 day of leave a month is allowed") if taken + days_count > 1
     end
 
     # Only comp-off is refused past its balance: it is earned credit, never
