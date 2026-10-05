@@ -63,6 +63,10 @@
     </div>
     <div class="hrl-field"><%= f.label :emergency_contact, "Emergency contact (printed on the ID card)" %><%= f.telephone_field :emergency_contact %></div>
     <div class="hrl-field">
+      <%= f.label :probation_until, "On probation until (blank = not on probation)" %>
+      <%= f.date_field :probation_until %>
+    </div>
+    <div class="hrl-field">
       <%= f.label :date_of_exit, "Date of exit (leave blank while employed)" %>
       <%= f.date_field :date_of_exit %>
     </div>

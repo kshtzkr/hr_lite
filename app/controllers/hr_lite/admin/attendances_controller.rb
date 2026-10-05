@@ -37,7 +37,7 @@ module HrLite
                              alert: "A regularization note is required."
         end
 
-        attrs = params.require(:attendance_record).permit(:check_in_at, :check_out_at, :status)
+        attrs = params.require(:attendance_record).permit(:check_in_at, :check_out_at, :status, :half_day_part)
         if attrs[:check_in_at].blank? && attrs[:check_out_at].blank?
           # Nothing to remove used to still write a `destroy` audit row with
           # subject_id 0 and email the employee that a punch was removed.
@@ -61,6 +61,8 @@ module HrLite
         end
 
         record.assign_attributes(attrs)
+        record.half_day_part = attrs[:half_day_part].presence if attrs.key?(:half_day_part)
+        record.status = record.half_day_part ? "half_day" : "present" if attrs.key?(:half_day_part)
         record.status = "present" if record.status.blank?
         record.regularized_by_id = hr_current_user.id
         record.regularized_at = Time.current

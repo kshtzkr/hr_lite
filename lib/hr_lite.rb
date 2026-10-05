@@ -17,6 +17,8 @@ require "hr_lite/amount_in_words"
 require "hr_lite/statutory_rate_card"
 
 module HrLite
+  # Full day / first half / second half — one picker for leave and attendance.
+  DAY_PARTS = [ [ "Full day", "" ], [ "First half", "first" ], [ "Second half", "second" ] ].freeze
   class << self
     def config
       @config ||= Configuration.new

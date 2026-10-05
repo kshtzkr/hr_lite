@@ -34,6 +34,10 @@ module HrLite
     attr_accessor :new_user_name, :new_user_email, :new_user_password
 
     before_validation :assign_employee_code, on: :create
+    before_validation(on: :create) do
+      months = HrLite.config.probation_months.to_i
+      self.probation_until ||= date_of_joining.advance(months: months) - 1 if months.positive? && date_of_joining
+    end
     # Without a role a new hire cannot see policies or raise an HR request.
     after_create { (role = Role.find_by(name: Role::EMPLOYEE)) && RoleAssignment.find_or_create_by!(user_id:, role:) }
 
@@ -56,6 +60,12 @@ module HrLite
       where(date_of_joining: ..month.end_of_month)
         .where("date_of_exit IS NULL OR date_of_exit >= ?", month.beginning_of_month)
     }
+
+    # Admin owns probation_until: blank = no probation tag, a date = tagged
+    # through that day. New hires default to config.probation_months.
+    def on_probation?(on = Date.current)
+      probation_until.present? && on <= probation_until
+    end
 
     def active_on?(date)
       date_of_joining <= date && (date_of_exit.nil? || date_of_exit >= date)

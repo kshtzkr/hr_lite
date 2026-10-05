@@ -71,7 +71,8 @@
       <dt>Designation</dt><dd><%= @profile.designation.presence || "—" %></dd>
       <dt>Reports to</dt><dd><%= @profile.manager ? hr_display_name(@profile.manager) : "—" %></dd>
       <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
-      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %b %Y") %></dd>
+      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %b %Y") %>
+        <% if @profile.on_probation? %><span class="hrl-badge hrl-badge--warn">Probation</span><% end %></dd>
       <% if @profile.date_of_exit %><dt>Exited</dt><dd><%= @profile.date_of_exit.strftime("%d %b %Y") %></dd><% end %>
       <dt>Tax regime</dt><dd><%= @profile.tax_regime.humanize %></dd>
       <dt>PAN</dt><dd><%= @profile.masked_pan || "—" %></dd>

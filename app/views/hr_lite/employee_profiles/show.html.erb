@@ -12,7 +12,8 @@
       <dd><%= (boss = @profile.active_manager) ? "#{hr_display_name(boss)} (your L1)" : "—" %>
         · <a href="<%= hr_lite.org_path %>">Org chart</a></dd>
       <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
-      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %B %Y") %></dd>
+      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %B %Y") %>
+        <% if @profile.on_probation? %><span class="hrl-badge hrl-badge--warn">Probation</span><% end %></dd>
       <dt>Tax regime</dt><dd><%= @profile.tax_regime.humanize %></dd>
       <dt>PAN</dt><dd><%= @profile.masked_pan || "—" %></dd>
       <dt>PF UAN</dt><dd><%= @profile.masked_uan || "—" %></dd>
