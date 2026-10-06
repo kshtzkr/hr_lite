@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.1] - 2026-10-06
+
+No migration.
+
+### Changed
+
+- Probation refusal now reads "You are on probation and not allowed to take
+  more leave this month (1 day a month)".
+
 ## [0.21.0] - 2026-10-06
 
 Three migrations: `hr_lite_employee_profiles.probation_until` (date),

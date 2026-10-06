@@ -23,7 +23,7 @@ RSpec.describe "Probation leave cap" do
 
     second = apply(Date.new(2027, 2, 10))
     expect(second).not_to be_valid
-    expect(second.errors[:base]).to include("During probation only 1 day of leave a month is allowed")
+    expect(second.errors[:base]).to include("You are on probation and not allowed to take more leave this month (1 day a month)")
     expect(apply(Date.new(2027, 3, 3))).to be_valid
   end
 

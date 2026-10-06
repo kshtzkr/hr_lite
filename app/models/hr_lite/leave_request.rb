@@ -339,7 +339,7 @@ module HrLite
 
       taken = self.class.where(user_id: user_id, status: %w[pending approved])
                   .where(start_date: start_date.all_month).sum(:days_count)
-      errors.add(:base, "During probation only 1 day of leave a month is allowed") if taken + days_count > 1
+      errors.add(:base, "You are on probation and not allowed to take more leave this month (1 day a month)") if taken + days_count > 1
     end
 
     # Only comp-off is refused past its balance: it is earned credit, never
