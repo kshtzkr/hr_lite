@@ -74,6 +74,7 @@ RSpec.describe "Admin leave management", type: :request do
       employee
       get "/hr/admin/leave_balances", params: { year: 2027 }
       expect(response.body).to include("Asha")
+      expect(response.body).to include("used</span>")
     end
 
     it "adjusts with a note and audits" do
