@@ -17,7 +17,7 @@
             <td><%= hr_display_name(employee) %></td>
             <% @types.each do |type| %>
               <% balance = HrLite::LeaveBalance.for(employee, type, @year) %>
-              <td class="hrl-num"><%= balance.available.to_f %></td>
+              <td class="hrl-num"><strong><%= balance.available.to_f %></strong> left<br><span class="hrl-small hrl-muted"><%= balance.used.to_f %>/<%= balance.entitled.to_f %> used</span></td>
             <% end %>
           </tr>
         <% end %>
