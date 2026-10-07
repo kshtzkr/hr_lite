@@ -333,8 +333,10 @@ module HrLite
     end
 
     # Probation: at most one day of leave (any type) in a calendar month.
+    # Caps self-service only; HR recording leave is already the approval.
     def within_probation_cap
       return unless start_date && days_count
+      return if recorded_by_hr?
       return unless EmployeeProfile.find_by(user_id: user_id)&.on_probation?(start_date)
 
       taken = self.class.where(user_id: user_id, status: %w[pending approved])

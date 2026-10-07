@@ -27,6 +27,13 @@ RSpec.describe "Probation leave cap" do
     expect(apply(Date.new(2027, 3, 3))).to be_valid
   end
 
+  it "lets HR record leave past the cap" do
+    apply(Date.new(2027, 2, 3)).save!
+    recorded = apply(Date.new(2027, 2, 10))
+    recorded.created_by_id = create(:user, :admin).id
+    expect(recorded).to be_valid
+  end
+
   it "drops the tag and the cap when the admin clears the date" do
     apply(Date.new(2027, 2, 3)).save!
     profile.update!(probation_until: nil)
