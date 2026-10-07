@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.2] - 2026-10-07
+
+### Fixed
+- HR recording leave for an employee on probation is no longer refused by the 1-day-a-month cap; the cap still applies when the employee applies themselves.
+
 ## [0.21.1] - 2026-10-07
 
 ### Fixed
