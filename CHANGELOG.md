@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
+- Keyboard: every focused control shows a 2px accent ring (kudos badge chips included), focus scrolls clear of the app bar and tab bar, and a "Skip to content" link is the first Tab stop so desktop users skip the side rail. Reduced-motion users get no transitions or animations. New `.hrl-sr-only` utility.
 
 ### Changed
 - Engine defaults: `--hrl-radius` 14px to 16px, `--hrl-radius-sm` 9px to 12px, `--hrl-info-bg` #dbeafe to #eff6ff (accent text on it now 4.75:1) and `--hrl-muted` #6b7280 to #4b5563 (4.5:1 or better on the page background). Hosts that set these variables see no change.

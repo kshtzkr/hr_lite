@@ -81,6 +81,24 @@
    (.hrl-btn--primary, .hrl-nav__link, ...) can set its own link colour —
    a plain `.hrl-body a` would out-rank them and paint accent-on-accent. */
 :where(.hrl-body) a { color: var(--hrl-accent); text-decoration: none; }
+/* Keyboard focus: one ring everywhere (the second selector is a date input's picker button, focused inside its shadow);
+   scroll padding keeps it clear of the sticky app bar and fixed tab bar. */
+:where(.hrl-body) :focus-visible,
+:where(.hrl-body) input:focus-within:not(:focus) { outline: var(--hrl-focus-w) solid var(--hrl-focus); outline-offset: var(--hrl-focus-offset); }
+html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4rem + env(safe-area-inset-bottom)); }
+.hrl-sr-only, .hrl-skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.hrl-skip:focus {
+  position: fixed; top: var(--hrl-s-2); left: var(--hrl-s-2); z-index: var(--hrl-z-sheet);
+  display: inline-flex; align-items: center; min-height: var(--hrl-target); padding: 0 var(--hrl-s-4);
+  background: var(--hrl-card); color: var(--hrl-accent); font-weight: 600;
+  border-radius: var(--hrl-radius-sm); box-shadow: var(--hrl-shadow-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hrl-body *, .hrl-body *::before, .hrl-body *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
 .hrl-shell { display: flex; min-height: 100vh; }
 .hrl-content { flex: 1; min-width: 0; }
 .hrl-main {
@@ -287,6 +305,8 @@
 }
 .hrl-chiprow input { position: absolute; opacity: 0; pointer-events: none; }
 .hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked) { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }
+/* The radio is invisible, so its focus ring goes on the chip. */
+.hrl-chiprow label:has(input:focus-visible) { outline: var(--hrl-focus-w) solid var(--hrl-focus); outline-offset: var(--hrl-focus-offset); }
 
 /* Feed items */
 .hrl-feed__item { display: flex; gap: .7rem; padding: .8rem 0; border-bottom: 1px solid var(--hrl-line); }

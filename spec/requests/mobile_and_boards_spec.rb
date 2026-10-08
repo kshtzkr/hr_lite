@@ -56,4 +56,20 @@ RSpec.describe "Phone navigation and the boards", type: :request do
       expect(response.body).to match(%r{hr_lite/confirm.*\.js})
     end
   end
+
+  describe "skip link" do
+    before do
+      sign_in create(:user)
+      get "/hr/"
+    end
+
+    it "points at the main region" do
+      expect(response.body).to include('href="#hrl-main"').and include('id="hrl-main"')
+    end
+
+    it "comes before the rail, so the first Tab skips the 15+ rail stops" do
+      body = response.body[/<body.*/m]
+      expect(body.index("hrl-skip")).to be < body.index("hrl-side__brand")
+    end
+  end
 end
