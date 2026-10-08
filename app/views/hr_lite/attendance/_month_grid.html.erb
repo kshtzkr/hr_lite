@@ -27,7 +27,7 @@
         <% end %>
       </span>
       <% if day.record&.check_in_at %>
-        <span class="hrl-mgrid__tag"><%= day.record.check_in_at.strftime("%H:%M") %><%= day.record.check_out_at ? "–#{day.record.check_out_at.strftime('%H:%M')}" : "" %></span>
+        <span class="hrl-mgrid__tag"><%= day.record.check_in_at.strftime("%H:%M") %><% if day.record.check_out_at %><br><%= day.record.check_out_at.strftime("%H:%M") %><% end %></span>
       <% elsif day.kind == :absent %>
         <span class="hrl-mgrid__tag">absent</span>
       <% end %>

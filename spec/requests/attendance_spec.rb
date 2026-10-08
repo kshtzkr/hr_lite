@@ -17,6 +17,13 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).to include("Check in").and include(Date.current.strftime("%B %Y"))
     end
 
+    it "stacks a day's check-in and check-out so a phone-width cell holds both" do
+      create(:attendance_record, user: user, date: Date.current,
+             check_in_at: Time.current.change(hour: 9, min: 30), check_out_at: Time.current.change(hour: 18, min: 0))
+      get "/hr/attendance"
+      expect(response.body).to include("09:30<br>18:00")
+    end
+
     it "renders a requested month and falls back on garbage" do
       get "/hr/attendance", params: { month: "2026-05" }
       expect(response.body).to include("May 2026")

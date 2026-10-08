@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.3] - 2026-10-09
+
+### Fixed
+- Phones: My attendance, the team calendar and an employee's attendance in admin no longer run wider than the screen once a month has punches; Sa/Su are back and check-in/check-out stack in each day.
+- Phones: a long name or an email as the display name in the top bar no longer widens every screen and pushes the tab bar off.
+- Phones: long links, file names and emails in policies, HR requests, appraisals, flashes and stacked tables (audit trail, approvals, team board, request lists) wrap instead of widening the page or hiding values.
+- Admin employee profile with a salary card fits a phone; payroll and overview tiles go 2×2 below 1100px so amounts stay on one line beside the side rail.
+
 ## [0.21.2] - 2026-10-07
 
 ### Fixed
