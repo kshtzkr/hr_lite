@@ -216,7 +216,12 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-page__title { font-family: var(--hrl-font-head); font-size: var(--hrl-t-title); font-weight: 700; line-height: var(--hrl-lh-tight); margin: 0; overflow-wrap: anywhere; }
 @media (min-width: 768px) { .hrl-page__title { font-size: var(--hrl-t-display); } }
 .hrl-page__sub { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin: .15rem 0 0; width: 100%; }
-.hrl-page__actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
+.hrl-page__actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
+.hrl-page__actions .hrl-btn { flex: 1 1 auto; }
+@media (min-width: 481px) {
+  .hrl-page__actions { width: auto; margin-left: auto; }
+  .hrl-page__actions .hrl-btn { flex: 0 1 auto; }
+}
 
 /* Cards */
 .hrl-card {
