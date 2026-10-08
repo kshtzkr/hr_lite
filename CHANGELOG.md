@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
 - Keyboard: every focused control shows a 2px accent ring (kudos badge chips included), focus scrolls clear of the app bar and tab bar, and a "Skip to content" link is the first Tab stop so desktop users skip the side rail. Reduced-motion users get no transitions or animations. New `.hrl-sr-only` utility.
+- Leave-type badge `.hrl-badge--type`: ink text on grey with an 8px dot in the HR-chosen colour, set inline as `--hrl-type`.
 
 ### Changed
 - Engine defaults: `--hrl-radius` 14px to 16px, `--hrl-radius-sm` 9px to 12px, `--hrl-info-bg` #dbeafe to #eff6ff (accent text on it now 4.75:1) and `--hrl-muted` #6b7280 to #4b5563 (4.5:1 or better on the page background). Hosts that set these variables see no change.
 - Type: every screen except the ID card uses the six-step ramp (12/14/16/18/20/24px) and weights 400/600/700. Nothing renders below 12px, and the page title grows from 20px to 24px at 768px.
 - Radii: every corner outside the ID card is 12, 16 or 20px or a pill. Month-grid day cells go from 7px to `--hrl-radius-sm`, pills use `--hrl-radius-pill`, and the phone "More" sheet gets 20px top corners (`--hrl-radius-lg`).
+- Long text: badges clip at their container's width, buttons wrap long labels, and definition-list values shrink instead of widening the page, so 60-character names no longer cause sideways scroll. Muted badges use `--hrl-ink-2`.
 
 ## [0.21.3] - 2026-10-09
 

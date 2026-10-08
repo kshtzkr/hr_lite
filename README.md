@@ -446,6 +446,9 @@ Every variable, with its role and engine default (all on `:root` in
 The ID card also reads `--hrl-card-display` and `--hrl-card-body` (its fonts;
 unset, both fall back to `--hrl-font`).
 
+Leave-type badges (`.hrl-badge--type`) read `--hrl-type`, set inline per type;
+it colours the dot only, never the text.
+
 Point `config.extra_stylesheets` at a stylesheet and it is linked after the
 engine's own CSS, so your `--hrl-*` overrides win. Every view is also
 overridable through standard engine view precedence — drop a file at the same

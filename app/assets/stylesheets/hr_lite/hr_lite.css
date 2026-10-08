@@ -235,6 +235,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   min-height: 44px; padding: .55rem 1rem; border-radius: var(--hrl-radius-sm);
   border: 1px solid var(--hrl-line); background: var(--hrl-card); color: var(--hrl-ink);
   font-size: var(--hrl-t-body); font-weight: 600; cursor: pointer; text-decoration: none;
+  max-width: 100%; overflow-wrap: anywhere; text-align: center;
 }
 .hrl-btn--primary { background: var(--hrl-accent); border-color: var(--hrl-accent); color: var(--hrl-accent-ink); }
 .hrl-btn--danger { color: var(--hrl-bad); border-color: var(--hrl-bad-bg); }
@@ -247,12 +248,15 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   display: inline-flex; align-items: center; gap: .3rem;
   font-size: var(--hrl-t-micro); font-weight: 600; line-height: var(--hrl-lh-tight); padding: .18rem .55rem;
   border-radius: var(--hrl-radius-pill); background: var(--hrl-info-bg); color: var(--hrl-accent);
-  white-space: nowrap;
+  white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .hrl-badge--ok { background: var(--hrl-ok-bg); color: var(--hrl-ok); }
 .hrl-badge--warn { background: var(--hrl-warn-bg); color: var(--hrl-warn); }
 .hrl-badge--bad { background: var(--hrl-bad-bg); color: var(--hrl-bad); }
-.hrl-badge--muted { background: var(--hrl-bg); color: var(--hrl-muted); }
+.hrl-badge--muted { background: var(--hrl-bg); color: var(--hrl-ink-2); }
+/* Leave-type badge: ink text on grey; the HR-chosen colour (inline --hrl-type) is only the dot. */
+.hrl-badge--type { background: var(--hrl-bg); color: var(--hrl-ink); }
+.hrl-badge--type::before { content: ""; width: 8px; height: 8px; border-radius: var(--hrl-radius-pill); background: var(--hrl-type); flex: none; }
 .hrl-mention { color: var(--hrl-accent); font-weight: 700; }
 
 /* Tables (stack to label/value rows on phones) */
@@ -357,7 +361,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-chainrow__arrow { color: var(--hrl-muted); }
 
 /* Definition list */
-.hrl-deflist { display: grid; grid-template-columns: minmax(7rem, auto) 1fr; gap: .35rem .9rem; font-size: var(--hrl-t-body); }
+.hrl-deflist { display: grid; grid-template-columns: minmax(7rem, auto) minmax(0, 1fr); gap: .35rem .9rem; font-size: var(--hrl-t-body); }
 .hrl-deflist dt { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
 .hrl-deflist dd { margin: 0; overflow-wrap: anywhere; }
 
