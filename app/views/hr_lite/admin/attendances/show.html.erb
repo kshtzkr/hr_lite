@@ -7,7 +7,7 @@
 </div>
 
 <section class="hrl-card">
-  <div class="hrl-row" style="margin-bottom:.6rem;">
+  <div class="hrl-row hrl-row--mb">
     <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
     <strong><%= @month.strftime("%B %Y") %></strong>
     <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>

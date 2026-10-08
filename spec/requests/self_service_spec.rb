@@ -23,6 +23,15 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).to include("Travel", "left")
     end
 
+    it "right-aligns only the numeric header, over values that keep their stacked label" do
+      HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
+                              spent_on: Date.current, description: "Tea")
+      get "/hr/expenses"
+
+      expect(response.body).to include('<th>Category</th><th class="hrl-num">Amount</th>',
+                                       'data-label="Amount" class="hrl-num"')
+    end
+
     it "claims, and the claim is submitted rather than left in a drawer" do
       expect {
         post "/hr/expenses", params: { expense: {

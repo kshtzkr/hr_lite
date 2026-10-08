@@ -3,7 +3,7 @@
   <h1 class="hrl-page__title">Team attendance</h1>
 </div>
 
-<div class="hrl-row" style="margin-bottom:.8rem;">
+<div class="hrl-row hrl-row--mb">
   <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path(date: @date - 1) %>">&larr;</a>
   <strong><%= @date.strftime("%A, %d %B %Y") %></strong>
   <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path(date: @date + 1) %>">&rarr;</a>

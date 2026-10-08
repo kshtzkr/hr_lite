@@ -1,5 +1,5 @@
 <%# locals: active (:leaves | :comp_off | :regularizations | :balances) %>
-<div class="hrl-row" style="margin-bottom:.85rem;">
+<div class="hrl-row hrl-row--mb">
   <a class="hrl-btn <%= 'hrl-btn--primary' if active == :leaves %>"
      href="<%= hr_lite.admin_leave_requests_path %>">Leaves</a>
   <a class="hrl-btn <%= 'hrl-btn--primary' if active == :comp_off %>"

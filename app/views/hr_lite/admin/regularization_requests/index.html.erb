@@ -5,7 +5,7 @@
 
 <%= render "hr_lite/admin/shared/approvals_tabs", active: :regularizations %>
 
-<div class="hrl-row" style="margin-bottom:.85rem;">
+<div class="hrl-row hrl-row--mb">
   <span class="hrl-small hrl-muted">Status</span>
   <% HrLite::RegularizationRequest::STATUSES.each do |status| %>
     <a class="hrl-btn <%= 'hrl-btn--primary' if @status == status %>"

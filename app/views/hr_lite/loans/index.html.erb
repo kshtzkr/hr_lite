@@ -35,7 +35,7 @@
         <h3 class="hrl-card__title">Already deducted</h3>
         <div class="hrl-table-wrap">
           <table class="hrl-table hrl-table--stack">
-            <thead><tr><th>Month</th><th>Amount</th></tr></thead>
+            <thead><tr><th>Month</th><th class="hrl-num">Amount</th></tr></thead>
             <tbody>
               <% loan.loan_repayments.sort_by(&:period_month).reverse.each do |r| %>
                 <tr>

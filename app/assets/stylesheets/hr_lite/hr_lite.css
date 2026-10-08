@@ -219,9 +219,12 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card__title { font-family: var(--hrl-font-head); font-weight: 700; font-size: var(--hrl-t-lead); line-height: var(--hrl-lh-tight); margin: 0 0 .6rem; }
 .hrl-card--empty { text-align: center; color: var(--hrl-muted); padding: 1.8rem 1rem; }
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
-.hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; }
+.hrl-card > p:first-child { margin-top: 0; }
+.hrl-card__link { display: inline-flex; align-items: center; min-height: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
+.hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; margin-bottom: .85rem; }
 .hrl-grid > * { min-width: 0; }
-@media (min-width: 700px) { .hrl-grid--2 { grid-template-columns: 1fr 1fr; } }
+.hrl-grid > .hrl-card { margin-bottom: 0; }
+@media (min-width: 1024px) { .hrl-grid--2 { grid-template-columns: 1fr 1fr; } }
 
 /* KPI tiles */
 .hrl-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin-bottom: .85rem; }
@@ -267,13 +270,19 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-table th { color: var(--hrl-muted); font-size: var(--hrl-t-micro); text-transform: uppercase; letter-spacing: .03em; }
 .hrl-table td.hrl-num, .hrl-table th.hrl-num { text-align: right; font-variant-numeric: tabular-nums; }
 .hrl-table--tight th, .hrl-table--tight td { padding: .5rem .35rem; }
-@media (max-width: 640px) {
+.hrl-table td[data-label=""] > * + * { margin-left: var(--hrl-s-2); }
+/* Stack on phones and on the narrow content column beside the 768-1023px rail. */
+@media (max-width: 640px), (min-width: 768px) and (max-width: 1023px) {
   .hrl-table--stack thead { display: none; }
   .hrl-table--stack tr { display: block; border-bottom: 6px solid var(--hrl-bg); }
   .hrl-table--stack td { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .8rem; border-bottom: 1px dashed var(--hrl-line); overflow-wrap: anywhere; }
   .hrl-table--stack td::before { content: attr(data-label); color: var(--hrl-muted); font-size: var(--hrl-t-small); }
   .hrl-table--stack td.hrl-num { text-align: left; }
   .hrl-table--stack td.hrl-cell--void { display: none; }
+  .hrl-table--stack tr:last-child { border-bottom: 0; }
+  .hrl-table--stack td[data-label=""] { justify-content: flex-end; }
+  .hrl-table--stack td[data-label=""]::before { display: none; }
+  .hrl-table--stack td[data-label=""] > * + * { margin-left: 0; }
 }
 
 /* Forms */
@@ -397,6 +406,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-mt { margin-top: .85rem; }
 .hrl-right { margin-left: auto; }
 .hrl-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.hrl-row--mb { margin-bottom: var(--hrl-s-3); }
 
 /* Long-form policy text. Constrained measure — a policy read across the
    full width of a laptop is a policy nobody finishes. */
