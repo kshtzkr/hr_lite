@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Long text: badges clip at their container's width, buttons wrap long labels, and definition-list values shrink instead of widening the page, so 60-character names no longer cause sideways scroll. Muted badges use `--hrl-ink-2`.
 - Forms: inputs are 16px with a `--hrl-field` border (3:1 or better), an invalid field turns its border and label red, hints are styled everywhere, kudos chips and check-row labels are 44px tall with an 8px gap, and the error box is announced and takes focus. Mandatory fields carry `required`, so the browser stops an empty submit. `.hrl-card--warn` (expiring documents) now has its amber fill.
 
+### Fixed
+- A double tap on a submit button sends one request: the button locks (dimmed, `aria-busy`) once the form submits, stays live when a confirm prompt is cancelled, and unlocks when Back restores the page. Punch forms keep their own location flow.
+
 ## [0.21.3] - 2026-10-09
 
 ### Fixed
