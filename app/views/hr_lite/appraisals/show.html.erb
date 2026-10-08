@@ -20,13 +20,13 @@
 <% if @appraisal.strengths.present? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Strengths</h2>
-    <p><%= simple_format(@appraisal.strengths) %></p>
+    <div class="hrl-prose"><%= simple_format(@appraisal.strengths) %></div>
   </section>
 <% end %>
 
 <% if @appraisal.improvements.present? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Areas to grow</h2>
-    <p><%= simple_format(@appraisal.improvements) %></p>
+    <div class="hrl-prose"><%= simple_format(@appraisal.improvements) %></div>
   </section>
 <% end %>

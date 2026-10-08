@@ -65,7 +65,7 @@
 }
 .hrl-appbar__brand { font-weight: 700; font-size: 1.02rem; color: var(--hrl-ink); display: inline-flex; align-items: center; }
 .hrl-appbar__logo { height: 28px; width: auto; display: block; }
-.hrl-appbar__user { margin-left: auto; color: var(--hrl-muted); font-size: .82rem; white-space: nowrap; }
+.hrl-appbar__user { margin-left: auto; color: var(--hrl-muted); font-size: .82rem; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bottom tab bar (phone) */
 .hrl-tabbar {
@@ -135,13 +135,13 @@
 }
 
 /* Flash */
-.hrl-flash { padding: .7rem .9rem; border-radius: var(--hrl-radius-sm); margin-bottom: .85rem; font-size: .9rem; }
+.hrl-flash { padding: .7rem .9rem; border-radius: var(--hrl-radius-sm); margin-bottom: .85rem; font-size: .9rem; overflow-wrap: anywhere; }
 .hrl-flash--ok { background: var(--hrl-ok-bg); color: var(--hrl-ok); }
 .hrl-flash--warn { background: var(--hrl-warn-bg); color: var(--hrl-warn); }
 
 /* Page scaffold */
 .hrl-page__head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .25rem 0 .9rem; }
-.hrl-page__title { font-size: 1.25rem; font-weight: 700; margin: 0; }
+.hrl-page__title { font-size: 1.25rem; font-weight: 700; margin: 0; overflow-wrap: anywhere; }
 .hrl-page__sub { color: var(--hrl-muted); font-size: .86rem; margin: .15rem 0 0; width: 100%; }
 .hrl-page__actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
 
@@ -154,13 +154,14 @@
 .hrl-card__title { font-weight: 650; font-size: .95rem; margin: 0 0 .6rem; }
 .hrl-card--empty { text-align: center; color: var(--hrl-muted); padding: 1.8rem 1rem; }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; }
+.hrl-grid > * { min-width: 0; }
 @media (min-width: 700px) { .hrl-grid--2 { grid-template-columns: 1fr 1fr; } }
 
 /* KPI tiles */
-.hrl-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: .6rem; margin-bottom: .85rem; }
-@media (min-width: 700px) { .hrl-kpis { grid-template-columns: repeat(4, 1fr); } }
+.hrl-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; margin-bottom: .85rem; }
+@media (min-width: 1100px) { .hrl-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .hrl-kpi { background: var(--hrl-card); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius); padding: .7rem .8rem; }
-.hrl-kpi__value { font-size: 1.35rem; font-weight: 700; }
+.hrl-kpi__value { font-size: 1.35rem; font-weight: 700; overflow-wrap: anywhere; }
 .hrl-kpi__label { color: var(--hrl-muted); font-size: .78rem; }
 
 /* Buttons */
@@ -199,7 +200,7 @@
 @media (max-width: 640px) {
   .hrl-table--stack thead { display: none; }
   .hrl-table--stack tr { display: block; border-bottom: 6px solid var(--hrl-bg); }
-  .hrl-table--stack td { display: flex; justify-content: space-between; gap: .8rem; border-bottom: 1px dashed var(--hrl-line); }
+  .hrl-table--stack td { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .8rem; border-bottom: 1px dashed var(--hrl-line); overflow-wrap: anywhere; }
   .hrl-table--stack td::before { content: attr(data-label); color: var(--hrl-muted); font-size: .78rem; }
   .hrl-table--stack td.hrl-num { text-align: left; }
   .hrl-table--stack td.hrl-cell--void { display: none; }
@@ -323,7 +324,7 @@
 
 /* Long-form policy text. Constrained measure — a policy read across the
    full width of a laptop is a policy nobody finishes. */
-.hrl-prose { max-width: 68ch; }
+.hrl-prose { max-width: 68ch; overflow-wrap: anywhere; }
 .hrl-prose p { margin: 0 0 .8rem; line-height: 1.6; }
 .hrl-prose p:last-child { margin-bottom: 0; }
 
