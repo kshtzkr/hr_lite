@@ -3,24 +3,68 @@
    overriding the variables below (see README), never by editing this file. */
 
 :root {
+  /* Type. rem so OS text scaling works; nothing renders below 12px. */
   --hrl-font: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --hrl-font-head: var(--hrl-font);
+  --hrl-t-micro: .75rem;
+  --hrl-t-small: .875rem;
+  --hrl-t-body: 1rem;
+  --hrl-t-lead: 1.125rem;
+  --hrl-t-title: 1.25rem;
+  --hrl-t-display: 1.5rem;
+  --hrl-lh-tight: 1.25;
+  --hrl-lh-body: 1.5;
+  /* Colour roles. */
   --hrl-accent: #2563eb;
   --hrl-accent-ink: #ffffff;
   --hrl-ink: #111827;
-  --hrl-muted: #6b7280;
+  --hrl-ink-2: #374151;
+  --hrl-muted: #4b5563;
   --hrl-bg: #f4f5f7;
   --hrl-card: #ffffff;
   --hrl-line: #e5e7eb;
+  --hrl-field: #6b7280;
   --hrl-ok: #047857;
   --hrl-ok-bg: #d1fae5;
   --hrl-warn: #b45309;
   --hrl-warn-bg: #fef3c7;
   --hrl-bad: #b91c1c;
   --hrl-bad-bg: #fee2e2;
-  --hrl-info-bg: #dbeafe;
-  --hrl-radius: 14px;
-  --hrl-radius-sm: 9px;
+  --hrl-info-bg: #eff6ff;
+  --hrl-scrim: rgba(15, 23, 42, .32);
+  /* Spacing. */
+  --hrl-s-1: 4px;
+  --hrl-s-2: 8px;
+  --hrl-s-3: 12px;
+  --hrl-s-4: 16px;
+  --hrl-s-5: 20px;
+  --hrl-s-6: 24px;
+  --hrl-s-8: 32px;
+  --hrl-s-10: 40px;
+  --hrl-s-12: 48px;
+  --hrl-gutter: .85rem;
+  --hrl-target: 44px;
+  --hrl-gap-target: 8px;
+  /* Radii. */
+  --hrl-radius-sm: 12px;
+  --hrl-radius: 16px;
+  --hrl-radius-lg: 20px;
+  --hrl-radius-pill: 9999px;
+  /* Elevation. */
   --hrl-shadow: 0 1px 3px rgba(17, 24, 39, .07);
+  --hrl-shadow-md: 0 6px 18px rgba(15, 23, 42, .08);
+  --hrl-shadow-lg: 0 18px 40px rgba(15, 23, 42, .14);
+  --hrl-shadow-sheet: 0 -6px 18px rgba(15, 23, 42, .08);
+  /* Focus, motion, layering. */
+  --hrl-focus: var(--hrl-accent);
+  --hrl-focus-w: 2px;
+  --hrl-focus-offset: 2px;
+  --hrl-ease: cubic-bezier(.2, .6, .2, 1);
+  --hrl-dur-fast: 120ms;
+  --hrl-dur: 220ms;
+  --hrl-z-sticky: 20;
+  --hrl-z-menu: 30;
+  --hrl-z-sheet: 40;
 }
 
 * { box-sizing: border-box; }

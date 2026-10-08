@@ -192,6 +192,16 @@ RSpec.describe HrLite do
     end
   end
 
+  describe "theming docs" do
+    it "lists every :root variable and none the stylesheet lacks" do
+      css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
+      documented = HrLite::Engine.root.join("README.md").read.scan(/--hrl-[a-z0-9-]+/).uniq
+
+      expect(css[/:root \{.*?\}/m].scan(/(--hrl-[a-z0-9-]+):/).flatten - documented).to be_empty
+      expect(documented - css.scan(/--hrl-[a-z0-9-]+/)).to be_empty
+    end
+  end
+
   describe ".default_mentionable_users" do
     it "matches name or email, capped at 8, ordered by id" do
       match = create(:user, name: "Khushboo")

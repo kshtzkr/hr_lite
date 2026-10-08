@@ -398,6 +398,54 @@ Override the CSS variables, nothing else:
 :root { --hrl-accent: #00a24f; --hrl-font: "Inter", sans-serif; }
 ```
 
+Every variable, with its role and engine default (all on `:root` in
+`hr_lite/hr_lite.css`):
+
+| Variable | Role | Default |
+|---|---|---|
+| `--hrl-font` | body and UI face | system stack |
+| `--hrl-font-head` | page and card titles | `var(--hrl-font)` |
+| `--hrl-t-micro` | badges, chips, legends, table heads, tab labels | `.75rem` |
+| `--hrl-t-small` | hints, field labels, table cells, meta lines | `.875rem` |
+| `--hrl-t-body` | body text, inputs (iOS zoom floor), buttons | `1rem` |
+| `--hrl-t-lead` | card titles, the punch button | `1.125rem` |
+| `--hrl-t-title` | page title on phones | `1.25rem` |
+| `--hrl-t-display` | KPI values, page title from 768px | `1.5rem` |
+| `--hrl-lh-tight` / `--hrl-lh-body` | line height of titles and badges / of body text | `1.25` / `1.5` |
+| `--hrl-accent` | links, primary buttons, active nav | `#2563eb` |
+| `--hrl-accent-ink` | text on accent | `#ffffff` |
+| `--hrl-ink` | primary text | `#111827` |
+| `--hrl-ink-2` | text on a tint (grid tags, muted badges) | `#374151` |
+| `--hrl-muted` | secondary text on white or bg, never on a tint | `#4b5563` |
+| `--hrl-bg` | page background | `#f4f5f7` |
+| `--hrl-card` | card surface | `#ffffff` |
+| `--hrl-line` | dividers, card borders | `#e5e7eb` |
+| `--hrl-field` | input, select and textarea border (3:1 or better) | `#6b7280` |
+| `--hrl-ok` / `--hrl-ok-bg` | present, approved | `#047857` / `#d1fae5` |
+| `--hrl-warn` / `--hrl-warn-bg` | holiday, pending | `#b45309` / `#fef3c7` |
+| `--hrl-bad` / `--hrl-bad-bg` | absent, rejected, errors | `#b91c1c` / `#fee2e2` |
+| `--hrl-info-bg` | info tint, active nav, leave cell | `#eff6ff` |
+| `--hrl-scrim` | backdrop behind the More sheet | `rgba(15, 23, 42, .32)` |
+| `--hrl-s-1` `--hrl-s-2` `--hrl-s-3` `--hrl-s-4` `--hrl-s-5` `--hrl-s-6` `--hrl-s-8` `--hrl-s-10` `--hrl-s-12` | spacing steps | 4, 8, 12, 16, 20, 24, 32, 40, 48px |
+| `--hrl-gutter` | phone screen padding | `.85rem` |
+| `--hrl-target` | minimum tap target | `44px` |
+| `--hrl-gap-target` | minimum gap between adjacent targets | `8px` |
+| `--hrl-radius-sm` | controls, nav links, flash, grid cells | `12px` |
+| `--hrl-radius` | cards, KPI tiles, tables | `16px` |
+| `--hrl-radius-lg` | top corners of the More sheet | `20px` |
+| `--hrl-radius-pill` | badges, chips, avatars, counts | `9999px` |
+| `--hrl-shadow` | card elevation | `0 1px 3px` |
+| `--hrl-shadow-md` / `--hrl-shadow-lg` | menus / dialogs | `0 6px 18px` / `0 18px 40px` |
+| `--hrl-shadow-sheet` | the More sheet (shadow cast upward) | `0 -6px 18px` |
+| `--hrl-focus` | focus ring colour | `var(--hrl-accent)` |
+| `--hrl-focus-w` / `--hrl-focus-offset` | focus ring width / offset | `2px` / `2px` |
+| `--hrl-ease` | easing for transitions | `cubic-bezier(.2, .6, .2, 1)` |
+| `--hrl-dur-fast` / `--hrl-dur` | short / standard transition | `120ms` / `220ms` |
+| `--hrl-z-sticky` / `--hrl-z-menu` / `--hrl-z-sheet` | app and tab bars / dropdowns / the More sheet | `20` / `30` / `40` |
+
+The ID card also reads `--hrl-card-display` and `--hrl-card-body` (its fonts;
+unset, both fall back to `--hrl-font`).
+
 Point `config.extra_stylesheets` at a stylesheet and it is linked after the
 engine's own CSS, so your `--hrl-*` overrides win. Every view is also
 overridable through standard engine view precedence — drop a file at the same

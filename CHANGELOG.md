@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
+
+### Changed
+- Engine defaults: `--hrl-radius` 14px to 16px, `--hrl-radius-sm` 9px to 12px, `--hrl-info-bg` #dbeafe to #eff6ff (accent text on it now 4.75:1) and `--hrl-muted` #6b7280 to #4b5563 (4.5:1 or better on the page background). Hosts that set these variables see no change.
+
 ## [0.21.3] - 2026-10-09
 
 ### Fixed
