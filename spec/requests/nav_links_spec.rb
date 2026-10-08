@@ -35,6 +35,14 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect(response.body).not_to include('href="/hr/admin/overview"')
     end
 
+    it "links the app bar name to the profile, with no bell unless the host configures one" do
+      sign_in employee
+      get "/hr/"
+      bar = Nokogiri::HTML(response.body).at_css(".hrl-appbar")
+      expect(bar.at_css("a.hrl-appbar__user")["href"]).to eq("/hr/profile")
+      expect(bar.at_css(".hrl-bell")).to be_nil
+    end
+
     it "loads the script that scrolls the menu to the current screen" do
       sign_in employee
       get "/hr/"

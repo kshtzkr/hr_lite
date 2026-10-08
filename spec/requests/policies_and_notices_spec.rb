@@ -93,7 +93,7 @@ RSpec.describe "Policies, announcements and holiday notices", type: :request do
     it "shows the unread count the host reports" do
       HrLite.config.notifications = ->(_user) { { url: "https://cms.test/notifications", unread: 3 } }
       get "/hr/"
-      expect(response.body).to include('href="https://cms.test/notifications"').and include('hrl-bell__count">3<')
+      expect(response.body).to include('href="https://cms.test/notifications"').and include('hrl-bell__count">3<span class="hrl-sr-only"> unread</span>')
     end
   end
 end

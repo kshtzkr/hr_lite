@@ -74,7 +74,8 @@
           <% end %>
         </a>
         <%= render "hr_lite/shared/bell" %>
-        <span class="hrl-appbar__user"><%= hr_display_name(hr_current_user) %></span>
+        <% profile = hr_lite.employee_profile_path if hr_lite_route?(:employee_profile_path) %>
+        <%= tag.a hr_display_name(hr_current_user), href: profile, class: "hrl-appbar__user" %>
       </header>
 
       <main class="hrl-main" id="hrl-main" tabindex="-1">
