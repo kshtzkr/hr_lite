@@ -122,11 +122,11 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-appbar--mobile {
   background: var(--hrl-card);
   border-bottom: 1px solid var(--hrl-line);
-  padding: calc(.5rem + env(safe-area-inset-top)) .85rem .5rem;
+  padding: calc(var(--hrl-s-2) + env(safe-area-inset-top)) var(--hrl-gutter) var(--hrl-s-2);
   position: sticky; top: 0; z-index: var(--hrl-z-sticky);
   display: flex; align-items: center; gap: .75rem;
 }
-.hrl-appbar__brand { font-weight: 700; font-size: var(--hrl-t-body); color: var(--hrl-ink); line-height: var(--hrl-target); flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hrl-appbar__brand { font-weight: 700; font-size: var(--hrl-t-body); color: var(--hrl-ink); line-height: var(--hrl-target); flex: 0 1 auto; min-width: var(--hrl-target); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hrl-appbar__logo { height: 28px; width: auto; vertical-align: middle; }
 .hrl-appbar__user { margin-left: auto; color: var(--hrl-muted); font-size: var(--hrl-t-small); line-height: var(--hrl-target); white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
