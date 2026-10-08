@@ -37,7 +37,7 @@
               <td data-label="Due"><%= item.due_on&.strftime("%d %b %Y") || "—" %></td>
               <td data-label="">
                 <%= form_with url: hr_lite.complete_admin_checklist_path(item), method: :post do %>
-                  <%= text_field_tag :note, nil, placeholder: "Note" %>
+                  <%= text_field_tag :note, nil, placeholder: "Note", class: "hrl-input" %>
                   <%= submit_tag "Done", class: "hrl-btn hrl-btn--primary" %>
                 <% end %>
               </td>

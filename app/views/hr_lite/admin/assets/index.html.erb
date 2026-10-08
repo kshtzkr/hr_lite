@@ -39,13 +39,13 @@
             <td data-label="">
               <% if asset.assigned? %>
                 <%= form_with url: hr_lite.take_back_admin_asset_path(asset), method: :post do %>
-                  <%= text_field_tag :condition_note, nil, placeholder: "Condition" %>
+                  <%= text_field_tag :condition_note, nil, placeholder: "Condition", class: "hrl-input" %>
                   <%= submit_tag "Take back", class: "hrl-btn" %>
                 <% end %>
               <% elsif asset.available? %>
                 <%= form_with url: hr_lite.assign_admin_asset_path(asset), method: :post do %>
                   <%= select_tag :user_id,
-                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }) %>
+                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }), class: "hrl-input" %>
                   <%= submit_tag "Hand over", class: "hrl-btn" %>
                 <% end %>
               <% end %>

@@ -44,7 +44,7 @@
                 <%= button_to "Verify", hr_lite.verify_admin_document_path(doc),
                       method: :post, class: "hrl-btn hrl-btn--primary" %>
                 <%= form_with url: hr_lite.reject_admin_document_path(doc), method: :post, local: true do %>
-                  <%= text_field_tag :note, nil, placeholder: "What is wrong with it" %>
+                  <%= text_field_tag :note, nil, placeholder: "What is wrong with it", class: "hrl-input" %>
                   <%= submit_tag "Reject", class: "hrl-btn" %>
                 <% end %>
               </td>
