@@ -78,12 +78,16 @@ module HrLite
       hr_lite.respond_to?(helper_name)
     end
 
-    def hrl_nav_link(item)
-      href = hr_lite.public_send(item[:path])
-      active = item[:match].any? do |prefix|
-        prefix == "/" ? request.path == href : request.path.start_with?("#{hr_lite.root_path.chomp('/')}#{prefix}")
+    def hrl_nav_active?(item)
+      item[:match].any? do |prefix|
+        prefix == "/" ? request.path == hr_lite.public_send(item[:path]) : request.path.start_with?("#{hr_lite.root_path.chomp('/')}#{prefix}")
       end
-      link_to item[:label], href, class: "hrl-nav__link #{'hrl-nav__link--active' if active}"
+    end
+
+    def hrl_nav_link(item)
+      active = hrl_nav_active?(item)
+      link_to item[:label], hr_lite.public_send(item[:path]),
+              class: "hrl-nav__link #{'hrl-nav__link--active' if active}", aria: { current: ("page" if active) }
     end
 
     # Mention-marker-aware, XSS-safe kudos message rendering. Every literal

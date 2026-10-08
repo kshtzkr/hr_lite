@@ -145,7 +145,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   flex: 1; justify-content: center; list-style: none; cursor: pointer;
 }
 .hrl-tabbar__more > summary::-webkit-details-marker { display: none; }
-.hrl-tabbar__more[open] > summary { color: var(--hrl-accent); font-weight: 600; }
+.hrl-tabbar__more[open] > summary,
+.hrl-tabbar__more > summary.hrl-nav__link--active { color: var(--hrl-accent); font-weight: 600; }
 .hrl-sheet {
   position: fixed; left: 0; right: 0;
   bottom: calc(3.3rem + env(safe-area-inset-bottom));

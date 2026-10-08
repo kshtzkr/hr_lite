@@ -41,6 +41,19 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect(response.body).to include("hr_lite/nav")
     end
 
+    it "marks the current screen, and lights More only when that screen sits in the sheet" do
+      sign_in employee
+      get "/hr/calendar"
+      page = Nokogiri::HTML(response.body)
+      expect(page.css('a[aria-current="page"]').map { |a| a["href"] }.uniq).to eq([ "/hr/calendar" ])
+      expect(page.at_css(".hrl-tabbar__more > summary")["class"]).to include("hrl-nav__link--active")
+
+      get "/hr/"
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css('a[href="/hr/calendar"]')["aria-current"]).to be_nil
+      expect(page.at_css(".hrl-tabbar__more > summary")["class"]).not_to include("hrl-nav__link--active")
+    end
+
     it "offers Record leave on the Leaves page to whoever can record it, and only them" do
       sign_in employee
       get "/hr/leave_requests"

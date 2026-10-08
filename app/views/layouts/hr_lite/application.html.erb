@@ -96,7 +96,7 @@
       <%= hrl_nav_link(item) %>
     <% end %>
     <details class="hrl-tabbar__more">
-      <summary class="hrl-nav__link">More</summary>
+      <summary class="hrl-nav__link <%= 'hrl-nav__link--active' if rest.any? { |i| hrl_nav_active?(i) } || request.path.include?("/admin/") %>">More</summary>
       <div class="hrl-sheet">
         <% rest.each do |item| %>
           <%= hrl_nav_link(item) %>
