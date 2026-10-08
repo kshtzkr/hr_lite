@@ -9,11 +9,11 @@
       <%= f.label :category, "What is this about" %>
       <%= f.select :category,
             HrLite::HrRequest::CATEGORIES.map { |c| [ c.humanize, c ] },
-            { include_blank: "Choose one" } %>
+            { include_blank: "Choose one" }, { required: true } %>
     </div>
     <div class="hrl-field">
       <%= f.label :subject, "In one line" %>
-      <%= f.text_field :subject %>
+      <%= f.text_field :subject, required: true %>
     </div>
     <div class="hrl-field">
       <%= f.label :body, "Anything else HR should know" %>

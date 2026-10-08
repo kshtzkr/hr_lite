@@ -8,19 +8,19 @@
     <div class="hrl-field">
       <%= f.label :category_id, "What kind of expense" %>
       <%= f.select :category_id, @categories.map { |c| [ c.name, c.id ] },
-                   { include_blank: "Choose one" } %>
+                   { include_blank: "Choose one" }, { required: true } %>
     </div>
     <div class="hrl-field">
       <%= f.label :amount, "Amount (₹)" %>
-      <%= f.text_field :amount, inputmode: "decimal" %>
+      <%= f.text_field :amount, inputmode: "decimal", required: true %>
     </div>
     <div class="hrl-field">
       <%= f.label :spent_on, "When you spent it" %>
-      <%= f.date_field :spent_on, max: Date.current.to_s %>
+      <%= f.date_field :spent_on, max: Date.current.to_s, required: true %>
     </div>
     <div class="hrl-field">
       <%= f.label :description, "What it was for" %>
-      <%= f.text_field :description %>
+      <%= f.text_field :description, required: true %>
     </div>
     <div class="hrl-field">
       <%= f.label :receipt, "Receipt (PDF or photo)" %>

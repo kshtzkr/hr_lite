@@ -8,7 +8,7 @@
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
       <%= f.label :date_worked, "Which day did you work?" %>
-      <%= f.date_field :date_worked, max: Date.current %>
+      <%= f.date_field :date_worked, max: Date.current, required: true %>
       <p class="hrl-hint">Must be a weekend or holiday you actually worked — extra hours on a
         normal working day are not comp-off under the policy.</p>
     </div>
@@ -18,7 +18,7 @@
     </div>
     <div class="hrl-field">
       <%= f.label :reason, "What did you work on? (required)" %>
-      <%= f.text_area :reason %>
+      <%= f.text_area :reason, required: true %>
     </div>
     <div class="hrl-form-actions">
       <%= f.submit "Send for approval", class: "hrl-btn hrl-btn--primary" %>

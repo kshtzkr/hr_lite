@@ -164,9 +164,16 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response).to have_http_status(:not_found)
     end
 
-    it "re-renders an incomplete request" do
+    it "re-renders an incomplete request with an announced error box and the bad field marked" do
       post "/hr/hr_requests", params: { hr_request: { category: "other", subject: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include('role="alert"', 'id="hrl-errors"', "field_with_errors")
+    end
+
+    it "shows no error box on a fresh form, and marks the mandatory fields required" do
+      get "/hr/hr_requests/new"
+      expect(response.body).not_to include("hrl-errors")
+      expect(response.body[/<input[^>]*hr_request\[subject\][^>]*>/]).to include("required")
     end
   end
 end

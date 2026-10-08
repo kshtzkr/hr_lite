@@ -218,6 +218,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 }
 .hrl-card__title { font-family: var(--hrl-font-head); font-weight: 700; font-size: var(--hrl-t-lead); line-height: var(--hrl-lh-tight); margin: 0 0 .6rem; }
 .hrl-card--empty { text-align: center; color: var(--hrl-muted); padding: 1.8rem 1rem; }
+.hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; }
 .hrl-grid > * { min-width: 0; }
 @media (min-width: 700px) { .hrl-grid--2 { grid-template-columns: 1fr 1fr; } }
@@ -278,15 +279,15 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Forms */
 .hrl-field { margin-bottom: .8rem; }
 .hrl-field label { display: block; font-size: var(--hrl-t-small); font-weight: 600; margin-bottom: .3rem; }
-.hrl-field .hrl-hint { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin-top: .25rem; }
+.hrl-hint { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin-top: .25rem; }
 /* Full-width text-ish controls only — checkboxes/radios/hidden must keep
    their natural size (a bare [type] selector out-ranked .hrl-field--check
    and blew checkboxes up to 100% width). */
 .hrl-input,
 .hrl-field input[type]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .hrl-field select, .hrl-field textarea {
-  width: 100%; min-height: 44px; padding: .55rem .7rem; font: inherit;
-  border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm);
+  width: 100%; min-height: 44px; padding: .55rem .7rem; font: inherit; font-size: var(--hrl-t-body);
+  border: 1px solid var(--hrl-field); border-radius: var(--hrl-radius-sm);
   background: var(--hrl-card); color: var(--hrl-ink);
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
@@ -295,7 +296,11 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
   accent-color: var(--hrl-accent);
 }
-.hrl-field--check label { margin-bottom: 0; font-weight: 600; }
+/* The 44px label is the tap target for the small box. */
+.hrl-field--check label { margin-bottom: 0; font-weight: 600; flex: 1; min-height: var(--hrl-target); display: flex; align-items: center; }
+/* Rails wraps an invalid label/field in this div; contents keeps the stack, the re-pointed token reddens the border. */
+.field_with_errors { display: contents; --hrl-field: var(--hrl-bad); }
+.field_with_errors label { color: var(--hrl-bad); }
 .hrl-errors { background: var(--hrl-bad-bg); color: var(--hrl-bad); border-radius: var(--hrl-radius-sm); padding: .7rem .9rem; margin-bottom: .85rem; font-size: var(--hrl-t-body); }
 .hrl-errors ul { margin: .3rem 0 0; padding-left: 1.1rem; }
 .hrl-form-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
@@ -303,10 +308,10 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 @media (min-width: 700px) { .hrl-form-actions .hrl-btn { flex: 0 0 auto; min-width: 9rem; } }
 
 /* Radio chip row (kudos badges) */
-.hrl-chiprow { display: flex; flex-wrap: wrap; gap: .45rem; }
+.hrl-chiprow { display: flex; flex-wrap: wrap; gap: var(--hrl-gap-target); }
 .hrl-chiprow label {
   border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-pill); padding: .4rem .8rem;
-  font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; min-height: 40px; display: inline-flex; align-items: center;
+  font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; min-height: var(--hrl-target); display: inline-flex; align-items: center;
 }
 .hrl-chiprow input { position: absolute; opacity: 0; pointer-events: none; }
 .hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked) { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }
