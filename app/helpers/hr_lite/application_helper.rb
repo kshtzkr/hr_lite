@@ -1,31 +1,30 @@
 module HrLite
   module ApplicationHelper
     NAV_ITEMS = [
-      { label: "Home",       path: :root_path,           match: [ "/" ] },
-      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests" ] },
-      { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
-      { label: "Team",       path: :team_path,           match: [ "/team" ] },
-      { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ] },
-      # After Calendar deliberately: the phone tab bar shows the first four
-      # and this screen is empty for everybody who is not an approver, so it
-      # belongs in "More" rather than displacing something everybody uses.
+      { label: "Home",       path: :root_path,           match: [ "/" ], group: "My work" },
+      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests" ], group: "My work" },
+      { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ], group: "My work" },
+      { label: "Team",       path: :team_path,           match: [ "/team" ], group: "My work" },
+      # The phone tab bar shows the first four; the rest fill the More sheet,
+      # one label per group, so a group's items must stay together.
+      { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ], group: "Time" },
+      { label: "Expenses",   path: :expenses_path,       match: [ "/expenses" ], group: "Money" },
+      { label: "Benefits",   path: :benefits_path,       match: [ "/benefits" ], group: "Money" },
+      { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ], group: "Money" },
+      { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ], group: "Money" },
+      { label: "Loans",      path: :loans_path,          match: [ "/loans" ], group: "Money" },
+      { label: "Profile",    path: :employee_profile_path, match: [ "/profile", "/resignation" ], group: "Me" },
+      { label: "Documents",  path: :documents_path,      match: [ "/documents" ], group: "Me" },
+      { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ], group: "Me" },
+      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ], group: "Me" },
+      { label: "Policies",   path: :policies_path,       match: [ "/policies" ], group: "Company" },
+      { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ], group: "Company" },
+      { label: "Org",        path: :org_path,            match: [ "/org" ], group: "Company" },
+      { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ], group: "Company" },
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
-      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ],
-        if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
-      { label: "Expenses",   path: :expenses_path,       match: [ "/expenses" ] },
-      { label: "Benefits",   path: :benefits_path,       match: [ "/benefits" ] },
-      { label: "Policies",   path: :policies_path,       match: [ "/policies" ] },
-      { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ] },
-      { label: "Org",        path: :org_path,            match: [ "/org" ] },
-      { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ] },
-      { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ] },
-      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ] },
-      { label: "Profile",    path: :employee_profile_path, match: [ "/profile", "/resignation" ] },
-      { label: "Documents",  path: :documents_path,      match: [ "/documents" ] },
-      { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ] },
-      { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ] },
-      { label: "Loans",      path: :loans_path,          match: [ "/loans" ] }
+      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ], group: "Company",
+        if: -> { HrLite::ApprovalFlow.where(active: true).exists? } }
     ].freeze
 
     ADMIN_NAV_ITEMS = [

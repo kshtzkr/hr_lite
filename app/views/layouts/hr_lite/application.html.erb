@@ -26,9 +26,11 @@
       </a>
 
       <nav class="hrl-side__nav">
-        <span class="hrl-side__group">My work</span>
-        <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).each do |item| %>
-          <%= hrl_nav_link(item) %>
+        <% hrl_nav_items(HrLite::ApplicationHelper::NAV_ITEMS).chunk { |item| item[:group] }.each do |group, items| %>
+          <span class="hrl-side__group"><%= group %></span>
+          <% items.each do |item| %>
+            <%= hrl_nav_link(item) %>
+          <% end %>
         <% end %>
 
         <% if hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) %>
@@ -99,8 +101,14 @@
     <details class="hrl-tabbar__more">
       <summary class="hrl-nav__link <%= 'hrl-nav__link--active' if rest.any? { |i| hrl_nav_active?(i) } || request.path.include?("/admin/") %>">More</summary>
       <div class="hrl-sheet">
-        <% rest.each do |item| %>
-          <%= hrl_nav_link(item) %>
+        <% if HrLite.config.back_link %>
+          <a class="hrl-nav__link hrl-side__back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
+        <% end %>
+        <% rest.chunk { |item| item[:group] }.each do |group, items| %>
+          <span class="hrl-side__group"><%= group %></span>
+          <% items.each do |item| %>
+            <%= hrl_nav_link(item) %>
+          <% end %>
         <% end %>
         <% if hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) %>
           <span class="hrl-side__group">Manage</span>

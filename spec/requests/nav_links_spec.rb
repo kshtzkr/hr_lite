@@ -43,6 +43,19 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect(bar.at_css(".hrl-bell")).to be_nil
     end
 
+    it "groups the More sheet, led by the host's back link only when one is configured" do
+      sign_in employee
+      get "/hr/"
+      sheet = Nokogiri::HTML(response.body).at_css(".hrl-sheet")
+      expect(sheet.css(".hrl-side__group").map(&:text)).to include("Money", "Me")
+      expect(sheet.at_css(".hrl-side__back")).to be_nil
+
+      HrLite.config.back_link = { label: "Back to CMS", url: "https://cms.example.test" }
+      get "/hr/"
+      first = Nokogiri::HTML(response.body).at_css(".hrl-sheet > :first-child")
+      expect([ first["href"], first.text ]).to eq([ "https://cms.example.test", "Back to CMS" ])
+    end
+
     it "loads the script that scrolls the menu to the current screen" do
       sign_in employee
       get "/hr/"
