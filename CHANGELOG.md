@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Engine defaults: `--hrl-radius` 14px to 16px, `--hrl-radius-sm` 9px to 12px, `--hrl-info-bg` #dbeafe to #eff6ff (accent text on it now 4.75:1) and `--hrl-muted` #6b7280 to #4b5563 (4.5:1 or better on the page background). Hosts that set these variables see no change.
+- Type: every screen except the ID card uses the six-step ramp (12/14/16/18/20/24px) and weights 400/600/700. Nothing renders below 12px, and the page title grows from 20px to 24px at 768px.
 
 ## [0.21.3] - 2026-10-09
 
