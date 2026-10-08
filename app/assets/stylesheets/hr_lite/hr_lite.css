@@ -218,6 +218,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-page__sub { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin: .15rem 0 0; width: 100%; }
 .hrl-page__actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
 .hrl-page__actions .hrl-btn { flex: 1 1 auto; }
+.hrl-page__actions .hrl-btn[aria-label] { flex: 0 0 auto; } /* icon-only pager arrows keep their width */
 @media (min-width: 481px) {
   .hrl-page__actions { width: auto; margin-left: auto; }
   .hrl-page__actions .hrl-btn { flex: 0 1 auto; }
