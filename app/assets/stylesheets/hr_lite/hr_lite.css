@@ -133,14 +133,14 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Bottom tab bar (phone) */
 .hrl-tabbar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--hrl-z-sticky);
-  display: flex; justify-content: space-around;
+  display: flex; justify-content: space-around; gap: var(--hrl-gap-target);
   background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
   padding: .25rem .25rem calc(.25rem + env(safe-area-inset-bottom));
 }
-.hrl-tabbar .hrl-nav__link { flex: 1; justify-content: center; font-size: var(--hrl-t-micro); font-weight: 600; }
+.hrl-tabbar .hrl-nav__link { flex: 1 1 auto; min-width: var(--hrl-target); padding-inline: var(--hrl-s-1); justify-content: center; font-size: var(--hrl-t-micro); font-weight: 600; }
 /* "More" sheet — everything five tabs cannot hold. Pure <details>: the
    engine ships no Turbo or Stimulus and this must not need any. */
-.hrl-tabbar__more { flex: 1; display: flex; }
+.hrl-tabbar__more { flex: 1 1 auto; display: flex; }
 .hrl-tabbar__more > summary {
   flex: 1; justify-content: center; list-style: none; cursor: pointer;
 }
