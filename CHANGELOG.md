@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
 - Keyboard: every focused control shows a 2px accent ring (kudos badge chips included), focus scrolls clear of the app bar and tab bar, and a "Skip to content" link is the first Tab stop so desktop users skip the side rail. Reduced-motion users get no transitions or animations. New `.hrl-sr-only` utility.
 - Leave-type badge `.hrl-badge--type`: ink text on grey with an 8px dot in the HR-chosen colour, set inline as `--hrl-type`.
-- Navigation: the current screen's link carries `aria-current="page"`, and the phone "More" tab lights up in the accent colour when the current screen lives in the sheet or under admin. New helper `hrl_nav_active?(item)`.
+- Navigation: the current screen's link carries `aria-current="page"`, and the phone "More" tab lights up in the accent colour, and carries `aria-current="true"` so screen readers hear it too, when the current screen lives in the sheet or under admin. New helper `hrl_nav_active?(item)`.
 - Sub-screens show a 44px "‹ Leaves", "‹ Attendance" or "‹ Calendar" link to their parent tab above the title: balances, comp-off, regularization, holidays, and the leave form and request. A view names its tab with `content_for(:back, "Leaves")`; new `.hrl-backlink`. The leave request's "Back" button gives way to it.
 
 ### Changed

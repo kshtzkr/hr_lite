@@ -80,11 +80,17 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       page = Nokogiri::HTML(response.body)
       expect(page.css('a[aria-current="page"]').map { |a| a["href"] }.uniq).to eq([ "/hr/calendar" ])
       expect(page.at_css(".hrl-tabbar__more > summary")["class"]).to include("hrl-nav__link--active")
+      expect(page.at_css(".hrl-tabbar__more > summary")["aria-current"]).to eq("true")
 
       get "/hr/"
       page = Nokogiri::HTML(response.body)
       expect(page.at_css('a[href="/hr/calendar"]')["aria-current"]).to be_nil
       expect(page.at_css(".hrl-tabbar__more > summary")["class"]).not_to include("hrl-nav__link--active")
+      expect(page.at_css(".hrl-tabbar__more > summary")["aria-current"]).to be_nil
+
+      sign_in hr
+      get "/hr/admin/overview"
+      expect(Nokogiri::HTML(response.body).at_css(".hrl-tabbar__more > summary")["class"]).to include("hrl-nav__link--active")
     end
 
     it "offers Record leave on the Leaves page to whoever can record it, and only them" do

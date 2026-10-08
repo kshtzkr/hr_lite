@@ -103,7 +103,8 @@
       <%= hrl_nav_link(item) %>
     <% end %>
     <details class="hrl-tabbar__more">
-      <summary class="hrl-nav__link <%= 'hrl-nav__link--active' if rest.any? { |i| hrl_nav_active?(i) } || request.path.include?("/admin/") %>">More</summary>
+      <% lit = rest.any? { |i| hrl_nav_active?(i) } || request.path.include?("/admin/") %>
+      <%= tag.summary "More", class: [ "hrl-nav__link", ("hrl-nav__link--active" if lit) ], aria: { current: ("true" if lit) } %>
       <div class="hrl-sheet">
         <% if HrLite.config.back_link %>
           <a class="hrl-nav__link hrl-side__back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
