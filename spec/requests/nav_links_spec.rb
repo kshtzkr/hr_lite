@@ -56,6 +56,18 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect([ first["href"], first.text ]).to eq([ "https://cms.example.test", "Back to CMS" ])
     end
 
+    it "links a sub-screen back to its parent tab, and leaves the tabs themselves without one" do
+      sign_in employee
+      { "/hr/leave_balances" => "/hr/leave_requests", "/hr/holidays" => "/hr/calendar" }.each do |path, parent|
+        get path
+        expect(Nokogiri::HTML(response.body).at_css("a.hrl-backlink")["href"]).to eq(parent)
+      end
+      [ "/hr/", "/hr/attendance" ].each do |path|
+        get path
+        expect(Nokogiri::HTML(response.body).at_css(".hrl-backlink")).to be_nil
+      end
+    end
+
     it "loads the script that scrolls the menu to the current screen" do
       sign_in employee
       get "/hr/"

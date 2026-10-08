@@ -81,6 +81,10 @@
       </header>
 
       <main class="hrl-main" id="hrl-main" tabindex="-1">
+        <%# A sub-screen names its parent tab: content_for(:back, "Leaves"). %>
+        <% if (tab = HrLite::ApplicationHelper::NAV_ITEMS.find { |i| i[:label] == content_for(:back) }) %>
+          <a class="hrl-backlink" href="<%= hr_lite.public_send(tab[:path]) %>"><span aria-hidden="true">‹</span> <%= tab[:label] %></a>
+        <% end %>
         <% if flash[:notice].present? %><div class="hrl-flash hrl-flash--ok" role="status"><%= flash[:notice] %></div><% end %>
         <% if flash[:alert].present? %><div class="hrl-flash hrl-flash--warn" role="alert"><%= flash[:alert] %></div><% end %>
         <%= yield %>
