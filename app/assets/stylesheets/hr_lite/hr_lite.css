@@ -113,7 +113,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-side { display: none; }
 .hrl-nav__link {
   color: var(--hrl-muted); font-size: var(--hrl-t-small); padding: .5rem .6rem;
-  border-radius: var(--hrl-radius-sm); min-height: 44px;
+  border-radius: var(--hrl-radius-sm); min-height: var(--hrl-target);
   display: inline-flex; align-items: center;
 }
 .hrl-nav__link--active { color: var(--hrl-accent); background: var(--hrl-info-bg); font-weight: 600; }
@@ -123,7 +123,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   background: var(--hrl-card);
   border-bottom: 1px solid var(--hrl-line);
   padding: calc(.6rem + env(safe-area-inset-top)) .85rem .6rem;
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: 0; z-index: var(--hrl-z-sticky);
   display: flex; align-items: center; gap: .75rem;
 }
 .hrl-appbar__brand { font-weight: 700; font-size: var(--hrl-t-body); color: var(--hrl-ink); display: inline-flex; align-items: center; }
@@ -132,7 +132,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 
 /* Bottom tab bar (phone) */
 .hrl-tabbar {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--hrl-z-sticky);
   display: flex; justify-content: space-around;
   background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
   padding: .25rem .25rem calc(.25rem + env(safe-area-inset-bottom));
@@ -154,13 +154,13 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
   border-radius: var(--hrl-radius-lg) var(--hrl-radius-lg) 0 0;
   padding: .6rem .85rem;
-  box-shadow: 0 -6px 18px rgb(0 0 0 / 8%);
+  box-shadow: var(--hrl-shadow-sheet);
 }
 /* Left-aligned like the desktop rail — the tab-bar rule centres its own
    links and would otherwise apply here too. */
 .hrl-sheet .hrl-nav__link {
   display: flex; justify-content: flex-start;
-  min-height: 44px; font-size: var(--hrl-t-body); padding: .5rem .6rem;
+  min-height: var(--hrl-target); font-size: var(--hrl-t-body); padding: .5rem .6rem;
 }
 .hrl-sheet .hrl-side__group {
   color: var(--hrl-muted); font-size: var(--hrl-t-micro); font-weight: 700;
@@ -236,7 +236,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Buttons */
 .hrl-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
-  min-height: 44px; padding: .55rem 1rem; border-radius: var(--hrl-radius-sm);
+  min-height: var(--hrl-target); padding: .55rem 1rem; border-radius: var(--hrl-radius-sm);
   border: 1px solid var(--hrl-line); background: var(--hrl-card); color: var(--hrl-ink);
   font-size: var(--hrl-t-body); font-weight: 600; cursor: pointer; text-decoration: none;
   max-width: 100%; overflow-wrap: anywhere; text-align: center;
@@ -249,7 +249,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 
 /* Badges & chips */
 .hrl-badge {
-  display: inline-flex; align-items: center; gap: .3rem;
+  display: inline-block;
   font-size: var(--hrl-t-micro); font-weight: 600; line-height: var(--hrl-lh-tight); padding: .18rem .55rem;
   border-radius: var(--hrl-radius-pill); background: var(--hrl-info-bg); color: var(--hrl-accent);
   white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
@@ -260,7 +260,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-badge--muted { background: var(--hrl-bg); color: var(--hrl-ink-2); }
 /* Leave-type badge: ink text on grey; the HR-chosen colour (inline --hrl-type) is only the dot. */
 .hrl-badge--type { background: var(--hrl-bg); color: var(--hrl-ink); }
-.hrl-badge--type::before { content: ""; width: 8px; height: 8px; border-radius: var(--hrl-radius-pill); background: var(--hrl-type); flex: none; }
+.hrl-badge--type::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: .3rem; border-radius: var(--hrl-radius-pill); background: var(--hrl-type); }
 .hrl-mention { color: var(--hrl-accent); font-weight: 700; }
 
 /* Tables (stack to label/value rows on phones) */
@@ -270,7 +270,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-table th { color: var(--hrl-muted); font-size: var(--hrl-t-micro); text-transform: uppercase; letter-spacing: .03em; }
 .hrl-table td.hrl-num, .hrl-table th.hrl-num { text-align: right; font-variant-numeric: tabular-nums; }
 .hrl-table--tight th, .hrl-table--tight td { padding: .5rem .35rem; }
-.hrl-table td[data-label=""] > * + * { margin-left: var(--hrl-s-2); }
+.hrl-table td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: var(--hrl-s-2); }
+.hrl-table td[data-label=""] > form + form { margin-top: var(--hrl-s-2); }
 /* Stack on phones and on the narrow content column beside the 768-1023px rail. */
 @media (max-width: 640px), (min-width: 768px) and (max-width: 1023px) {
   .hrl-table--stack thead { display: none; }
@@ -282,7 +283,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   .hrl-table--stack tr:last-child { border-bottom: 0; }
   .hrl-table--stack td[data-label=""] { justify-content: flex-end; }
   .hrl-table--stack td[data-label=""]::before { display: none; }
-  .hrl-table--stack td[data-label=""] > * + * { margin-left: 0; }
+  .hrl-table--stack td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: 0; }
+  .hrl-table--stack td[data-label=""] > form + form { margin-top: 0; }
 }
 
 /* Forms */
@@ -295,12 +297,12 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-input,
 .hrl-field input[type]:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
 .hrl-field select, .hrl-field textarea {
-  width: 100%; min-height: 44px; padding: .55rem .7rem; font: inherit; font-size: var(--hrl-t-body);
+  width: 100%; min-height: var(--hrl-target); padding: .55rem .7rem; font: inherit; font-size: var(--hrl-t-body);
   border: 1px solid var(--hrl-field); border-radius: var(--hrl-radius-sm);
   background: var(--hrl-card); color: var(--hrl-ink);
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
-.hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: 44px; }
+.hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: var(--hrl-target); }
 .hrl-field--check input {
   width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
   accent-color: var(--hrl-accent);
@@ -341,14 +343,14 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Mention autocomplete menu */
 .hrl-mention-wrap { position: relative; }
 .hrl-mention-menu {
-  position: absolute; left: 0; right: 0; z-index: 30;
+  position: absolute; left: 0; right: 0; z-index: var(--hrl-z-menu);
   background: var(--hrl-card); border: 1px solid var(--hrl-line);
   border-radius: var(--hrl-radius-sm); box-shadow: var(--hrl-shadow);
   max-height: 14rem; overflow-y: auto;
 }
 .hrl-mention-menu button {
   display: block; width: 100%; text-align: left; padding: .6rem .8rem;
-  background: none; border: 0; font: inherit; cursor: pointer; min-height: 44px;
+  background: none; border: 0; font: inherit; cursor: pointer; min-height: var(--hrl-target);
 }
 .hrl-mention-menu button:hover, .hrl-mention-menu button.hrl-active { background: var(--hrl-bg); }
 
@@ -384,7 +386,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
 .hrl-mgrid__head { text-align: center; color: var(--hrl-muted); font-size: var(--hrl-t-micro); padding: .2rem 0; }
 .hrl-mgrid__day {
-  min-height: 44px; border-radius: var(--hrl-radius-sm); background: var(--hrl-card);
+  min-height: var(--hrl-target); border-radius: var(--hrl-radius-sm); background: var(--hrl-card);
   border: 1px solid var(--hrl-line); padding: .2rem; font-size: var(--hrl-t-small);
   display: flex; flex-direction: column; gap: .1rem; position: relative;
 }
@@ -483,5 +485,5 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 }
 
 /* Notifications link, shown only when the host configures one. */
-.hrl-bell { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; font-size: var(--hrl-t-small); font-weight: 600; }
+.hrl-bell { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
 .hrl-bell__count { min-width: 1.4rem; padding: 0 .4rem; border-radius: var(--hrl-radius-pill); background: var(--hrl-accent); color: var(--hrl-accent-ink); font-size: var(--hrl-t-micro); text-align: center; }
