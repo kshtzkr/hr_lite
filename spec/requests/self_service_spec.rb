@@ -23,6 +23,22 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).to include("Travel", "left")
     end
 
+    it "says on each category option if a receipt is needed and what is left" do
+      HrLite::ExpenseCategory.create!(name: "Meals", receipt_required: true)
+      get "/hr/expenses/new"
+
+      expect(response.body).to include(">Meals (receipt needed)<",
+                                       ">Travel (₹5,000.00 left this month)<")
+    end
+
+    it "shows no amount left on a category with no cap" do
+      HrLite::ExpenseCategory.create!(name: "Courier", receipt_required: false)
+      get "/hr/expenses/new"
+
+      expect(response.body).to include(">Courier<")
+      expect(response.body).not_to include("Courier (")
+    end
+
     it "right-aligns only the numeric header, over values that keep their stacked label" do
       HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
                               spent_on: Date.current, description: "Tea")

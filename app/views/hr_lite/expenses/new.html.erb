@@ -7,8 +7,13 @@
 
     <div class="hrl-field">
       <%= f.label :category_id, "What kind of expense" %>
-      <%= f.select :category_id, @categories.map { |c| [ c.name, c.id ] },
-                   { include_blank: "Choose one" }, { required: true } %>
+      <% options = @categories.map do |c|
+           remaining = c.remaining_for(hr_current_user)
+           notes = [ ("receipt needed" if c.receipt_required),
+                     ("#{hrl_money(remaining)} left this month" if remaining) ].compact
+           [ notes.any? ? "#{c.name} (#{notes.join(', ')})" : c.name, c.id ]
+         end %>
+      <%= f.select :category_id, options, { include_blank: "Choose one" }, { required: true } %>
     </div>
     <div class="hrl-field">
       <%= f.label :amount, "Amount (₹)" %>
@@ -26,7 +31,7 @@
       <%= f.label :receipt, "Receipt (PDF or photo)" %>
       <%= f.file_field :receipt, accept: "application/pdf,image/*" %>
       <span class="hrl-small hrl-muted">
-        Some categories need one — the form will say so if yours does.
+        Needed when the category says "receipt needed".
       </span>
     </div>
 
