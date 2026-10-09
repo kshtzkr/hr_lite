@@ -5,6 +5,24 @@
 <div class="hrl-grid hrl-grid--2">
   <%= render "hr_lite/attendance/punch_card", attention: @attention %>
   <%= render "hr_lite/leave_requests/balance_chips" %>
+
+  <% if @mine_pending.any? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">My requests</h2>
+      <% @mine_pending.each do |req| %>
+        <% title, detail, href = case req
+             when HrLite::LeaveRequest then [ req.leave_type.name, "#{req.date_range_label} · #{pluralize(hrl_days(req.days_count), 'day')}", hr_lite.leave_request_path(req) ]
+             when HrLite::RegularizationRequest then [ "Attendance fix", "#{req.date.strftime('%a %-d %b')} · #{req.times_label}", hr_lite.regularization_requests_path ]
+             else [ "Comp-off", "Worked #{req.date_worked.strftime('%a %-d %b')}", hr_lite.comp_off_requests_path ]
+             end %>
+        <a class="hrl-listrow" href="<%= href %>">
+          <span><%= title %></span>
+          <%= hrl_request_status_badge(req.status) %>
+          <span class="hrl-small hrl-muted"><%= detail %></span>
+        </a>
+      <% end %>
+    </section>
+  <% end %>
   <%= render "hr_lite/holidays/next_holiday" %>
 
   <section class="hrl-card">
