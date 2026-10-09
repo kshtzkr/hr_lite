@@ -39,13 +39,15 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).not_to include("Courier (")
     end
 
-    it "right-aligns only the numeric header, over values that keep their stacked label" do
+    it "lists each own claim as one row with its amount, and never somebody else's" do
       HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
                               spent_on: Date.current, description: "Tea")
+      HrLite::Expense.create!(user_id: colleague.id, category: category, amount: 900,
+                              spent_on: Date.current, description: "Theirs")
       get "/hr/expenses"
 
-      expect(response.body).to include('<th>Category</th><th class="hrl-num">Amount</th>',
-                                       'data-label="Amount" class="hrl-num"')
+      rows = Nokogiri::HTML(response.body).css(".hrl-listrow").map { |r| r.text.squish }
+      expect(rows).to contain_exactly(a_string_including("Tea", "₹100.00", "Travel", "Draft", "Withdraw"))
     end
 
     it "claims, and the claim is submitted rather than left in a drawer" do
@@ -169,8 +171,13 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
         } }
       }.to change(HrLite::HrRequest, :count).by(1)
 
+      request = HrLite::HrRequest.last
       get "/hr/hr_requests"
-      expect(response.body).to include("Certificate for a visa", "Salary certificate")
+      row = Nokogiri::HTML(response.body).at_css("a.hrl-listrow[href='/hr/hr_requests/#{request.id}']")
+      expect(row.text.squish).to include("Certificate for a visa", "Open", "Salary certificate")
+
+      get "/hr/hr_requests/#{request.id}"
+      expect(response.body).to include(%(action="/hr/hr_requests/#{request.id}/cancel"))
     end
 
     it "shows HR's answer once there is one" do
@@ -180,6 +187,7 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
 
       get "/hr/hr_requests/#{request.id}"
       expect(response.body).to include("HR's answer", "see your March slip")
+      expect(response.body).not_to include("Withdraw")
     end
 
     it "404s on somebody else's request" do

@@ -12,6 +12,10 @@
   <% if @request.body.present? %>
     <div class="hrl-prose"><%= simple_format(@request.body) %></div>
   <% end %>
+  <% if @request.open? || @request.in_progress? %>
+    <%= button_to "Withdraw", hr_lite.cancel_hr_request_path(@request), class: "hrl-btn hrl-mt",
+                  form: { data: { turbo_confirm: "Withdraw this request?" } } %>
+  <% end %>
 </section>
 
 <% if @request.resolution.present? %>
