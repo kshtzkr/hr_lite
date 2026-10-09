@@ -1,73 +1,75 @@
-<% content_for(:page_title) { "Tax declaration" } %>
+<% content_for(:page_title) { "Tax" } %>
 <% submittable = @declaration.persisted? && (@declaration.draft? || @declaration.rejected?) %>
+<% locked = @declaration.verified? %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">Tax declaration — <%= @declaration.label %></h1>
+  <h1 class="hrl-page__title">Tax — <%= @declaration.label %></h1>
 </div>
 
-<section class="hrl-card">
-  <p class="hrl-muted hrl-small">
-    Your whole year's TDS is projected from these numbers, so a declaration
-    filed in April spreads the tax evenly instead of landing it in March.
-    Claim what you intend to invest; HR records what the proof supports when
-    you hand it over.
-  </p>
-  <p>
-    Status: <%= hrl_request_status_badge(@declaration.status == "verified" ? "approved" : @declaration.status) %>
-    <% if @declaration.note.present? %>
-      <span class="hrl-small hrl-muted">— <%= @declaration.note %></span>
-    <% end %>
-  </p>
-</section>
+<div id="hrl-tax-preview"><%= render "hr_lite/tax/computation", tax: @tax, both: false %></div>
 
-<%= form_with model: @declaration, url: hr_lite.tax_declaration_path, method: :patch,
-              scope: :tax_declaration, local: true do |f| %>
+<%= form_with model: @declaration, url: hr_lite.tax_declaration_path, method: :patch, scope: :tax_declaration, local: true,
+              multipart: true, data: { hrl_tax_preview: hr_lite.preview_tax_declaration_path } do |f| %>
   <%= render "hr_lite/shared/form_errors", record: @declaration %>
 
   <section class="hrl-card">
-    <div class="hrl-field">
-      <%= f.label :regime, "Tax regime", id: "hrl-tax-regime", for: nil %>
-      <div role="radiogroup" aria-labelledby="hrl-tax-regime">
-        <% [ [ "new", "New regime", "Lower rates, no deductions." ],
-             [ "old", "Old regime", "The deductions below reduce your tax." ] ].each do |value, name, hint| %>
-          <div class="hrl-field--check">
-            <%= f.radio_button :regime, value %>
-            <%= f.label :regime, value: value do %><span><%= name %><span class="hrl-hint"><%= hint %></span></span><% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
-
-  <details class="hrl-card" <%= "open" if @declaration.regime != "new" || @declaration.errors.any? %>>
-    <summary class="hrl-btn">Deductions (old regime only)</summary>
-    <%= f.fields_for :tax_declaration_items do |item| %>
-      <div class="hrl-field">
-        <%= item.hidden_field :section %>
-        <%= item.label :declared_amount, item.object.section_label %>
-        <%= item.text_field :declared_amount,
-              value: item.object.declared_amount&.to_s("F"), inputmode: "decimal" %>
-        <%= item.label :label, "What it is (optional)", class: "hrl-mt hrl-muted" %>
-        <%= item.text_field :label %>
-        <% if item.object.persisted? && item.object.verified_amount %>
-          <span class="hrl-small hrl-muted">
-            HR verified <%= hrl_money(item.object.verified_amount) %>
-          </span>
-        <% end %>
-      </div>
-    <% end %>
-    <p>Total claimed: <strong><%= hrl_money(@declaration.declared_total) %></strong></p>
+    <p>
+      Declaration: <%= hrl_request_status_badge(@declaration.status == "verified" ? "approved" : @declaration.status) %>
+      <% if @declaration.note.present? %><span class="hrl-small hrl-muted">— <%= @declaration.note %></span><% end %>
+    </p>
+    <fieldset class="hrl-field" <%= "disabled" if locked %>>
+      <legend>Tax regime</legend>
+      <% [ [ "new", "New regime", "Lower rates; only the standard deduction." ],
+           [ "old", "Old regime", "Higher rates; the investments below reduce your tax." ] ].each do |value, name, hint| %>
+        <div class="hrl-field--check">
+          <%= f.radio_button :regime, value %>
+          <%= f.label :regime, value: value do %><span><%= name %><span class="hrl-hint"><%= hint %></span></span><% end %>
+        </div>
+      <% end %>
+    </fieldset>
   </details>
 
-  <% if submittable %>
-    <p class="hrl-muted hrl-small">
-      Submitting locks it for HR to check. They can send it back if the proof
-      does not match.
-    </p>
+  <details class="hrl-card" <%= "open" if @declaration.regime != "new" || @declaration.errors.any? %>>
+    <summary class="hrl-btn">Investments and rent (old regime only)</summary>
+    <p class="hrl-small hrl-muted">Enter what you will invest or pay this year and attach the proof. The legal limit is applied for you — anything above it simply does not count. Until HR checks the proof, what you claim is used, so you never overpay tax in the meantime.</p>
+    <fieldset <%= "disabled" if locked %>>
+      <%= f.fields_for :tax_declaration_items do |item| %>
+        <% line = item.object %>
+        <div class="hrl-field">
+          <%= item.hidden_field :section %>
+          <%= item.label :declared_amount, line.section_label %>
+          <%= item.text_field :declared_amount, value: line.declared_amount&.to_s("F"), inputmode: "decimal", autocomplete: "off" %>
+          <% if line.cap %>
+            <progress class="hrl-tax-cap" max="<%= line.cap %>" value="<%= [ line.declared_amount.to_i, line.cap ].min %>" aria-hidden="true"></progress>
+            <span class="hrl-hint" data-hrl-cap="<%= line.cap %>"><%= hrl_rupees([ line.declared_amount.to_i, line.cap ].min) %> of the <%= hrl_rupees(line.cap) %> limit counts</span>
+          <% end %>
+          <% if line.section.start_with?("80d") %>
+            <div class="hrl-field--check hrl-mt"><%= item.check_box :senior %><%= item.label :senior, line.section == "80d" ? "I am 60 or older" : "A parent is 60 or older" %></div>
+          <% end %>
+          <% if line.section == "hra" %>
+            <%= item.label :landlord_pan, "Landlord's PAN (needed above ₹1,00,000 a year)", class: "hrl-mt" %>
+            <%= item.text_field :landlord_pan, autocomplete: "off", maxlength: 10, autocapitalize: "characters" %>
+          <% end %>
+          <%= item.label :proofs, "Proof (PDF, JPG or PNG, up to 5 MB each)", class: "hrl-mt" %>
+          <%= item.file_field :proofs, multiple: true, accept: "application/pdf,image/jpeg,image/png" %>
+          <% if line.persisted? && line.proofs.attached? %>
+            <ul class="hrl-row hrl-mt" aria-label="Attached proof">
+              <% line.proofs.each do |proof| %><li class="hrl-badge hrl-badge--muted"><%= proof.filename %></li><% end %>
+            </ul>
+          <% end %>
+          <% if line.persisted? && line.verified_amount %><span class="hrl-small hrl-muted">HR accepted <%= hrl_money(line.verified_amount) %></span><% end %>
+        </div>
+      <% end %>
+    </fieldset>
+  </details>
+
+  <% unless locked %>
+    <% if submittable %><p class="hrl-muted hrl-small">Submitting sends it to HR to check the proof. They can send it back if something does not match.</p><% end %>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: submittable ? "hrl-btn" : "hrl-btn hrl-btn--primary" %>
+      <% if submittable %><button type="submit" name="submit_to_hr" value="1" class="hrl-btn hrl-btn--primary">Submit to HR</button><% end %>
+    </div>
+  <% else %>
+    <p class="hrl-small hrl-muted">HR has verified this year's declaration. Ask HR to reopen it to change anything.</p>
   <% end %>
-  <div class="hrl-form-actions">
-    <%= f.submit "Save draft", class: submittable ? "hrl-btn" : "hrl-btn hrl-btn--primary" %>
-    <% if submittable %>
-      <button type="submit" name="submit_to_hr" value="1" class="hrl-btn hrl-btn--primary">Submit to HR</button>
-    <% end %>
-  </div>
 <% end %>
+<% content_for(:scripts) { javascript_include_tag "hr_lite/tax_preview", defer: true } %>

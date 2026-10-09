@@ -137,8 +137,9 @@ RSpec.describe HrLite::TaxDeclaration, no_legacy_bridge: true do
     d = declaration("80c": 1, "80d": 1, "80ccd_1b": 1, "24b": 1, hra: 1, other: 1)
 
     expect(d.tax_declaration_items.map(&:section_label))
-      .to include("80C \u2014 investments", "80D \u2014 health insurance", "80CCD(1B) \u2014 NPS",
-                  "24(b) \u2014 home loan interest", "HRA exemption", "Other")
+      .to include(a_string_starting_with("Sec 123 (old 80C)"), a_string_starting_with("Sec 126 (old 80D)"),
+                  a_string_starting_with("Sec 124 (old 80CCD(1B))"), "Home-loan interest (old 24(b))",
+                  "Rent paid in the year (for the HRA exemption)", "Other deductions")
   end
 
   it "refuses a negative amount" do
@@ -303,11 +304,12 @@ RSpec.describe "TDS reads the declaration", no_legacy_bridge: true do
     expect(BigDecimal(slip_for(profile).tax_details_hash["declared_deductions"])).to eq(150_000)
   end
 
-  it "uses a submitted declaration over the profile figure" do
-    profile = big_earner(declared_annual_deductions: 150_000)
+  it "uses a submitted declaration over the profile figure, within the legal limit" do
+    profile = big_earner(declared_annual_deductions: 100_000)
     declare!(profile, 200_000, status: "submitted")
 
-    expect(BigDecimal(slip_for(profile).tax_details_hash["declared_deductions"])).to eq(200_000)
+    # Claimed ₹2,00,000 under 80C; the law allows ₹1,50,000.
+    expect(BigDecimal(slip_for(profile).tax_details_hash["declared_deductions"])).to eq(150_000)
   end
 
   it "uses only what the proof supported once it is verified" do

@@ -26,7 +26,7 @@ RSpec.describe "SlipBuilder + PayrollRunProcessor" do
 
       deductions = JSON.parse(attrs[:deductions])
       codes = deductions.to_h { |r| [ r["code"], BigDecimal(r["amount"]) ] }
-      expect(codes["pf_employee"]).to eq(1800)      # capped wage
+      expect(codes["pf_employee"]).to eq(3000)      # wage capped at ₹25,000 (S.O. 5109(E), Oct 2026 on)
       expect(codes).not_to have_key("esi_employee") # gross 75k > 21k ceiling
       expect(attrs[:net_pay]).to eq(attrs[:gross_earnings] - attrs[:total_deductions])
     end

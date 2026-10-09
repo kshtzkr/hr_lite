@@ -7,6 +7,7 @@
       <a class="hrl-btn <%= "hrl-btn--primary" if @status == status %>"
          href="<%= hr_lite.admin_tax_declarations_path(status: status) %>"><%= status.humanize %></a>
     <% end %>
+    <a class="hrl-btn" href="<%= hr_lite.overview_admin_tax_declarations_path %>">Everyone's tax</a>
   </div>
 </section>
 

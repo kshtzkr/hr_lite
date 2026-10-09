@@ -18,7 +18,8 @@ RSpec.describe "My salary on the slips page", type: :request do
     get "/hr/salary_slips"
 
     expect(response.body).to include("Current salary from 01 Apr 2026")
-      .and include("₹4,20,000").and include("₹33,200").and include("₹31,400")
+      # Oct 2026: PF on ₹17,500 (under the ₹25,000 ceiling) is ₹2,100 each side.
+      .and include("₹4,23,600").and include("₹33,200").and include("₹31,100")
       .and include("New salary from 01 Nov 2026")
       .and include("From 01 Apr 2025 — ₹2,28,000 a year CTC")
     expect(response.body).not_to include("99,999")
@@ -57,7 +58,7 @@ RSpec.describe "My salary on the slips page", type: :request do
     get "/hr/salary_slips"
 
     # 11 x 200 + 300, not 12 x 300; in-hand 12 x (33,200 - 1,800) - 2,500.
-    expect(response.body).to include("₹300").and include("₹2,500").and include("₹3,74,300")
+    expect(response.body).to include("₹300").and include("₹2,500").and include("₹3,70,700")
   end
 
   it "says so when HR has not set a structure, and still lists slips" do

@@ -57,7 +57,8 @@ RSpec.describe "Payroll over HTTP", type: :request do
       post "/hr/admin/employees/#{profile.id}/salary_structures",
            params: { salary_structure: lines.merge(annual_ctc: "420000", basic: "99999") }
       structure = HrLite::SalaryStructure.sole
-      expect([ structure.basic, structure.special_allowance, structure.annual_ctc ]).to eq([ 17_500, 7858, 420_000 ])
+      # Jan 2027 is on the ₹25,000 EPF ceiling: employer PF ₹2,100 comes out of the CTC.
+      expect([ structure.basic, structure.special_allowance, structure.annual_ctc ]).to eq([ 17_500, 7558, 420_000 ])
 
       get "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}/edit"
       expect(response.body).to include("Employer Gratuity", "₹35,000.00")

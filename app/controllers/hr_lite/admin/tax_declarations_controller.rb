@@ -17,6 +17,51 @@ module HrLite
 
       def show
         @declaration = find_visible
+        @tax = TaxComputation.new(user: @declaration.user, declaration: @declaration)
+      end
+
+      # Everyone's tax this year, worked out now, whether or not they declared.
+      def overview
+        visible = hr_access.visible_user_ids("tax.view")
+        profiles = EmployeeProfile.active_for(Date.current).includes(:user).order(:employee_code)
+        profiles = profiles.where(user_id: visible) if visible
+        @profiles = paginate(profiles)
+        @declarations = TaxDeclaration.where(user_id: @profiles.map(&:user_id),
+                                             financial_year: FinancialYear.start_for(Date.current)).index_by(&:user_id)
+      end
+
+      # Anyone's full working, filed or not.
+      def person
+        @person = HrLite.user_klass.find(params[:user_id])
+        hr_require_reach!("tax.view", @person)
+        @tax = TaxComputation.new(user: @person)
+      end
+
+      # The proof, through a permission check and an audit row — never a bare blob link.
+      def proof
+        declaration = find_visible
+        file = declaration.tax_declaration_items.flat_map { |item| item.proofs.to_a }.find { |p| p.id == params[:proof_id].to_i }
+        raise ActiveRecord::RecordNotFound unless file
+
+        AuditLog.record!(action: "tax_proof.downloaded", subject: declaration, actor: hr_current_user,
+                         changes: { "file" => file.filename.to_s, "owner" => HrLite.display_name(declaration.user) })
+        redirect_to Rails.application.routes.url_helpers.rails_blob_path(file, disposition: "attachment", only_path: true),
+                    allow_other_host: false
+      end
+
+      # One click when the proof matches the claim: every unchecked line is
+      # accepted at what was claimed (the legal limit still applies), then verified.
+      def accept_all
+        declaration = find_manageable
+        TaxDeclaration.transaction do
+          declaration.tax_declaration_items.each do |item|
+            item.update!(verified_amount: item.declared_amount) if item.verified_amount.nil?
+          end
+          declaration.verify!(actor: hr_current_user, note: "Proof accepted")
+        end
+        redirect_to admin_tax_declarations_path, notice: "Accepted and verified — payroll uses these amounts now."
+      rescue ActiveRecord::RecordInvalid
+        redirect_to admin_tax_declaration_path(declaration), alert: "Only a submitted declaration can be accepted."
       end
 
       def update
@@ -26,6 +71,7 @@ module HrLite
         if @declaration.update(verification_params)
           redirect_to admin_tax_declaration_path(@declaration), notice: "Amounts recorded."
         else
+          @tax = TaxComputation.new(user: @declaration.user, declaration: @declaration)
           render :show, status: :unprocessable_entity
         end
       end

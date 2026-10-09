@@ -47,6 +47,30 @@ module HrLite
       tax_declaration_items.sum(BigDecimal(0)) { |i| i.verified_amount || BigDecimal(0) }
     end
 
+    Deduction = Struct.new(:section, :label, :claimed, :allowed, :cap, keyword_init: true)
+
+    # Old-regime lines with the law applied: each section's limit, and HRA
+    # worked out from the rent against the salary structure — never typed.
+    def deduction_rows(structure:)
+      tax_declaration_items.reject { |item| item.declared_amount.nil? || item.marked_for_destruction? }.map do |item|
+        allowed = item.section == "hra" ? self.class.hra_exemption(item.allowed(verified: verified?), structure) : item.allowed(verified: verified?)
+        Deduction.new(section: item.section, label: item.section_label, claimed: Money.d(item.declared_amount),
+                      allowed: allowed, cap: item.cap)
+      end
+    end
+
+    def old_regime_deductions(structure:) = deduction_rows(structure: structure).sum(BigDecimal(0), &:allowed)
+
+    # Annual HRA exemption: the least of the HRA received, rent less 10% of
+    # Basic, and 50% of Basic in a metro (40% elsewhere).
+    def self.hra_exemption(rent, structure)
+      return BigDecimal(0) if structure.nil? || Money.d(rent).zero?
+
+      basic = Money.d(structure.basic) * 12
+      [ Money.d(structure.hra) * 12, Money.d(rent) - basic / 10, basic * BigDecimal(structure.metro ? "0.5" : "0.4") ]
+        .min.then { |amount| Money.round_rupee([ amount, BigDecimal(0) ].max) }
+    end
+
     def submit!(actor:)
       raise ActiveRecord::RecordInvalid.new(self), "not a draft" unless draft? || rejected?
 

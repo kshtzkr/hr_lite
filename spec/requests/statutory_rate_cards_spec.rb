@@ -42,9 +42,9 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
       get "/hr/admin/statutory_rate_cards/new"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Copied from FY 2025-26")
-      # PF ceiling carried over rather than left blank to be retyped.
-      expect(response.body).to include("15000.0")
+      expect(response.body).to include("Copied from FY 2026-27")
+      # PF ceiling carried over rather than left blank to be retyped (₹25,000 since Oct 2026).
+      expect(response.body).to include("25000.0")
     end
 
     it "saves a year, and payroll computes that year on it" do
@@ -106,18 +106,18 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
       }
 
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(HrLite::StatutoryRateCardRecord.count).to eq(1)
+      expect(HrLite::StatutoryRateCardRecord.count).to eq(HrLite::StatutoryRateCard::CARDS.size)
     end
 
-    it "re-renders a mid-year date rather than accepting it" do
+    it "re-renders a date that is not the 1st of a month rather than accepting it" do
       card = HrLite::StatutoryRateCardRecord.first
       post "/hr/admin/statutory_rate_cards", params: {
-        statutory_rate_card: { effective_from: "2027-07-01", pf: card.pf,
+        statutory_rate_card: { effective_from: "2027-07-15", pf: card.pf,
                                esi: card.esi, income_tax: card.income_tax }
       }
 
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(response.body).to include("1 April")
+      expect(response.body).to include("1st of a month")
     end
   end
 
@@ -146,7 +146,7 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
     it "re-renders an invalid edit" do
       card = HrLite::StatutoryRateCardRecord.first
       patch "/hr/admin/statutory_rate_cards/#{card.id}", params: {
-        statutory_rate_card: { effective_from: "2027-09-01", pf: card.pf,
+        statutory_rate_card: { effective_from: "2027-09-15", pf: card.pf,
                                esi: card.esi, income_tax: card.income_tax }
       }
 

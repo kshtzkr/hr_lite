@@ -1,0 +1,56 @@
+<%# locals: tax (HrLite::TaxComputation), both (true on the admin sheet: every regime's working, open) %>
+<% sheet = tax.chosen %>
+<% winner, by = tax.saving %>
+<% names = { "new" => "New regime", "old" => "Old regime" } %>
+<section class="hrl-card" aria-live="polite">
+  <h2 class="hrl-card__title">Income tax <%= HrLite::FinancialYear.label(HrLite::FinancialYear.start_for(tax.month)) %></h2>
+  <% if tax.structure.nil? %>
+    <p class="hrl-muted">No salary structure yet — tax is worked out once one is set.</p>
+  <% else %>
+    <div class="hrl-kpis hrl-kpis--money">
+      <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_rupees(sheet.annual_tax) %></div><div class="hrl-kpi__label">Tax for the year (<%= names[sheet.regime] %>)</div></div>
+      <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_rupees(sheet.monthly) %></div><div class="hrl-kpi__label">TDS a month, next <%= pluralize(sheet.months_left, "month") %></div></div>
+      <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_rupees(sheet.tds_paid) %></div><div class="hrl-kpi__label">Deducted so far</div></div>
+      <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_rupees(sheet.remaining) %></div><div class="hrl-kpi__label">Still to deduct</div></div>
+    </div>
+
+    <div class="hrl-tax-compare" role="group" aria-label="Old and new regime compared">
+      <% tax.sheets.each do |name, s| %>
+        <div class="hrl-tax-compare__col<%= " hrl-tax-compare__col--chosen" if name == sheet.regime %>">
+          <strong><%= names[name] %></strong><% if name == sheet.regime %> <span class="hrl-badge">Chosen</span><% end %>
+          <div class="hrl-tax-compare__amount"><%= hrl_rupees(s.annual_tax) %></div>
+          <div class="hrl-small hrl-muted">a year · <%= hrl_rupees(s.monthly) %> a month</div>
+        </div>
+      <% end %>
+    </div>
+    <p class="hrl-small">
+      <% if by.zero? %>Both regimes cost the same this year.
+      <% else %><strong><%= names[winner] %></strong> costs <%= hrl_rupees(by) %> less this year<%= winner == sheet.regime ? " — you are on it." : "." %><% end %>
+    </p>
+
+    <% (both ? tax.sheets.values : [ sheet ]).each do |s| %>
+      <details class="hrl-tax-working" <%= "open" if both %>>
+        <summary class="hrl-btn">How the <%= names[s.regime].downcase %> tax is worked out</summary>
+        <table class="hrl-table hrl-tax-working__table">
+          <tbody>
+            <tr><td>Salary paid so far this year</td><td class="hrl-num"><%= hrl_rupees(tax.paid_gross) %></td></tr>
+            <tr><td>Expected for the rest of the year (<%= hrl_rupees(tax.structure.monthly_gross) %> × <%= s.months_left %>)</td><td class="hrl-num"><%= hrl_rupees(tax.projected_gross) %></td></tr>
+            <tr class="hrl-tax-working__total"><td>Gross salary for the year</td><td class="hrl-num"><%= hrl_rupees(s.gross) %></td></tr>
+            <% if s.hra_exemption.positive? %><tr><td>Less HRA exemption (from rent)</td><td class="hrl-num">− <%= hrl_rupees(s.hra_exemption) %></td></tr><% end %>
+            <tr><td>Less standard deduction</td><td class="hrl-num">− <%= hrl_rupees(s.standard_deduction) %></td></tr>
+            <% s.deductions.each do |row| %>
+              <tr><td>Less <%= row.label %><br><span class="hrl-small hrl-muted">claimed <%= hrl_rupees(row.claimed) %><%= " · limit #{hrl_rupees(row.cap)}" if row.cap %></span></td><td class="hrl-num">− <%= hrl_rupees(row.allowed) %></td></tr>
+            <% end %>
+            <tr class="hrl-tax-working__total"><td>Taxable income</td><td class="hrl-num"><%= hrl_rupees(s.taxable) %></td></tr>
+            <% s.slabs.select { |row| row[:income].positive? }.each do |row| %>
+              <tr><td><%= hrl_rupees(row[:from]) %> – <%= row[:to] ? hrl_rupees(row[:to]) : "above" %> at <%= (row[:rate] * 100).to_i %>% on <%= hrl_rupees(row[:income]) %></td><td class="hrl-num"><%= hrl_rupees(row[:tax]) %></td></tr>
+            <% end %>
+            <tr class="hrl-tax-working__total"><td>Tax for the year, after any §87A rebate, with 4% cess</td><td class="hrl-num"><%= hrl_rupees(s.annual_tax) %></td></tr>
+            <tr><td>Already deducted (TDS)</td><td class="hrl-num">− <%= hrl_rupees(s.tds_paid) %></td></tr>
+            <tr class="hrl-tax-working__total"><td>Each remaining month (<%= s.months_left %>)</td><td class="hrl-num"><%= hrl_rupees(s.monthly) %></td></tr>
+          </tbody>
+        </table>
+      </details>
+    <% end %>
+  <% end %>
+</section>

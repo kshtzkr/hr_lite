@@ -1,0 +1,10 @@
+<% content_for(:page_title) { "Tax — #{hr_display_name(@person)}" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Tax — <%= hr_display_name(@person) %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.overview_admin_tax_declarations_path %>">Everyone's tax</a>
+    <% if @tax.declaration %><a class="hrl-btn" href="<%= hr_lite.admin_tax_declaration_path(@tax.declaration) %>">Declaration</a><% end %>
+  </div>
+</div>
+<% unless @tax.declaration %><p class="hrl-small hrl-muted">No declaration filed this year — the old-regime figure carries no investments yet.</p><% end %>
+<%= render "hr_lite/tax/computation", tax: @tax, both: true %>

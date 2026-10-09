@@ -17,6 +17,8 @@
   </p>
 </section>
 
+<%= render "hr_lite/tax/computation", tax: @tax, both: true %>
+
 <%= form_with model: @declaration, url: hr_lite.admin_tax_declaration_path(@declaration),
               method: :patch, scope: :tax_declaration, local: true do |f| %>
   <section class="hrl-card">
@@ -27,7 +29,18 @@
         <span class="hrl-small hrl-muted">
           Claimed <%= hrl_money(item.object.declared_amount) %>
           <%= "— #{item.object.label}" if item.object.label.present? %>
+          <%= "· limit #{hrl_money(item.object.cap)}" if item.object.cap %>
+          <%= "· landlord PAN #{item.object.landlord_pan}" if item.object.landlord_pan.present? %>
         </span>
+        <% if item.object.proofs.attached? %>
+          <span class="hrl-row">
+            <% item.object.proofs.each do |proof| %>
+              <a class="hrl-card__link" href="<%= hr_lite.proof_admin_tax_declaration_path(@declaration, proof_id: proof.id) %>">Open <%= proof.filename %></a>
+            <% end %>
+          </span>
+        <% else %>
+          <span class="hrl-small hrl-badge hrl-badge--warn">No proof attached</span>
+        <% end %>
         <%= item.text_field :verified_amount,
               value: item.object.verified_amount&.to_s("F"), inputmode: "decimal",
               placeholder: "Verified amount" %>
@@ -41,8 +54,12 @@
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Decide</h2>
-  <%= button_to "Verify", hr_lite.verify_admin_tax_declaration_path(@declaration),
-        method: :post, class: "hrl-btn hrl-btn--primary" %>
+  <div class="hrl-row">
+    <%= button_to "Accept all and verify", hr_lite.accept_all_admin_tax_declaration_path(@declaration),
+          method: :post, class: "hrl-btn hrl-btn--primary" %>
+    <%= button_to "Verify the amounts recorded above", hr_lite.verify_admin_tax_declaration_path(@declaration),
+          method: :post, class: "hrl-btn" %>
+  </div>
   <%= form_with url: hr_lite.reject_admin_tax_declaration_path(@declaration),
                 method: :post, local: true do %>
     <div class="hrl-field">
