@@ -62,6 +62,7 @@
     <% end %>
   <% end %>
 
+  <% if local_assigns[:attention].present? %><p class="hrl-small hrl-muted hrl-mt">Needs a fix</p><% end %>
   <% local_assigns[:attention]&.each do |date, reason| %>
     <div class="hrl-feed__item hrl-row">
       <div class="hrl-feed__body"><%= date.strftime("%a %-d %b") %> · <%= reason %></div>

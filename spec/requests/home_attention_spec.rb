@@ -17,6 +17,7 @@ RSpec.describe "Home needs attention", type: :request do
     get "/hr/"
 
     expect(response.body).to include("Mon 5 Jul · Absent").and include(fix_href(today - 3))
+    expect(response.body).to include("Needs a fix")
     expect(response.body).to include("Thu 1 Jul · No check-out").and include("Fri 2 Jul · Flagged")
     expect(response.body).to include("Apply leave").and include("Fix a punch").and include("Payslip")
   end
@@ -41,5 +42,6 @@ RSpec.describe "Home needs attention", type: :request do
     get "/hr/"
 
     expect(response.body).not_to include(fix_href(today - 3))
+    expect(response.body).not_to include("Needs a fix")
   end
 end
