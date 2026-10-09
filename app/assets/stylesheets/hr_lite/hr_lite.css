@@ -240,6 +240,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-listrow > :first-child { display: inline-flex; align-items: center; gap: var(--hrl-s-1); line-height: var(--hrl-lh-tight); }
 /* The punch status stays in the accessibility tree (no `hidden`) so its first message is announced; empty, it takes no space. */
 [data-hrl-geo-status]:empty { margin: 0; }
+.hrl-geo-help { margin: var(--hrl-s-2) 0 0; padding-left: var(--hrl-s-4); color: var(--hrl-ink); }
+.hrl-geo-help li + li { margin-top: var(--hrl-s-1); }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; margin-bottom: .85rem; }
 .hrl-grid > * { min-width: 0; }
 .hrl-grid > .hrl-card { margin-bottom: 0; }

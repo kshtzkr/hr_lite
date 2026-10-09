@@ -17,6 +17,15 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).to include("Check in").and include(Date.current.strftime("%B %Y"))
     end
 
+    it "marks the punch form so the browser holds a punch with no GPS when location is required" do
+      get "/hr/attendance"
+      expect(response.body).not_to include("data-hrl-geo-required")
+
+      HrLite.config.require_punch_location = true
+      get "/hr/attendance"
+      expect(response.body).to include('data-hrl-geo-required="true"')
+    end
+
     describe "month grid states" do
       before do
         travel_to(Date.new(2026, 10, 1))
