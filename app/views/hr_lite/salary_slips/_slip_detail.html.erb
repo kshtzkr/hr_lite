@@ -1,4 +1,10 @@
 <%# locals: slip, profile — shared by employee show, admin show %>
+<div class="hrl-kpis hrl-kpis--money">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(slip.net_pay) %></div><div class="hrl-kpi__label">Net pay</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(slip.gross_earnings) %></div><div class="hrl-kpi__label">Gross</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(slip.total_deductions) %></div><div class="hrl-kpi__label">Deductions</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_days(slip.payable_days) %> / <%= hrl_days(slip.effective_lop_days) %></div><div class="hrl-kpi__label">Payable / LOP days</div></div>
+</div>
 <div class="hrl-grid hrl-grid--2">
   <section class="hrl-card">
     <h2 class="hrl-card__title">Earnings</h2>
@@ -36,7 +42,7 @@
 
 <section class="hrl-card">
   <dl class="hrl-deflist">
-    <dt>Net pay</dt><dd><strong><%= hrl_money(slip.net_pay) %></strong> (<%= hrl_amount_in_words(slip.net_pay) %>)</dd>
+    <dt>Net pay</dt><dd><strong><%= hrl_money(slip.net_pay) %></strong><br><span class="hrl-small hrl-muted"><%= hrl_amount_in_words(slip.net_pay) %></span></dd>
     <%# Out-of-window days are named rather than silently dropped: without them
         a mid-month joiner's row does not add up to the month. %>
     <dt>Days</dt>

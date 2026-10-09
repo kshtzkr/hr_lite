@@ -251,6 +251,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-kpi { background: var(--hrl-card); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius); padding: .7rem .8rem; }
 .hrl-kpi__value { font-size: var(--hrl-t-display); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .hrl-kpi__label { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
+/* Rupee tiles: a lakh amount fits a half-width 320px tile without splitting its digits. */
+.hrl-kpis--money .hrl-kpi__value { font-size: var(--hrl-t-lead); }
+@media (min-width: 481px) { .hrl-kpis--money .hrl-kpi__value { font-size: var(--hrl-t-display); } }
 
 /* Buttons */
 .hrl-btn {
