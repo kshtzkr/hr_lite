@@ -41,6 +41,29 @@ RSpec.describe "Attendance", type: :request do
       end
     end
 
+    describe "today with no punch" do
+      before do
+        travel_to(Date.new(2026, 10, 8)) # Thu; Oct 1, 2, 5, 6, 7 are past working days
+        get "/hr/attendance"
+      end
+
+      after { travel_back }
+
+      it "shows today as Today, not absent, and leaves it out of the absent count" do
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="8 Oct, Today, not checked in yet"]')
+        expect(cell["class"].split).to include("hrl-mgrid__day--today")
+        expect(cell["class"].split).not_to include("hrl-mgrid__day--absent")
+        expect(response.body).to include("Absent 5")
+      end
+
+      it "keeps yesterday absent and payroll still counts today as loss of pay" do
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="7 Oct, Absent"]')
+        expect(cell["class"].split).to include("hrl-mgrid__day--absent")
+        expect(cell.at_css(".hrl-mgrid__tag").text).to eq("A")
+        expect(HrLite::AttendanceSummary.for(user: user, month: Date.current)[:lop_days]).to eq(6)
+      end
+    end
+
     it "renders a requested month and falls back on garbage" do
       get "/hr/attendance", params: { month: "2026-05" }
       expect(response.body).to include("May 2026")

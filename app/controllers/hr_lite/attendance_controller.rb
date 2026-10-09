@@ -8,6 +8,7 @@ module HrLite
       @record = AttendanceRecord.find_by(user_id: hr_current_user.id, date: Date.current)
       @day_status = DayStatus.new(user: hr_current_user, range: @month.beginning_of_month..@month.end_of_month)
       @counts = @day_status.counts
+      @counts[:absent] -= 1 if @month.all_month.cover?(Date.current) && @day_status.for(Date.current).kind == :absent
     end
 
     def check_in
