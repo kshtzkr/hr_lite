@@ -34,7 +34,7 @@
 
   <% if open_yesterday %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
-                  html: { data: { "hrl-geo-punch": true } } do %>
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
@@ -44,7 +44,7 @@
     <% end %>
   <% elsif record&.check_in_at.blank? %>
     <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
-                  html: { data: { "hrl-geo-punch": true } } do %>
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
@@ -52,7 +52,7 @@
     <% end %>
   <% else %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
-                  html: { data: { "hrl-geo-punch": true } } do %>
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
