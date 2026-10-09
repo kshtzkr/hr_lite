@@ -88,6 +88,25 @@ RSpec.describe "Leave requests", type: :request do
       get "/hr/leave_requests"
       expect(response.body).to include("Leave balance")
     end
+
+    it "lists colleagues on approved leave in the next 2 weeks below the form, by name and dates only" do
+      sick = create(:leave_type, name: "Sick leave", code: "SL")
+      away = ->(who, from, status = "approved") { create(:leave_request, user: who, leave_type: sick, start_date: from, end_date: from, status: status) }
+      away.call(create(:user, name: "Priya"), monday)
+      away.call(create(:user, name: "Kiran"), monday, "pending")
+      away.call(user, monday)
+      away.call(create(:user, name: "Later"), Date.new(2027, 7, 21))
+
+      get "/hr/leave_requests/new"
+
+      card = Nokogiri::HTML(response.body).css("section.hrl-card").last.text
+      expect(card).to include("Out in the next 2 weeks").and include("Priya").and include("05 Jul")
+      expect(card).not_to include("Kiran")
+      expect(card).not_to include("Asha")
+      expect(card).not_to include("Later")
+      expect(card).not_to include("Sick leave")
+      expect(response.body.index("Out in the next 2 weeks")).to be > response.body.index("Submit request")
+    end
   end
 
   describe "balances page" do

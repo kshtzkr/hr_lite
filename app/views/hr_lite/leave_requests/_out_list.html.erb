@@ -1,0 +1,16 @@
+<%# Name and dates only — the leave type (sick leave) is the employee's own business. %>
+<% if leaves.any? %>
+  <div class="hrl-feed">
+    <% leaves.first(10).each do |leave| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body"><%= tag.strong hr_display_name(leave.user), title: "On leave: #{leave.date_range_label}" %>
+          <div class="hrl-feed__meta"><%= leave.date_range_label %></div></div>
+      </div>
+    <% end %>
+  </div>
+  <% if leaves.size > 10 %>
+    <p class="hrl-muted hrl-small">+<%= leaves.size - 10 %> more</p>
+  <% end %>
+<% else %>
+  <p class="hrl-muted hrl-small"><%= empty %></p>
+<% end %>

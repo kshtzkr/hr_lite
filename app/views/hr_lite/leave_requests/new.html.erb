@@ -45,3 +45,8 @@
     </div>
   <% end %>
 </section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Out in the next 2 weeks</h2>
+  <%= render "hr_lite/leave_requests/out_list", leaves: @out_soon, empty: "Nobody is on leave in the next 2 weeks." %>
+</section>

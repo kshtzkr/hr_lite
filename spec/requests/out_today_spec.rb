@@ -39,6 +39,6 @@ RSpec.describe "Out today on Home", type: :request do
   it "says everyone is in when nobody is on leave" do
     get "/hr/"
 
-    expect(response.body).to include("Everyone's in today.").and include('href="/hr/team"')
+    expect(response.body).to include("Everyone&#39;s in today.").and include('href="/hr/team"')
   end
 end
