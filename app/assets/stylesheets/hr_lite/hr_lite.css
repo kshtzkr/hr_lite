@@ -331,6 +331,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 }
 /* The 44px label is the tap target for the small box. */
 .hrl-field--check label { margin-bottom: 0; font-weight: 600; flex: 1; min-height: var(--hrl-target); display: flex; align-items: center; }
+.hrl-field--check label .hrl-hint { display: block; margin-top: 0; font-weight: 400; }
 /* Rails wraps an invalid label/field in this div; contents keeps the stack, the re-pointed token reddens the border. */
 .field_with_errors { display: contents; --hrl-field: var(--hrl-bad); }
 .field_with_errors label { color: var(--hrl-bad); }

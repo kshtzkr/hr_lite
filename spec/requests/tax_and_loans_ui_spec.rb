@@ -90,6 +90,30 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration.declared_total).to eq(0)
     end
 
+    it "folds the claims away under the new regime" do
+      get "/hr/tax_declaration"
+
+      page = Nokogiri::HTML(response.body)
+      claims = page.at_css("details:has(input[name*=declared_amount])")
+      expect(claims["open"]).to be_nil
+      expect(claims.at_css("summary").text).to eq("Deductions (old regime only)")
+      expect(page.at_css("input[type=radio][name='tax_declaration[regime]'][value=new][checked]")).to be_present
+    end
+
+    it "opens the claims under the old regime, with one primary button" do
+      patch "/hr/tax_declaration", params: {
+        tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+          "0" => { section: "80c", declared_amount: "1000" }
+        } }
+      }
+      get "/hr/tax_declaration"
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("details:has(input[name*=declared_amount])")["open"]).not_to be_nil
+      expect(page.at_css("input[type=radio][name='tax_declaration[regime]'][value=old][checked]")).to be_present
+      expect(page.css(".hrl-main .hrl-btn--primary").map { |b| b.text.strip }).to eq([ "Submit to HR" ])
+    end
+
     it "falls back to this financial year when the param is nonsense" do
       get "/hr/tax_declaration?financial_year=not-a-date"
 
