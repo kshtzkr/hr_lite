@@ -305,6 +305,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   .hrl-table--stack tr:last-child { border-bottom: 0; }
   .hrl-table--stack td[data-label=""] { justify-content: flex-end; }
   .hrl-table--stack td[data-label=""]::before { display: none; }
+  .hrl-table--stack td > .hrl-badge { align-self: center; } /* do not stretch beside a 44px button */
   .hrl-table--stack td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: 0; }
   .hrl-table--stack td[data-label=""] > form + form { margin-top: 0; }
 }

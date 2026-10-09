@@ -134,6 +134,7 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
     it "flags what still needs acknowledging, then records it" do
       get "/hr/policies"
       expect(response.body).to include("Needs your acknowledgement")
+      expect(response.body).to include(%(class="hrl-btn" href="/hr/policies/#{policy.id}"))
 
       post "/hr/policies/#{policy.id}/acknowledge"
       expect(policy.reload).to be_acknowledged_by(employee)
