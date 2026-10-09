@@ -33,7 +33,7 @@
                   <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span><% end %></span>
               </td>
               <td data-label="Status"><%= hrl_team_status(row) %></td>
-              <td data-label="Hours" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>
+              <td data-label="Hours <%= @date == Date.current ? "today" : "that day" %>" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>
               <td data-label="Hours this month" class="hrl-num"><%= hrl_duration(row.month_seconds) %></td>
             </tr>
           <% end %>
@@ -44,5 +44,5 @@
     <p class="hrl-card--empty">Nobody to show for this date.</p>
   <% end %>
   <p class="hrl-small hrl-muted hrl-mt">Forgot a punch yourself?
-    <a href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>.</p>
+    <a class="hrl-card__link" href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a></p>
 </section>

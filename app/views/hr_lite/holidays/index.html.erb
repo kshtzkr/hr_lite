@@ -15,11 +15,12 @@
         <thead><tr><th>Date</th><th>Holiday</th><th></th></tr></thead>
         <tbody>
           <% @holidays.each do |holiday| %>
-            <tr>
+            <% next_up = holiday.id == @next_holiday_id %>
+            <%= tag.tr class: ("hrl-muted" if holiday.date < Date.current) do %>
               <td data-label="Date"><%= holiday.date.strftime("%a, %d %b") %></td>
               <td data-label="Holiday"><%= holiday.name %></td>
-              <td data-label=""><% if holiday.optional %><span class="hrl-badge hrl-badge--muted">Optional</span><% end %></td>
-            </tr>
+              <%= tag.td data: { label: "" }, class: ("hrl-cell--void" unless holiday.optional || next_up) do %><% if next_up %><span class="hrl-badge">Next</span><% end %><% if holiday.optional %><span class="hrl-badge hrl-badge--muted">Optional</span><% end %><% end %>
+            <% end %>
           <% end %>
         </tbody>
       </table>

@@ -153,6 +153,15 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).to include("Holi 2027")
     end
 
+    it "mutes past holidays, badges only the next one and voids empty cells" do
+      %w[2027-03-04 2027-08-15 2027-10-02].each { |d| create(:holiday, date: Date.parse(d), name: "H #{d}") }
+      get "/hr/holidays"
+      rows = Nokogiri::HTML(response.body).css("tbody tr")
+      expect(rows.map { |r| r["class"] }).to eq([ "hrl-muted", nil, nil ])
+      expect(rows.map { |r| r.at_css("td.hrl-cell--void").present? }).to eq([ true, false, true ])
+      expect(rows[1].text).to include("Next")
+    end
+
     it "lists the month's holidays and colleagues on leave in the agenda, without the leave type" do
       create(:holiday, date: monday, name: "Founders day")
       colleague = create(:user, name: "Dev Kumar")
