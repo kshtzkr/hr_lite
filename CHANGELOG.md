@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.1] - 2026-10-09
+
+### Added
+- Location help on the punch card: when a punch has no GPS, the card lists the steps to turn location on for the device in use (iPhone and iPad in Safari, Chrome, Firefox or Edge; Android in Chrome or Samsung Internet; desktop Chrome, Edge, Brave, Firefox or Safari, plus the macOS or Windows location switch). A web page cannot open device settings, so the steps say where to tap. New `.hrl-geo-help` list.
+
+### Changed
+- With `config.require_punch_location`, the punch form carries `data-hrl-geo-required` and the browser holds a timed-out or unavailable fix on the page, with the same steps, instead of submitting a punch the server refuses.
+
 ## [0.22.0] - 2026-10-09
 
 The HRMS UI/UX pass: Keka/greytHR patterns and a ui-ux-pro-max review of every screen, phone first. No migrations. Hosts that theme through `--hrl-*` variables keep their values; the engine defaults for radius, info background and muted text change (see Changed).
