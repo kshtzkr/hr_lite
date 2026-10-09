@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-10-10
+
+Two migrations: `hr_lite_performance_plans` and `hr_lite_awards`. No new permission keys.
+
+### Added
+- Employee timeline: `/timeline` (your own) and `/people/:user_id/timeline` (anyone's), with a year picker. Every name on the org chart links to it, and the admin employee page has a Timeline button. `HrLite::Timeline` reads existing records, newest first: joining and exit, role changes in effect, kudos received, awards and approved leave are public; colleagues see "On leave" with dates but no type (as on "Out in the next 2 weeks"). Bonus, incentive and arrears pay items and loans (`payroll.view`), approved and reimbursed expenses (`expense.approve`), shared appraisals and PIPs (`appraisal.view`) show only to the employee and to whoever that permission reaches, marked "Private".
+- Performance improvement plans (`HrLite::PerformancePlan`): Super Admin starts one at Organisation → PIPs (`/admin/performance_plans`, or "Start PIP" on the employee page) with goals and a review date, then marks it extended, passed or failed; passed or failed stamps `closed_at` and freezes the plan. The employee hears `pip.started` and `pip.closed` (bell and email, never leadership). PIPs are money tier in the audit trail, like appraisals.
+- Employee of the Month, Quarter and Year (`HrLite::Award`): Leadership picks the winner and writes a citation at Organisation → Awards (`/admin/awards`); one winner per period, saved as the period's first day. The winner hears `award.won`, and a Home card shows the current winner of each to everyone.
+- Deviation from the plan: PIPs sit with appraisals under the Super Admin screens (`SuperadminController`) and Awards under Leadership (`LeadershipController`), rather than new permission keys, so existing installs need no role changes.
+
 ## [0.22.1] - 2026-10-09
 
 ### Added
