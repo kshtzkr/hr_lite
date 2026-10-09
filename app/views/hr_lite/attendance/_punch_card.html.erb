@@ -40,7 +40,7 @@
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
         Check out yesterday's shift
       </button>
-      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite" hidden></p>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
   <% elsif record&.check_in_at.blank? %>
     <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
@@ -48,7 +48,7 @@
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
-      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite" hidden></p>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
   <% else %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
@@ -58,7 +58,7 @@
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
         <%= record.check_out_at ? "Update check-out" : "Check out" %>
       </button>
-      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite" hidden></p>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
   <% end %>
 
