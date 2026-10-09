@@ -114,7 +114,15 @@ module HrLite
     # Everyone HR tracks (host-overridable to exclude bots/test accounts),
     # sorted by display name for team screens.
     def employees
-      config.employees_scope.call.sort_by { |u| display_name(u).downcase }
+      outside = outside_accountant_ids
+      config.employees_scope.call.reject { |u| outside.include?(u.id) }.sort_by { |u| display_name(u).downcase }
+    end
+
+    # CA logins with no HR profile: they review pay, they are not staff, so
+    # no attendance, leave, payroll or team list ever counts them.
+    def outside_accountant_ids
+      ids = HrLite::RoleAssignment.joins(:role).where(hr_lite_roles: { name: HrLite::Role::CA }).pluck(:user_id)
+      (ids - HrLite::EmployeeProfile.where(user_id: ids).pluck(:user_id)).to_set
     end
 
     # employees minus anyone whose profile says they have exited — user

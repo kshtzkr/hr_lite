@@ -1,6 +1,10 @@
 module HrLite
   module Admin
     class SalarySlipsController < SuperadminController
+      # A CA reads a slip to verify it (payroll.view, all) without running payroll.
+      skip_before_action :require_money_access!, only: :show
+      before_action -> { hr_require_permission!("payroll.view", scope: :all) }, only: :show
+
       def show
         @slip = SalarySlip.includes(:payroll_run).find(params[:id])
         @profile = @slip.user_profile

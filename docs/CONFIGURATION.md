@@ -50,6 +50,9 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `payroll.finalized` | — | — | ✓ | ✓ |
 | `payroll.approval_needed` (first of two approvals given) | other approvers | other approvers | — | — |
 | `payroll.overdue` (3rd-of-month job could not auto-approve) | approvers | approvers | — | — |
+| `ca.flagged` (CA flags a slip or declaration) | approvers + payroll | approvers + payroll | — | — |
+| `ca.reminder` (weekly in March) | CA reviewers | CA reviewers | — | — |
+| `ca.overdue` (31 March) | approvers + payroll | approvers + payroll | — | — |
 | `payroll.published` | each employee | each employee | ✓ | — |
 | `kudos.mentioned` | mentioned | mentioned | — | — |
 | `appraisal.shared` | employee | employee | ✓ | — |

@@ -18,6 +18,8 @@ module HrLite
       { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ], group: "Me" },
       { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ], group: "Me" },
       { label: "Timeline",   path: :timeline_path,       match: [ "/timeline" ], group: "Me" },
+      { label: "CA review",  path: :admin_ca_reviews_path, match: [ "/admin/ca_reviews" ], group: "Company",
+        if: -> { hr_can?("payroll.verify", scope: :all) || hr_can?("payroll.approve", scope: :all) } },
       { label: "Policies",   path: :policies_path,       match: [ "/policies" ], group: "Company" },
       { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ], group: "Company" },
       { label: "Org",        path: :org_path,            match: [ "/org" ], group: "Company" },

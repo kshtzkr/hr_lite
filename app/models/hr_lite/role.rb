@@ -12,6 +12,9 @@ module HrLite
     FINANCE = "Finance".freeze
     LEADERSHIP = "Leadership".freeze
     SUPER_ADMIN = "Super Admin".freeze
+    # An outside chartered accountant: reads pay and tax to verify them at
+    # year end. Not an employee — see HrLite.employees.
+    CA = "CA".freeze
 
     has_many :role_grants, dependent: :destroy
     has_many :role_assignments, dependent: :destroy
