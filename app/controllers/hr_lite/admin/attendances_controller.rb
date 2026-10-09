@@ -11,6 +11,36 @@ module HrLite
         @employees = @employees.select { |user| visible.include?(user.id) } if visible
         @records = AttendanceRecord.for_date(@date).where(user_id: @employees.map(&:id)).index_by(&:user_id)
         @flagged_count = @records.values.count(&:flagged?)
+        # "How many people punched where": off-site punches count as one place.
+        @offices = OfficeLocation.active.to_a
+        @places = %i[check_in check_out].index_with do |side|
+          @records.values.select { |r| r.public_send("#{side}_at") }.map do |r|
+            OfficeLocation.place(r.public_send("#{side}_lat"), r.public_send("#{side}_lng"), @offices)&.split(" · ")&.first || "No GPS"
+          end.tally
+        end
+      end
+
+      # Mon–Fri hours per person (Saturday never counts) against
+      # config.work_hours[:week], pro rata for holidays and full-day leave.
+      # The current week counts only the days already over.
+      def week
+        @monday = parse_date_param(params[:date]).beginning_of_week(:monday)
+        calendar = WorkingCalendar.new(@monday..(@monday + 4))
+        days = (@monday..[ @monday + 4, Date.current - 1 ].min).select { |d| calendar.working_day?(d) }
+        visible = hr_access.visible_user_ids("attendance.view")
+        employees = HrLite.active_employees(on: @monday)
+        employees = employees.select { |user| visible.include?(user.id) } if visible
+        records = AttendanceRecord.where(user_id: employees.map(&:id), date: days).group_by(&:user_id)
+        on_leave = days.index_with { |d| LeaveRequest.active_on(d).where(half_day: false).pluck(:user_id) }
+        week_hours = HrLite.config.work_hours&.dig(:week)
+
+        @rows = employees.map do |user|
+          worked = records.fetch(user.id, []).filter_map(&:worked_duration)
+          hours = worked.sum / 3600.0
+          target = week_hours && week_hours * days.count { |d| on_leave[d].exclude?(user.id) } / 5.0
+          { user: user, hours: hours, avg: worked.any? ? hours / worked.size : nil, target: target,
+            below: target.present? && target.positive? && hours < target }
+        end
       end
 
       # One employee's month + the regularization form for ?date=.

@@ -140,4 +140,20 @@ RSpec.describe HrLite::AttendancePuncher do
 
     expect(punch(:check_in)).to be_ok
   end
+
+  describe "config.require_punch_location" do
+    before { HrLite.config.require_punch_location = true }
+
+    it "refuses a punch without GPS and records nothing" do
+      result = punch(:check_in, geo_status: "timeout")
+
+      expect(result).not_to be_ok
+      expect(result.error).to include("Location is required")
+      expect(HrLite::AttendanceRecord.count).to eq(0)
+    end
+
+    it "still takes a punch that has GPS" do
+      expect(punch(:check_in, lat: "28.6315", lng: "77.2167")).to be_ok
+    end
+  end
 end

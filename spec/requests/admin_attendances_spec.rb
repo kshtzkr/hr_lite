@@ -127,4 +127,47 @@ RSpec.describe "Admin attendances", type: :request do
       expect(flash[:alert]).to include("must be after check-in")
     end
   end
+
+  describe "punch locations on the day view" do
+    before { sign_in admin }
+
+    it "names where each side was punched, how far apart, and counts people per place" do
+      create(:office_location, name: "HQ", lat: 28.6315, lng: 77.2167, radius_m: 200)
+      create(:attendance_record, :checked_out, user: employee, date: Date.current,
+                                 check_in_lat: 28.6315, check_in_lng: 77.2167, check_out_lat: 28.6315, check_out_lng: 77.2373)
+      get "/hr/admin/attendances"
+
+      expect(response.body).to include("In: HQ").and include("Out: Off-site · 2.0 km from HQ")
+        .and include(%(<span class="hrl-badge hrl-badge--warn">2.0 km apart</span>))
+        .and include("Checked in at:</strong>\n        HQ 1").and include("Checked out at:</strong>\n        Off-site 1")
+    end
+  end
+
+  describe "GET /hr/admin/attendances/week" do
+    before { sign_in admin }
+
+    it "totals Mon–Fri hours against a target that drops for leave, and flags anyone below it" do
+      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
+      monday = Date.new(2027, 7, 5)
+      travel_to(Date.new(2027, 7, 12)) do
+        slacker = create(:user, name: "Bina")
+        HrLite.config.employees_scope = -> { HrLite.user_klass.where(id: [ employee.id, slacker.id ]) }
+        (monday..monday + 4).each do |d|
+          start = d.in_time_zone.change(hour: 9)
+          create(:attendance_record, user: employee, date: d, check_in_at: start, check_out_at: start + 8.hours) unless d == monday
+          create(:attendance_record, user: slacker, date: d, check_in_at: start, check_out_at: start + 7.hours)
+        end
+        create(:attendance_record, user: slacker, date: monday + 5, check_in_at: monday.in_time_zone + 5.days, check_out_at: monday.in_time_zone + 5.days + 9.hours)
+        create(:leave_request, :approved, user: employee, start_date: monday, end_date: monday)
+
+        get "/hr/admin/attendances/week", params: { date: (monday + 2).to_s }
+      end
+
+      rows = Nokogiri::HTML(response.body).css("tbody tr").map { |tr| tr.css("td").map { |td| td.text.squish } }
+      expect(rows).to eq([
+        [ "Asha", "32.0h", "8.0h", "32.0h", "Met" ],
+        [ "Bina", "35.0h", "7.0h", "40.0h", "Below target" ]
+      ])
+    end
+  end
 end

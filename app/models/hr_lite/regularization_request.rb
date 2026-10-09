@@ -31,7 +31,7 @@ module HrLite
     end
 
     def times_label
-      [ check_in_at&.strftime("%H:%M"), check_out_at&.strftime("%H:%M") ].compact.join(" – ").presence || "—"
+      [ check_in_at&.strftime("%H:%M"), check_out_at&.strftime("%H:%M") ].compact.join(" – ").presence || "Short day"
     end
 
     # Current punch state for the approver's context.
@@ -49,8 +49,13 @@ module HrLite
       day = punch
       fills_gap = (check_in_at.nil? || !day&.check_in_at) &&
                   (check_out_at.nil? || !day&.check_out_at || day.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE)
-      fills_gap && !day&.regularized? && !self.class.exists?(user_id: user_id, date: date, status: "rejected") &&
+      (fills_gap || short_day_ticket?) && !day&.regularized? && !self.class.exists?(user_id: user_id, date: date, status: "rejected") &&
         self_fixes_left.positive?
+    end
+
+    # No times, just a reason: "my hours were short that day, accept them".
+    def short_day_ticket?
+      check_in_at.nil? && check_out_at.nil? && !!punch&.short?
     end
 
     # Self-fixes the user still has in this ticket's Mon–Sun week.
@@ -86,7 +91,7 @@ module HrLite
         end
 
         # Lifts only the close job's half day; one HR set on purpose stays.
-        record.status = "present" if record.status.blank? || record.regularization_note == AttendanceRecord::AUTO_CHECKOUT_NOTE
+        record.status = "present" if record.status.blank? || AttendanceRecord::AUTO_NOTES.include?(record.regularization_note)
         record.regularized_by_id = actor.id
         record.regularized_at = Time.current
         record.regularization_note = "Ticket ##{id}: #{reason}"
@@ -163,7 +168,7 @@ module HrLite
     end
 
     def at_least_one_time
-      return if check_in_at || check_out_at
+      return if check_in_at || check_out_at || short_day_ticket?
 
       errors.add(:base, "Propose a check-in time, a check-out time, or both")
     end

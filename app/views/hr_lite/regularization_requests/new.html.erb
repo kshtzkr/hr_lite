@@ -8,7 +8,7 @@
   <%= form_with model: @request, url: hr_lite.regularization_requests_path, scope: :regularization_request, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <% if (rule = HrLite.config.self_regularization) %>
-      <p class="hrl-small hrl-muted">A missed punch on a working day from today back to <%= rule[:within_days] %> days ago is fixed as soon as you submit, up to <%= rule[:per_week] %> times a week. Anything else goes to HR as a ticket.</p>
+      <p class="hrl-small hrl-muted">A missed punch or short day on a working day from today back to <%= rule[:within_days] %> days ago is fixed as soon as you submit, up to <%= rule[:per_week] %> times a week. Anything else goes to HR as a ticket.</p>
     <% end %>
     <div class="hrl-field">
       <%= f.label :date, "Which day needs fixing?" %>
@@ -22,10 +22,10 @@
     <div class="hrl-field">
       <%= f.label :check_out_at, "Actual check-out" %>
       <%= f.time_field :check_out_at, value: @request.check_out_at&.strftime("%H:%M") %>
-      <p class="hrl-hint">Leave blank if only check-in is missing.</p>
+      <p class="hrl-hint">Leave blank if only check-in is missing. Short day? Leave both times blank and give the reason.</p>
     </div>
     <div class="hrl-field">
-      <%= f.label :reason, "Why was the punch missed? (required)" %>
+      <%= f.label :reason, "Why does this day need fixing? (required)" %>
       <%= f.text_area :reason, required: true %>
     </div>
     <div class="hrl-form-actions">

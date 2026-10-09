@@ -10,6 +10,7 @@
   <% unless @date == Date.current %>
     <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path %>">Today</a>
   <% end %>
+  <a class="hrl-btn" href="<%= hr_lite.week_admin_attendances_path(date: @date) %>">Weekly hours</a>
 </div>
 
 <div class="hrl-kpis">
@@ -22,9 +23,20 @@
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at && r.check_out_at.nil? } %></div><div class="hrl-kpi__label">Still in</div></div>
 </div>
 
+<% if @places.values.any?(&:any?) %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Where people punched</h2>
+    <% { check_in: "Checked in at", check_out: "Checked out at" }.each do |side, label| %>
+      <% next if @places[side].empty? %>
+      <p class="hrl-small"><strong><%= label %>:</strong>
+        <%= @places[side].sort_by { |place, n| [ -n, place ] }.map { |place, n| "#{place} #{n}" }.join(" · ") %></p>
+    <% end %>
+  </section>
+<% end %>
+
 <div class="hrl-table-wrap">
   <table class="hrl-table hrl-table--stack">
-    <thead><tr><th>Employee</th><th>In</th><th>Out</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>Employee</th><th>In</th><th>Out</th><th>Location</th><th>Status</th><th></th></tr></thead>
     <tbody>
       <% @employees.each do |employee| %>
         <% record = @records[employee.id] %>
@@ -32,6 +44,25 @@
           <td data-label="Employee"><%= hr_display_name(employee) %></td>
           <td data-label="In"><%= record&.check_in_at&.strftime("%H:%M") || "—" %></td>
           <td data-label="Out"><%= record&.check_out_at&.strftime("%H:%M") || "—" %></td>
+          <td data-label="Location" class="hrl-small">
+            <div>
+              <% if record&.check_in_at %>
+                <div>In: <%= HrLite::OfficeLocation.place(record.check_in_lat, record.check_in_lng, @offices) || "No GPS" %></div>
+              <% end %>
+              <% if record&.check_out_at %>
+                <div>Out: <%= HrLite::OfficeLocation.place(record.check_out_lat, record.check_out_lng, @offices) || "No GPS" %></div>
+              <% end %>
+              <% if (gap = record&.punch_gap_m) %>
+                <% apart = "#{(gap / 1000.0).round(1)} km apart" %>
+                <% if gap > HrLite::AttendanceRecord::PUNCH_GAP_ALERT_M %>
+                  <div><span class="hrl-badge hrl-badge--warn"><%= apart %></span></div>
+                <% else %>
+                  <div class="hrl-muted"><%= apart %></div>
+                <% end %>
+              <% end %>
+              <% unless record&.check_in_at %>—<% end %>
+            </div>
+          </td>
           <td data-label="Status">
             <% if record&.flagged? %>
               <span class="hrl-badge hrl-badge--bad">Flagged</span> <span class="hrl-small"><%= record.flag_note %></span>

@@ -1,0 +1,42 @@
+<% content_for(:page_title) { "Weekly hours" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Weekly hours</h1>
+</div>
+
+<div class="hrl-row hrl-row--mb">
+  <a class="hrl-btn" href="<%= hr_lite.week_admin_attendances_path(date: @monday - 7) %>" aria-label="Previous week">&larr;</a>
+  <strong><%= @monday.strftime("%d %b") %> – <%= (@monday + 4).strftime("%d %b %Y") %></strong>
+  <a class="hrl-btn" href="<%= hr_lite.week_admin_attendances_path(date: @monday + 7) %>" aria-label="Next week">&rarr;</a>
+  <a class="hrl-btn" href="<%= hr_lite.admin_attendances_path %>">Day view</a>
+</div>
+<p class="hrl-small hrl-muted">Monday to Friday only — Saturday is not counted. The target drops by a day for each holiday or full-day leave<%= ", and this week counts only the days already over" if @monday + 4 >= Date.current %>.</p>
+
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @rows.size %></div><div class="hrl-kpi__label">People</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @rows.count { |r| r[:below] } %></div><div class="hrl-kpi__label">Below target</div></div>
+</div>
+
+<div class="hrl-table-wrap">
+  <table class="hrl-table hrl-table--stack">
+    <thead><tr><th>Employee</th><th>Hours</th><th>Avg / day</th><th>Target</th><th>Status</th></tr></thead>
+    <tbody>
+      <% @rows.each do |row| %>
+        <tr>
+          <td data-label="Employee"><a class="hrl-card__link" href="<%= hr_lite.admin_attendance_path(row[:user].id, month: @monday.strftime("%Y-%m")) %>"><%= hr_display_name(row[:user]) %></a></td>
+          <td data-label="Hours"><%= row[:hours].round(1) %>h</td>
+          <td data-label="Avg / day"><%= row[:avg] ? "#{row[:avg].round(1)}h" : "—" %></td>
+          <td data-label="Target"><%= row[:target] ? "#{row[:target].round(1)}h" : "—" %></td>
+          <td data-label="Status">
+            <% if row[:below] %>
+              <span class="hrl-badge hrl-badge--bad">Below target</span>
+            <% elsif row[:target]&.positive? %>
+              <span class="hrl-badge hrl-badge--ok">Met</span>
+            <% else %>
+              <span class="hrl-badge hrl-badge--muted">—</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

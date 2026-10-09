@@ -14,9 +14,11 @@ module HrLite
                   # the HR shell; nil (default) shows nothing.
                   :notifications,
                   # e.g. 6 — default probation for new hires (admin edits per employee)
-                  :probation_months
+                  :probation_months,
+                  # true = a punch without GPS is refused (default: recorded and flagged)
+                  :require_punch_location
 
-    attr_reader :leave_year_start_month, :slip_release_day, :self_regularization
+    attr_reader :leave_year_start_month, :slip_release_day, :self_regularization, :work_hours
 
     # Misconfiguration must fail at boot, not as production 500s on every
     # balance screen. Accepts "7" (ENV-friendly) and validates 1..12.
@@ -45,6 +47,16 @@ module HrLite
       raise ArgumentError, "self_regularization must be nil or { within_days:, per_week: } (positive integers), got #{value.inspect}" unless ok
 
       @self_regularization = value
+    end
+
+    # nil = no hours rule. { day: 8, probation_day: 9, week: 40 } = a closed
+    # Mon–Fri punch short of its day's hours is closed as a half day, and a
+    # week under `week` hours (pro rata for holidays and leave) is flagged.
+    def work_hours=(value)
+      ok = value.nil? || (value.is_a?(Hash) && %i[day probation_day week].all? { |k| value[k].is_a?(Numeric) && value[k].positive? })
+      raise ArgumentError, "work_hours must be nil or { day:, probation_day:, week: } (positive numbers), got #{value.inspect}" unless ok
+
+      @work_hours = value
     end
 
     # 0.1.0 pre-release name for public_url_base; kept as an alias so early
@@ -89,6 +101,8 @@ module HrLite
       @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
       @slip_release_day       = nil # e.g. 10 = slips open on the 10th of the next month
       @self_regularization    = nil # e.g. { within_days: 2, per_week: 2 } — employees fix their own missed punch
+      @require_punch_location = false
+      @work_hours             = nil # e.g. { day: 8, probation_day: 9, week: 40 } — short days close as half days
 
       # Leadership onboarding/offboarding. onboard_user must return a saved
       # user record (default: create on user_class with whatever of

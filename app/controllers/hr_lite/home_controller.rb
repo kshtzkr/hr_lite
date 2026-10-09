@@ -23,7 +23,7 @@ module HrLite
 
     def decidable(model, key) = hr_scope(model.pending, key).where.not(user_id: hr_current_user.id).count
 
-    # Last week's days that still need a fix (absent, no check-out, flagged), minus those with a pending ticket.
+    # Last week's days that still need a fix (absent, no check-out, flagged, short), minus those with a pending ticket.
     def attention_days
       range = (Date.current - 7)..(Date.current - 1)
       days = DayStatus.new(user: hr_current_user, range: range)
@@ -38,6 +38,7 @@ module HrLite
         reason = if day.kind == :absent then "Absent"
         elsif day.record&.check_in_at && !day.record.check_out_at && date < Date.current - 1 then "No check-out"
         elsif day.record&.flagged? then "Flagged"
+        elsif day.record&.short? && !day.record.regularized? then "Short day"
         end
         [ date, reason ] if reason
       end

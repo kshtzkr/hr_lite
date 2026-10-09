@@ -93,4 +93,27 @@ RSpec.describe HrLite::AttendanceCloseJob do
     expect { HrLite.config.self_regularization = { within_days: 2 } }.to raise_error(ArgumentError)
     expect { HrLite.config.self_regularization = "2" }.to raise_error(ArgumentError)
   end
+
+  it "closes a short Tuesday as a half day and leaves a full or fixed one alone" do
+    HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
+    start = tuesday.in_time_zone.change(hour: 10)
+    short = create(:attendance_record, date: tuesday, check_in_at: start, check_out_at: start + 7.hours)
+    full = create(:attendance_record, date: tuesday, check_in_at: start, check_out_at: start + 8.hours)
+    fixed = create(:attendance_record, date: tuesday, check_in_at: start, check_out_at: start + 2.hours, regularized_at: 1.hour.ago)
+    HrLite.config.employees_scope = -> { HrLite.user_klass.where(id: [ short.user_id, full.user_id, fixed.user_id ]) }
+
+    described_class.perform_now
+
+    expect(short.reload).to have_attributes(status: "half_day", regularization_note: HrLite::AttendanceRecord::SHORT_DAY_NOTE)
+    expect([ full.reload.status, fixed.reload.status ]).to eq(%w[present present])
+    expect(bells.map { |b| [ b[:user], b[:kind], b[:title] ] }).to eq(
+      [ [ short.user, "attendance.short_day", "You worked 7.0 of 8h on 06 Jul — marked half day" ] ]
+    )
+  end
+
+  it "validates work_hours at assignment" do
+    expect { HrLite.config.work_hours = { day: 8, probation_day: 9 } }.to raise_error(ArgumentError)
+    expect { HrLite.config.work_hours = { day: 0, probation_day: 9, week: 40 } }.to raise_error(ArgumentError)
+    expect { HrLite.config.work_hours = nil }.not_to raise_error
+  end
 end
