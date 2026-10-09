@@ -170,4 +170,18 @@ RSpec.describe "Admin attendances", type: :request do
       ])
     end
   end
+
+  describe "punch locations on an employee's month" do
+    before { sign_in admin }
+
+    it "lists each day's check-in and check-out place with a Google Maps link and the distance" do
+      create(:office_location, name: "HQ", lat: 28.6315, lng: 77.2167, radius_m: 200)
+      create(:attendance_record, :checked_out, user: employee, date: Date.current,
+                                 check_in_lat: 28.6315, check_in_lng: 77.2167, check_out_lat: 28.6315, check_out_lng: 77.2373)
+      get "/hr/admin/attendances/#{employee.id}"
+
+      expect(response.body).to include("Where they punched").and include("· HQ").and include("· Off-site · 2.0 km from HQ")
+        .and include("https://www.google.com/maps?q=28.6315,77.2373").and include("2.0 km apart")
+    end
+  end
 end

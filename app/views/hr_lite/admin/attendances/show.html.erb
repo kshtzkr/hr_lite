@@ -24,6 +24,31 @@
   <p class="hrl-small hrl-muted hrl-mt">Tap a date to fix its punches.</p>
 </section>
 
+<% if @punches.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Where they punched</h2>
+    <% @punches.each do |record| %>
+      <div class="hrl-feed__item hrl-small">
+        <div class="hrl-feed__body">
+          <strong><%= record.date.strftime("%a %-d %b") %></strong>
+          <% [ [ "In", record.check_in_at, record.check_in_lat, record.check_in_lng ],
+               [ "Out", record.check_out_at, record.check_out_lat, record.check_out_lng ] ].each do |label, at, lat, lng| %>
+            <% next unless at %>
+            <div><%= label %> <%= at.strftime("%H:%M") %> · <%= HrLite::OfficeLocation.place(lat, lng, @offices) || "No GPS" %>
+              <% if lat && lng %>
+                · <a class="hrl-card__link" href="https://www.google.com/maps?q=<%= lat %>,<%= lng %>" target="_blank" rel="noopener noreferrer">Map<span class="hrl-sr-only"> of <%= label.downcase %> <%= record.date.strftime("%-d %b") %></span></a>
+              <% end %>
+            </div>
+          <% end %>
+          <% if (gap = record.punch_gap_m) %>
+            <div class="<%= gap > HrLite::AttendanceRecord::PUNCH_GAP_ALERT_M ? "hrl-badge hrl-badge--warn" : "hrl-muted" %>"><%= (gap / 1000.0).round(1) %> km apart</div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </section>
+<% end %>
+
 <% if @edit_date %>
   <section class="hrl-card" id="regularize">
     <h2 class="hrl-card__title">Fix <%= @edit_date.strftime("%A, %d %B") %></h2>
