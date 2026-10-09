@@ -16,6 +16,7 @@ RSpec.describe "Slip detail summary", type: :request do
   it "leads the employee slip with net pay, gross, deductions and days" do
     get "/hr/salary_slips/#{slip.id}"
     expect(kpi_values).to eq([ HrLite::Money.format(slip.net_pay), "₹60,000.00", "₹10,000.00", "28 / 2" ])
+    expect(response.body).to include("28 payable / 2 LOP")
   end
 
   it "shows the same tiles on the admin slip view, which renders the same partial" do
