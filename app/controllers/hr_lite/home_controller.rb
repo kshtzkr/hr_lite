@@ -2,6 +2,7 @@ module HrLite
   class HomeController < ApplicationController
     def index
       @latest_kudos = Kudo.recent.includes(:giver, kudo_mentions: :user).limit(3)
+      @awards = Award.current
       @out_week = LeaveRequest.approved.overlapping_range(Date.current.beginning_of_week, Date.current.end_of_week)
                               .includes(:user).where(user_id: HrLite.active_employees.map(&:id))
                               .sort_by { |leave| hr_display_name(leave.user).downcase }

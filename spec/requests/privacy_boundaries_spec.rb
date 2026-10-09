@@ -31,7 +31,7 @@ RSpec.describe "Privacy boundaries", type: :request do
   end
 
   it "shows a colleague's name but never their numbers on shared surfaces" do
-    [ "/hr/team", "/hr/org", "/hr/calendar" ].each do |path|
+    [ "/hr/team", "/hr/org", "/hr/calendar", "/hr/people/#{colleague.id}/timeline" ].each do |path|
       get path
       expect(response).to have_http_status(:ok), "#{path} should render"
       expect(response.body).not_to include("777777"), "#{path} leaked salary"
