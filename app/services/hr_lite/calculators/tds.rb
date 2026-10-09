@@ -67,15 +67,16 @@ module HrLite
         )
       end
 
-      def self.slab_tax_for(taxable, slabs)
-        slabs.sum(BigDecimal(0)) do |lower, upper, rate|
-          next BigDecimal(0) if taxable <= lower
+      def self.slab_tax_for(taxable, slabs) = slab_rows(taxable, slabs).sum(BigDecimal(0)) { |row| row[:tax] }
+      private_class_method :slab_tax_for
 
-          span_top = upper && taxable > upper ? upper : taxable
-          (span_top - lower) * rate
+      # Each slab with the income that falls in it and the tax on that part.
+      def self.slab_rows(taxable, slabs)
+        slabs.map do |lower, upper, rate|
+          span = taxable <= lower ? BigDecimal(0) : (upper && taxable > upper ? upper : taxable) - lower
+          { from: lower, to: upper, rate: rate, income: span, tax: span * rate }
         end
       end
-      private_class_method :slab_tax_for
     end
   end
 end

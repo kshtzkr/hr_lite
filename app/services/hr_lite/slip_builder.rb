@@ -138,7 +138,7 @@ module HrLite
       # A rejected declaration lowers nothing: its self-declared total stays editable and unchecked.
       return @profile.declared_annual_deductions if declaration.draft? || declaration.rejected?
 
-      declaration.allowable_total
+      declaration.old_regime_deductions(structure: @structure)
     end
 
     # Splits this month's one-off lines into earnings and deductions, in the
