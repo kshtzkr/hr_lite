@@ -76,8 +76,11 @@ module DemoSeeds
       record = HrLite::AttendanceRecord.new(
         user_id: user.id, date: date,
         check_in_at: date.in_time_zone.change(hour: 9, min: 25 + (days_ago % 20)),
-        check_out_at: date.in_time_zone.change(hour: 18, min: (days_ago * 7) % 50),
-        check_in_lat: office.lat, check_in_lng: office.lng, check_in_accuracy_m: 15
+        # A short day (left at 16:00), so Home lists it under "Needs a fix".
+        check_out_at: date.in_time_zone.change(hour: days_ago == 2 && !flagged ? 16 : 18, min: (days_ago * 7) % 50),
+        check_in_lat: office.lat, check_in_lng: office.lng, check_in_accuracy_m: 15,
+        # The flagged colleague checks out ~2 km away on odd days: the board's "km apart" badge.
+        check_out_lat: office.lat, check_out_lng: office.lng + (flagged && days_ago.odd? ? 0.02 : 0), check_out_accuracy_m: 20
       )
       record.add_flag!("Check-in 2.4 km from Head office (±35 m)") if flagged && days_ago.odd?
       record.save!

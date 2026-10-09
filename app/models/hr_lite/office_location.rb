@@ -13,6 +13,18 @@ module HrLite
       active.any? { |office| Geo.distance_m(office.lat, office.lng, lat, lng) <= office.radius_m }
     end
 
+    # Where a punch happened, for the admin board: the office whose radius
+    # covers it, else "Off-site · 3.2 km from Head Office". Nil without GPS.
+    def self.place(lat, lng, offices = active.to_a)
+      return if lat.nil? || lng.nil?
+
+      office = offices.min_by { |o| Geo.distance_m(o.lat, o.lng, lat, lng) }
+      return "Off-site" unless office
+
+      metres = Geo.distance_m(office.lat, office.lng, lat, lng)
+      metres <= office.radius_m ? office.name : "Off-site · #{(metres / 1000.0).round(1)} km from #{office.name}"
+    end
+
     # For flag notes: "1.2 km from Head Office". Nil when no offices exist.
     def self.nearest(lat, lng)
       active.min_by { |office| Geo.distance_m(office.lat, office.lng, lat, lng) }

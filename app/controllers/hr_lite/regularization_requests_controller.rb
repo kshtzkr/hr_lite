@@ -34,7 +34,7 @@ module HrLite
       return "Ticket raised — an admin will review it." unless rule
       return "Fixed. #{helpers.pluralize(@request.self_fixes_left, 'self-fix')} left this week." if @request.approved?
 
-      "Sent to HR as a ticket — you can fix only a missed punch on a working day in the last #{rule[:within_days]} days yourself, " \
+      "Sent to HR as a ticket — you can fix only a missed punch or short day on a working day in the last #{rule[:within_days]} days yourself, " \
         "#{rule[:per_week]} times a week."
     end
 

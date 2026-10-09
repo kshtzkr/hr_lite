@@ -9,6 +9,9 @@ port = ENV.fetch("PORT", "3999")
 Dir[File.expand_path("../spec/dummy/db/demo.sqlite3*", __dir__)].each { |f| File.delete(f) }
 
 require_relative "../spec/dummy/config/environment"
+HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
+HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
+HrLite.config.require_punch_location = true
 
 ActiveRecord::Migration.verbose = false
 load File.expand_path("../spec/dummy/db/schema.rb", __dir__)

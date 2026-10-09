@@ -1,8 +1,8 @@
 module HrLite
   # The single write path for employee punches. Race-safe (DB unique index +
-  # row lock + in-lock re-check), never blocked by geolocation: a punch
-  # without GPS or outside every office radius is recorded AND flagged —
-  # denying GPS must not stop anyone from working.
+  # row lock + in-lock re-check). A punch outside every office radius is
+  # recorded AND flagged; one without GPS is too, unless
+  # config.require_punch_location refuses it.
   class AttendancePuncher
     # What the browser can legitimately report (geo_punch.js).
     GEO_STATUSES = %w[ok denied unavailable timeout insecure].freeze
@@ -29,6 +29,11 @@ module HrLite
     end
 
     def call
+      if HrLite.config.require_punch_location && (@lat.nil? || @lng.nil?)
+        return Result.new(error: "Location is required to punch. Turn on location and try again, " \
+                                 "or raise a regularization ticket.")
+      end
+
       record = resolve_record
       return Result.new(error: "No open check-in to close.") if record.nil?
 

@@ -312,4 +312,51 @@ RSpec.describe HrLite::RegularizationRequest do
     request = build_request(check_in_at: nil)
     expect(request.punch).to eq(record)
   end
+
+  describe "short-day ticket (config.work_hours)" do
+    let(:bells) { [] }
+
+    before do
+      admin
+      HrLite.config.notify = ->(**kw) { bells << kw }
+      HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
+      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
+    end
+
+    def short_day(date, **attrs)
+      start = date.in_time_zone.change(hour: 10)
+      create(:attendance_record, user: user, date: date, check_in_at: start, check_out_at: start + 6.hours, **attrs)
+    end
+
+    def reason_only(date) = build_request(date: date, check_in_at: nil, check_out_at: nil, reason: "Doctor's appointment")
+
+    it "self-fixes a short day from a reason alone, lifting the close job's half day" do
+      record = short_day(tuesday, status: "half_day", regularization_note: HrLite::AttendanceRecord::SHORT_DAY_NOTE)
+      request = reason_only(tuesday)
+      request.save!
+
+      expect([ request.approved?, request.times_label ]).to eq([ true, "Short day" ])
+      expect(record.reload).to have_attributes(status: "present", check_out_at: record.check_out_at)
+      expect(record).to be_regularized
+    end
+
+    it "sends the third short day of the week to HR" do
+      short_day(tuesday - 1)
+      short_day(tuesday)
+      short_day(tuesday + 1)
+      travel_to(Date.new(2027, 7, 7)) { reason_only(tuesday - 1).save! }
+      reason_only(tuesday).save!
+      request = reason_only(tuesday + 1)
+      request.save!
+
+      expect(request).to be_pending
+      expect(bells.map { |b| b[:kind] }).to eq([ "regularization.requested" ])
+    end
+
+    it "still wants times when the day was not short" do
+      start = tuesday.in_time_zone.change(hour: 9)
+      create(:attendance_record, user: user, date: tuesday, check_in_at: start, check_out_at: start + 9.hours)
+      expect(reason_only(tuesday)).not_to be_valid
+    end
+  end
 end

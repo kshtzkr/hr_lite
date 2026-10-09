@@ -40,4 +40,15 @@ RSpec.describe HrLite::OfficeLocation do
   ensure
     HrLite::Current.reset
   end
+
+  describe ".place" do
+    it "names the covering office, else how far off-site, and nothing without GPS" do
+      create(:office_location, name: "HQ", lat: 28.6315, lng: 77.2167, radius_m: 200)
+
+      expect(described_class.place(28.6316, 77.2168)).to eq("HQ")
+      expect(described_class.place(28.6315, 77.2373)).to eq("Off-site · 2.0 km from HQ")
+      expect(described_class.place(nil, 77.2)).to be_nil
+      expect(described_class.place(28.6, 77.2, [])).to eq("Off-site")
+    end
+  end
 end
