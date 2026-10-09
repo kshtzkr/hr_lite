@@ -76,6 +76,11 @@ RSpec.describe "Regularization tickets", type: :request do
       }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("check-in time, a check-out time")
+
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: tuesday, check_in_at: "25:99", reason: "Missed" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
     end
 
     it "cancels own pending ticket but 404s a foreign one" do
