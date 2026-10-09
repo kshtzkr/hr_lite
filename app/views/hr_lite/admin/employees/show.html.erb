@@ -95,7 +95,7 @@
                 <td data-label="Effective"><%= structure.effective_from.strftime("%b %Y") %></td>
                 <td data-label="Basic" class="hrl-num"><%= hrl_money(structure.basic) %></td>
                 <td data-label="Gross" class="hrl-num"><%= hrl_money(structure.monthly_gross) %></td>
-                <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
+                <td data-label=""><a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
               </tr>
             <% end %>
           </tbody>

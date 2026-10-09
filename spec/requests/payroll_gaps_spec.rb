@@ -78,8 +78,12 @@ RSpec.describe "Payroll screens and edge branches", type: :request do
     expect(response.body).to include("New employee profile")
 
     profile = create(:employee_profile)
+    structure = create(:salary_structure, user: profile.user)
     get "/hr/admin/employees/#{profile.id}"
     expect(response.body).to include("Salary structures")
+    # Stacks into labelled rows on phones, with a 44px Edit.
+    table = Nokogiri::HTML(response.body).at_css("table.hrl-table--stack:has(td[data-label='Gross'])")
+    expect(table.at_css("a.hrl-btn")["href"]).to end_with("/salary_structures/#{structure.id}/edit")
 
     get "/hr/admin/employees/#{profile.id}/edit"
     expect(response.body).to include("Edit #{profile.employee_code}")
