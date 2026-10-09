@@ -242,7 +242,8 @@ RSpec.describe "Admin index screens", type: :request, no_legacy_bridge: true do
     get "/hr/admin/assets/new"
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Serial number")
+    expect(response.body).to include("Serial number", %(type="radio" value="laptop"))
+    expect(response.body).not_to include("checked")
   end
 
   it "keeps the desk closed to somebody who cannot run it" do

@@ -351,6 +351,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-chiprow label {
   border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-pill); padding: .4rem .8rem;
   font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; min-height: var(--hrl-target); display: inline-flex; align-items: center;
+  min-width: var(--hrl-target); justify-content: center;
 }
 .hrl-chiprow input { position: absolute; opacity: 0; pointer-events: none; }
 .hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked) { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }

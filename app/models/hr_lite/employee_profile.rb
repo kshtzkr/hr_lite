@@ -22,6 +22,7 @@ module HrLite
 
     TAX_REGIMES = %w[new old].freeze
     BLOOD_GROUPS = %w[A+ A- B+ B- AB+ AB- O+ O-].freeze
+    normalizes :blood_group, with: ->(v) { v.presence } # the "Not set" chip posts ""
     # The ID-card photo. Images a browser can print; content-sniffed like
     # Document, so the check is on the real bytes.
     PHOTO_TYPES = %w[image/jpeg image/png image/webp].freeze

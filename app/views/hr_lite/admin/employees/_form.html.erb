@@ -58,8 +58,13 @@
     <div class="hrl-field"><%= f.label :date_of_birth %><%= f.date_field :date_of_birth %></div>
     <div class="hrl-field"><%= f.label :date_of_joining %><%= f.date_field :date_of_joining %></div>
     <div class="hrl-field">
-      <%= f.label :blood_group %>
-      <%= f.select :blood_group, HrLite::EmployeeProfile::BLOOD_GROUPS, include_blank: "—" %>
+      <%= f.label :blood_group, id: "hrl-blood-group", for: nil %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-blood-group">
+        <label><%= f.radio_button :blood_group, "" %><span>Not set</span></label>
+        <% HrLite::EmployeeProfile::BLOOD_GROUPS.each do |g| %>
+          <label><%= f.radio_button :blood_group, g %><span><%= g %></span></label>
+        <% end %>
+      </div>
     </div>
     <div class="hrl-field"><%= f.label :emergency_contact, "Emergency contact (printed on the ID card)" %><%= f.telephone_field :emergency_contact %></div>
     <div class="hrl-field">

@@ -51,6 +51,22 @@ RSpec.describe "Employee lifecycle", type: :request do
     end
   end
 
+  describe "the blood group chips" do
+    let!(:profile) { create(:employee_profile, blood_group: "B+") }
+
+    it "keeps the stored group checked on edit" do
+      get "/hr/admin/employees/#{profile.id}/edit"
+
+      expect(response.body).to match(/<input type="radio" value="B\+" checked="checked"/)
+    end
+
+    it "clears it with the Not set chip" do
+      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { blood_group: "" } }
+
+      expect(profile.reload.blood_group).to be_nil
+    end
+  end
+
   describe "offboarding" do
     let(:profile) { create(:employee_profile, date_of_exit: Date.current + 30) }
 
