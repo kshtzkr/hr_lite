@@ -98,12 +98,18 @@ RSpec.describe "Payroll models" do
       expect(described_class.effective_for(user, Date.new(2025, 1, 1))).to be_nil
     end
 
-    it "splits an annual CTC with employer PF inside it" do
-      structure = build(:salary_structure, annual_ctc: 420_000, esi_applicable: false)
+    it "splits an annual CTC on save: Basic 50%, HRA 40% of Basic, employer PF and gratuity inside it" do
+      structure = create(:salary_structure, annual_ctc: 420_000, esi_applicable: false, basic: nil)
+
+      expect([ structure.basic, structure.hra, structure.special_allowance ]).to eq([ 17_500, 7000, 7858 ])
+      expect(structure.breakup).to include(employer: { "PF" => 1800, "Gratuity" => 842 }, monthly_gross: 32_358, monthly_ctc: 35_000)
+    end
+
+    it "pays a metro HRA at half of Basic" do
+      structure = build(:salary_structure, annual_ctc: 420_000, metro: true, esi_applicable: false)
       structure.fill_from_ctc
 
-      expect([ structure.basic, structure.hra, structure.special_allowance ]).to eq([ 17_500, 7000, 8700 ])
-      expect(structure.breakup).to include(employer: { "PF" => 1800 }, monthly_gross: 33_200, monthly_ctc: 35_000)
+      expect(structure.hra).to eq(8750)
     end
 
     it "keeps employer ESI inside a low CTC" do
@@ -111,25 +117,26 @@ RSpec.describe "Payroll models" do
       structure.fill_from_ctc
       breakup = structure.breakup
 
-      expect(breakup[:employer]).to eq("PF" => 900, "ESI" => 444)
-      expect(breakup[:monthly_gross]).to eq(13_656)
+      expect(breakup[:employer]).to eq("PF" => 900, "ESI" => 433, "Gratuity" => 361)
+      expect(breakup[:monthly_gross]).to eq(13_306)
       expect(breakup[:monthly_ctc]).to be_within(1).of(15_000)
-      expect(breakup[:in_hand]).to eq(13_656 - 900 - 103)
     end
 
-    it "refuses a CTC too low for the split" do
-      structure = build(:salary_structure, annual_ctc: 420_000, other_earnings: 20_000)
-      structure.fill_from_ctc
+    it "refuses a negative special allowance" do
+      structure = build(:salary_structure, special_allowance: -1)
 
       expect(structure).not_to be_valid
       expect(structure.errors[:base]).to include("CTC is too low for this split")
     end
 
-    it "keeps a typed CTC out of the plaintext audit trail" do
+    it "requires a CTC from the admin form, and keeps it out of the plaintext audit trail" do
+      expect(build(:salary_structure)).not_to be_valid(:ctc_form)
       structure = create(:salary_structure, annual_ctc: 420_000)
+      structure.update!(annual_ctc: 424_800)
 
-      expect(HrLite::AuditLog.where(subject_type: described_class.name).sole.audited_changes).not_to have_key("annual_ctc")
-      expect { structure.update!(annual_ctc: 424_800) }.not_to change(HrLite::AuditLog, :count)
+      logs = HrLite::AuditLog.where(subject_type: described_class.name).map(&:audited_changes)
+      expect(logs.map { |changes| changes["annual_ctc"] }).to all(eq("[changed]"))
+      expect(logs.to_s).not_to include("424800", "420000")
     end
 
     it "decides ESI on the salary that opened the ESIC period, as payroll does" do

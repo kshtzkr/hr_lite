@@ -48,6 +48,8 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `attendance.regularized` | employee | employee | ✓ | — |
 | `attendance.missed_check_in` / `attendance.missed_check_out` / `attendance.short_day` (nightly `AttendanceCloseJob`) | employee | employee | — | — |
 | `payroll.finalized` | — | — | ✓ | ✓ |
+| `payroll.approval_needed` (first of two approvals given) | other approvers | other approvers | — | — |
+| `payroll.overdue` (3rd-of-month job could not auto-approve) | approvers | approvers | — | — |
 | `payroll.published` | each employee | each employee | ✓ | — |
 | `kudos.mentioned` | mentioned | mentioned | — | — |
 | `appraisal.shared` | employee | employee | ✓ | — |

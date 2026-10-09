@@ -37,6 +37,7 @@ module HrLite
       "payroll.view" => [ "Payroll", "See payroll runs and salary slips" ],
       "payroll.manage" => [ "Payroll", "Create, compute, finalize, unlock and publish payroll" ],
       "payroll.export" => [ "Payroll", "Download the payout register, including bank details" ],
+      "payroll.approve" => [ "Payroll", "Approve a computed payroll run (two approvals finalize and publish it)" ],
       "salary.view" => [ "Payroll", "See salary structures" ],
       "salary.manage" => [ "Payroll", "Set and revise salary structures" ],
       "appraisal.view" => [ "Growth", "See appraisals" ],

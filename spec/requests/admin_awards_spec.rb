@@ -40,8 +40,8 @@ RSpec.describe "Awards admin and Home card", type: :request, no_legacy_bridge: t
     expect(response).to have_http_status(:unprocessable_entity)
   end
 
-  it "keeps HR out" do
-    sign_in user_with_roles(HrLite::Role::HR)
+  it "keeps managers out" do
+    sign_in user_with_roles(HrLite::Role::MANAGER)
     get "/hr/admin/awards"
     expect(response).to redirect_to("/hr/")
   end

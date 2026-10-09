@@ -38,6 +38,9 @@ module HrLite
       { label: "Help desk",       path: :admin_hr_requests_path,     match: [ "/admin/hr_requests" ] },
       { label: "Assets",          path: :admin_assets_path,          match: [ "/admin/assets" ] },
       { label: "Benefits",        path: :admin_benefits_path,        match: [ "/admin/benefits" ] },
+      # HR approves payroll without running it; Super Admin reaches it under Organisation.
+      { label: "Payroll approval", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs" ],
+        if: -> { hr_can?("payroll.approve", scope: :all) && !hr_superadmin? } },
       { label: "Joining & exits", path: :admin_checklists_path,      match: [ "/admin/checklists" ] }
     ].freeze
 

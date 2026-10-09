@@ -9,6 +9,8 @@
       <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
       <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
       <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
+    <% end %>
+    <% if hr_can?("salary.manage", scope: :all) %>
       <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
     <% end %>
   </div>
@@ -84,7 +86,7 @@
     </dl>
   </section>
 
-  <% if hr_superadmin? %>
+  <% if hr_can?("salary.view", scope: :all) %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Salary structures</h2>
     <% if @structures.any? %>

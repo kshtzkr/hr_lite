@@ -61,6 +61,15 @@ module HrLite
                       "it genuinely levies no PT."
         end
 
+        # Only approved leave and fixes reach DayStatus; one still waiting is paid as loss of pay.
+        month = @run.period_month.all_month
+        pending = LeaveRequest.pending.overlapping_range(month.begin, month.end).count +
+                  RegularizationRequest.pending.where(date: month).count
+        if pending.positive?
+          warnings << "#{pending} leave or attendance #{pending == 1 ? 'request is' : 'requests are'} still pending for " \
+                      "#{@run.label} — they count as loss of pay until approved; approve or reject, then recompute."
+        end
+
         @run.salary_slips.where.not(id: keep_ids).destroy_all
         @run.update!(warnings: warnings)
       end

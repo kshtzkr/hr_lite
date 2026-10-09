@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-10-10
+
+Three migrations: `annual_ctc` (encrypted) and `metro` on salary structures; `first_approved_by_id`, `first_approved_at` and `auto_approved_at` on payroll runs; and a data migration granting the new `payroll.approve` permission to HR and Super Admin, plus `payroll.view`, `salary.view`, `salary.manage` and `profile.manage` to HR. Schedule `HrLite::PayrollAutoApproveJob` on the 3rd.
+
+### Added
+- Salary structures take the Annual CTC only. Saving splits it — Basic 50% of CTC (the labour codes' wage floor), HRA 50% of Basic for a metro (new "Works in a metro" box) and 40% elsewhere, employer PF, ESI and gratuity (4.81% of Basic) inside the CTC, special allowance the rest — and stores the CTC, encrypted. The form shows the monthly split read-only; Basic, HRA, special and other are no longer typed. Existing structures keep their numbers until next saved, and their CTC is unchanged (gratuity is counted only on a CTC-split structure). `SalaryStructure::GRATUITY_RATE`, `#gratuity`.
+- Payroll needs two approvals: anyone with `payroll.approve` approves a reviewed run (Approve), and a second, different person — one of the two able to run payroll — approves it again, which finalizes and publishes it. Recomputing clears the first approval. The run page says who approved and what is left. Approvers without `payroll.manage` (HR) get a "Payroll approval" link under Manage, read every run and approve, but cannot compute, unlock or delete.
+- `HrLite::PayrollAutoApproveJob`: on the 3rd, a run still in review is approved and published by the system (`auto_approved_at`, audit `payroll.auto_approved`), unless it has blocking warnings — no salary structure for someone, a state with no PT slabs, or a statutory rate card that is last year's or not yet verified — when approvers hear `payroll.overdue` instead.
+- Payroll warns when leave or attendance fixes for the month are still pending: they are paid as loss of pay until approved.
+
+### Changed
+- HR (role defaults and, on existing installs, the data migration) can now set salary structures, read and approve payroll, and edit employee profiles — which includes the screens gated on `profile.manage`: employees, resignations, awards, leave types, holidays, offices, company settings and the audit trail. Roles stay `role.manage`.
+- Salary structures are gated on `salary.manage` (was `payroll.manage`), and the employee page shows them to `salary.view`.
+- The single-person Finalize button and route are gone: a run is finalized by its second approval. Publish stays for a run unlocked and re-approved.
+- `PayrollAutoDraftJob` notifies `payroll.approve` holders as well as `payroll.manage`.
+
 ## [0.23.2] - 2026-10-10
 
 No migrations.

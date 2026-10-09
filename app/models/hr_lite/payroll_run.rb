@@ -9,6 +9,11 @@ module HrLite
     belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
     belongs_to :finalized_by, class_name: HrLite.config.user_class, optional: true
     belongs_to :published_by, class_name: HrLite.config.user_class, optional: true
+    belongs_to :first_approved_by, class_name: HrLite.config.user_class, optional: true
+
+    # A run with one of these is not paid on the 3rd without a person looking:
+    # someone missing, a state levying ₹0, or last year's / unverified rates.
+    BLOCKING_WARNING = /\ANo (salary structure|professional-tax slabs)|statutory card/
 
     validates :period_month, presence: true, uniqueness: true
     validates :status, inclusion: { in: STATUSES }
@@ -40,7 +45,8 @@ module HrLite
         update!(status: "processing")
         PayrollRunProcessor.call(self)
         transaction do
-          update!(status: "review", processed_at: Time.current)
+          # New numbers: an approval of the old ones no longer counts.
+          update!(status: "review", processed_at: Time.current, first_approved_by_id: nil, first_approved_at: nil)
           audit!("payroll.computed", actor,
                  "slips" => salary_slips.count, "warnings" => warnings.length,
                  "from_status" => previous)
@@ -60,7 +66,7 @@ module HrLite
       raise ActiveRecord::RecordInvalid.new(self), "no slips" if salary_slips.none?
 
       transaction do
-        update!(status: "finalized", finalized_at: Time.current, finalized_by_id: actor.id)
+        update!(status: "finalized", finalized_at: Time.current, finalized_by_id: actor&.id)
         # Finalizing freezes every slip in the run. Who did it, to how many
         # people, is the row an investigation starts from.
         audit!("payroll.finalized", actor, "slips" => salary_slips.count)
@@ -72,6 +78,34 @@ module HrLite
         path: "/admin/payroll_runs/#{id}"
       )
       true
+    end
+
+    # Two people approve a reviewed run, at least one of them able to run
+    # payroll; the second approval finalizes and publishes it.
+    def approve!(actor:)
+      raise_unless %w[review]
+      unless HrLite.can?(actor, "payroll.approve", scope: :all)
+        raise ActiveRecord::RecordInvalid.new(self), "not an approver"
+      end
+      return stamp_first_approval!(actor) if first_approved_by_id.nil?
+      if first_approved_by_id == actor.id || [ first_approved_by, actor ].none? { |u| HrLite.can?(u, "payroll.manage", scope: :all) }
+        raise ActiveRecord::RecordInvalid.new(self), "needs a second, different approver"
+      end
+
+      finalize!(actor: actor) && publish!(actor: actor)
+    end
+
+    def blocking_warnings = warnings.grep(BLOCKING_WARNING)
+
+    # The 3rd-of-month backstop: a clean run nobody finished approving is
+    # approved by the system and says so; a run with blocking warnings waits.
+    def auto_approve!
+      raise_unless %w[review]
+      return false if blocking_warnings.any?
+
+      update!(auto_approved_at: Time.current)
+      audit!("payroll.auto_approved", nil, "slips" => salary_slips.count)
+      finalize!(actor: nil) && publish!(actor: nil)
     end
 
     def unlock!(actor:)
@@ -92,7 +126,7 @@ module HrLite
     def publish!(actor:)
       raise_unless %w[finalized]
       transaction do
-        update!(status: "published", published_at: Time.current, published_by_id: actor.id)
+        update!(status: "published", published_at: Time.current, published_by_id: actor&.id)
         audit!("payroll.published", actor, "slips" => salary_slips.count)
       end
 
@@ -144,6 +178,16 @@ module HrLite
     end
 
     private
+
+    def stamp_first_approval!(actor)
+      update!(first_approved_by_id: actor.id, first_approved_at: Time.current)
+      audit!("payroll.approved", actor, "slips" => salary_slips.count, "step" => 1)
+      others = HrLite.users_holding("payroll.approve", scope: :all).reject { |u| u.id == actor.id }
+      Notifications.publish("payroll.approval_needed",
+                            title: "Payroll #{label}: #{HrLite.display_name(actor)} approved — one more approval publishes it",
+                            path: "/admin/payroll_runs/#{id}", bell_to: others, email_to: others)
+      true
+    end
 
     # A repayment is booked when the run is FINALIZED, never at compute: a
     # draft is recomputed as often as the operator likes, and each pass would
