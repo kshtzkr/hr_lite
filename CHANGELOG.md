@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-10-10
+
+Two migrations: `hr_lite_ca_reviews`, and a data migration creating the CA role and giving Super Admin the new `payroll.verify` permission. Schedule `CaReviewReminderJob` weekly and `CaReviewOverdueJob` on 31 March.
+
+### Added
+- CA year-end review: a new **CA** role for an outside chartered accountant (reads every slip, salary structure and tax declaration with its proofs; verifies; nothing else). CA logins without an HR profile are not staff — `HrLite.employees` leaves them out, so attendance, payroll, team screens and broadcasts never count them.
+- "CA review" (`/admin/ca_reviews`): progress for the financial year (slips and declarations verified, flags open), tabs for salary slips and tax declarations, filters (to review, flagged, verified, resolved), Verify, Flag with a required note, and "Verify all shown". A flag tells approvers and payroll (`ca.flagged`); they fix it the normal way and Mark resolved with a note. A published slip is never edited. `HrLite::CaReview`.
+- `CaReviewReminderJob` (weekly, acts only in March) and `CaReviewOverdueJob` (31 March): what is left, to the CA reviewers and then to payroll and HR.
+- A CA (`payroll.view`, all) can open any slip read-only.
+
 ## [0.25.0] - 2026-10-10
 
 Three migrations: `senior` and `landlord_pan` (encrypted) on declaration lines; a data migration adding the FY 2026-27 and October 2026 rate cards to installs that already have cards; a data migration giving HR `tax.view` and `tax.manage` (all).

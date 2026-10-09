@@ -70,6 +70,12 @@ module HrLite
           "asset.view" => "all", "asset.manage" => "all", "checklist.manage" => "all"
         }
       },
+      Role::CA => {
+        description: "Outside chartered accountant: reads every slip and tax declaration and verifies them before 31 March.",
+        grants: {
+          "payroll.view" => "all", "salary.view" => "all", "tax.view" => "all", "payroll.verify" => "all"
+        }
+      },
       Role::SUPER_ADMIN => {
         description: "Everything, including pay, appraisals and who holds which role.",
         grants: Permissions::KEYS.to_h { |key| [ key, "all" ] }

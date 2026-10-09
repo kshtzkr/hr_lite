@@ -1,0 +1,94 @@
+<% content_for(:page_title) { "CA review" } %>
+<% fy_label = HrLite::FinancialYear.label(@fy) %>
+<% reviewer = hr_can?("payroll.verify", scope: :all) %>
+<% resolver = hr_can?("payroll.approve", scope: :all) || hr_can?("payroll.manage", scope: :all) %>
+<% keep = ->(extra = {}) { { fy: @fy, tab: @tab, status: @status }.merge(extra).compact } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">CA review — FY <%= fy_label %></h1>
+</div>
+<p class="hrl-small hrl-muted">Every published salary slip and every filed tax declaration, verified by the CA before 31 March <%= @fy.year + 1 %>. A flag goes to HR and payroll; the fix is a correcting line on a later slip or reopening the declaration — a published slip is never edited.</p>
+
+<div class="hrl-kpis">
+  <% %w[slips declarations].each do |kind| %>
+    <% total = @totals[kind] %>
+    <% done = total - @left[kind] %>
+    <div class="hrl-kpi">
+      <div class="hrl-kpi__value"><%= done %> / <%= total %></div>
+      <div class="hrl-kpi__label"><%= kind == "slips" ? "Salary slips" : "Tax declarations" %> verified</div>
+      <progress class="hrl-tax-cap" max="<%= [ total, 1 ].max %>" value="<%= done %>" aria-hidden="true"></progress>
+    </div>
+  <% end %>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @left["flagged"] %></div><div class="hrl-kpi__label">Flags open</div></div>
+</div>
+
+<div class="hrl-row hrl-row--mb" role="tablist">
+  <a class="hrl-btn <%= "hrl-btn--primary" if @tab == "slips" %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "slips", status: @status)) %>" aria-current="<%= @tab == "slips" ? "page" : nil %>">Salary slips</a>
+  <a class="hrl-btn <%= "hrl-btn--primary" if @tab == "declarations" %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "declarations", status: @status)) %>" aria-current="<%= @tab == "declarations" ? "page" : nil %>">Tax declarations</a>
+</div>
+<div class="hrl-row hrl-row--mb">
+  <% [ [ nil, "All" ], [ "unreviewed", "To review" ], [ "flagged", "Flagged" ], [ "verified", "Verified" ], [ "resolved", "Resolved" ] ].each do |value, label| %>
+    <a class="hrl-btn <%= "hrl-btn--primary" if @status == value %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(status: value)) %>"><%= label %></a>
+  <% end %>
+</div>
+
+<section class="hrl-card">
+  <% if @rows.empty? %>
+    <p class="hrl-card--empty">Nothing here.</p>
+  <% else %>
+    <% subject_type = @rows.first.class.name %>
+    <% if reviewer && @rows.any? { |row| @reviews[row.id].nil? } %>
+      <%= button_to "Verify all shown", hr_lite.verify_all_admin_ca_reviews_path, method: :post, class: "hrl-btn",
+            params: keep.(subject_type: subject_type, ids: @rows.map(&:id)),
+            form: { data: { turbo_confirm: "Verify every unreviewed item on this page?" } } %>
+    <% end %>
+    <ul class="hrl-feed">
+      <% @rows.each do |row| %>
+        <% review = @reviews[row.id] %>
+        <li class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <div class="hrl-row">
+              <% if row.is_a?(HrLite::SalarySlip) %>
+                <a class="hrl-card__link" href="<%= hr_lite.admin_salary_slip_path(row) %>"><%= hr_display_name(row.user) %> — <%= row.period_month.strftime("%B %Y") %></a>
+                <span class="hrl-small hrl-muted">net <%= hrl_money(row.net_pay) %></span>
+              <% else %>
+                <a class="hrl-card__link" href="<%= hr_lite.admin_tax_declaration_path(row) %>"><%= hr_display_name(row.user) %> — <%= row.label %></a>
+                <span class="hrl-small hrl-muted"><%= row.regime.humanize %> regime · <%= row.status.humanize %></span>
+              <% end %>
+              <span class="hrl-right">
+                <% badge = { "verified" => [ "hrl-badge--ok", "Verified" ], "flagged" => [ "hrl-badge--bad", "Flagged" ],
+                             "resolved" => [ "", "Resolved" ] }.fetch(review&.status, [ "hrl-badge--muted", "To review" ]) %>
+                <span class="hrl-badge <%= badge.first %>"><%= badge.last %></span>
+              </span>
+            </div>
+            <% if review&.note.present? %><p class="hrl-small">CA: <%= review.note %></p><% end %>
+            <% if review&.resolution_note.present? %><p class="hrl-small hrl-muted">Resolved by <%= hr_display_name(review.resolved_by) %>: <%= review.resolution_note %></p><% end %>
+            <div class="hrl-row hrl-mt">
+              <% if reviewer && review&.status != "verified" %>
+                <%= button_to "Verify", hr_lite.verify_admin_ca_reviews_path, method: :post, class: "hrl-btn",
+                      params: keep.(subject_type: subject_type, subject_id: row.id) %>
+              <% end %>
+              <% if reviewer %>
+                <details>
+                  <summary class="hrl-btn">Flag…</summary>
+                  <%= form_with url: hr_lite.flag_admin_ca_reviews_path, method: :post, local: true do %>
+                    <% keep.(subject_type: subject_type, subject_id: row.id).each do |key, value| %><%= hidden_field_tag key, value %><% end %>
+                    <div class="hrl-field"><%= label_tag "note_#{row.id}", "What is wrong" %><%= text_area_tag :note, nil, id: "note_#{row.id}", required: true, rows: 2 %></div>
+                    <%= submit_tag "Flag it", class: "hrl-btn hrl-btn--primary" %>
+                  <% end %>
+                </details>
+              <% end %>
+              <% if resolver && review&.status == "flagged" %>
+                <%= form_with url: hr_lite.resolve_admin_ca_review_path(review, keep.()), method: :post, local: true, class: "hrl-row" do %>
+                  <%= label_tag "resolution_#{review.id}", "How it was fixed", class: "hrl-sr-only" %>
+                  <%= text_field_tag :note, nil, id: "resolution_#{review.id}", placeholder: "How it was fixed" %>
+                  <%= submit_tag "Mark resolved", class: "hrl-btn" %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

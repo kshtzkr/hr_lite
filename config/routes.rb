@@ -122,6 +122,10 @@ HrLite::Engine.routes.draw do
     end
     resources :performance_plans, only: %i[index new create edit update]
     resources :awards, only: %i[index new create edit update]
+    resources :ca_reviews, only: :index do
+      collection { post :verify; post :flag; post :verify_all }
+      member { post :resolve }
+    end
     resources :payroll_runs, only: %i[index show new create destroy] do
       member do
         post :compute
