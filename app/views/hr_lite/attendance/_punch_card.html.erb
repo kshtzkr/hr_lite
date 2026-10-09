@@ -62,5 +62,21 @@
     <% end %>
   <% end %>
 
+  <% local_assigns[:attention]&.each do |date, reason| %>
+    <div class="hrl-feed__item hrl-row">
+      <div class="hrl-feed__body"><%= date.strftime("%a %-d %b") %> · <%= reason %></div>
+      <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path(date: date) %>">Fix</a>
+    </div>
+  <% end %>
+
   <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
+
+  <% if local_assigns.key?(:attention) %>
+    <div class="hrl-row">
+      <a class="hrl-btn" href="<%= hr_lite.new_leave_request_path %>">Apply leave</a>
+      <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path %>">Fix a punch</a>
+      <a class="hrl-btn" href="<%= hr_lite.new_comp_off_request_path %>">Comp-off</a>
+      <% if hr_lite_route?(:salary_slips_path) %><a class="hrl-btn" href="<%= hr_lite.salary_slips_path %>">Payslip</a><% end %>
+    </div>
+  <% end %>
 </section>
