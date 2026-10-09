@@ -22,7 +22,7 @@
        code, word, mod = date == Date.current && day.kind == :absent ? [ "Today", "Today, not checked in yet", "today" ] : states[day.kind] %>
     <div class="<%= class_names("hrl-mgrid__day", "hrl-mgrid__day--#{mod}", "hrl-mgrid__day--today": date == Date.current) %>" role="group"
          aria-label="<%= date.strftime('%-d %b') %>, <%= word %><%= ', worked' if %i[holiday weekend].include?(day.kind) && day.record&.check_in_at %><%= ', Flagged' if day.record&.flagged? %>">
-      <% if day.record&.flagged? %><span class="hrl-mgrid__flag" title="<%= day.record.flag_note %>"></span><% end %>
+      <% if day.record&.flagged? %><span class="hrl-mgrid__flag" aria-hidden="true"></span><% end %>
       <span class="hrl-mgrid__num">
         <% if link_builder %>
           <a href="<%= link_builder.call(date) %>"><%= date.day %></a>

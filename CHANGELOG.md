@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Attendance month grid: every day except an upcoming working day shows its state as a code (P, ½, L, ½L, H, WO, A) as well as a colour, and screen readers hear it in words ("16 Oct, Leave", plus "worked" on a punched holiday or weekly off, and "Flagged"). The legend keys every code, Today, Flagged and Upcoming. A half-day leave gets its own half-tinted cell instead of full leave's. Upcoming day numbers use `--hrl-muted` at full strength instead of 45% opacity. The invalid `role="grid"`/`"gridcell"` give way to labelled groups. Check-in and check-out times leave the cells for the day detail.
 
 ### Fixed
+- Attendance: a flagged punch's reason shows as text on the Today card ("Flagged: Check-in 2.4 km from Head office") instead of a hover-only tooltip that phones and screen readers never reached. The month grid's flag dot is hidden from screen readers; the day's label already says "Flagged".
 - Attendance month grid: today with no punch yet shows "Today" with an accent ring instead of a red "A", and the Absent count on My attendance and an employee's admin month leaves it out. Every today cell gets the ring. Only the views change: `DayStatus` and `AttendanceSummary`, and so payroll, still count an unpunched today as absent.
 - A double tap on a submit button sends one request: the button locks (dimmed, `aria-busy`) once the form submits, stays live when a confirm prompt is cancelled, and unlocks when Back restores the page. Punch forms keep their own location flow.
 

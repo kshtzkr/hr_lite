@@ -17,7 +17,7 @@
       <span class="hrl-badge hrl-badge--muted">Out <%= record.check_out_at.strftime("%H:%M") %></span>
     <% end %>
     <% if record&.flagged? %>
-      <span class="hrl-badge hrl-badge--bad" title="<%= record.flag_note %>">Flagged</span>
+      <span class="hrl-badge hrl-badge--bad">Flagged</span>
     <% end %>
     <% if open_yesterday %>
       <span class="hrl-badge hrl-badge--warn">Yesterday still open —
@@ -26,6 +26,9 @@
       <span class="hrl-muted">Not checked in yet.</span>
     <% end %>
   </div>
+  <% if record&.flagged? %>
+    <p class="hrl-small">Flagged: <%= record.flag_note %></p>
+  <% end %>
 
   <% if open_yesterday %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,

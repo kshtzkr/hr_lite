@@ -64,6 +64,19 @@ RSpec.describe "Attendance", type: :request do
       end
     end
 
+    it "shows today's flag reason as text, not a tooltip" do
+      create(:attendance_record, :checked_in, :flagged, user: user, date: Date.current)
+      get "/hr/attendance"
+      expect(response.body).to include("Flagged: Check-in without GPS (denied)")
+      expect(Nokogiri::HTML(response.body).css(".hrl-mgrid__flag[title]")).to be_empty
+    end
+
+    it "shows no flag reason on an unflagged day" do
+      create(:attendance_record, :checked_in, user: user, date: Date.current)
+      get "/hr/attendance"
+      expect(response.body).not_to include("Flagged:")
+    end
+
     it "renders a requested month and falls back on garbage" do
       get "/hr/attendance", params: { month: "2026-05" }
       expect(response.body).to include("May 2026")
