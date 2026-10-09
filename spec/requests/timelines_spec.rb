@@ -34,4 +34,21 @@ RSpec.describe "Timelines", type: :request, no_legacy_bridge: true do
     get "/hr/people/0/timeline"
     expect(response).to have_http_status(:not_found)
   end
+
+  it "shows HR the employee's leave balance and pending or rejected leave, and a colleague neither" do
+    travel_to(Date.new(Date.current.year, 3, 2))
+    type = create(:leave_type, name: "Casual leave", annual_quota: 12)
+    day = Date.current.next_occurring(:tuesday)
+    create(:leave_request, user: meera, leave_type: type, start_date: day, end_date: day)
+    sign_in user_with_roles(HrLite::Role::HR)
+    get "/hr/people/#{meera.id}/timeline"
+    expect(response.body).to include("Leave balance", "Casual leave ·", "of 12 left", "Casual leave — pending")
+
+    sign_in dev
+    get "/hr/people/#{meera.id}/timeline"
+    expect(response.body).not_to include("Leave balance")
+    expect(response.body).not_to include("pending")
+  ensure
+    travel_back
+  end
 end

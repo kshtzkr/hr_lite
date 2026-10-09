@@ -13,7 +13,8 @@ module HrLite
       @public_events = timeline.public_events
       @private_events = timeline.private_events
       # Shown only to someone who may see private rows at all: the person, or a reach-holder.
-      @private_card = @person.id == hr_current_user.id || @private_events.any?
+      @show_balance = HrLite.reaches?(hr_current_user, "leave.view", @person)
+      @private_card = @person.id == hr_current_user.id || @show_balance || @private_events.any?
     end
   end
 end
