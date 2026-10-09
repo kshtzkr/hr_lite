@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-10-09
+
+The HRMS UI/UX pass: Keka/greytHR patterns and a ui-ux-pro-max review of every screen, phone first. No migrations. Hosts that theme through `--hrl-*` variables keep their values; the engine defaults for radius, info background and muted text change (see Changed).
+
 ### Added
 - Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
 - Keyboard: every focused control shows a 2px accent ring (kudos badge chips included), focus scrolls clear of the app bar and tab bar, and a "Skip to content" link is the first Tab stop so desktop users skip the side rail. Reduced-motion users get no transitions or animations. New `.hrl-sr-only` utility.
