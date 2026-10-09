@@ -71,6 +71,25 @@ RSpec.describe "Attendance", type: :request do
       expect(Nokogiri::HTML(response.body).css(".hrl-mgrid__flag[title]")).to be_empty
     end
 
+    describe "punch card elapsed time" do
+      before { travel_to(Time.zone.local(2026, 10, 8, 12, 15)) }
+
+      after { travel_back }
+
+      it "shows how long an open day has run" do
+        create(:attendance_record, user: user, date: Date.current, check_in_at: Time.zone.local(2026, 10, 8, 9))
+        get "/hr/attendance"
+        expect(response.body).to include("In since 09:00 · 3h 15m so far")
+        expect(response.body).to include('data-hrl-geo-status role="status" aria-live="polite"')
+      end
+
+      it "shows no running time once the day is closed" do
+        create(:attendance_record, :checked_out, user: user, date: Date.current)
+        get "/hr/attendance"
+        expect(response.body).not_to include("so far")
+      end
+    end
+
     it "shows no flag reason on an unflagged day" do
       create(:attendance_record, :checked_in, user: user, date: Date.current)
       get "/hr/attendance"
