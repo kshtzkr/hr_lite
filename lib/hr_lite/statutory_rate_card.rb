@@ -18,50 +18,72 @@ module HrLite
     def self.r(value) = BigDecimal(value.to_s)
     private_class_method :r
 
+    FY2025_TAX = {
+      "new" => {
+        standard_deduction: r("75000"), rebate_cap: r("1200000"), cess_rate: r("0.04"),
+        # §115BAC carries marginal relief just above the rebate cap; the
+        # old regime does not, so this is a per-regime flag.
+        marginal_relief: true,
+        slabs: [
+          [ r("0"), r("400000"), r("0") ],
+          [ r("400000"), r("800000"), r("0.05") ],
+          [ r("800000"), r("1200000"), r("0.10") ],
+          [ r("1200000"), r("1600000"), r("0.15") ],
+          [ r("1600000"), r("2000000"), r("0.20") ],
+          [ r("2000000"), r("2400000"), r("0.25") ],
+          [ r("2400000"), nil, r("0.30") ]
+        ]
+      },
+      "old" => {
+        standard_deduction: r("50000"), rebate_cap: r("500000"), cess_rate: r("0.04"),
+        slabs: [
+          [ r("0"), r("250000"), r("0") ],
+          [ r("250000"), r("500000"), r("0.05") ],
+          [ r("500000"), r("1000000"), r("0.20") ],
+          [ r("1000000"), nil, r("0.30") ]
+        ]
+      }
+    }.freeze
+    private_constant :FY2025_TAX
+
+    PF_15K = {
+      employee_rate: r("0.12"), employer_rate: r("0.12"), eps_rate: r("0.0833"),
+      wage_ceiling: r("15000"), eps_wage_ceiling: r("15000"),
+      edli_rate: r("0.005"), edli_ceiling: r("15000"), admin_rate: r("0.005")
+    }.freeze
+    private_constant :PF_15K
+
+    ESI = { employee_rate: r("0.0075"), employer_rate: r("0.0325"), gross_ceiling: r("21000") }.freeze
+    private_constant :ESI
+
+    PT = {
+      # Neither UP nor Uttarakhand levies professional tax today; both
+      # ship empty (PT = 0). Karnataka included as a worked template.
+      "none" => [],
+      "uttar_pradesh" => [],
+      "uttarakhand" => [],
+      # Inclusive lower bounds. `above: 24999` with a strict `>` taxed a
+      # prorated gross of ₹24,999.50, which is below the real threshold.
+      "karnataka" => [ { from: r("25000"), monthly: r("200") } ]
+    }.freeze
+    private_constant :PT
+
+    # Cards the gem ships already verified, with where the figures come from.
+    # StatutorySeeds stamps the source as the verifier, so nobody has to.
+    SOURCES = {
+      Date.new(2026, 4, 1) => "Finance Act 2026: slabs, standard deduction and §87A rebate unchanged from " \
+                              "FY 2025-26 (Income-tax Act 2025 in force from 1 April 2026; salary TDS §392). " \
+                              "PF ₹15,000 and ESI ₹21,000 ceilings unchanged.",
+      Date.new(2026, 10, 1) => "EPF/EPS/EDLI wage ceiling ₹25,000 — Ministry of Labour Notification S.O. 5109(E), " \
+                               "17 Sep 2026; applied from October 2026 payroll. Tax slabs and ESI as FY 2026-27."
+    }.freeze
+
     CARDS = {
-      Date.new(2025, 4, 1) => {
-        pf: {
-          employee_rate: r("0.12"), employer_rate: r("0.12"), eps_rate: r("0.0833"),
-          wage_ceiling: r("15000"), eps_wage_ceiling: r("15000"),
-          edli_rate: r("0.005"), edli_ceiling: r("15000"), admin_rate: r("0.005")
-        },
-        esi: { employee_rate: r("0.0075"), employer_rate: r("0.0325"), gross_ceiling: r("21000") },
-        pt: {
-          # Neither UP nor Uttarakhand levies professional tax today; both
-          # ship empty (PT = 0). Karnataka included as a worked template.
-          "none" => [],
-          "uttar_pradesh" => [],
-          "uttarakhand" => [],
-          # Inclusive lower bounds. `above: 24999` with a strict `>` taxed a
-          # prorated gross of ₹24,999.50, which is below the real threshold.
-          "karnataka" => [ { from: r("25000"), monthly: r("200") } ]
-        },
-        income_tax: {
-          "new" => {
-            standard_deduction: r("75000"), rebate_cap: r("1200000"), cess_rate: r("0.04"),
-            # §115BAC carries marginal relief just above the rebate cap; the
-            # old regime does not, so this is a per-regime flag.
-            marginal_relief: true,
-            slabs: [
-              [ r("0"), r("400000"), r("0") ],
-              [ r("400000"), r("800000"), r("0.05") ],
-              [ r("800000"), r("1200000"), r("0.10") ],
-              [ r("1200000"), r("1600000"), r("0.15") ],
-              [ r("1600000"), r("2000000"), r("0.20") ],
-              [ r("2000000"), r("2400000"), r("0.25") ],
-              [ r("2400000"), nil, r("0.30") ]
-            ]
-          },
-          "old" => {
-            standard_deduction: r("50000"), rebate_cap: r("500000"), cess_rate: r("0.04"),
-            slabs: [
-              [ r("0"), r("250000"), r("0") ],
-              [ r("250000"), r("500000"), r("0.05") ],
-              [ r("500000"), r("1000000"), r("0.20") ],
-              [ r("1000000"), nil, r("0.30") ]
-            ]
-          }
-        }
+      Date.new(2025, 4, 1) => { pf: PF_15K, esi: ESI, pt: PT, income_tax: FY2025_TAX },
+      Date.new(2026, 4, 1) => { pf: PF_15K, esi: ESI, pt: PT, income_tax: FY2025_TAX },
+      Date.new(2026, 10, 1) => {
+        pf: PF_15K.merge(wage_ceiling: r("25000"), eps_wage_ceiling: r("25000"), edli_ceiling: r("25000")),
+        esi: ESI, pt: PT, income_tax: FY2025_TAX
       }
     }.freeze
 

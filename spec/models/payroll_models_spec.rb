@@ -102,7 +102,9 @@ RSpec.describe "Payroll models" do
       structure = create(:salary_structure, annual_ctc: 420_000, esi_applicable: false, basic: nil)
 
       expect([ structure.basic, structure.hra, structure.special_allowance ]).to eq([ 17_500, 7000, 7858 ])
-      expect(structure.breakup).to include(employer: { "PF" => 1800, "Gratuity" => 842 }, monthly_gross: 32_358, monthly_ctc: 35_000)
+      # Its own month (Jan 2026) is on the ₹15,000 EPF ceiling.
+      expect(structure.breakup(on: structure.effective_from)).to include(employer: { "PF" => 1800, "Gratuity" => 842 },
+                                                                        monthly_gross: 32_358, monthly_ctc: 35_000)
     end
 
     it "pays a metro HRA at half of Basic" do

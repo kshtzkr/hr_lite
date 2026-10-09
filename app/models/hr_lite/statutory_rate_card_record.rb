@@ -53,14 +53,14 @@ module HrLite
       hash.to_h { |key, value| [ key, Money.d(value) ] }
     end
 
-    # A card dated mid-year would mean two sets of slabs inside one financial
-    # year, and the TDS projector works on an annual figure — there is no
-    # sensible answer to "which slabs applied to this year's income" then.
+    # Cards take effect on the 1st of a month. Most open a financial year on
+    # 1 April; a mid-year card exists for a statutory change notified inside a
+    # year (the EPF wage ceiling, 17 Sep 2026) and repeats that year's tax
+    # slabs, because TDS projects one annual figure.
     def effective_from_opens_a_financial_year
-      return if effective_from.blank?
-      return if effective_from == FinancialYear.start_for(effective_from)
+      return if effective_from.blank? || effective_from.day == 1
 
-      errors.add(:effective_from, "must be 1 April — a card covers a whole financial year")
+      errors.add(:effective_from, "must be the 1st of a month (1 April for a new financial year)")
     end
 
     REQUIRED = {

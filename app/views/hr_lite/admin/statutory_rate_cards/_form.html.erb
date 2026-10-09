@@ -12,7 +12,7 @@
     <%= render "hr_lite/shared/form_errors", record: card %>
 
     <div class="hrl-field">
-      <%= f.label :effective_from, "Financial year starts (1 April)" %>
+      <%= f.label :effective_from, "Takes effect on (1 April for a new financial year, or the 1st of the month a mid-year change applies from)" %>
       <%= f.date_field :effective_from %>
     </div>
 

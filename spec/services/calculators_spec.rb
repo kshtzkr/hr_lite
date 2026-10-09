@@ -1,7 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Payroll calculators" do
-  let(:rates) { HrLite::StatutoryRateCard.for(Date.new(2027, 6, 1)) }
+  # A month on the ₹15,000 EPF ceiling (it rose to ₹25,000 from October 2026).
+  let(:rates) { HrLite::StatutoryRateCard.for(Date.new(2026, 6, 1)) }
 
   describe HrLite::Calculators::Proration do
     let(:structure) do

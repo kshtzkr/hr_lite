@@ -41,7 +41,8 @@ RSpec.describe "Statutory figures as data" do
     it "copies Karnataka's bands and invents none for the states with no data" do
       seed!
 
-      expect(HrLite::ProfessionalTaxSlab.for_state("karnataka").count).to eq(1)
+      # One band per shipped card that carries Karnataka (FY 2025, FY 2026, Oct 2026).
+      expect(HrLite::ProfessionalTaxSlab.for_state("karnataka").count).to eq(HrLite::StatutoryRateCard::CARDS.size)
       expect(HrLite::ProfessionalTaxSlab.for_state("uttar_pradesh")).to be_empty
     end
   end
@@ -64,7 +65,8 @@ RSpec.describe "Statutory figures as data" do
 
     it "falls back to the shipped hash when nothing is stored" do
       expect(HrLite::StatutoryRateCardRecord.count).to eq(0)
-      expect(described_class.for(month)[:pf][:wage_ceiling]).to eq(15_000)
+      expect(described_class.for(Date.new(2026, 9, 1))[:pf][:wage_ceiling]).to eq(15_000)
+      expect(described_class.for(Date.new(2026, 10, 1))[:pf][:wage_ceiling]).to eq(25_000) # S.O. 5109(E)
     end
 
     # Gem upgraded, `db:migrate` not yet run. Payroll falls back to the
@@ -73,7 +75,7 @@ RSpec.describe "Statutory figures as data" do
       allow(HrLite::StatutoryRateCardRecord).to receive(:table_exists?)
         .and_raise(ActiveRecord::StatementInvalid, "no such table")
 
-      expect(described_class.for(month)[:pf][:wage_ceiling]).to eq(15_000)
+      expect(described_class.for(Date.new(2026, 9, 1))[:pf][:wage_ceiling]).to eq(15_000)
       expect(described_class.earliest_date).to eq(Date.new(2025, 4, 1))
     end
 
@@ -117,12 +119,21 @@ RSpec.describe "Statutory figures as data" do
       described_class.first
     end
 
-    it "refuses a card dated mid-year" do
-      record = described_class.new(effective_from: Date.new(2027, 7, 1),
-                                   pf: valid.pf, esi: valid.esi, income_tax: valid.income_tax)
+    it "takes a mid-year card on the 1st of a month, never on another day" do
+      card = { pf: valid.pf, esi: valid.esi, income_tax: valid.income_tax }
+      expect(described_class.new(effective_from: Date.new(2027, 7, 1), **card)).to be_valid
+      record = described_class.new(effective_from: Date.new(2027, 7, 15), **card)
 
       expect(record).not_to be_valid
-      expect(record.errors[:effective_from].join).to include("1 April")
+      expect(record.errors[:effective_from].join).to include("1st of a month")
+    end
+
+    it "ships the FY 2026-27 cards verified, citing their source" do
+      HrLite::StatutorySeeds.call
+      october = described_class.find_by!(effective_from: Date.new(2026, 10, 1))
+      expect(october).to be_verified
+      expect(october.notes).to include("S.O. 5109(E)")
+      expect(described_class.find_by!(effective_from: Date.new(2025, 4, 1))).not_to be_verified
     end
 
     # A card missing a figure does not fail at save time; it fails half way
