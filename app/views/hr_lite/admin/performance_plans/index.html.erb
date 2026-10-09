@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "PIPs" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Performance improvement plans</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_performance_plan_path %>">Start a PIP</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @plans.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Employee</th><th>Period</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @plans.each do |plan| %>
+            <tr>
+              <td data-label="Employee"><a class="hrl-card__link" href="<%= hr_lite.person_timeline_path(plan.user_id) %>"><%= hr_display_name(plan.user) %></a></td>
+              <td data-label="Period"><%= plan.start_date.strftime("%-d %b %Y") %> – <%= plan.end_date.strftime("%-d %b %Y") %></td>
+              <td data-label="Status"><span class="hrl-badge <%= { "passed" => "hrl-badge--ok", "failed" => "hrl-badge--bad" }.fetch(plan.status, "hrl-badge--warn") %>"><%= plan.status.humanize %></span></td>
+              <td data-label=""><% unless plan.closed? %><a class="hrl-card__link" href="<%= hr_lite.edit_admin_performance_plan_path(plan) %>">Update</a><% end %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No PIPs yet.</p>
+  <% end %>
+</section>

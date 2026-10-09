@@ -1,0 +1,29 @@
+<section class="hrl-card">
+  <%= form_with model: plan, url: url, method: method, scope: :performance_plan, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: plan %>
+    <div class="hrl-field">
+      <%= f.label :user_id, "Employee" %>
+      <% if plan.persisted? %>
+        <p><strong><%= hr_display_name(plan.user) %></strong></p>
+      <% else %>
+        <%= f.select :user_id, options_for_select(HrLite.active_employees.map { |u| [ hr_display_name(u), u.id ] }, plan.user_id),
+                     { include_blank: "Choose…" }, data: { hrl_filter: "Type a name to filter" } %>
+      <% end %>
+    </div>
+    <div class="hrl-field"><%= f.label :start_date %><%= f.date_field :start_date %></div>
+    <div class="hrl-field"><%= f.label :end_date, "Review by" %><%= f.date_field :end_date %></div>
+    <div class="hrl-field"><%= f.label :goals, "Goals the employee must meet" %><%= f.text_area :goals, rows: 5 %></div>
+    <% if plan.persisted? %>
+      <div class="hrl-field">
+        <%= f.label :status %>
+        <%= f.select :status, HrLite::PerformancePlan::STATUSES.map { |s| [ s.humanize, s ] } %>
+        <p class="hrl-hint">Passed or failed closes the plan for good and tells the employee.</p>
+      </div>
+      <div class="hrl-field"><%= f.label :outcome_note, "Outcome note" %><%= f.text_area :outcome_note, rows: 3 %></div>
+    <% end %>
+    <div class="hrl-form-actions">
+      <%= f.submit plan.persisted? ? "Save" : "Start PIP", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_performance_plans_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

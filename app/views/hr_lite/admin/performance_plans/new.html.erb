@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "Start a PIP" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Start a performance improvement plan</h1></div>
+<%= render "form", plan: @plan, url: hr_lite.admin_performance_plans_path, method: :post %>

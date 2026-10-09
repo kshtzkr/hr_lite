@@ -1,7 +1,7 @@
 <%# locals: profile — recursive org-chart node; @children / hr_current_user from OrgController %>
 <li class="hrl-tree__node">
   <div class="hrl-tree__card <%= 'hrl-tree__card--me' if profile.user_id == hr_current_user.id %>">
-    <span class="hrl-tree__name"><%= hr_display_name(profile.user) %></span>
+    <a class="hrl-tree__name" href="<%= hr_lite.person_timeline_path(profile.user_id) %>"><%= hr_display_name(profile.user) %></a>
     <% if profile.designation.present? %><span class="hrl-tree__role"><%= profile.designation %></span><% end %>
     <% if profile.department.present? %><span class="hrl-small hrl-muted"><%= profile.department %></span><% end %>
   </div>

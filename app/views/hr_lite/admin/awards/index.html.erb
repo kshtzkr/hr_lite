@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "Awards" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Employee of the month, quarter and year</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_award_path %>">Pick a winner</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <% if @awards.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Award</th><th>Period</th><th>Winner</th><th></th></tr></thead>
+        <tbody>
+          <% @awards.each do |award| %>
+            <tr>
+              <td data-label="Award"><%= award.title %></td>
+              <td data-label="Period"><%= award.period_label %></td>
+              <td data-label="Winner"><%= hr_display_name(award.user) %></td>
+              <td data-label=""><a class="hrl-card__link" href="<%= hr_lite.edit_admin_award_path(award) %>">Edit</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No winners picked yet.</p>
+  <% end %>
+</section>

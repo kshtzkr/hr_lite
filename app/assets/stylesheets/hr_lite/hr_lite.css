@@ -373,6 +373,23 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-feed__meta { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
 .hrl-feed__body { min-width: 0; flex: 1; overflow-wrap: anywhere; }
 
+/* Employee timeline: a rail with a dot per event, grouped by month. Private
+   records sit on a shaded card with a dashed rail and hollow dots, and say
+   "Private" in words, so the difference never rests on colour alone. */
+.hrl-timeline__month { margin: var(--hrl-s-4) 0 var(--hrl-s-2); font-size: var(--hrl-t-small); color: var(--hrl-muted); }
+.hrl-timeline { list-style: none; margin: 0; padding: 0 0 0 var(--hrl-s-5); border-left: 2px solid var(--hrl-line); }
+.hrl-timeline__item { position: relative; padding: 0 0 var(--hrl-s-4); min-width: 0; overflow-wrap: anywhere; }
+.hrl-timeline__item::before {
+  content: ""; position: absolute; left: calc(-1 * var(--hrl-s-5) - 7px); top: 6px;
+  width: 12px; height: 12px; border-radius: var(--hrl-radius-pill); background: var(--hrl-accent);
+}
+.hrl-timeline__title { margin: var(--hrl-s-1) 0 0; font-weight: 600; }
+.hrl-timeline__item p.hrl-feed__meta { margin: 2px 0 0; }
+.hrl-card--private { background: var(--hrl-bg); border-style: dashed; }
+.hrl-card--private .hrl-timeline { border-left-style: dashed; border-left-color: var(--hrl-field); }
+.hrl-card--private .hrl-timeline__item::before { background: var(--hrl-bg); border: 2px solid var(--hrl-field); }
+.hrl-card--private .hrl-badge--muted { background: var(--hrl-card); }
+
 /* Mention autocomplete menu */
 .hrl-mention-wrap { position: relative; }
 .hrl-mention-menu {
@@ -403,6 +420,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-tree__card--me { border-color: var(--hrl-accent); background: var(--hrl-info-bg); }
 .hrl-tree__name, .hrl-tree__role { min-width: 0; overflow-wrap: anywhere; }
 .hrl-tree__name { font-weight: 700; font-size: var(--hrl-t-small); }
+a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--hrl-target); }
 .hrl-tree__role { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
 .hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 .hrl-chainrow__step { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }

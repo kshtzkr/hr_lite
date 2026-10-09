@@ -363,6 +363,16 @@ visible to everyone and shows the reporting tree — names, designations and
 departments only, never salary or private data — with each viewer's own
 reporting line labelled L1/L2/…
 
+Every employee has a timeline (`/timeline`, a colleague's at
+`/people/:user_id/timeline`, linked from the org chart): joining and exit,
+role changes, kudos received, awards and leave dates are public; leave type,
+bonus and other pay items, loans, expenses, appraisals and performance
+improvement plans show only to the employee and to whoever the matching
+permission reaches (`leave.view`, `payroll.view`, `expense.approve`,
+`appraisal.view`). Super Admin writes PIPs at `/admin/performance_plans`;
+Leadership picks Employee of the Month, Quarter and Year at `/admin/awards`,
+and Home shows the current winners to everyone.
+
 ## Recurring jobs
 
 Schedule these on the host's job scheduler (cron, GoodJob, Sidekiq-cron,
