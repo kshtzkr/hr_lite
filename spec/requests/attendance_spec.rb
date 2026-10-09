@@ -53,7 +53,7 @@ RSpec.describe "Attendance", type: :request do
         cell = Nokogiri::HTML(response.body).at_css('[aria-label="8 Oct, Today, not checked in yet"]')
         expect(cell["class"].split).to include("hrl-mgrid__day--today")
         expect(cell["class"].split).not_to include("hrl-mgrid__day--absent")
-        expect(response.body).to include("Absent 5")
+        expect(response.body).to include('aria-label="Absent 5 days">A 5</span>')
       end
 
       it "keeps yesterday absent and payroll still counts today as loss of pay" do
@@ -107,6 +107,17 @@ RSpec.describe "Attendance", type: :request do
         expect(card.text).to include("Pending").and include("10:00 – 19:00")
         expect(card.text).not_to include("Fix this day")
       end
+    end
+
+    it "names the month arrows by month and year" do
+      get "/hr/attendance", params: { month: "2026-10" }
+      expect(response.body).to include('aria-label="Previous month, September 2026"')
+        .and include('aria-label="Next month, November 2026"')
+    end
+
+    it "rolls the year over on the January arrow" do
+      get "/hr/attendance", params: { month: "2026-01" }
+      expect(response.body).to include('aria-label="Previous month, December 2025"')
     end
 
     it "renders a requested month and falls back on garbage" do
