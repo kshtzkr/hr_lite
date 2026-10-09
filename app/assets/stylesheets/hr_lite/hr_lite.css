@@ -268,6 +268,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-btn--block { width: 100%; }
 .hrl-btn--big { min-height: 58px; font-size: var(--hrl-t-lead); }
 .hrl-btn[disabled] { opacity: .55; cursor: default; }
+summary.hrl-btn { list-style: none; }
+summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4 draws it whatever the display */
 
 /* Badges & chips */
 .hrl-badge {
