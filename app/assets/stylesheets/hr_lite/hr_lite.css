@@ -293,6 +293,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-table td.hrl-num, .hrl-table th.hrl-num { text-align: right; font-variant-numeric: tabular-nums; }
 .hrl-table--tight th, .hrl-table--tight td { padding: .5rem .35rem; }
 .hrl-table td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: var(--hrl-s-2); }
+.hrl-table td[data-label=""] > :is(a, button) + form { display: inline-block; vertical-align: top; } /* a button_to beside a link, not under it */
 .hrl-table td[data-label=""] > form + form { margin-top: var(--hrl-s-2); }
 /* Stack on phones and on the narrow content column beside the 768-1023px rail. */
 @media (max-width: 640px), (min-width: 768px) and (max-width: 1023px) {
