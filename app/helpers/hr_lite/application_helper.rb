@@ -59,6 +59,14 @@ module HrLite
       { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] }
     ].freeze
 
+    # DayStatus kind => [code, word, month-grid cell modifier]: the code keeps a state readable without its colour.
+    DAY_STATES = {
+      present: [ "P", "Present", "present" ], half_day: [ "½", "Half day", "half" ],
+      leave: [ "L", "Leave", "leave" ], half_day_leave: [ "½L", "Half-day leave", "half-leave" ],
+      holiday: [ "H", "Holiday", "holiday" ], weekend: [ "WO", "Weekly off", "weekend" ],
+      absent: [ "A", "Absent", "absent" ], upcoming: [ nil, "Upcoming", "muted" ]
+    }.freeze
+
     # The ID card's QR: office address and phone as plain text, so any phone
     # camera shows who to call about a found card. No URL, nothing to host.
     def hrl_office_qr_svg(company, brand)

@@ -1,14 +1,8 @@
-<%# locals: month (Date, any day in month), day_status (HrLite::DayStatus), link_builder (optional lambda date -> url) %>
+<%# locals: month (Date, any day in month), day_status (HrLite::DayStatus), link_builder (optional lambda date -> url or nil) %>
 <% first = month.beginning_of_month
    last = month.end_of_month
    link_builder = local_assigns[:link_builder]
-   # kind => [code, word, cell modifier]: the code keeps a state readable without its colour.
-   states = {
-     present: [ "P", "Present", "present" ], half_day: [ "½", "Half day", "half" ],
-     leave: [ "L", "Leave", "leave" ], half_day_leave: [ "½L", "Half-day leave", "half-leave" ],
-     holiday: [ "H", "Holiday", "holiday" ], weekend: [ "WO", "Weekly off", "weekend" ],
-     absent: [ "A", "Absent", "absent" ], upcoming: [ nil, "Upcoming", "muted" ]
-   } %>
+   states = HrLite::ApplicationHelper::DAY_STATES %>
 <div class="hrl-mgrid" role="group" aria-label="Attendance for <%= month.strftime('%B %Y') %>">
   <% %w[Mo Tu We Th Fr Sa Su].each do |d| %>
     <div class="hrl-mgrid__head"><%= d %></div>
@@ -23,13 +17,8 @@
     <div class="<%= class_names("hrl-mgrid__day", "hrl-mgrid__day--#{mod}", "hrl-mgrid__day--today": date == Date.current) %>" role="group"
          aria-label="<%= date.strftime('%-d %b') %>, <%= word %><%= ', worked' if %i[holiday weekend].include?(day.kind) && day.record&.check_in_at %><%= ', Flagged' if day.record&.flagged? %>">
       <% if day.record&.flagged? %><span class="hrl-mgrid__flag" aria-hidden="true"></span><% end %>
-      <span class="hrl-mgrid__num">
-        <% if link_builder %>
-          <a href="<%= link_builder.call(date) %>"><%= date.day %></a>
-        <% else %>
-          <%= date.day %>
-        <% end %>
-      </span>
+      <% url = link_builder&.call(date) %>
+      <span class="hrl-mgrid__num"><%= url ? link_to(date.day, url) : date.day %></span>
       <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
     </div>
   <% end %>

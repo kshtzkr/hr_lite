@@ -77,6 +77,38 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).not_to include("Flagged:")
     end
 
+    describe "day detail" do
+      before { travel_to(Date.new(2026, 10, 8)) } # Thu; 6 Oct is a past working day
+
+      after { travel_back }
+
+      it "opens a tapped past day with a Fix this day link" do
+        get "/hr/attendance", params: { month: "2026-10" }
+        expect(response.body).to include('href="/hr/attendance?day=2026-10-06&amp;month=2026-10#day"')
+
+        get "/hr/attendance", params: { month: "2026-10", day: "2026-10-06" }
+        card = Nokogiri::HTML(response.body).at_css("#day")
+        expect(card.text).to include("Tue, 6 Oct").and include("Absent")
+        expect(card.at_css('a[href="/hr/regularization_requests/new?date=2026-10-06"]').text).to eq("Fix this day")
+      end
+
+      it "opens nothing for a future, garbage or other-month day" do
+        [ "2026-10-20", "garbage", "2026-09-29" ].each do |day|
+          get "/hr/attendance", params: { month: "2026-10", day: day }
+          expect(response).to have_http_status(:ok)
+          expect(response.body).not_to include('id="day"')
+        end
+      end
+
+      it "shows a pending ticket's status instead of the Fix button" do
+        create(:regularization_request, user: user, date: Date.new(2026, 10, 6))
+        get "/hr/attendance", params: { month: "2026-10", day: "2026-10-06" }
+        card = Nokogiri::HTML(response.body).at_css("#day")
+        expect(card.text).to include("Pending").and include("10:00 – 19:00")
+        expect(card.text).not_to include("Fix this day")
+      end
+    end
+
     it "renders a requested month and falls back on garbage" do
       get "/hr/attendance", params: { month: "2026-05" }
       expect(response.body).to include("May 2026")
