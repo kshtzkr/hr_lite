@@ -1,32 +1,36 @@
 <% content_for(:page_title) { "Timeline — #{hr_display_name(@person)}" } %>
 <% year_path = ->(y) { @person.id == hr_current_user.id ? hr_lite.timeline_path(year: y) : hr_lite.person_timeline_path(@person.id, year: y) } %>
+<% name = hr_display_name(@person) %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title"><%= hr_display_name(@person) %><% if @profile&.designation.present? %> <span class="hrl-muted">· <%= @profile.designation %></span><% end %></h1>
-</div>
-
-<div class="hrl-row hrl-row--mb">
-  <a class="hrl-btn" href="<%= year_path.(@year - 1) %>">&larr; <%= @year - 1 %></a>
-  <strong><%= @year %></strong>
-  <a class="hrl-btn" href="<%= year_path.(@year + 1) %>"><%= @year + 1 %> &rarr;</a>
+  <h1 class="hrl-page__title"><%= name %></h1>
 </div>
 
 <section class="hrl-card">
-  <% if @events.any? %>
-    <ul class="hrl-feed">
-      <% @events.each do |event| %>
-        <li class="hrl-feed__item">
-          <div class="hrl-feed__body">
-            <div class="hrl-row">
-              <strong><%= event.title %></strong>
-              <% if event.sensitive %><span class="hrl-badge hrl-badge--muted">Private</span><% end %>
-              <span class="hrl-feed__meta hrl-right"><%= event.date.strftime("%-d %b %Y") %></span>
-            </div>
-            <% if event.detail.present? %><div class="hrl-feed__meta"><%= event.detail %></div><% end %>
-          </div>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="hrl-card--empty">Nothing on the timeline for <%= @year %>.</p>
-  <% end %>
+  <dl class="hrl-deflist">
+    <% if @profile&.designation.present? %><dt>Role</dt><dd><%= @profile.designation %></dd><% end %>
+    <% if @profile&.department.present? %><dt>Department</dt><dd><%= @profile.department %></dd><% end %>
+    <% if @profile %>
+      <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%-d %B %Y") %>
+        <% unless @profile.date_of_exit && @profile.date_of_exit <= Date.current %><span class="hrl-muted">· <%= distance_of_time_in_words(@profile.date_of_joining, Date.current) %></span><% end %></dd>
+    <% end %>
+  </dl>
+  <div class="hrl-row hrl-mt">
+    <a class="hrl-btn" href="<%= year_path.(@year - 1) %>">&larr; <%= @year - 1 %></a>
+    <strong><%= @year %></strong>
+    <a class="hrl-btn" href="<%= year_path.(@year + 1) %>"><%= @year + 1 %> &rarr;</a>
+  </div>
 </section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Public timeline</h2>
+  <p class="hrl-small hrl-muted">Everyone at the company can see this.</p>
+  <%= render "events", events: @public_events, empty: "Nothing public in #{@year}." %>
+</section>
+
+<% if @private_card %>
+  <section class="hrl-card hrl-card--private" aria-labelledby="private-records">
+    <h2 class="hrl-card__title" id="private-records">Private records</h2>
+    <p class="hrl-small"><strong>Private</strong> — only <%= @person.id == hr_current_user.id ? "you" : name %> and people with access can see this.</p>
+    <%= render "events", events: @private_events, empty: "Nothing private in #{@year}." %>
+  </section>
+<% end %>

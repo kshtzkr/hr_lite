@@ -15,17 +15,18 @@ RSpec.describe "Timelines", type: :request, no_legacy_bridge: true do
     expect(response.body).to include(%(href="/hr/people/#{meera.id}/timeline"))
 
     get "/hr/people/#{meera.id}/timeline"
-    expect(response.body).to include("Meera", "Executive", "Joined")
+    expect(response.body).to include("Meera", "Executive", "Public timeline", "Joined the company")
+    expect(response.body).not_to include("Private records")
     expect(response.body).not_to include("Performance improvement plan")
   end
 
   it "shows the employee their own private rows, and walks years" do
     sign_in meera
     get "/hr/timeline"
-    expect(response.body).to include("Performance improvement plan started", "Private")
+    expect(response.body).to include("Private records", "only you and people with access", "Performance improvement plan started")
 
     get "/hr/timeline", params: { year: Date.current.year - 1 }
-    expect(response.body).to include("Nothing on the timeline for #{Date.current.year - 1}")
+    expect(response.body).to include("Nothing public in #{Date.current.year - 1}.", "Nothing private in #{Date.current.year - 1}.")
   end
 
   it "404s for someone who is not an employee" do

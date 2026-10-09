@@ -1,0 +1,20 @@
+<%# locals: events, empty — one rail, grouped by month, newest first %>
+<% if events.any? %>
+  <% events.group_by { |e| e.date.beginning_of_month }.each do |month, rows| %>
+    <h3 class="hrl-timeline__month"><%= month.strftime("%B %Y") %></h3>
+    <ol class="hrl-timeline">
+      <% rows.each do |event| %>
+        <li class="hrl-timeline__item">
+          <div class="hrl-row">
+            <span class="hrl-badge hrl-badge--muted"><%= event.category %></span>
+            <time class="hrl-feed__meta hrl-right" datetime="<%= event.date.iso8601 %>"><%= event.date.strftime("%a %-d %b") %></time>
+          </div>
+          <p class="hrl-timeline__title"><%= event.title %></p>
+          <% if event.detail %><p class="hrl-feed__meta"><%= event.detail %></p><% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% end %>
+<% else %>
+  <p class="hrl-muted hrl-small"><%= empty %></p>
+<% end %>

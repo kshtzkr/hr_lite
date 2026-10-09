@@ -9,7 +9,11 @@ module HrLite
       year = params[:year].to_i
       @year = year.between?(2000, 2100) ? year : Date.current.year
       @profile = EmployeeProfile.find_by(user_id: @person.id)
-      @events = Timeline.new(user: @person, viewer: hr_current_user, year: @year).events
+      timeline = Timeline.new(user: @person, viewer: hr_current_user, year: @year)
+      @public_events = timeline.public_events
+      @private_events = timeline.private_events
+      # Shown only to someone who may see private rows at all: the person, or a reach-holder.
+      @private_card = @person.id == hr_current_user.id || @private_events.any?
     end
   end
 end
