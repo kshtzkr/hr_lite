@@ -83,7 +83,8 @@ RSpec.describe "Leave requests", type: :request do
 
       get "/hr/calendar", params: { month: "2027-07" }
       agenda = Nokogiri::HTML(response.body).css(".hrl-feed__item").map(&:text)
-      expect(agenda).to eq([ "Mon 5 Jul: Founders day (holiday)", "06 Jul: Dev Kumar, on leave" ])
+      expect(agenda).to eq([ "Mon 5 Jul: Founders day (holiday)", "Tue 6 Jul: Dev Kumar, on leave" ])
+      expect(response.body).to include("1 off</span>").and include("N off On leave</span>")
       expect(response.body).not_to include("SICKQ")
       expect(response.body).not_to include('style="color:')
     end

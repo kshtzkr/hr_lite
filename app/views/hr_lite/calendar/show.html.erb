@@ -33,14 +33,15 @@
 
   <div class="hrl-legend hrl-small">
     <span class="hrl-badge hrl-badge--warn">H Holiday</span>
-    <span class="hrl-badge">On leave</span>
-    <span class="hrl-badge hrl-badge--muted">Weekend</span>
+    <span class="hrl-badge">N off On leave</span>
+    <span class="hrl-badge hrl-badge--muted">Weekly off</span>
     <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--today">Today</span>
   </div>
 
-  <%# Names only — the leave type is the employee's own business. %>
-  <% agenda = @holidays.values.flatten.map { |h| [ h.date, "#{h.date.strftime('%a %-d %b')}: #{h.name} (holiday)" ] } +
-              @leaves.values.flatten.uniq.map { |r| [ [ r.start_date, first ].max, "#{r.date_range_label}: #{hr_display_name(r.user)}, on leave" ] } %>
+  <%# Names only — the leave type is the employee's own business. Leave keeps its label's "(first half)" note. %>
+  <% day = ->(d) { d.strftime("%a %-d %b") }
+     agenda = @holidays.values.flatten.map { |h| [ h.date, "#{day.(h.date)}: #{h.name} (holiday)" ] } +
+              @leaves.values.flatten.uniq.map { |r| [ [ r.start_date, first ].max, "#{[ r.start_date, r.end_date ].uniq.map(&day).join(' – ')}#{r.date_range_label[/ \(.+\)/]}: #{hr_display_name(r.user)}, on leave" ] } %>
   <% if agenda.any? %>
     <ul class="hrl-feed hrl-small hrl-mt">
       <% agenda.sort_by(&:first).each do |_, line| %><li class="hrl-feed__item"><%= line %></li><% end %>
