@@ -4,7 +4,7 @@
 //     <input type="hidden" name="lat"><input type="hidden" name="lng">
 //     <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
 //     <button type="submit">…</button>
-//     <span data-hrl-geo-status hidden></span>
+//     <p data-hrl-geo-status role="status" aria-live="polite"></p>  (not hidden, or the first message is missed)
 //   </form>
 // A denied permission holds the punch; timeout/unavailable submit anyway
 // with geo_status set; the server flags them.

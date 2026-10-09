@@ -7,16 +7,20 @@
 </div>
 
 <section class="hrl-card">
+  <% prev_m, next_m = @month - 1.month, @month + 1.month %>
   <div class="hrl-row hrl-row--mb">
-    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: prev_m.strftime("%Y-%m")) %>" aria-label="Previous month, <%= prev_m.strftime("%B %Y") %>"><span aria-hidden="true">&lsaquo;</span> <%= prev_m.strftime("%b") %></a>
     <strong><%= @month.strftime("%B %Y") %></strong>
-    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
-    <span class="hrl-right hrl-small hrl-muted">
-      Present <%= @counts[:present] %> · Half <%= @counts[:half_day] %> · Absent <%= @counts[:absent] %>
-    </span>
+    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: next_m.strftime("%Y-%m")) %>" aria-label="Next month, <%= next_m.strftime("%B %Y") %>"><%= next_m.strftime("%b") %> <span aria-hidden="true">&rsaquo;</span></a>
+    <div class="hrl-row hrl-right">
+      <% { present: "ok", half_day: "ok", leave: nil, absent: "bad" }.each do |kind, tone| %>
+        <% code, word = HrLite::ApplicationHelper::DAY_STATES[kind] %>
+        <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>" role="img" aria-label="<%= word %> <%= pluralize(@counts[kind], "day") %>"><%= code %> <%= @counts[kind] %></span>
+      <% end %>
+    </div>
   </div>
   <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status,
-             link_builder: ->(date) { hr_lite.admin_attendance_path(@employee.id, date: date, month: @month.strftime("%Y-%m")) } %>
+             link_builder: ->(date) { hr_lite.admin_attendance_path(@employee.id, date: date, month: @month.strftime("%Y-%m"), anchor: "regularize") if date <= Date.current } %>
   <p class="hrl-small hrl-muted hrl-mt">Tap a date to fix its punches.</p>
 </section>
 

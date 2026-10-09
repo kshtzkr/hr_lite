@@ -75,14 +75,18 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).to include("Holi 2027")
     end
 
-    it "renders the month calendar with holidays, leaves and weekend shading" do
+    it "lists the month's holidays and colleagues on leave in the agenda, without the leave type" do
       create(:holiday, date: monday, name: "Founders day")
       colleague = create(:user, name: "Dev Kumar")
-      create(:leave_request, :approved, user: colleague, leave_type: type,
+      create(:leave_request, :approved, user: colleague, leave_type: create(:leave_type, name: "Sick", code: "SICKQ"),
              start_date: monday + 1, end_date: monday + 1)
 
       get "/hr/calendar", params: { month: "2027-07" }
-      expect(response.body).to include("Founders day").and include("Dev ·")
+      agenda = Nokogiri::HTML(response.body).css(".hrl-feed__item").map(&:text)
+      expect(agenda).to eq([ "Mon 5 Jul: Founders day (holiday)", "Tue 6 Jul: Dev Kumar, on leave" ])
+      expect(response.body).to include("1 off</span>").and include("N off On leave</span>")
+      expect(response.body).not_to include("SICKQ")
+      expect(response.body).not_to include('style="color:')
     end
   end
 end

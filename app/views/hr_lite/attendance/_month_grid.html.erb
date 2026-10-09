@@ -1,8 +1,10 @@
-<%# locals: month (Date, any day in month), day_status (HrLite::DayStatus), link_builder (optional lambda date -> url) %>
+<%# locals: month (Date, any day in month), day_status (HrLite::DayStatus), link_builder (optional lambda date -> url or nil), pending_dates (optional Set of dates with a pending ticket) %>
 <% first = month.beginning_of_month
    last = month.end_of_month
-   link_builder = local_assigns[:link_builder] %>
-<div class="hrl-mgrid" role="grid" aria-label="Attendance for <%= month.strftime('%B %Y') %>">
+   link_builder = local_assigns[:link_builder]
+   pending_dates = local_assigns[:pending_dates]
+   states = HrLite::ApplicationHelper::DAY_STATES %>
+<div class="hrl-mgrid" role="group" aria-label="Attendance for <%= month.strftime('%B %Y') %>">
   <% %w[Mo Tu We Th Fr Sa Su].each do |d| %>
     <div class="hrl-mgrid__head"><%= d %></div>
   <% end %>
@@ -11,31 +13,24 @@
   <% end %>
   <% (first..last).each do |date| %>
     <% day = day_status.for(date)
-       classes = {
-         present: "hrl-mgrid__day--present", half_day: "hrl-mgrid__day--half",
-         leave: "hrl-mgrid__day--leave", half_day_leave: "hrl-mgrid__day--leave",
-         holiday: "hrl-mgrid__day--holiday", weekend: "hrl-mgrid__day--weekend",
-         absent: "hrl-mgrid__day--absent", upcoming: "hrl-mgrid__day--muted"
-       }[day.kind] %>
-    <div class="hrl-mgrid__day <%= classes %>" role="gridcell">
-      <% if day.record&.flagged? %><span class="hrl-mgrid__flag" title="<%= day.record.flag_note %>"></span><% end %>
-      <span class="hrl-mgrid__num">
-        <% if link_builder %>
-          <a href="<%= link_builder.call(date) %>"><%= date.day %></a>
-        <% else %>
-          <%= date.day %>
-        <% end %>
-      </span>
-      <% if day.record&.check_in_at %>
-        <span class="hrl-mgrid__tag"><%= day.record.check_in_at.strftime("%H:%M") %><% if day.record.check_out_at %><br><%= day.record.check_out_at.strftime("%H:%M") %><% end %></span>
-      <% elsif day.kind == :absent %>
-        <span class="hrl-mgrid__tag">absent</span>
-      <% end %>
+       # Today with no punch yet is not a lost day; only the views say so (payroll still reads DayStatus).
+       code, word, mod = date == Date.current && day.kind == :absent ? [ "Today", "Today, not checked in yet", "today" ] : states[day.kind] %>
+    <% pending = pending_dates&.include?(date) %>
+    <div class="<%= class_names("hrl-mgrid__day", "hrl-mgrid__day--#{mod}", "hrl-mgrid__day--today": date == Date.current, "hrl-mgrid__day--pending": pending) %>" role="group"
+         aria-label="<%= date.strftime('%-d %b') %>, <%= word %><%= ', worked' if %i[holiday weekend].include?(day.kind) && day.record&.check_in_at %><%= ', Flagged' if day.record&.flagged? %><%= ', fix pending' if pending %>">
+      <% if day.record&.flagged? %><span class="hrl-mgrid__flag" aria-hidden="true"></span><% end %>
+      <% url = link_builder&.call(date) %>
+      <span class="hrl-mgrid__num"><%= url ? link_to(date.day, url) : date.day %></span>
+      <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
     </div>
   <% end %>
 </div>
 <div class="hrl-legend hrl-small">
-  <span class="hrl-badge hrl-badge--ok">Present</span>
-  <span class="hrl-badge hrl-badge--bad">Absent</span>
-  <span class="hrl-badge hrl-badge--muted">Upcoming</span>
+  <% states.except(:upcoming).each_value do |code, word, mod| %>
+    <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--<%= mod %>"><%= code %> <%= word %></span>
+  <% end %>
+  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--today">Today</span>
+  <span class="hrl-badge hrl-mgrid__key"><span class="hrl-mgrid__flag" aria-hidden="true"></span> Flagged</span>
+  <% if pending_dates %><span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--pending">Fix pending</span><% end %>
+  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--muted">Upcoming</span>
 </div>

@@ -235,6 +235,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-card > p:first-child { margin-top: 0; }
 .hrl-card__link, .hrl-backlink { display: inline-flex; gap: var(--hrl-s-1); align-items: center; min-height: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
+/* The punch status stays in the accessibility tree (no `hidden`) so its first message is announced; empty, it takes no space. */
+[data-hrl-geo-status]:empty { margin: 0; }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; margin-bottom: .85rem; }
 .hrl-grid > * { min-width: 0; }
 .hrl-grid > .hrl-card { margin-bottom: 0; }
@@ -344,6 +346,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-chiprow label:has(input:focus-visible) { outline: var(--hrl-focus-w) solid var(--hrl-focus); outline-offset: var(--hrl-focus-offset); }
 
 /* Feed items */
+.hrl-feed { list-style: none; margin: 0; padding: 0; }
 .hrl-feed__item { display: flex; gap: .7rem; padding: .8rem 0; border-bottom: 1px solid var(--hrl-line); }
 .hrl-feed__item:last-child { border-bottom: 0; }
 .hrl-avatar {
@@ -397,24 +400,42 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 
 /* Month grid (attendance) */
 /* minmax(0, …): a bare 1fr never shrinks below its nowrap tags and pushes Sa/Su off a phone */
-.hrl-mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+/* Phone: the grid alone reaches 4px from the card edge, with 2px gaps, so seven cells are 44px wide at 360px. */
+.hrl-mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.hrl-card > .hrl-mgrid { margin-inline: calc(var(--hrl-s-1) - .95rem); }
+@media (min-width: 481px) {
+  .hrl-mgrid { gap: 3px; }
+  .hrl-card > .hrl-mgrid { margin-inline: 0; }
+}
 .hrl-mgrid__head { text-align: center; color: var(--hrl-muted); font-size: var(--hrl-t-micro); padding: .2rem 0; }
 .hrl-mgrid__day {
   min-height: var(--hrl-target); border-radius: var(--hrl-radius-sm); background: var(--hrl-card);
-  border: 1px solid var(--hrl-line); padding: .2rem; font-size: var(--hrl-t-small);
+  border: 1px solid var(--hrl-line); padding: .2rem calc(var(--hrl-s-1) / 2); font-size: var(--hrl-t-small);
   display: flex; flex-direction: column; gap: .1rem; position: relative;
 }
-.hrl-mgrid__day--muted { opacity: .45; }
+/* 2px side padding on phones leaves "Today" its 32px in a 39px cell at 320px. */
+@media (min-width: 481px) { .hrl-mgrid__day { padding-inline: .2rem; } }
+.hrl-mgrid__day--muted { color: var(--hrl-muted); }
 .hrl-mgrid__num { font-weight: 600; }
-.hrl-mgrid__tag { font-size: var(--hrl-t-micro); color: var(--hrl-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hrl-mgrid__tag { font-size: var(--hrl-t-micro); color: var(--hrl-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The day number's link covers its whole cell and keeps the cell's ink, which holds 4.5:1 on every tint. */
+.hrl-mgrid__day a { color: inherit; }
+.hrl-mgrid__day a::after { content: ""; position: absolute; inset: -1px; border-radius: var(--hrl-radius-sm); }
+/* Legend swatch: a cell in badge form; the state modifiers below tint it. */
+.hrl-mgrid__key { background: var(--hrl-card); border: 1px solid var(--hrl-line); color: var(--hrl-ink-2); }
 .hrl-mgrid__day--present { background: var(--hrl-ok-bg); border-color: transparent; }
 .hrl-mgrid__day--half { background: linear-gradient(135deg, var(--hrl-ok-bg) 50%, var(--hrl-card) 50%); }
 .hrl-mgrid__day--leave { background: var(--hrl-info-bg); border-color: transparent; }
+.hrl-mgrid__day--half-leave { background: linear-gradient(135deg, var(--hrl-info-bg) 50%, var(--hrl-card) 50%); }
 .hrl-mgrid__day--holiday { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-mgrid__day--weekend { background: var(--hrl-bg); }
 .hrl-mgrid__day--absent { background: var(--hrl-bad-bg); border-color: transparent; }
+.hrl-mgrid__day--today { box-shadow: inset 0 0 0 2px var(--hrl-accent); }
+.hrl-mgrid__day--pending { border: 1px dashed var(--hrl-ink-2); }
 .hrl-mgrid__flag { position: absolute; top: 3px; right: 4px; width: 7px; height: 7px; border-radius: var(--hrl-radius-pill); background: var(--hrl-bad); }
 .hrl-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.hrl-legend .hrl-mgrid__flag { position: static; display: inline-block; }
+@media (min-width: 768px) { .hrl-mgrid--cal .hrl-mgrid__day { min-height: 88px; } }
 
 /* Utility */
 .hrl-muted { color: var(--hrl-muted); }

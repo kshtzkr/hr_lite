@@ -1,45 +1,52 @@
 <% content_for(:page_title) { "Calendar" } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Company calendar</h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.holidays_path %>">Holiday list</a>
+  </div>
 </div>
 
 <section class="hrl-card">
+  <% prev_m, next_m = @month - 1.month, @month + 1.month %>
   <div class="hrl-row hrl-row--mb">
-    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: prev_m.strftime("%Y-%m")) %>" aria-label="Previous month, <%= prev_m.strftime("%B %Y") %>"><span aria-hidden="true">&lsaquo;</span> <%= prev_m.strftime("%b") %></a>
     <strong><%= @month.strftime("%B %Y") %></strong>
-    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
-    <a class="hrl-btn hrl-right" href="<%= hr_lite.holidays_path %>">Holiday list</a>
+    <a class="hrl-btn" href="<%= hr_lite.calendar_path(month: next_m.strftime("%Y-%m")) %>" aria-label="Next month, <%= next_m.strftime("%B %Y") %>"><%= next_m.strftime("%b") %> <span aria-hidden="true">&rsaquo;</span></a>
   </div>
 
   <% first = @month.beginning_of_month %>
-  <div class="hrl-mgrid">
+  <div class="hrl-mgrid hrl-mgrid--cal">
     <% %w[Mo Tu We Th Fr Sa Su].each do |d| %><div class="hrl-mgrid__head"><%= d %></div><% end %>
     <% (first.cwday - 1).times do %><div></div><% end %>
     <% (first..@month.end_of_month).each do |date| %>
-      <% cell_class =
-           if @holidays[date] then "hrl-mgrid__day--holiday"
+      <% cell_class, code =
+           if @holidays[date] then [ "hrl-mgrid__day--holiday", "H" ]
            elsif @calendar.weekend?(date) then "hrl-mgrid__day--weekend"
-           elsif @leaves[date].any? then "hrl-mgrid__day--leave"
+           elsif @leaves[date].any? then [ "hrl-mgrid__day--leave", "#{@leaves[date].size} off" ]
            end %>
-      <div class="hrl-mgrid__day <%= cell_class %>">
+      <div class="<%= class_names("hrl-mgrid__day", cell_class, "hrl-mgrid__day--today": date == Date.current) %>">
         <span class="hrl-mgrid__num"><%= date.day %></span>
-        <% Array(@holidays[date]).each do |holiday| %>
-          <span class="hrl-mgrid__tag" title="<%= holiday.name %>"><%= holiday.name %></span>
-        <% end %>
-        <% @leaves[date].first(2).each do |request| %>
-          <span class="hrl-mgrid__tag" style="color: <%= request.leave_type.color %>;"
-                title="<%= hr_display_name(request.user) %> — <%= request.leave_type.name %>">
-            <%= hr_display_name(request.user).split.first %> · <%= request.leave_type.code %>
-          </span>
-        <% end %>
-        <% if @leaves[date].size > 2 %><span class="hrl-mgrid__tag">+<%= @leaves[date].size - 2 %> more</span><% end %>
+        <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
       </div>
     <% end %>
   </div>
 
   <div class="hrl-legend hrl-small">
-    <span class="hrl-badge hrl-badge--warn">Holiday</span>
-    <span class="hrl-badge">On leave</span>
-    <span class="hrl-badge hrl-badge--muted">Weekend</span>
+    <span class="hrl-badge hrl-badge--warn">H Holiday</span>
+    <span class="hrl-badge">N off On leave</span>
+    <span class="hrl-badge hrl-badge--muted">Weekly off</span>
+    <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--today">Today</span>
   </div>
+
+  <%# Names only — the leave type is the employee's own business. Leave keeps its label's "(first half)" note. %>
+  <% day = ->(d) { d.strftime("%a %-d %b") }
+     agenda = @holidays.values.flatten.map { |h| [ h.date, "#{day.(h.date)}: #{h.name} (holiday)" ] } +
+              @leaves.values.flatten.uniq.map { |r| [ [ r.start_date, first ].max, "#{[ r.start_date, r.end_date ].uniq.map(&day).join(' – ')}#{r.date_range_label[/ \(.+\)/]}: #{hr_display_name(r.user)}, on leave" ] } %>
+  <% if agenda.any? %>
+    <ul class="hrl-feed hrl-small hrl-mt">
+      <% agenda.sort_by(&:first).each do |_, line| %><li class="hrl-feed__item"><%= line %></li><% end %>
+    </ul>
+  <% else %>
+    <p class="hrl-muted hrl-small hrl-mt">No holidays or leave this month.</p>
+  <% end %>
 </section>

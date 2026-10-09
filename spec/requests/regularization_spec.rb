@@ -49,12 +49,38 @@ RSpec.describe "Regularization tickets", type: :request do
       expect(response.body).to include(%(value="2027-07-06"))
     end
 
+    it "pins time-only fields to the chosen day" do
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: "2026-10-06", check_in_at: "09:40", check_out_at: "18:45", reason: "Forgot" }
+      }
+      expect(HrLite::RegularizationRequest.last.check_in_at.strftime("%F %R %Z")).to eq("2026-10-06 09:40 IST")
+    end
+
+    it "puts a check-out before check-in on the next morning, and still refuses a blank or future date" do
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: tuesday, check_in_at: "21:00", check_out_at: "01:30", reason: "Night shift" }
+      }
+      expect(HrLite::RegularizationRequest.last.check_out_at).to eq(Time.zone.parse("2027-07-07 01:30"))
+
+      post "/hr/regularization_requests", params: { regularization_request: { date: "", check_in_at: "09:30", reason: "Forgot" } }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include('class="hrl-errors" role="alert"').and include("Date can&#39;t be blank")
+
+      post "/hr/regularization_requests", params: { regularization_request: { date: "2027-07-09", check_in_at: "09:30", reason: "Forgot" } }
+      expect(response.body).to include("cannot be in the future")
+    end
+
     it "re-renders with errors when no time is proposed" do
       post "/hr/regularization_requests", params: {
         regularization_request: { date: tuesday, reason: "Missed" }
       }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("check-in time, a check-out time")
+
+      post "/hr/regularization_requests", params: {
+        regularization_request: { date: tuesday, check_in_at: "25:99", reason: "Missed" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
     end
 
     it "cancels own pending ticket but 404s a foreign one" do

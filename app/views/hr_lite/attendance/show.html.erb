@@ -6,19 +6,48 @@
 <%= render "hr_lite/attendance/punch_card" %>
 
 <section class="hrl-card">
+  <% prev_m, next_m = @month - 1.month, @month + 1.month %>
   <div class="hrl-row hrl-row--mb">
-    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: (@month - 1.month).strftime("%Y-%m")) %>">&larr;</a>
+    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: prev_m.strftime("%Y-%m")) %>" aria-label="Previous month, <%= prev_m.strftime("%B %Y") %>"><span aria-hidden="true">&lsaquo;</span> <%= prev_m.strftime("%b") %></a>
     <strong><%= @month.strftime("%B %Y") %></strong>
-    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: (@month + 1.month).strftime("%Y-%m")) %>">&rarr;</a>
-    <span class="hrl-right hrl-small hrl-muted">
-      Present <%= @counts[:present] %> · Half <%= @counts[:half_day] %> · Absent <%= @counts[:absent] %>
-    </span>
+    <a class="hrl-btn" href="<%= hr_lite.attendance_path(month: next_m.strftime("%Y-%m")) %>" aria-label="Next month, <%= next_m.strftime("%B %Y") %>"><%= next_m.strftime("%b") %> <span aria-hidden="true">&rsaquo;</span></a>
+    <div class="hrl-row hrl-right">
+      <% { present: "ok", half_day: "ok", leave: nil, absent: "bad" }.each do |kind, tone| %>
+        <% code, word = HrLite::ApplicationHelper::DAY_STATES[kind] %>
+        <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>" role="img" aria-label="<%= word %> <%= pluralize(@counts[kind], "day") %>"><%= code %> <%= @counts[kind] %></span>
+      <% end %>
+    </div>
   </div>
-  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status %>
+  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status, pending_dates: @pending_dates,
+             link_builder: ->(d) { hr_lite.attendance_path(month: @month.strftime("%Y-%m"), day: d.iso8601, anchor: "day") if d <= Date.current } %>
   <p class="hrl-small hrl-muted hrl-mt">Forgot to check in or out on some day?
     <a href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>
     · <a href="<%= hr_lite.regularization_requests_path %>">My tickets</a></p>
 </section>
+
+<% if @day %>
+  <% rec, leave = @day_info.record, @day_info.leave
+     part = rec&.half_day_part.presence || leave&.half_day_part.presence
+     open_today = @day == Date.current && @day_info.kind == :absent
+     tone = { present: "ok", half_day: "ok", absent: "bad", holiday: "warn", weekend: "muted" }[@day_info.kind] unless open_today %>
+  <section class="hrl-card" id="day">
+    <h2 class="hrl-card__title"><%= @day.strftime("%a, %-d %b") %>
+      <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>"><%= open_today ? "Not checked in yet" : HrLite::ApplicationHelper::DAY_STATES[@day_info.kind][1] %></span></h2>
+    <dl class="hrl-deflist">
+      <dt>In</dt><dd><%= rec&.check_in_at&.strftime("%H:%M") || "—" %></dd>
+      <dt>Out</dt><dd><%= rec&.check_out_at&.strftime("%H:%M") || "—" %></dd>
+      <dt>Worked</dt><dd><%= hrl_duration(rec&.worked_duration) %></dd>
+      <% if part %><dt>Half</dt><dd><%= HrLite::DAY_PARTS.rassoc(part)&.first %></dd><% end %>
+      <% if leave %><dt>Leave</dt><dd><%= leave.leave_type.name %></dd><% end %>
+      <% if @day_info.kind == :holiday %><dt>Holiday</dt><dd><%= HrLite::Holiday.find_by(date: @day)&.name %></dd><% end %>
+      <% if rec&.flagged? %><dt>Flag</dt><dd><%= rec.flag_note %></dd><% end %>
+      <% if @day_ticket %><dt>Ticket</dt><dd><%= hrl_request_status_badge(@day_ticket.status) %> <%= @day_ticket.times_label %></dd><% end %>
+    </dl>
+    <% unless %i[holiday weekend leave].include?(@day_info.kind) || @day_ticket&.pending? %>
+      <a class="hrl-btn hrl-btn--primary hrl-btn--block hrl-mt" href="<%= hr_lite.new_regularization_request_path(date: @day) %>">Fix this day</a>
+    <% end %>
+  </section>
+<% end %>
 
 <% content_for :scripts do %>
   <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>

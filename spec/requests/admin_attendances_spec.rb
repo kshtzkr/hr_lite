@@ -31,6 +31,8 @@ RSpec.describe "Admin attendances", type: :request do
       get "/hr/admin/attendances"
 
       expect(response.body).to include("Asha").and include("Flagged").and include("No punch")
+      expect(response.body).to include("Flagged</span> <span class=\"hrl-small\">Check-in without GPS (denied)</span>")
+        .and include(%(aria-label="Previous day, #{(Date.current - 1).strftime('%A %-d %B')}"))
     end
 
     it "walks to other dates and falls back on garbage" do
@@ -51,6 +53,23 @@ RSpec.describe "Admin attendances", type: :request do
 
       expect(response.body).to include("Fix #{(Date.current - 1).strftime('%A, %d %B')}")
         .and include("regularization_note")
+    end
+
+    it "shows today without a punch as Today and leaves it out of the absent count" do
+      travel_to(Date.new(2026, 10, 8)) do # Thu; Oct 1, 2, 5, 6, 7 are past working days
+        get "/hr/admin/attendances/#{employee.id}"
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="8 Oct, Today, not checked in yet"]')
+        expect(cell["class"].split).not_to include("hrl-mgrid__day--absent")
+        expect(response.body).to include('aria-label="Absent 5 days"')
+      end
+    end
+
+    it "links each day up to today to its fix form" do
+      travel_to(Date.new(2026, 10, 8)) do
+        get "/hr/admin/attendances/#{employee.id}"
+        expect(response.body).to include("date=2026-10-08&amp;month=2026-10#regularize")
+        expect(response.body).not_to include("date=2026-10-09")
+      end
     end
   end
 

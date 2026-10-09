@@ -39,7 +39,15 @@ module HrLite
     end
 
     def request_params
-      params.require(:regularization_request).permit(:date, :check_in_at, :check_out_at, :reason)
+      p = params.require(:regularization_request).permit(:date, :check_in_at, :check_out_at, :reason)
+      # The form sends times only: pin them to the day; a check-out before check-in is the next morning (night shift).
+      in_at, out_at = p.values_at(:check_in_at, :check_out_at).map do |t|
+        Time.zone.parse("#{p[:date]} #{t}") if t.present?
+      rescue ArgumentError # an impossible date or time ("25:99") is left blank for the model to refuse
+        nil
+      end
+      out_at += 1.day if in_at && out_at && out_at < in_at
+      p.merge(check_in_at: in_at, check_out_at: out_at)
     end
   end
 end
