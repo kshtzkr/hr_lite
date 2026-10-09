@@ -26,6 +26,7 @@ RSpec.describe "Leave requests", type: :request do
     end
 
     it "pre-checks the type and fills From from the query, with Full day checked" do
+      type.update!(name: "Casual leave")
       get "/hr/leave_requests/new", params: { leave_type_id: type.id, date: "2027-07-05" }
       form = Nokogiri::HTML(response.body)
       expect(form.at_css("input[name='leave_request[leave_type_id]'][value='#{type.id}']")["checked"]).to be_present
@@ -33,6 +34,7 @@ RSpec.describe "Leave requests", type: :request do
       expect(form.at_css("input[name='leave_request[end_date]']")["value"]).to be_nil
       expect(form.at_css("input[name='leave_request[half_day_part]'][value='']")["checked"]).to be_present
       expect(response.body).to include("Casual · 12 left")
+      expect(form.css("label[for]").map { |l| l["for"] }).to all(satisfy { |id| form.at_css("##{id}") })
     end
 
     it "still rejects a half day that spans two dates" do

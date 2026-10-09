@@ -4,17 +4,15 @@
   <h1 class="hrl-page__title">Apply for leave</h1>
 </div>
 
-<%= render "hr_lite/leave_requests/balance_chips", compact: true %>
-
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.leave_requests_path, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
-      <%= f.label :leave_type_id, "Type", id: "hrl-leave-type" %>
+      <%= f.label :leave_type_id, "Type", id: "hrl-leave-type", for: nil %>
       <% left = @balances.index_by(&:leave_type_id) %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-leave-type">
         <% HrLite::LeaveType.active.each_with_index do |type, i| %>
-          <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><%= " · Unpaid" unless type.paid %></span></label>
+          <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name.sub(/ leave\z/i, "") %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><%= " · Unpaid" unless type.paid %></span></label>
         <% end %>
       </div>
       <p class="hrl-hint">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.</p>
@@ -28,7 +26,7 @@
       <%= f.date_field :end_date %>
     </div>
     <div class="hrl-field">
-      <%= f.label :half_day_part, "Day", id: "hrl-day-part" %>
+      <%= f.label :half_day_part, "Day", id: "hrl-day-part", for: nil %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-day-part">
         <% HrLite::DAY_PARTS.each do |label, value| %>
           <label><%= f.radio_button :half_day_part, value %><span><%= label %></span></label>
