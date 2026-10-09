@@ -12,7 +12,7 @@ module HrLite
     end
 
     def new
-      @request = HrRequest.new
+      @request = HrRequest.new(category: params[:category].presence_in(HrRequest::CATEGORIES))
     end
 
     def create

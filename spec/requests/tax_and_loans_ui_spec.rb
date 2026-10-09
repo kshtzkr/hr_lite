@@ -244,6 +244,27 @@ RSpec.describe "Loans over HTTP", type: :request do
     expect(response.body).to include("60,000")
   end
 
+  it "labels each figure with a real <dt>, not a CSS-only stacked label" do
+    loan_for(employee).loan_repayments.create!(period_month: Date.current.beginning_of_month,
+                                               amount: BigDecimal("5000"))
+    sign_in employee
+
+    get "/hr/loans"
+    expect(response.body).to include("<dt>Outstanding</dt>", "<th>Month</th>")
+    expect(response.body).not_to include("data-label")
+  end
+
+  it "sends someone with no loan to Ask HR with Payroll query chosen" do
+    sign_in employee
+
+    get "/hr/loans"
+    expect(response.body).to include('href="/hr/hr_requests/new?category=payroll_query"')
+
+    get "/hr/hr_requests/new?category=payroll_query"
+    expect(Nokogiri::HTML(response.body)
+      .at_css("option[value=payroll_query][selected], input[value=payroll_query][checked]")).to be_present
+  end
+
   it "shows nobody else's" do
     loan_for(owner, principal: 99_999)
     sign_in employee
