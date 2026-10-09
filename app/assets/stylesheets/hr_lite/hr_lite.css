@@ -458,6 +458,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-right { margin-left: auto; }
 .hrl-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .hrl-row--mb { margin-bottom: var(--hrl-s-3); }
+.hrl-row--tabs > .hrl-btn { padding-inline: var(--hrl-s-2); } /* four approvals tabs fit one row beside the rail at 768px */
 
 /* Long-form policy text. Constrained measure — a policy read across the
    full width of a laptop is a policy nobody finishes. */

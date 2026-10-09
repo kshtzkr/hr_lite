@@ -82,7 +82,7 @@ RSpec.describe "Comp-off requests", type: :request do
 
     it "marks only the Comp-off tab as the current page" do
       get "/hr/admin/comp_off_requests"
-      tabs = Nokogiri::HTML(response.body).css(".hrl-row--mb a")
+      tabs = Nokogiri::HTML(response.body).css(".hrl-row--tabs a") # the compact row that fits beside the rail at 768px
       expect(tabs.find { |a| a.text.start_with?("Comp-off") }["aria-current"]).to eq("page")
       expect(tabs.find { |a| a.text.start_with?("Leaves") }["aria-current"]).to be_nil
     end

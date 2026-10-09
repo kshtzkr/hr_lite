@@ -1,6 +1,6 @@
 <%# locals: active (:leaves | :comp_off | :regularizations | :balances) %>
 <% tab = ->(key) { tag.attributes(class: [ "hrl-btn", ("hrl-btn--primary" if active == key) ], aria: { current: ("page" if active == key) }) } %>
-<div class="hrl-row hrl-row--mb">
+<div class="hrl-row hrl-row--mb hrl-row--tabs">
   <a <%= tab.(:leaves) %>
      href="<%= hr_lite.admin_leave_requests_path %>">Leaves</a>
   <a <%= tab.(:comp_off) %>
