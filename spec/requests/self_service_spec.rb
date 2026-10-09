@@ -179,6 +179,23 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).to include('role="alert"', 'id="hrl-errors"', "field_with_errors")
     end
 
+    it "offers each category as a chip, none chosen, and files the one picked" do
+      get "/hr/hr_requests/new"
+      radios = Nokogiri::HTML(response.body).css('input[type=radio][name="hr_request[category]"]')
+      expect(radios.map { |r| r["value"] }).to eq(HrLite::HrRequest::CATEGORIES)
+      expect(radios.none? { |r| r["checked"] }).to be(true)
+
+      post "/hr/hr_requests", params: { hr_request: { category: "payroll_query", subject: "PF query" } }
+      expect(HrLite::HrRequest.last.category).to eq("payroll_query")
+    end
+
+    it "rejects a request with no category" do
+      expect {
+        post "/hr/hr_requests", params: { hr_request: { subject: "No category" } }
+      }.not_to change(HrLite::HrRequest, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
     it "shows no error box on a fresh form, and marks the mandatory fields required" do
       get "/hr/hr_requests/new"
       expect(response.body).not_to include("hrl-errors")
