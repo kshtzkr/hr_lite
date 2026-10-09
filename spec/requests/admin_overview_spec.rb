@@ -33,4 +33,15 @@ RSpec.describe "Admin overview", type: :request do
         .and include("Flagged Fred").and include("Forgot Fatima")
     end
   end
+
+  it "makes All requests a 44px card link and leaves the KPI tiles as they were" do
+    create(:leave_request)
+    sign_in admin
+    get "/hr/admin/overview"
+    page = Nokogiri::HTML(response.body)
+    expect(page.at_css('a.hrl-card__link[href="/hr/admin/leave_requests"]').text).to eq("All requests")
+    expect(page.css("a.hrl-small")).to be_empty
+    expect(page.css(".hrl-kpi__label").map(&:text))
+      .to eq([ "Pending approvals", "On leave today", "Flagged punches", "Missing checkouts" ])
+  end
 end
