@@ -25,7 +25,8 @@ RSpec.describe "Out today on Home", type: :request do
     expect(response.body).not_to include("Ravi")
     expect(response.body).not_to include("Kiran")
     expect(response.body).not_to include("Gone")
-    expect(response.body).not_to include("Sick leave")
+    # The viewer's own balance chip names the type; the Out today card must not.
+    expect(response.body[%r{Out today</h2>.*?</section>}m]).not_to include("Sick leave")
   end
 
   it "shows the leave's dates on the team board, visibly and on hover over the name" do

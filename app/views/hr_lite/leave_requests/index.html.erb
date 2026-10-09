@@ -21,9 +21,9 @@
         <tbody>
           <% @requests.each do |request| %>
             <tr>
-              <td data-label="Type"><span class="hrl-badge" style="background: <%= request.leave_type.color %>1f; color: <%= request.leave_type.color %>;"><%= request.leave_type.code %></span></td>
+              <td data-label="Type"><span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= request.leave_type.color %>"><%= request.leave_type.code %></span></td>
               <td data-label="Dates"><%= request.date_range_label %></td>
-              <td data-label="Days" class="hrl-num"><%= request.days_count.to_f %></td>
+              <td data-label="Days" class="hrl-num"><%= hrl_days(request.days_count) %></td>
               <td data-label="Status">
                 <span class="hrl-badge <%= { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted" }[request.status] %>"><%= request.status.humanize %></span>
               </td>

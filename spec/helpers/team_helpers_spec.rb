@@ -10,6 +10,15 @@ RSpec.describe HrLite::ApplicationHelper, type: :helper do
     end
   end
 
+  describe "#hrl_days" do
+    it "drops a trailing .0, keeps a half, and shows an em dash for nothing" do
+      expect(helper.hrl_days(1.0)).to eq("1")
+      expect(helper.hrl_days(BigDecimal("12"))).to eq("12")
+      expect(helper.hrl_days(0.5)).to eq("0.5")
+      expect(helper.hrl_days(nil)).to eq("—")
+    end
+  end
+
   describe "#hrl_team_status" do
     let(:tuesday) { Date.new(2027, 7, 6) }
 

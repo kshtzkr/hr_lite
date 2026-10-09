@@ -5,8 +5,8 @@
     <div class="hrl-row">
       <% types.each do |type| %>
         <% balance = HrLite::LeaveBalance.for(hr_current_user, type, HrLite::LeaveYear.current_key) %>
-        <span class="hrl-badge" style="background: <%= type.color %>1f; color: <%= type.color %>;">
-          <%= type.code %> <%= balance.available.to_f %>/<%= balance.entitled.to_f %>
+        <span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= type.color %>">
+          <%= type.name %> · <%= hrl_days(balance.available) %> of <%= hrl_days(balance.entitled) %> left
         </span>
       <% end %>
     </div>
