@@ -2,19 +2,27 @@
 <% content_for(:back, "Leaves") %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Leave balances <%= HrLite::LeaveYear.label(@year) %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_leave_request_path %>">Apply</a>
+  </div>
 </div>
 
+<% if @balances.any? %>
 <div class="hrl-grid hrl-grid--2">
   <% @balances.each do |balance| %>
     <section class="hrl-card">
       <h2 class="hrl-card__title"><%= balance.leave_type.name %></h2>
       <dl class="hrl-deflist">
-        <dt>Entitled</dt><dd><%= hrl_days(balance.entitled) %></dd>
+        <dt><%= balance.leave_type.comp_off ? "Credited" : "Entitled" %></dt><dd><%= hrl_days(balance.entitled) %></dd>
         <dt>Used</dt><dd><%= hrl_days(balance.used) %></dd>
         <dt>Available</dt><dd><strong><%= hrl_days(balance.available) %></strong></dd>
         <% if balance.carried_forward.positive? %><dt>Carried forward</dt><dd><%= hrl_days(balance.carried_forward) %></dd><% end %>
         <% if balance.adjustment.nonzero? %><dt>Adjustments</dt><dd><%= hrl_days(balance.adjustment) %> <span class="hrl-muted hrl-small"><%= balance.adjustment_note %></span></dd><% end %>
       </dl>
+      <a class="hrl-card__link" href="<%= hr_lite.new_leave_request_path(leave_type_id: balance.leave_type_id) %>">Apply</a>
     </section>
   <% end %>
 </div>
+<% else %>
+<p class="hrl-card hrl-card--empty">No leave types set up yet. Ask HR.</p>
+<% end %>

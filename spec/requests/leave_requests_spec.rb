@@ -125,10 +125,22 @@ RSpec.describe "Leave requests", type: :request do
   end
 
   describe "balances page" do
-    it "renders per-type cards for a chosen year" do
+    it "says Credited on the comp-off card, Entitled on the others, each with an Apply link for its type" do
       type
+      comp = create(:leave_type, name: "Comp off", comp_off: true, annual_quota: 0)
       get "/hr/leave_balances", params: { year: 2027 }
-      expect(response.body).to include("Casual").and include("Entitled")
+      cards = Nokogiri::HTML(response.body).css("section.hrl-card")
+      expect(cards.to_h { |card| [ card.at_css("h2").text, card.at_css("dt").text ] })
+        .to eq("Casual" => "Entitled", "Comp off" => "Credited")
+      expect(cards.map { |card| card.at_css("a.hrl-card__link")["href"] })
+        .to match_array([ type, comp ].map { |t| "/hr/leave_requests/new?leave_type_id=#{t.id}" })
+    end
+
+    it "shows an empty state, not a bare title, when no paid type is set up" do
+      create(:leave_type, paid: false)
+      get "/hr/leave_balances"
+      expect(response.body).to include("No leave types set up yet. Ask HR.")
+      expect(response.body).not_to include("hrl-deflist")
     end
   end
 
