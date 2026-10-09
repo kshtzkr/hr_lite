@@ -18,7 +18,7 @@ module HrLite
 
     def private_events
       newest_first(pay_items + loans + expenses + appraisals + plans + attendance_fixes + comp_offs +
-                   assets + documents + resignations + probation + hr_requests)
+                   assets + documents + resignations + probation + hr_requests + open_leave)
     end
 
     private
@@ -121,6 +121,15 @@ module HrLite
       PerformancePlan.where(mine).where(start_date: ..@range.end).flat_map do |plan|
         [ event(plan.start_date, "Performance", "Performance improvement plan started", "Until #{plan.end_date.strftime('%d %b %Y')}"),
           plan.closed_at && event(plan.closed_at.to_date, "Performance", "Performance improvement plan #{plan.status}", plan.outcome_note) ].compact
+      end
+    end
+
+    # Leave that never happened: still waiting, or turned down.
+    def open_leave
+      return [] unless visible?("leave.view")
+
+      LeaveRequest.where(**mine, status: %w[pending rejected]).overlapping_range(@range.begin, @range.end).includes(:leave_type).map do |leave|
+        event(leave.start_date, "Leave", "#{leave.leave_type.name} — #{leave.status}", leave.date_range_label)
       end
     end
 

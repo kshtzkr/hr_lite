@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.2] - 2026-10-10
+
+No migrations.
+
+### Added
+- Timeline "Private records" card: a Leave balance line per leave type for the current leave year ("Casual leave · 7 of 10 left"), and pending or rejected leave requests ("Casual leave — pending"), for the employee and anyone `leave.view` reaches (their manager, HR). `leave_requests/_balance_chips` takes optional `user:` and `bare:` locals.
+
 ## [0.23.1] - 2026-10-10
 
 No migrations.

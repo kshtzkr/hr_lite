@@ -31,6 +31,7 @@
   <section class="hrl-card hrl-card--private" aria-labelledby="private-records">
     <h2 class="hrl-card__title" id="private-records">Private records</h2>
     <p class="hrl-small"><strong>Private</strong> — only <%= @person.id == hr_current_user.id ? "you" : name %> and people with access can see this.</p>
+    <% if @show_balance %><%= render "hr_lite/leave_requests/balance_chips", user: @person, compact: true, bare: true %><% end %>
     <%= render "events", events: @private_events, empty: "Nothing private in #{@year}." %>
   </section>
 <% end %>

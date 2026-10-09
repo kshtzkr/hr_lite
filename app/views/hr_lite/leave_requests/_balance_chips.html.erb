@@ -1,10 +1,12 @@
-<section class="hrl-card">
-  <h2 class="hrl-card__title">Leave balance <%= HrLite::LeaveYear.label(HrLite::LeaveYear.current_key) %></h2>
+<%# locals: user (default: you), compact, bare (no card of its own — sits inside another card) %>
+<% user = local_assigns[:user] || hr_current_user %>
+<%= tag.send(local_assigns[:bare] ? :div : :section, class: ("hrl-card" unless local_assigns[:bare])) do %>
+  <%= tag.send(local_assigns[:bare] ? :h3 : :h2, class: "hrl-card__title") do %>Leave balance <%= HrLite::LeaveYear.label(HrLite::LeaveYear.current_key) %><% end %>
   <% types = HrLite::LeaveType.active.where(paid: true).where.not(annual_quota: nil) %>
   <% if types.any? %>
     <div class="hrl-row">
       <% types.each do |type| %>
-        <% balance = HrLite::LeaveBalance.for(hr_current_user, type, HrLite::LeaveYear.current_key) %>
+        <% balance = HrLite::LeaveBalance.for(user, type, HrLite::LeaveYear.current_key) %>
         <span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= type.color %>">
           <%= type.name %> · <%= hrl_days(balance.available) %> of <%= hrl_days(balance.entitled) %> left
         </span>
@@ -16,4 +18,4 @@
   <% else %>
     <p class="hrl-muted hrl-small">No leave types configured yet.</p>
   <% end %>
-</section>
+<% end %>
