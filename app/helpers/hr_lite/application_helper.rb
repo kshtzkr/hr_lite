@@ -170,8 +170,7 @@ module HrLite
       when :half_day_leave then hrl_status_badge("Half-day leave (#{row.leave.leave_type.code})", "hrl-badge--warn", worked_hint(row))
       when :upcoming then hrl_status_badge("\u2014", "hrl-badge--muted")
       when :absent
-        label = row.date_today? ? "Not in yet" : "Absent"
-        hrl_status_badge(label, "hrl-badge--bad")
+        row.date_today? ? hrl_status_badge("Not in yet", "hrl-badge--muted") : hrl_status_badge("Absent", "hrl-badge--bad")
       else # :present / :half_day punch
         record = row.record
         if record.check_out_at

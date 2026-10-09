@@ -90,6 +90,54 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration.declared_total).to eq(0)
     end
 
+    it "folds the claims away under the new regime" do
+      get "/hr/tax_declaration"
+
+      page = Nokogiri::HTML(response.body)
+      claims = page.at_css("details:has(input[name*=declared_amount])")
+      expect(claims["open"]).to be_nil
+      expect(claims.at_css("summary").text).to eq("Deductions (old regime only)")
+      expect(page.at_css("input[type=radio][name='tax_declaration[regime]'][value=new][checked]")).to be_present
+    end
+
+    it "opens the claims under the old regime, with one primary button" do
+      patch "/hr/tax_declaration", params: {
+        tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+          "0" => { section: "80c", declared_amount: "1000" }
+        } }
+      }
+      get "/hr/tax_declaration"
+
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("details:has(input[name*=declared_amount])")["open"]).not_to be_nil
+      expect(page.at_css("input[type=radio][name='tax_declaration[regime]'][value=old][checked]")).to be_present
+      expect(page.css(".hrl-main .hrl-btn--primary").map { |b| b.text.strip }).to eq([ "Submit to HR" ])
+    end
+
+    it "submits the amounts on screen, not the last saved draft" do
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+        "0" => { section: "80c", declared_amount: "1000" }
+      } } }
+      item = HrLite::TaxDeclaration.find_by!(user_id: employee.id).tax_declaration_items.first
+
+      patch "/hr/tax_declaration", params: { submit_to_hr: "1", tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+        "0" => { id: item.id, section: "80c", declared_amount: "5000" }
+      } } }
+
+      declaration = HrLite::TaxDeclaration.find_by!(user_id: employee.id)
+      expect(declaration).to be_submitted
+      expect(declaration.declared_total).to eq(5_000)
+    end
+
+    it "keeps the claims open when a save fails under the new regime" do
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "new", tax_declaration_items_attributes: {
+        "0" => { section: "80c", declared_amount: "-5" }
+      } } }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(Nokogiri::HTML(response.body).at_css("details:has(input[name*=declared_amount])")["open"]).not_to be_nil
+    end
+
     it "falls back to this financial year when the param is nonsense" do
       get "/hr/tax_declaration?financial_year=not-a-date"
 
@@ -123,6 +171,18 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
 
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("80D")
+    end
+
+    it "reopens a saved draft with every section still on the form" do
+      patch "/hr/tax_declaration", params: {
+        tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+          "0" => { section: "80c", declared_amount: "1000" }
+        } }
+      }
+      get "/hr/tax_declaration"
+
+      sections = Nokogiri::HTML(response.body).css("input[name$='[section]']").map { |i| i["value"] }
+      expect(sections).to match_array(HrLite::TaxDeclarationItem::SECTIONS)
     end
 
     it "never shows somebody else's" do
@@ -242,6 +302,27 @@ RSpec.describe "Loans over HTTP", type: :request do
     get "/hr/loans"
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("60,000")
+  end
+
+  it "labels each figure with a real <dt>, not a CSS-only stacked label" do
+    loan_for(employee).loan_repayments.create!(period_month: Date.current.beginning_of_month,
+                                               amount: BigDecimal("5000"))
+    sign_in employee
+
+    get "/hr/loans"
+    expect(response.body).to include("<dt>Outstanding</dt>", "<th>Month</th>")
+    expect(response.body).not_to include("data-label")
+  end
+
+  it "sends someone with no loan to Ask HR with Payroll query chosen" do
+    sign_in employee
+
+    get "/hr/loans"
+    expect(response.body).to include('href="/hr/hr_requests/new?category=payroll_query"')
+
+    get "/hr/hr_requests/new?category=payroll_query"
+    expect(Nokogiri::HTML(response.body)
+      .at_css("option[value=payroll_query][selected], input[value=payroll_query][checked]")).to be_present
   end
 
   it "shows nobody else's" do

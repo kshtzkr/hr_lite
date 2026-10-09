@@ -5,6 +5,8 @@ module HrLite
   class TaxDeclarationsController < ApplicationController
     def show
       @declaration = current_declaration || build_declaration
+      # A saved draft holds only its claims; the rest still need a line to fill.
+      fill_missing_sections(@declaration)
       @regime = @declaration.regime
     end
 
@@ -23,6 +25,8 @@ module HrLite
       end
 
       if @declaration.update(declaration_params)
+        return submit if params[:submit_to_hr] # Submit to HR saves what is on screen first
+
         redirect_to tax_declaration_path, notice: "Saved."
       else
         # Re-render needs the full set of lines back, or the form loses the

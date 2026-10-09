@@ -23,13 +23,31 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).to include("Travel", "left")
     end
 
-    it "right-aligns only the numeric header, over values that keep their stacked label" do
+    it "says on each category option if a receipt is needed and what is left" do
+      HrLite::ExpenseCategory.create!(name: "Meals", receipt_required: true)
+      get "/hr/expenses/new"
+
+      expect(response.body).to include(">Meals (receipt needed)<",
+                                       ">Travel (₹5,000.00 left this month)<")
+    end
+
+    it "shows no amount left on a category with no cap" do
+      HrLite::ExpenseCategory.create!(name: "Courier", receipt_required: false)
+      get "/hr/expenses/new"
+
+      expect(response.body).to include(">Courier<")
+      expect(response.body).not_to include("Courier (")
+    end
+
+    it "lists each own claim as one row with its amount, and never somebody else's" do
       HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
                               spent_on: Date.current, description: "Tea")
+      HrLite::Expense.create!(user_id: colleague.id, category: category, amount: 900,
+                              spent_on: Date.current, description: "Theirs")
       get "/hr/expenses"
 
-      expect(response.body).to include('<th>Category</th><th class="hrl-num">Amount</th>',
-                                       'data-label="Amount" class="hrl-num"')
+      rows = Nokogiri::HTML(response.body).css(".hrl-listrow").map { |r| r.text.squish }
+      expect(rows).to contain_exactly(a_string_including("Tea", "₹100.00", "Travel", "Draft", "Withdraw"))
     end
 
     it "claims, and the claim is submitted rather than left in a drawer" do
@@ -118,6 +136,7 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
     it "flags what still needs acknowledging, then records it" do
       get "/hr/policies"
       expect(response.body).to include("Needs your acknowledgement")
+      expect(response.body).to include(%(class="hrl-btn" href="/hr/policies/#{policy.id}"))
 
       post "/hr/policies/#{policy.id}/acknowledge"
       expect(policy.reload).to be_acknowledged_by(employee)
@@ -152,8 +171,13 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
         } }
       }.to change(HrLite::HrRequest, :count).by(1)
 
+      request = HrLite::HrRequest.last
       get "/hr/hr_requests"
-      expect(response.body).to include("Certificate for a visa", "Salary certificate")
+      row = Nokogiri::HTML(response.body).at_css("a.hrl-listrow[href='/hr/hr_requests/#{request.id}']")
+      expect(row.text.squish).to include("Certificate for a visa", "Open", "Salary certificate")
+
+      get "/hr/hr_requests/#{request.id}"
+      expect(response.body).to include(%(action="/hr/hr_requests/#{request.id}/cancel"))
     end
 
     it "shows HR's answer once there is one" do
@@ -163,6 +187,7 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
 
       get "/hr/hr_requests/#{request.id}"
       expect(response.body).to include("HR's answer", "see your March slip")
+      expect(response.body).not_to include("Withdraw")
     end
 
     it "404s on somebody else's request" do
@@ -177,6 +202,24 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       post "/hr/hr_requests", params: { hr_request: { category: "other", subject: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include('role="alert"', 'id="hrl-errors"', "field_with_errors")
+    end
+
+    it "offers each category as a chip, none chosen, and files the one picked" do
+      get "/hr/hr_requests/new"
+      radios = Nokogiri::HTML(response.body).css('input[type=radio][name="hr_request[category]"]')
+      expect(radios.map { |r| r["value"] }).to eq(HrLite::HrRequest::CATEGORIES)
+      expect(radios.none? { |r| r["checked"] }).to be(true)
+      expect(radios.to_a.last(2).map { |r| r.parent.text.strip }).to eq([ "ID card", "Other" ])
+
+      post "/hr/hr_requests", params: { hr_request: { category: "payroll_query", subject: "PF query" } }
+      expect(HrLite::HrRequest.last.category).to eq("payroll_query")
+    end
+
+    it "rejects a request with no category" do
+      expect {
+        post "/hr/hr_requests", params: { hr_request: { subject: "No category" } }
+      }.not_to change(HrLite::HrRequest, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
     end
 
     it "shows no error box on a fresh form, and marks the mandatory fields required" do

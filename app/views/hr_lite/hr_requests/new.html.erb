@@ -6,10 +6,12 @@
     <%= render "hr_lite/shared/form_errors", record: @request %>
 
     <div class="hrl-field">
-      <%= f.label :category, "What is this about" %>
-      <%= f.select :category,
-            HrLite::HrRequest::CATEGORIES.map { |c| [ c.humanize, c ] },
-            { include_blank: "Choose one" }, { required: true } %>
+      <%= f.label :category, "What is this about", id: "hrl-request-category", for: nil %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-request-category">
+        <% HrLite::HrRequest::CATEGORIES.each do |c| %>
+          <label><%= f.radio_button :category, c, required: true %><span><%= HrLite::HrRequest.category_label(c) %></span></label>
+        <% end %>
+      </div>
     </div>
     <div class="hrl-field">
       <%= f.label :subject, "In one line" %>

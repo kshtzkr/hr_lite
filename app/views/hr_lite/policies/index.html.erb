@@ -12,7 +12,7 @@
           <% @policies.each do |policy| %>
             <tr>
               <td data-label="Policy">
-                <a href="<%= hr_lite.policy_path(policy) %>"><%= policy.title %></a>
+                <a class="hrl-btn" href="<%= hr_lite.policy_path(policy) %>"><%= policy.title %></a>
                 <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span>
               </td>
               <td data-label="In force"><%= policy.effective_from.strftime("%d %b %Y") %></td>

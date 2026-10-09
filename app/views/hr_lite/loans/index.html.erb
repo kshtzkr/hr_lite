@@ -2,7 +2,10 @@
 <div class="hrl-page__head"><h1 class="hrl-page__title">Loans &amp; advances</h1></div>
 
 <% if @loans.empty? %>
-  <section class="hrl-card"><p class="hrl-muted">You have no loans or salary advances.</p></section>
+  <section class="hrl-card">
+    <p class="hrl-muted">You have no loans or salary advances.</p>
+    <a class="hrl-card__link" href="<%= hr_lite.new_hr_request_path(category: "payroll_query") %>">Ask HR about an advance</a>
+  </section>
 <% else %>
   <section class="hrl-card">
     <p>Outstanding across everything: <strong><%= hrl_money(@outstanding) %></strong></p>
@@ -15,32 +18,27 @@
         <span class="hrl-badge <%= "hrl-badge--muted" unless loan.active? %>"><%= loan.status.humanize %></span>
       </h2>
       <% if loan.reason.present? %><p class="hrl-muted"><%= loan.reason %></p><% end %>
-      <div class="hrl-table-wrap">
-        <table class="hrl-table hrl-table--stack">
-          <tbody>
-            <tr><td data-label="Monthly instalment"><%= hrl_money(loan.monthly_instalment) %></td></tr>
-            <tr><td data-label="Repaid so far"><%= hrl_money(loan.repaid) %></td></tr>
-            <tr><td data-label="Outstanding"><strong><%= hrl_money(loan.outstanding) %></strong></td></tr>
-            <tr>
-              <td data-label="Next deduction">
-                <% amount = loan.instalment_for(@next_month) %>
-                <%= amount.positive? ? "#{hrl_money(amount)} in #{@next_month.strftime('%b %Y')}" : "—" %>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <dl class="hrl-deflist">
+        <dt>Monthly instalment</dt><dd><%= hrl_money(loan.monthly_instalment) %></dd>
+        <dt>Repaid so far</dt><dd><%= hrl_money(loan.repaid) %></dd>
+        <dt>Outstanding</dt><dd><strong><%= hrl_money(loan.outstanding) %></strong></dd>
+        <dt>Next deduction</dt>
+        <dd>
+          <% amount = loan.instalment_for(@next_month) %>
+          <%= amount.positive? ? "#{hrl_money(amount)} in #{@next_month.strftime('%b %Y')}" : "—" %>
+        </dd>
+      </dl>
 
       <% if loan.loan_repayments.any? %>
         <h3 class="hrl-card__title">Already deducted</h3>
         <div class="hrl-table-wrap">
-          <table class="hrl-table hrl-table--stack">
+          <table class="hrl-table">
             <thead><tr><th>Month</th><th class="hrl-num">Amount</th></tr></thead>
             <tbody>
               <% loan.loan_repayments.sort_by(&:period_month).reverse.each do |r| %>
                 <tr>
-                  <td data-label="Month"><%= r.period_month.strftime("%b %Y") %></td>
-                  <td data-label="Amount" class="hrl-num"><%= hrl_money(r.amount) %></td>
+                  <td><%= r.period_month.strftime("%b %Y") %></td>
+                  <td class="hrl-num"><%= hrl_money(r.amount) %></td>
                 </tr>
               <% end %>
             </tbody>

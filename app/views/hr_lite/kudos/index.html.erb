@@ -3,8 +3,9 @@
   <p class="hrl-page__sub">Appreciate teammates publicly. Mention people with @ — they get notified.</p>
 </div>
 
-<section class="hrl-card">
-  <%= form_with model: @kudo, url: hr_lite.kudos_path, local: true do |f| %>
+<details class="hrl-card" <%= "open" if @kudo.errors.any? %>>
+  <summary class="hrl-btn hrl-btn--primary hrl-btn--block">Give kudos</summary>
+  <%= form_with model: @kudo, url: hr_lite.kudos_path, local: true, class: "hrl-mt" do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @kudo %>
     <div class="hrl-field">
       <%= f.label :message, "Say something nice" %>
@@ -24,7 +25,7 @@
       <%= f.submit "Post kudos", class: "hrl-btn hrl-btn--primary" %>
     </div>
   <% end %>
-</section>
+</details>
 
 <section class="hrl-card">
   <% if @kudos.any? %>

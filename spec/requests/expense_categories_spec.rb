@@ -31,7 +31,7 @@ RSpec.describe "Expense categories admin", type: :request do
 
       sign_in staff
       get "/hr/expenses/new"
-      expect(response.body).to include(">Travel</option>")
+      expect(response.body).to include(">Travel (₹5,000.00 left this month)</option>")
       expect {
         post "/hr/expenses", params: { expense: { category_id: category.id, amount: "1200",
                                                   spent_on: Date.current.to_s, description: "Cab" } }

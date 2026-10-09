@@ -62,6 +62,24 @@ RSpec.describe "Documents over HTTP", type: :request do
       expect(HrLite::Document.exists?(verified.id)).to be(true)
     end
 
+    it "preselects no category, so an Aadhaar is never filed by default" do
+      get "/hr/documents"
+      radios = Nokogiri::HTML(response.body).css('input[type=radio][name="document[category]"]')
+
+      expect(radios.size).to eq(7)
+      expect(radios.none? { |r| r["checked"] }).to be(true)
+      expect(radios.map { |r| r.parent.text.strip }.first(2)).to eq([ "Aadhaar", "PAN" ])
+    end
+
+    it "reopens the upload form with errors when no category is picked" do
+      upload(user: employee)
+      post "/hr/documents", params: { document: { title: "No category" } }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(Nokogiri::HTML(response.body).at_css("details.hrl-card")["open"]).not_to be_nil
+      expect(response.body).to include("Category can")
+    end
+
     it "never lists somebody else's" do
       upload(user: hr, title: "Chitra PAN")
       get "/hr/documents"

@@ -9,8 +9,7 @@
       <dt>Employee code</dt><dd><%= @profile.employee_code %></dd>
       <dt>Designation</dt><dd><%= @profile.designation.presence || "—" %></dd>
       <dt>Reports to</dt>
-      <dd><%= (boss = @profile.active_manager) ? "#{hr_display_name(boss)} (your L1)" : "—" %>
-        · <a href="<%= hr_lite.org_path %>">Org chart</a></dd>
+      <dd><%= (boss = @profile.active_manager) ? "#{hr_display_name(boss)} (your L1)" : "—" %></dd>
       <dt>Department</dt><dd><%= @profile.department.presence || "—" %></dd>
       <dt>Joined</dt><dd><%= @profile.date_of_joining.strftime("%d %B %Y") %>
         <% if @profile.on_probation? %><span class="hrl-badge hrl-badge--warn">Probation</span><% end %></dd>
@@ -19,6 +18,7 @@
       <dt>PF UAN</dt><dd><%= @profile.masked_uan || "—" %></dd>
       <dt>Bank</dt><dd><%= [ @profile.bank_name, @profile.masked_account ].compact.join(" ").presence || "—" %></dd>
     </dl>
+    <a class="hrl-btn hrl-mt" href="<%= hr_lite.org_path %>">Org chart</a>
     <p class="hrl-small hrl-muted hrl-mt">Something wrong? Ask leadership to correct it — changes are audited.</p>
     <a class="hrl-btn hrl-mt" href="<%= hr_lite.resignation_path %>">Resignation</a>
   </section>

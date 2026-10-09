@@ -235,9 +235,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-card > p:first-child { margin-top: 0; }
 .hrl-card__link, .hrl-backlink { display: inline-flex; gap: var(--hrl-s-1); align-items: center; min-height: var(--hrl-target); min-width: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
-.hrl-listrow { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: var(--hrl-s-1) var(--hrl-s-3); padding: var(--hrl-s-3) 0; border-bottom: 1px solid var(--hrl-line); min-height: var(--hrl-target); color: var(--hrl-ink); }
+.hrl-listrow { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: var(--hrl-s-1) var(--hrl-s-3); padding: var(--hrl-s-3) 0; border-bottom: 1px solid var(--hrl-line); min-height: var(--hrl-target); color: var(--hrl-ink); overflow-wrap: anywhere; }
 .hrl-listrow:last-child { border-bottom: 0; }
-.hrl-listrow > :first-child { display: inline-flex; align-items: center; gap: var(--hrl-s-1); }
+.hrl-listrow > :first-child { display: inline-flex; align-items: center; gap: var(--hrl-s-1); line-height: var(--hrl-lh-tight); }
 /* The punch status stays in the accessibility tree (no `hidden`) so its first message is announced; empty, it takes no space. */
 [data-hrl-geo-status]:empty { margin: 0; }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; margin-bottom: .85rem; }
@@ -251,6 +251,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-kpi { background: var(--hrl-card); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius); padding: .7rem .8rem; }
 .hrl-kpi__value { font-size: var(--hrl-t-display); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .hrl-kpi__label { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
+/* Rupee tiles: a lakh amount fits a half-width 320px tile without splitting its digits. */
+.hrl-kpis--money .hrl-kpi__value { font-size: var(--hrl-t-lead); }
+@media (min-width: 481px) { .hrl-kpis--money .hrl-kpi__value { font-size: var(--hrl-t-display); } }
 
 /* Buttons */
 .hrl-btn {
@@ -265,6 +268,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-btn--block { width: 100%; }
 .hrl-btn--big { min-height: 58px; font-size: var(--hrl-t-lead); }
 .hrl-btn[disabled] { opacity: .55; cursor: default; }
+summary.hrl-btn { list-style: none; }
+summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4 draws it whatever the display */
 
 /* Badges & chips */
 .hrl-badge {
@@ -290,7 +295,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-table td.hrl-num, .hrl-table th.hrl-num { text-align: right; font-variant-numeric: tabular-nums; }
 .hrl-table--tight th, .hrl-table--tight td { padding: .5rem .35rem; }
 .hrl-table td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: var(--hrl-s-2); }
+.hrl-table td[data-label=""] > :is(a, button) + form { display: inline-block; vertical-align: top; } /* a button_to beside a link, not under it */
 .hrl-table td[data-label=""] > form + form { margin-top: var(--hrl-s-2); }
+.hrl-table tr:has(.hrl-btn) > td, .hrl-table tr:has(.hrl-btn) td > .hrl-badge { vertical-align: middle; } /* text lines up with a 44px button */
 /* Stack on phones and on the narrow content column beside the 768-1023px rail. */
 @media (max-width: 640px), (min-width: 768px) and (max-width: 1023px) {
   .hrl-table--stack thead { display: none; }
@@ -302,6 +309,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   .hrl-table--stack tr:last-child { border-bottom: 0; }
   .hrl-table--stack td[data-label=""] { justify-content: flex-end; }
   .hrl-table--stack td[data-label=""]::before { display: none; }
+  .hrl-table--stack td > .hrl-badge { align-self: center; } /* do not stretch beside a 44px button */
   .hrl-table--stack td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: 0; }
   .hrl-table--stack td[data-label=""] > form + form { margin-top: 0; }
 }
@@ -328,6 +336,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 }
 /* The 44px label is the tap target for the small box. */
 .hrl-field--check label { margin-bottom: 0; font-weight: 600; flex: 1; min-height: var(--hrl-target); display: flex; align-items: center; }
+.hrl-field--check label .hrl-hint { display: block; margin-top: 0; font-weight: 400; }
 /* Rails wraps an invalid label/field in this div; contents keeps the stack, the re-pointed token reddens the border. */
 .field_with_errors { display: contents; --hrl-field: var(--hrl-bad); }
 .field_with_errors label { color: var(--hrl-bad); }

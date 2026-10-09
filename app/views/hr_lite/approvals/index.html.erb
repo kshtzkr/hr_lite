@@ -39,7 +39,7 @@
               <td data-label="Waiting"><%= time_ago_in_words(approval.created_at) %></td>
               <td data-label="">
                 <% if (path = hrl_approval_path(approval)) %>
-                  <a class="hrl-small" href="<%= path %>">Open</a>
+                  <a class="hrl-btn" href="<%= path %>">Open</a>
                 <% end %>
               </td>
             </tr>

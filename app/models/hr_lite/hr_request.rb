@@ -26,7 +26,8 @@ module HrLite
 
     after_create_commit :notify_desk
 
-    def category_label = category.humanize.sub(/\AId\b/, "ID")
+    def self.category_label(category) = category.humanize.sub(/\AId\b/, "ID")
+    def category_label = self.class.category_label(category)
 
     def assign!(actor:, assignee:)
       update!(assigned_to_id: assignee.id, status: "in_progress")
