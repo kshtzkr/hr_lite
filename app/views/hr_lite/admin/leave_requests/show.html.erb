@@ -1,9 +1,7 @@
 <% content_for(:page_title) { "Leave decision" } %>
+<a class="hrl-backlink" href="<%= hr_lite.admin_leave_requests_path %>"><span aria-hidden="true">‹</span> Approvals</a>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@request.user) %></h1>
-  <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.admin_leave_requests_path %>">Back</a>
-  </div>
 </div>
 
 <section class="hrl-card">

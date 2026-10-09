@@ -1,8 +1,8 @@
 <% content_for(:page_title) { "Regularization" } %>
+<% content_for(:back, "Attendance") %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">My regularization tickets</h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.attendance_path %>">My attendance</a>
     <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_regularization_request_path %>">Raise a ticket</a>
   </div>
 </div>

@@ -27,5 +27,12 @@
     more.addEventListener("toggle", function () {
       if (more.open) centre(more.querySelector(".hrl-sheet"));
     });
+    // Escape, or a tap on the scrim (the <details> itself), closes the sheet.
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && more.open) { more.open = false; more.querySelector("summary").focus(); }
+    });
+    document.addEventListener("click", function (event) {
+      if (more.open && !event.target.closest(".hrl-sheet, .hrl-tabbar__more > summary")) more.open = false;
+    });
   }
 })();

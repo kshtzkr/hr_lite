@@ -1,10 +1,10 @@
 <% content_for(:page_title) { "Holidays" } %>
+<% content_for(:back, "Calendar") %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Holidays <%= @year %></h1>
   <div class="hrl-page__actions">
     <a class="hrl-btn" href="<%= hr_lite.holidays_path(year: @year - 1) %>"><%= @year - 1 %></a>
     <a class="hrl-btn" href="<%= hr_lite.holidays_path(year: @year + 1) %>"><%= @year + 1 %></a>
-    <a class="hrl-btn" href="<%= hr_lite.calendar_path %>">Calendar</a>
   </div>
 </div>
 
