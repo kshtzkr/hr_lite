@@ -20,6 +20,14 @@ RSpec.describe "Kudos", type: :request do
       expect(response.body.scan(/hrl-feed__item/).size).to eq(25)
       expect(response.body).to include("Page 1 of 2")
     end
+
+    it "folds the composer into a closed Give kudos disclosure" do
+      get "/hr/kudos"
+      details = Nokogiri::HTML(response.body).at_css("details.hrl-card")
+      expect(details.at_css("summary").text).to eq("Give kudos")
+      expect(details.at_css("form textarea[name='kudo[message]']")).to be_present
+      expect(details["open"]).to be_nil
+    end
   end
 
   describe "POST /hr/kudos" do
@@ -43,6 +51,7 @@ RSpec.describe "Kudos", type: :request do
       post "/hr/kudos", params: { kudo: { message: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("prevented saving")
+      expect(Nokogiri::HTML(response.body).at_css("details.hrl-card")["open"]).not_to be_nil
     end
   end
 
