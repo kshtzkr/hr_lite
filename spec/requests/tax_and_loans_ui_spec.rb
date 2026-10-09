@@ -96,7 +96,7 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       page = Nokogiri::HTML(response.body)
       claims = page.at_css("details:has(input[name*=declared_amount])")
       expect(claims["open"]).to be_nil
-      expect(claims.at_css("summary").text).to eq("Deductions (old regime only)")
+      expect(claims.at_css("summary").text).to eq("Investments and rent (old regime only)")
       expect(page.at_css("input[type=radio][name='tax_declaration[regime]'][value=new][checked]")).to be_present
     end
 

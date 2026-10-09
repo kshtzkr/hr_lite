@@ -35,6 +35,7 @@ HrLite::Engine.routes.draw do
   end
   resource :tax_declaration, only: %i[show update], controller: "tax_declarations" do
     post :submit
+    post :preview
   end
   resources :loans, only: :index
   get "team", to: "team#show"
@@ -80,7 +81,8 @@ HrLite::Engine.routes.draw do
     end
     get "documents/for/:user_id", to: "documents#show", as: :employee_documents
     resources :tax_declarations, only: %i[index show update] do
-      member { post :verify; post :reject }
+      member { post :verify; post :reject; post :accept_all; get "proofs/:proof_id", action: :proof, as: :proof }
+      collection { get :overview; get "people/:user_id", action: :person, as: :person }
     end
     resources :loans, only: %i[index new create show] do
       member { post :close; post :cancel }

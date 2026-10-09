@@ -318,7 +318,8 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 
 /* Forms */
 .hrl-field { margin-bottom: .8rem; }
-.hrl-field label { display: block; font-size: var(--hrl-t-small); font-weight: 600; margin-bottom: .3rem; }
+.hrl-field label, .hrl-field legend { display: block; font-size: var(--hrl-t-small); font-weight: 600; margin-bottom: .3rem; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-hint { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin-top: .25rem; }
 /* Full-width text-ish controls only — checkboxes/radios/hidden must keep
    their natural size (a bare [type] selector out-ranked .hrl-field--check
@@ -389,6 +390,16 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-card--private .hrl-timeline { border-left-style: dashed; border-left-color: var(--hrl-field); }
 .hrl-card--private .hrl-timeline__item::before { background: var(--hrl-bg); border: 2px solid var(--hrl-field); }
 .hrl-card--private .hrl-badge--muted { background: var(--hrl-card); }
+
+/* Tax: the two regimes side by side, then the working as a plain table. */
+.hrl-tax-compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--hrl-s-3); margin: var(--hrl-s-4) 0 var(--hrl-s-2); }
+.hrl-tax-compare__col { border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); padding: var(--hrl-s-3); min-width: 0; }
+.hrl-tax-compare__col--chosen { border: 2px solid var(--hrl-accent); }
+.hrl-tax-compare__amount { font-size: var(--hrl-t-title); font-weight: 700; margin-top: var(--hrl-s-1); overflow-wrap: anywhere; }
+.hrl-tax-working { margin-top: var(--hrl-s-3); }
+.hrl-tax-working__table td { vertical-align: top; overflow-wrap: anywhere; }
+.hrl-tax-working__total td { font-weight: 700; border-top: 1px solid var(--hrl-line); }
+.hrl-tax-cap { display: block; width: 100%; height: 8px; margin-top: var(--hrl-s-1); accent-color: var(--hrl-accent); }
 
 /* Mention autocomplete menu */
 .hrl-mention-wrap { position: relative; }

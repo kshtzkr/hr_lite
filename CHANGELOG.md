@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-10-10
+
+Three migrations: `senior` and `landlord_pan` (encrypted) on declaration lines; a data migration adding the FY 2026-27 and October 2026 rate cards to installs that already have cards; a data migration giving HR `tax.view` and `tax.manage` (all).
+
+### Added
+- Statutory cards ship for FY 2026-27 (Finance Act 2026 left slabs, standard deduction and the §87A rebate unchanged; the Income-tax Act 2025 is in force) and from 1 October 2026, when the EPF/EPS/EDLI wage ceiling rose to ₹25,000 (Notification S.O. 5109(E), 17 Sep 2026; applied from October payroll, so September stays on ₹15,000). Both are seeded already verified, with the source in the card's notes. Cards may now take effect on the 1st of any month for a change notified mid-year. `StatutoryRateCard::SOURCES`.
+- `HrLite::TaxComputation`: a person's income tax worked out now — the structure in force, the slips already paid and the declaration — for both regimes, using payroll's own TDS calculator. Each step is shown: salary paid and expected, HRA exemption, standard deduction, every deduction with what was claimed, what counts and the limit, taxable income, each slab, tax with rebate and cess, TDS deducted and each remaining month. `Calculators::Tds.slab_rows`.
+- The legal limits apply by themselves (old regime): Sec 123 / 80C ₹1,50,000, Sec 124 / 80CCD(1B) ₹50,000, home-loan interest ₹2,00,000, Sec 126 / 80D ₹25,000 or ₹50,000 for a senior — now with a separate line for parents. HRA is the least of the HRA received, rent less 10% of Basic and 50% (metro) / 40% of Basic. A landlord's PAN is required above ₹1,00,000 of rent. Payroll's TDS uses the same capped figures.
+- Proof on every declaration line: PDF, JPG or PNG up to 5 MB each. HR opens each file through an audited download (`tax_proof.downloaded`) and can "Accept all and verify" in one click.
+- The employee's Tax page leads with this year's tax, TDS a month, deducted and still to deduct, the two regimes side by side with the cheaper one named, and the full working. It re-works the tax as you type (`POST /tax_declaration/preview`, `hr_lite/tax_preview.js`), nothing saved; each line's limit bar follows the amount.
+- HR and admin: the full working on every declaration, both regimes; "Everyone's tax" (`/admin/tax_declarations/overview`) lists each person's regime, tax, TDS so far and a month, the cheaper regime, and declaration status; each name opens that person's working whether or not they filed. HR gets a "Tax checks" link under Manage.
+
+### Changed
+- Section labels name the Income-tax Act 2025 section beside the old one ("Sec 123 (old 80C) — …").
+- A claim above its legal limit no longer lowers TDS beyond the limit.
+
 ## [0.24.0] - 2026-10-10
 
 Three migrations: `annual_ctc` (encrypted) and `metro` on salary structures; `first_approved_by_id`, `first_approved_at` and `auto_approved_at` on payroll runs; and a data migration granting the new `payroll.approve` permission to HR and Super Admin, plus `payroll.view`, `salary.view`, `salary.manage` and `profile.manage` to HR. Schedule `HrLite::PayrollAutoApproveJob` on the 3rd.

@@ -8,6 +8,16 @@ module HrLite
       # A saved draft holds only its claims; the rest still need a line to fill.
       fill_missing_sections(@declaration)
       @regime = @declaration.regime
+      @tax = TaxComputation.new(user: hr_current_user, declaration: @declaration)
+    end
+
+    # The form posts here as it is typed in: the tax worked out on what is on
+    # screen, nothing saved.
+    def preview
+      declaration = current_declaration || TaxDeclaration.new(user_id: hr_current_user.id, financial_year: financial_year)
+      declaration.regime = declaration_params[:regime] if declaration_params[:regime]
+      declaration.tax_declaration_items_attributes = preview_items
+      render partial: "hr_lite/tax/computation", locals: { tax: TaxComputation.new(user: hr_current_user, declaration: declaration), both: false }
     end
 
     def update
@@ -32,6 +42,7 @@ module HrLite
         # Re-render needs the full set of lines back, or the form loses the
         # sections the person had not filled in yet.
         fill_missing_sections(@declaration)
+        @tax = TaxComputation.new(user: hr_current_user, declaration: @declaration)
         render :show, status: :unprocessable_entity
       end
     end
@@ -75,6 +86,13 @@ module HrLite
       end
     end
 
+    # Lines for a preview: amounts only, never files (a blanked line is marked
+    # for removal, which the computation skips). Already filtered by the
+    # permit in declaration_params, so plain hashes are safe here.
+    def preview_items
+      (declaration_params[:tax_declaration_items_attributes] || {}).to_unsafe_h.transform_values { |row| row.except("proofs") }
+    end
+
     def employee_regime
       EmployeeProfile.find_by(user_id: hr_current_user.id)&.tax_regime.presence || "new"
     end
@@ -87,7 +105,7 @@ module HrLite
     def declaration_params
       permitted = params.require(:tax_declaration).permit(
         :regime,
-        tax_declaration_items_attributes: %i[id section label declared_amount _destroy]
+        tax_declaration_items_attributes: [ :id, :section, :label, :declared_amount, :senior, :landlord_pan, :_destroy, { proofs: [] } ]
       )
       items = permitted[:tax_declaration_items_attributes]
       return permitted if items.blank?

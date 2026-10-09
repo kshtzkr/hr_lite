@@ -1,0 +1,39 @@
+<% content_for(:page_title) { "Everyone's tax" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Everyone's tax — <%= HrLite::FinancialYear.label(Date.current) %></h1>
+  <div class="hrl-page__actions"><a class="hrl-btn" href="<%= hr_lite.admin_tax_declarations_path %>">Declarations</a></div>
+</div>
+<p class="hrl-small hrl-muted">Worked out now from each salary structure, the slips already paid and the declaration (limits applied). Open a declaration for the full working.</p>
+
+<section class="hrl-card">
+  <div class="hrl-table-wrap">
+    <table class="hrl-table hrl-table--stack">
+      <thead><tr><th>Person</th><th>Regime</th><th>Tax for the year</th><th>Deducted so far</th><th>TDS a month</th><th>Declaration</th></tr></thead>
+      <tbody>
+        <% @profiles.each do |profile| %>
+          <% declaration = @declarations[profile.user_id] %>
+          <% tax = HrLite::TaxComputation.new(user: profile.user, declaration: declaration) %>
+          <tr>
+            <td data-label="Person"><a class="hrl-card__link" href="<%= hr_lite.person_admin_tax_declarations_path(profile.user_id) %>"><%= hr_display_name(profile.user) %></a> <span class="hrl-small hrl-muted"><%= profile.employee_code %></span></td>
+            <% if tax.structure %>
+              <td data-label="Regime"><%= tax.regime.humanize %><% winner, by = tax.saving %><% if winner != tax.regime && by.positive? %><br><span class="hrl-small hrl-muted"><%= winner.humanize %> saves <%= hrl_rupees(by) %></span><% end %></td>
+              <td data-label="Tax for the year" class="hrl-num"><%= hrl_rupees(tax.chosen.annual_tax) %></td>
+              <td data-label="Deducted so far" class="hrl-num"><%= hrl_rupees(tax.chosen.tds_paid) %></td>
+              <td data-label="TDS a month" class="hrl-num"><%= hrl_rupees(tax.chosen.monthly) %></td>
+            <% else %>
+              <td data-label="Regime" colspan="4" class="hrl-muted">No salary structure</td>
+            <% end %>
+            <td data-label="Declaration">
+              <% if declaration %>
+                <a class="hrl-card__link" href="<%= hr_lite.admin_tax_declaration_path(declaration) %>"><%= declaration.status.humanize %></a>
+              <% else %>
+                <span class="hrl-muted">Not filed</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <%= hrl_pagination %>
+</section>
