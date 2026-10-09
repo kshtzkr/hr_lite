@@ -404,17 +404,21 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   border: 1px solid var(--hrl-line); padding: .2rem; font-size: var(--hrl-t-small);
   display: flex; flex-direction: column; gap: .1rem; position: relative;
 }
-.hrl-mgrid__day--muted { opacity: .45; }
+.hrl-mgrid__day--muted { color: var(--hrl-muted); }
 .hrl-mgrid__num { font-weight: 600; }
-.hrl-mgrid__tag { font-size: var(--hrl-t-micro); color: var(--hrl-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hrl-mgrid__tag { font-size: var(--hrl-t-micro); color: var(--hrl-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Legend swatch: a cell in badge form; the state modifiers below tint it. */
+.hrl-mgrid__key { background: var(--hrl-card); border: 1px solid var(--hrl-line); color: var(--hrl-ink-2); }
 .hrl-mgrid__day--present { background: var(--hrl-ok-bg); border-color: transparent; }
 .hrl-mgrid__day--half { background: linear-gradient(135deg, var(--hrl-ok-bg) 50%, var(--hrl-card) 50%); }
 .hrl-mgrid__day--leave { background: var(--hrl-info-bg); border-color: transparent; }
+.hrl-mgrid__day--half-leave { background: linear-gradient(135deg, var(--hrl-info-bg) 50%, var(--hrl-card) 50%); }
 .hrl-mgrid__day--holiday { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-mgrid__day--weekend { background: var(--hrl-bg); }
 .hrl-mgrid__day--absent { background: var(--hrl-bad-bg); border-color: transparent; }
 .hrl-mgrid__flag { position: absolute; top: 3px; right: 4px; width: 7px; height: 7px; border-radius: var(--hrl-radius-pill); background: var(--hrl-bad); }
 .hrl-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.hrl-legend .hrl-mgrid__flag { position: static; display: inline-block; }
 
 /* Utility */
 .hrl-muted { color: var(--hrl-muted); }

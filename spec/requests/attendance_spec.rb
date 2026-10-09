@@ -17,11 +17,28 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).to include("Check in").and include(Date.current.strftime("%B %Y"))
     end
 
-    it "stacks a day's check-in and check-out so a phone-width cell holds both" do
-      create(:attendance_record, user: user, date: Date.current,
-             check_in_at: Time.current.change(hour: 9, min: 30), check_out_at: Time.current.change(hour: 18, min: 0))
-      get "/hr/attendance"
-      expect(response.body).to include("09:30<br>18:00")
+    describe "month grid states" do
+      before do
+        travel_to(Date.new(2026, 10, 1))
+        type = create(:leave_type)
+        create(:leave_request, :approved, user: user, leave_type: type,
+               start_date: Date.new(2026, 10, 16), end_date: Date.new(2026, 10, 16))
+        create(:leave_request, :approved, user: user, leave_type: type,
+               start_date: Date.new(2026, 10, 19), end_date: Date.new(2026, 10, 19), half_day_part: "first")
+        get "/hr/attendance", params: { month: "2026-10" }
+      end
+
+      after { travel_back }
+
+      it "names each day in words and keys every code in the legend" do
+        expect(response.body).to include('aria-label="16 Oct, Leave"').and include("WO Weekly off")
+      end
+
+      it "does not paint a half-day leave as a full one" do
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="19 Oct, Half-day leave"]')
+        expect(cell["class"].split).to include("hrl-mgrid__day--half-leave")
+        expect(cell["class"].split).not_to include("hrl-mgrid__day--leave")
+      end
     end
 
     it "renders a requested month and falls back on garbage" do
