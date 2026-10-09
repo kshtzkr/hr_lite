@@ -58,7 +58,7 @@ module DemoSeeds
 
     seed_attendance(employee, office)
     seed_attendance(colleague, office, flagged: true)
-    seed_leaves(employee, admin)
+    seed_leaves(employee, admin, leadership)
     seed_kudos(employee, colleague, admin)
     seed_tickets(employee, colleague)
     HrLite::SalaryComponent.seed_defaults! # a real host gets these from hr_lite:seed
@@ -84,9 +84,14 @@ module DemoSeeds
     end
   end
 
-  def seed_leaves(employee, admin)
+  def seed_leaves(employee, admin, leadership)
     casual = HrLite::LeaveType.find_by!(code: "CL")
     sick = HrLite::LeaveType.find_by!(code: "SL")
+
+    # Rohan takes a day this week, so Home's "On leave this week" has a name in it.
+    monday = next_working_day(Date.current.beginning_of_week)
+    HrLite::LeaveRequest.create!(user_id: admin.id, leave_type: casual, reason: "Bank work",
+                                 start_date: monday, end_date: monday).approve!(actor: leadership)
 
     approved = HrLite::LeaveRequest.create!(
       user_id: employee.id, leave_type: casual, reason: "Family function",
