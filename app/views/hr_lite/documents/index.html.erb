@@ -14,34 +14,6 @@
 <% end %>
 
 <section class="hrl-card">
-  <h2 class="hrl-card__title">Upload a document</h2>
-  <%= form_with model: @document, url: hr_lite.documents_path, method: :post, local: true do |f| %>
-    <%= render "hr_lite/shared/form_errors", record: @document %>
-    <div class="hrl-field">
-      <%= f.label :category %>
-      <%= f.select :category,
-            options_for_select(HrLite::Document::SENSITIVE_CATEGORIES.map { |c| [ c.humanize, c ] } +
-                               [ [ "Offer letter", "offer_letter" ], [ "Certificate", "certificate" ],
-                                 [ "Other", "other" ] ], @document.category) %>
-    </div>
-    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title, required: true %></div>
-    <div class="hrl-field">
-      <%= f.label :reference_number, "Document number (optional)" %>
-      <%= f.text_field :reference_number %>
-    </div>
-    <div class="hrl-field">
-      <%= f.label :expires_on, "Expires on (optional — we will remind you)" %>
-      <%= f.date_field :expires_on %>
-    </div>
-    <div class="hrl-field">
-      <%= f.label :file, "File (PDF or image, up to 10 MB)" %>
-      <%= f.file_field :file, required: true %>
-    </div>
-    <div class="hrl-form-actions"><%= f.submit "Upload", class: "hrl-btn hrl-btn--primary" %></div>
-  <% end %>
-</section>
-
-<section class="hrl-card">
   <h2 class="hrl-card__title">On file</h2>
   <% if @documents.empty? %>
     <p class="hrl-muted">Nothing uploaded yet.</p>
@@ -67,7 +39,7 @@
               </td>
               <td data-label="">
                 <% if doc.file.attached? %>
-                  <a class="hrl-small" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
+                  <a class="hrl-btn" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
                 <% end %>
                 <% unless doc.verified? %>
                   <%= button_to "Remove", hr_lite.document_path(doc), method: :delete,
@@ -82,3 +54,33 @@
     </div>
   <% end %>
 </section>
+
+<details class="hrl-card" <%= "open" if @documents.empty? || @document.errors.any? %>>
+  <summary class="hrl-btn hrl-btn--primary">Upload a document</summary>
+  <%= form_with model: @document, url: hr_lite.documents_path, method: :post, local: true, class: "hrl-mt" do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @document %>
+    <div class="hrl-field">
+      <%= f.label :category, id: "hrl-doc-category", for: nil %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-doc-category">
+        <% (HrLite::Document::SENSITIVE_CATEGORIES.map { |c| [ c.humanize, c ] } +
+            [ [ "Offer letter", "offer_letter" ], [ "Certificate", "certificate" ], [ "Other", "other" ] ]).each do |label, value| %>
+          <label><%= f.radio_button :category, value, required: true %><span><%= label %></span></label>
+        <% end %>
+      </div>
+    </div>
+    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title, required: true %></div>
+    <div class="hrl-field">
+      <%= f.label :reference_number, "Document number (optional)" %>
+      <%= f.text_field :reference_number %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :expires_on, "Expires on (optional — we will remind you)" %>
+      <%= f.date_field :expires_on %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :file, "File (PDF or image, up to 10 MB)" %>
+      <%= f.file_field :file, required: true, accept: "application/pdf,image/*" %>
+    </div>
+    <div class="hrl-form-actions"><%= f.submit "Upload", class: "hrl-btn hrl-btn--primary" %></div>
+  <% end %>
+</details>
