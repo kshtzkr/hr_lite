@@ -39,6 +39,8 @@ HrLite::Engine.routes.draw do
   resources :loans, only: :index
   get "team", to: "team#show"
   get "org", to: "org#show"
+  get "timeline", to: "timelines#show"
+  get "people/:user_id/timeline", to: "timelines#show", as: :person_timeline
   resources :holidays, only: :index
   get "calendar", to: "calendar#show"
   resources :salary_slips, only: %i[index show]
@@ -116,6 +118,8 @@ HrLite::Engine.routes.draw do
       end
       resources :designation_changes, only: %i[new create]
     end
+    resources :performance_plans, only: %i[index new create edit update]
+    resources :awards, only: %i[index new create edit update]
     resources :payroll_runs, only: %i[index show new create destroy] do
       member do
         post :compute

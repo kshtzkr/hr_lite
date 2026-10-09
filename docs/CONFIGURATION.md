@@ -52,6 +52,8 @@ channels; the matrix row (host-overridable) is the on/off table:
 | `kudos.mentioned` | mentioned | mentioned | — | — |
 | `appraisal.shared` | employee | employee | ✓ | — |
 | `promotion.recorded` | employee | employee | ✓ | ✓ |
+| `pip.started` / `pip.closed` | employee | employee | — | — |
+| `award.won` | winner | winner | — | — |
 | `policy.changed` (every governing-tier mutation, with change diff) | — | — | ✓ | ✓ |
 | `digest.daily` | — | — | ✓ | — |
 | `leave.team_notice` (fired on approval — "X is on leave", no reason) | whole team | whole team | — | — |

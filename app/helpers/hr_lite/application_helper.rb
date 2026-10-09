@@ -17,6 +17,7 @@ module HrLite
       { label: "Documents",  path: :documents_path,      match: [ "/documents" ], group: "Me" },
       { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ], group: "Me" },
       { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ], group: "Me" },
+      { label: "Timeline",   path: :timeline_path,       match: [ "/timeline" ], group: "Me" },
       { label: "Policies",   path: :policies_path,       match: [ "/policies" ], group: "Company" },
       { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ], group: "Company" },
       { label: "Org",        path: :org_path,            match: [ "/org" ], group: "Company" },
@@ -42,6 +43,7 @@ module HrLite
 
     LEADERSHIP_NAV_ITEMS = [
       { label: "Employees", path: :admin_employees_path,        match: [ "/admin/employees" ] },
+      { label: "Awards",    path: :admin_awards_path,           match: [ "/admin/awards" ] },
       { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ] },
       { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] },
       { label: "Policies",  path: :admin_policies_path,         match: [ "/admin/policies" ] },
@@ -56,7 +58,8 @@ module HrLite
       { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] },
       { label: "Rates",   path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ] },
       { label: "Tax",     path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ] },
-      { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] }
+      { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] },
+      { label: "PIPs",    path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ] }
     ].freeze
 
     # DayStatus kind => [code, word, month-grid cell modifier]: the code keeps a state readable without its colour.

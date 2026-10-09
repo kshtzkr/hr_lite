@@ -1,0 +1,32 @@
+<% content_for(:page_title) { "Timeline — #{hr_display_name(@person)}" } %>
+<% year_path = ->(y) { @person.id == hr_current_user.id ? hr_lite.timeline_path(year: y) : hr_lite.person_timeline_path(@person.id, year: y) } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@person) %><% if @profile&.designation.present? %> <span class="hrl-muted">· <%= @profile.designation %></span><% end %></h1>
+</div>
+
+<div class="hrl-row hrl-row--mb">
+  <a class="hrl-btn" href="<%= year_path.(@year - 1) %>">&larr; <%= @year - 1 %></a>
+  <strong><%= @year %></strong>
+  <a class="hrl-btn" href="<%= year_path.(@year + 1) %>"><%= @year + 1 %> &rarr;</a>
+</div>
+
+<section class="hrl-card">
+  <% if @events.any? %>
+    <ul class="hrl-feed">
+      <% @events.each do |event| %>
+        <li class="hrl-feed__item">
+          <div class="hrl-feed__body">
+            <div class="hrl-row">
+              <strong><%= event.title %></strong>
+              <% if event.sensitive %><span class="hrl-badge hrl-badge--muted">Private</span><% end %>
+              <span class="hrl-feed__meta hrl-right"><%= event.date.strftime("%-d %b %Y") %></span>
+            </div>
+            <% if event.detail.present? %><div class="hrl-feed__meta"><%= event.detail %></div><% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="hrl-card--empty">Nothing on the timeline for <%= @year %>.</p>
+  <% end %>
+</section>

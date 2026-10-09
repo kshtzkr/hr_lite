@@ -1,0 +1,24 @@
+<section class="hrl-card">
+  <%= form_with model: award, url: url, method: method, scope: :award, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: award %>
+    <div class="hrl-field">
+      <%= f.label :kind, "Award" %>
+      <%= f.select :kind, HrLite::Award::KINDS.map { |k| [ "Employee of the #{k}", k ] } %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :period_start, "Any day in the period" %>
+      <%= f.date_field :period_start %>
+      <p class="hrl-hint">Saved as the start of that month, quarter or year.</p>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :user_id, "Winner" %>
+      <%= f.select :user_id, options_for_select(HrLite.active_employees.map { |u| [ hr_display_name(u), u.id ] }, award.user_id),
+                   { include_blank: "Choose…" }, data: { hrl_filter: "Type a name to filter" } %>
+    </div>
+    <div class="hrl-field"><%= f.label :citation, "Why they won" %><%= f.text_area :citation, rows: 3 %></div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_awards_path %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

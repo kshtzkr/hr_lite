@@ -26,6 +26,9 @@ module HrLite
       "kudos.mentioned"       => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "appraisal.shared"      => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "promotion.recorded"    => { bell: true,  email: true,  leadership_email: true,  leadership_bell: true  },
+      "pip.started" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
+      "pip.closed" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
+      "award.won" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "policy.changed"        => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
       # An approval past its deadline. Leadership hears too — a decision
       # nobody is making is a process problem, not just one person's inbox.

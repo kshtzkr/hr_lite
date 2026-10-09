@@ -403,6 +403,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-tree__card--me { border-color: var(--hrl-accent); background: var(--hrl-info-bg); }
 .hrl-tree__name, .hrl-tree__role { min-width: 0; overflow-wrap: anywhere; }
 .hrl-tree__name { font-weight: 700; font-size: var(--hrl-t-small); }
+a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--hrl-target); }
 .hrl-tree__role { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
 .hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 .hrl-chainrow__step { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }

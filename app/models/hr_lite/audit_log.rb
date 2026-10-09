@@ -15,6 +15,7 @@ module HrLite
     MONEY_TIER_TYPES = %w[
       HrLite::Appraisal HrLite::DesignationChange HrLite::SalaryStructure
       HrLite::PayrollRun HrLite::SalarySlip HrLite::PayrollLineItem HrLite::Loan
+      HrLite::PerformancePlan
     ].freeze
 
     scope :recent, -> { order(created_at: :desc) }

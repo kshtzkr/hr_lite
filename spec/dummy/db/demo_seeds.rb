@@ -65,6 +65,16 @@ module DemoSeeds
     seed_payroll(leadership)
     seed_career(employee, leadership)
     seed_services(employee, colleague, leadership)
+    seed_recognition(employee, colleague, leadership)
+  end
+
+  # Meera is Employee of the Month on Home and her timeline; Dev has an open
+  # PIP that only he and Asha (Super Admin) can see.
+  def seed_recognition(employee, colleague, leadership)
+    HrLite::Award.create!(user: employee, kind: "month", period_start: Date.current, created_by: leadership,
+                          citation: "Rebooked the stranded Bali group overnight")
+    HrLite::PerformancePlan.create!(user: colleague, start_date: Date.current - 10, end_date: Date.current + 20,
+                                    created_by: leadership, goals: "Close every open ticket within two working days")
   end
 
   def seed_attendance(user, office, flagged: false)

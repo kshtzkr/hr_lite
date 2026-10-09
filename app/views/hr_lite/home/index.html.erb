@@ -38,6 +38,25 @@
     <a class="hrl-card__link" href="<%= hr_lite.team_path %>">Team board</a>
   </section>
 
+  <% if @awards.any? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Employee of the month, quarter and year</h2>
+      <ul class="hrl-feed">
+        <% @awards.each do |award| %>
+          <li class="hrl-feed__item">
+            <div class="hrl-feed__body">
+              <div class="hrl-row">
+                <a class="hrl-card__link" href="<%= hr_lite.person_timeline_path(award.user_id) %>"><%= hr_display_name(award.user) %></a>
+                <span class="hrl-badge"><%= award.title %> · <%= award.period_label %></span>
+              </div>
+              <div class="hrl-feed__meta"><%= award.citation %></div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
   <section class="hrl-card">
     <h2 class="hrl-card__title">Latest kudos</h2>
     <% if @latest_kudos.any? %>
