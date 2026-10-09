@@ -28,7 +28,7 @@
       <%= render "hr_lite/shared/form_errors", record: @new_resignation %>
       <div class="hrl-field">
         <%= f.label :proposed_last_day, "Proposed last working day" %>
-        <%= f.date_field :proposed_last_day %>
+        <%= f.date_field :proposed_last_day, required: true %>
       </div>
       <div class="hrl-field">
         <%= f.label :reason, "Reason (optional)" %>

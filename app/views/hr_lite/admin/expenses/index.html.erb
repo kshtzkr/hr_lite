@@ -34,12 +34,12 @@
                     <%= submit_tag "Approve", class: "hrl-btn hrl-btn--primary" %>
                   <% end %>
                   <%= form_with url: hr_lite.reject_admin_expense_path(expense), method: :post do %>
-                    <%= text_field_tag :decision_note, nil, placeholder: "Why not" %>
+                    <%= text_field_tag :decision_note, nil, placeholder: "Why not", class: "hrl-input" %>
                     <%= submit_tag "Reject", class: "hrl-btn" %>
                   <% end %>
                 <% elsif expense.approved? %>
                   <%= form_with url: hr_lite.reimburse_admin_expense_path(expense), method: :post do %>
-                    <%= text_field_tag :period_month, Date.current.strftime("%Y-%m"), size: 8 %>
+                    <%= text_field_tag :period_month, Date.current.strftime("%Y-%m"), size: 8, class: "hrl-input" %>
                     <%= submit_tag "Mark reimbursed", class: "hrl-btn" %>
                   <% end %>
                 <% end %>

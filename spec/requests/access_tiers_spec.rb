@@ -49,6 +49,12 @@ RSpec.describe "Access tiers", type: :request do
       get "/hr/"
       expect(response.body).to include("hr_lite_overrides")
     end
+
+    it "links the engine sheet that carries the --hrl-* defaults" do
+      sign_in employee
+      get "/hr/"
+      expect(response.body).to match(%r{<link[^>]+href="[^"]*hr_lite/hr_lite[^"]*\.css"})
+    end
   end
 
   describe "nav visibility" do

@@ -24,7 +24,7 @@
                                [ [ "Offer letter", "offer_letter" ], [ "Certificate", "certificate" ],
                                  [ "Other", "other" ] ], @document.category) %>
     </div>
-    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title %></div>
+    <div class="hrl-field"><%= f.label :title %><%= f.text_field :title, required: true %></div>
     <div class="hrl-field">
       <%= f.label :reference_number, "Document number (optional)" %>
       <%= f.text_field :reference_number %>
@@ -35,7 +35,7 @@
     </div>
     <div class="hrl-field">
       <%= f.label :file, "File (PDF or image, up to 10 MB)" %>
-      <%= f.file_field :file %>
+      <%= f.file_field :file, required: true %>
     </div>
     <div class="hrl-form-actions"><%= f.submit "Upload", class: "hrl-btn hrl-btn--primary" %></div>
   <% end %>

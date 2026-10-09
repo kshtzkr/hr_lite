@@ -23,6 +23,15 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response.body).to include("Travel", "left")
     end
 
+    it "right-aligns only the numeric header, over values that keep their stacked label" do
+      HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
+                              spent_on: Date.current, description: "Tea")
+      get "/hr/expenses"
+
+      expect(response.body).to include('<th>Category</th><th class="hrl-num">Amount</th>',
+                                       'data-label="Amount" class="hrl-num"')
+    end
+
     it "claims, and the claim is submitted rather than left in a drawer" do
       expect {
         post "/hr/expenses", params: { expense: {
@@ -164,9 +173,16 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       expect(response).to have_http_status(:not_found)
     end
 
-    it "re-renders an incomplete request" do
+    it "re-renders an incomplete request with an announced error box and the bad field marked" do
       post "/hr/hr_requests", params: { hr_request: { category: "other", subject: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include('role="alert"', 'id="hrl-errors"', "field_with_errors")
+    end
+
+    it "shows no error box on a fresh form, and marks the mandatory fields required" do
+      get "/hr/hr_requests/new"
+      expect(response.body).not_to include("hrl-errors")
+      expect(response.body[/<input[^>]*hr_request\[subject\][^>]*>/]).to include("required")
     end
   end
 end

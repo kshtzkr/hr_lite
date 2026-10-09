@@ -11,7 +11,7 @@
     <% end %>
     <div class="hrl-field">
       <%= f.label :date, "Which day needs fixing?" %>
-      <%= f.date_field :date, value: @request.date&.strftime("%Y-%m-%d"), max: Date.current %>
+      <%= f.date_field :date, value: @request.date&.strftime("%Y-%m-%d"), max: Date.current, required: true %>
     </div>
     <div class="hrl-field">
       <%= f.label :check_in_at, "Actual check-in (leave blank if only check-out is missing)" %>
@@ -23,7 +23,7 @@
     </div>
     <div class="hrl-field">
       <%= f.label :reason, "Why was the punch missed? (required)" %>
-      <%= f.text_area :reason %>
+      <%= f.text_area :reason, required: true %>
     </div>
     <div class="hrl-form-actions">
       <%= f.submit "Raise ticket", class: "hrl-btn hrl-btn--primary" %>

@@ -9,7 +9,7 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Today, <%= Date.current.strftime("%d %b") %></h2>
 
-  <div class="hrl-row hrl-small" style="margin-bottom:.6rem;">
+  <div class="hrl-row hrl-row--mb hrl-small">
     <% if record&.check_in_at %>
       <span class="hrl-badge hrl-badge--ok">In <%= record.check_in_at.strftime("%H:%M") %></span>
     <% end %>

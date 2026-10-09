@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Theming: new `--hrl-*` variables for the type ramp, line heights, spacing, large and pill radii, extra shadows, focus ring, motion, z-index, tap targets, and the colour roles `--hrl-ink-2`, `--hrl-field` and `--hrl-scrim`. The README lists every variable with its role.
+- Keyboard: every focused control shows a 2px accent ring (kudos badge chips included), focus scrolls clear of the app bar and tab bar, and a "Skip to content" link is the first Tab stop so desktop users skip the side rail. Reduced-motion users get no transitions or animations. New `.hrl-sr-only` utility.
+- Leave-type badge `.hrl-badge--type`: ink text on grey with an 8px dot in the HR-chosen colour, set inline as `--hrl-type`.
+
+### Changed
+- Engine defaults: `--hrl-radius` 14px to 16px, `--hrl-radius-sm` 9px to 12px, `--hrl-info-bg` #dbeafe to #eff6ff (accent text on it now 4.75:1) and `--hrl-muted` #6b7280 to #4b5563 (4.5:1 or better on the page background). Hosts that set these variables see no change.
+- Type: every screen except the ID card uses the six-step ramp (12/14/16/18/20/24px) and weights 400/600/700. Nothing renders below 12px, and the page title grows from 20px to 24px at 768px.
+- Radii: every corner outside the ID card is 12, 16 or 20px or a pill. Month-grid day cells go from 7px to `--hrl-radius-sm`, pills use `--hrl-radius-pill`, and the phone "More" sheet gets 20px top corners (`--hrl-radius-lg`).
+- Long text: badges clip at their container's width, buttons wrap long labels, and definition-list values shrink instead of widening the page, so 60-character names no longer cause sideways scroll. Muted badges use `--hrl-ink-2`.
+- Forms: inputs are 16px with a `--hrl-field` border (3:1 or better), an invalid field turns its border and label red, hints are styled everywhere, kudos chips and check-row labels are 44px tall with an 8px gap, and the error box is announced and takes focus. Mandatory fields carry `required`, so the browser stops an empty submit. `.hrl-card--warn` (expiring documents) now has its amber fill.
+- Layout: two-column card grids start at 1024px (was 700px, which clipped the slip's Earnings card at 768px) without a doubled gap below them. Stacked tables also stack between 768 and 1023px beside the side rail. Stacked action cells sit right-aligned with no empty label, the last row loses its 6px band, and side-by-side actions in table mode sit 8px apart. Amount, Net pay, Cover and Dependants headers right-align over their values. New `.hrl-card__link` (44px text link) and `.hrl-row--mb` replace inline margin styles.
+
+### Fixed
+- A double tap on a submit button sends one request: the button locks (dimmed, `aria-busy`) once the form submits, stays live when a confirm prompt is cancelled, and unlocks when Back restores the page. Punch forms keep their own location flow.
+
 ## [0.21.3] - 2026-10-09
 
 ### Fixed

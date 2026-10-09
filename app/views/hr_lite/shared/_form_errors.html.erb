@@ -1,5 +1,5 @@
 <% if record.errors.any? %>
-  <div class="hrl-errors">
+  <div class="hrl-errors" role="alert" tabindex="-1" id="hrl-errors" autofocus>
     <strong><%= pluralize(record.errors.count, "problem") %> prevented saving:</strong>
     <ul>
       <% record.errors.full_messages.each do |message| %>

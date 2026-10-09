@@ -7,7 +7,7 @@
   <% else %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Benefit</th><th>Cover</th><th>Since</th><th>Dependants</th></tr></thead>
+        <thead><tr><th>Benefit</th><th class="hrl-num">Cover</th><th>Since</th><th class="hrl-num">Dependants</th></tr></thead>
         <tbody>
           <% @enrolments.each do |enrolment| %>
             <% benefit = enrolment.benefit %>

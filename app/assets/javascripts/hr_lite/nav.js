@@ -12,6 +12,16 @@
 
   centre(document.querySelector(".hrl-side"));
 
+  // Chrome scrolls a focused field's caret into view, not the whole field, so a
+  // textarea near the bottom can sit half under the fixed tab bar. Nudge it out.
+  var tabbar = document.querySelector(".hrl-tabbar");
+  document.addEventListener("focusin", function (event) {
+    if (!tabbar || !tabbar.getClientRects().length || tabbar.contains(event.target)) return;
+    if (event.target.getBoundingClientRect().bottom > tabbar.getBoundingClientRect().top) {
+      event.target.scrollIntoView({ block: "nearest" });
+    }
+  });
+
   var more = document.querySelector(".hrl-tabbar__more");
   if (more) {
     more.addEventListener("toggle", function () {

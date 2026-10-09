@@ -19,13 +19,28 @@
       if (!form || form.nodeName !== "FORM") return;
 
       var message = form.getAttribute("data-turbo-confirm");
-      if (!message) return;
-
-      if (!window.confirm(message)) {
+      if (message && !window.confirm(message)) {
         event.preventDefault();
         event.stopPropagation();
+        return;
+      }
+
+      // Double-submit guard (data-disable-with is inert without Turbo/ujs). The
+      // timeout lets the submitter's value post first; geo punch runs its own.
+      if (!form.hasAttribute("data-hrl-geo-punch") && event.submitter) {
+        var b = event.submitter;
+        setTimeout(function () { b.disabled = true; b.setAttribute("aria-busy", "true"); }, 0);
       }
     },
     true // capture, so the check runs before any other submit handler
   );
+
+  // Back restores a submitted page from the bfcache with its button still locked.
+  window.addEventListener("pageshow", function (event) {
+    if (!event.persisted) return;
+    document.querySelectorAll("form:not([data-hrl-geo-punch]) [aria-busy]").forEach(function (b) {
+      b.disabled = false;
+      b.removeAttribute("aria-busy");
+    });
+  });
 })();
