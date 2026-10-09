@@ -99,6 +99,20 @@ RSpec.describe "The approval inbox", type: :request, no_legacy_bridge: true do
     get "/hr/"
     expect(response.body).not_to include("waiting on you")
   end
+
+  # With no flow, leave is decided off the HR queue, so the manager's reports' requests count there.
+  it "counts a manager's own queue on Home when no flow routes leave, never the requester's" do
+    HrLite::ApprovalFlow.update_all(active: false)
+    leave!
+
+    sign_in manager
+    get "/hr/"
+    expect(response.body).to include("1 request waiting on you", %(href="/hr/admin/leave_requests"))
+
+    sign_in employee
+    get "/hr/"
+    expect(response.body).not_to include("waiting on you")
+  end
 end
 
 RSpec.describe HrLite::ApprovalEscalationJob, no_legacy_bridge: true do

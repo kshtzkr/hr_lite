@@ -7,12 +7,21 @@ module HrLite
                               .sort_by { |leave| hr_display_name(leave.user).downcase }
       @attention = attention_days
       @waiting = Approval.pending_for(hr_current_user).count
+      @queue = queue_count
       @mine_pending = [ LeaveRequest.includes(:leave_type), RegularizationRequest, CompOffRequest ]
                       .flat_map { |scope| scope.pending.where(user_id: hr_current_user.id).order(created_at: :desc).limit(5) }
                       .max_by(5, &:created_at)
     end
 
     private
+
+    # Requests with no routed flow are decided straight off the HR queues, scoped as those queues decide them.
+    def queue_count
+      leave = ApprovalFlow.for(LeaveRequest.name) ? 0 : decidable(LeaveRequest, "leave.approve")
+      leave + decidable(CompOffRequest, "leave.approve") + decidable(RegularizationRequest, "attendance.manage")
+    end
+
+    def decidable(model, key) = hr_scope(model.pending, key).where.not(user_id: hr_current_user.id).count
 
     # Last week's days that still need a fix (absent, no check-out, flagged), minus those with a pending ticket.
     def attention_days
