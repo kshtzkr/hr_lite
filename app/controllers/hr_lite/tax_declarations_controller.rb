@@ -5,6 +5,8 @@ module HrLite
   class TaxDeclarationsController < ApplicationController
     def show
       @declaration = current_declaration || build_declaration
+      # A saved draft holds only its claims; the rest still need a line to fill.
+      fill_missing_sections(@declaration)
       @regime = @declaration.regime
     end
 
