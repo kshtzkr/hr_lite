@@ -8,9 +8,9 @@
   <%= render "hr_lite/holidays/next_holiday" %>
 
   <section class="hrl-card">
-    <h2 class="hrl-card__title">Out today</h2>
-    <%= render "hr_lite/leave_requests/out_list", leaves: @out_today, empty: "Everyone's in today." %>
-    <a class="hrl-small" href="<%= hr_lite.team_path %>">Team board</a>
+    <h2 class="hrl-card__title">On leave this week</h2>
+    <%= render "hr_lite/leave_requests/out_list", leaves: @out_week, empty: "Nobody is on leave this week." %>
+    <a class="hrl-card__link" href="<%= hr_lite.team_path %>">Team board</a>
   </section>
 
   <section class="hrl-card">

@@ -277,8 +277,9 @@ the audit row is the trail. Older days, off days, the third fix of a week, a cha
 to a real punch, a day HR already regularized or rejected, or a fix that cannot
 apply (no check-in that day) stay ordinary tickets for HR.
 
-Home has an "Out today" card: everyone on approved leave today, with the leave's
-dates, so the team knows who is away and until when. The leave type is not shown.
+Home has an "On leave this week" card: everyone with approved leave in the current
+Mon–Sun week, with the leave's dates, so the team knows who is away and until when.
+It says nothing about attendance, and the leave type is not shown.
 
 ### Holidays and calendar
 
