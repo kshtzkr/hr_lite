@@ -31,6 +31,8 @@ RSpec.describe "Admin attendances", type: :request do
       get "/hr/admin/attendances"
 
       expect(response.body).to include("Asha").and include("Flagged").and include("No punch")
+      expect(response.body).to include("Flagged</span> <span class=\"hrl-small\">Check-in without GPS (denied)</span>")
+        .and include(%(aria-label="Previous day, #{(Date.current - 1).strftime('%A %-d %B')}"))
     end
 
     it "walks to other dates and falls back on garbage" do
