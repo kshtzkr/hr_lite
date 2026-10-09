@@ -77,6 +77,14 @@ RSpec.describe "Admin leave management", type: :request do
       expect(response.body).to include("used</span>")
     end
 
+    it "labels each balance cell so the matrix stacks on phones" do
+      type
+      employee
+      get "/hr/admin/leave_balances", params: { year: 2027 }
+      expect(response.body).to include(%(data-label="#{type.code}")).and include("hrl-table--stack")
+      expect(response.body).to match(%r{<thead>.*<th class="hrl-num">#{type.code}</th>.*</thead>}m)
+    end
+
     it "adjusts with a note and audits" do
       type # materialize the audited leave type outside the counted block
       expect {

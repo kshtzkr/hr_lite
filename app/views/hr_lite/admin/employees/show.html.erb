@@ -87,15 +87,15 @@
     <h2 class="hrl-card__title">Salary structures</h2>
     <% if @structures.any? %>
       <div class="hrl-table-wrap">
-        <table class="hrl-table">
+        <table class="hrl-table hrl-table--stack">
           <thead><tr><th>Effective</th><th class="hrl-num">Basic</th><th class="hrl-num">Gross</th><th></th></tr></thead>
           <tbody>
             <% @structures.each do |structure| %>
               <tr>
-                <td><%= structure.effective_from.strftime("%b %Y") %></td>
-                <td class="hrl-num"><%= hrl_money(structure.basic) %></td>
-                <td class="hrl-num"><%= hrl_money(structure.monthly_gross) %></td>
-                <td><a class="hrl-small" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
+                <td data-label="Effective"><%= structure.effective_from.strftime("%b %Y") %></td>
+                <td data-label="Basic" class="hrl-num"><%= hrl_money(structure.basic) %></td>
+                <td data-label="Gross" class="hrl-num"><%= hrl_money(structure.monthly_gross) %></td>
+                <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
               </tr>
             <% end %>
           </tbody>
