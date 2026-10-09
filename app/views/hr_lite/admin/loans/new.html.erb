@@ -12,7 +12,8 @@
     <div class="hrl-field">
       <%= f.label :user_id, "Employee" %>
       <%= f.select :user_id, options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] },
-                                                @loan.user_id) %>
+                                                @loan.user_id),
+                   {}, data: { hrl_filter: "Type a name to filter" } %>
     </div>
     <div class="hrl-field">
       <%= f.label :principal, "Amount lent (₹)" %>

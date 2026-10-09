@@ -6,7 +6,8 @@
       <div class="hrl-field">
         <%= f.label :user_id, "Existing staff member" %>
         <%= f.select :user_id, HrLite.employees.map { |u| [ HrLite.display_name(u), u.id ] },
-                     include_blank: "— onboard a brand-new person below —" %>
+                     { include_blank: "— onboard a brand-new person below —" },
+                     data: { hrl_filter: "Type a name to filter" } %>
       </div>
       <fieldset class="hrl-card">
         <legend class="hrl-card__title">New login (onboarding)</legend>
@@ -51,7 +52,8 @@
       <% end %>
       <%= f.select :manager_id,
                    candidates.map { |u| [ HrLite.display_name(u), u.id ] },
-                   include_blank: "— nobody (top of the org) —" %>
+                   { include_blank: "— nobody (top of the org) —" },
+                   data: { hrl_filter: "Type a name to filter" } %>
     </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
     <div class="hrl-field"><%= f.label :work_location %><%= f.text_field :work_location %></div>

@@ -329,6 +329,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
   background: var(--hrl-card); color: var(--hrl-ink);
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
+.hrl-filter { appearance: none; margin-bottom: var(--hrl-gap-target); } /* select_filter.js search box above its select */
 .hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: var(--hrl-target); }
 .hrl-field--check input {
   width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
