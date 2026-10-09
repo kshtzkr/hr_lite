@@ -26,28 +26,38 @@
     <span class="hrl-badge"><%= @run.status.humanize %></span>
     <%# `processing` is offered too: a run stranded there by a killed process
         would otherwise have no control at all and block that month forever. %>
-    <% if @run.draft? || @run.review? || @run.processing? %>
+    <% manager = hr_can?("payroll.manage", scope: :all) %>
+    <% if manager && (@run.draft? || @run.review? || @run.processing?) %>
       <%= button_to @run.draft? ? "Compute" : "Recompute", hr_lite.compute_admin_payroll_run_path(@run),
-                    method: :post, class: "hrl-btn hrl-btn--primary" %>
+                    method: :post, class: "hrl-btn" %>
     <% end %>
-    <% if @run.review? %>
-      <%= button_to "Finalize", hr_lite.finalize_admin_payroll_run_path(@run), method: :post, class: "hrl-btn" %>
+    <% if @run.review? && hr_can?("payroll.approve", scope: :all) && @run.first_approved_by_id != hr_current_user.id %>
+      <%= button_to @run.first_approved_by_id ? "Approve and publish" : "Approve", hr_lite.approve_admin_payroll_run_path(@run),
+                    method: :post, class: "hrl-btn hrl-btn--primary",
+                    form: { data: { turbo_confirm: @run.first_approved_by_id ? "Approve #{@run.label}? This finalizes the run and publishes the slips." : "Approve #{@run.label}?" } } %>
     <% end %>
-    <% if @run.finalized? %>
+    <% if manager && @run.finalized? %>
       <%= button_to "Unlock", hr_lite.unlock_admin_payroll_run_path(@run), method: :post, class: "hrl-btn" %>
       <%= button_to "Publish to employees", hr_lite.publish_admin_payroll_run_path(@run), method: :post,
                     class: "hrl-btn hrl-btn--primary",
                     form: { data: { turbo_confirm: "Publish #{@run.label}? Employees will be notified." } } %>
     <% end %>
-    <% if @slips.any? %>
+    <% if @slips.any? && hr_can?("payroll.export", scope: :all) %>
       <a class="hrl-btn" href="<%= hr_lite.register_admin_payroll_run_path(@run, format: :csv) %>">Register CSV</a>
     <% end %>
-    <% if @run.draft? %>
+    <% if manager && @run.draft? %>
       <%= button_to "Delete draft", hr_lite.admin_payroll_run_path(@run), method: :delete,
                     class: "hrl-btn hrl-btn--danger",
                     form: { data: { turbo_confirm: "Delete this draft run?" } } %>
     <% end %>
   </div>
+  <p class="hrl-small hrl-muted hrl-mt">
+    <% if @run.review? %>
+      <%= @run.first_approved_by ? "Approved by #{hr_display_name(@run.first_approved_by)} on #{@run.first_approved_at.strftime('%-d %b')} — one more approver (HR or Super Admin) publishes it." : "Needs two approvals (HR and Super Admin). If nobody approves by the 3rd, a run with no blocking warnings is approved automatically." %>
+    <% elsif @run.auto_approved_at %>
+      Approved automatically on <%= @run.auto_approved_at.strftime("%-d %b") %> — nobody had approved it by the 3rd.
+    <% end %>
+  </p>
 </section>
 
 <section class="hrl-card">

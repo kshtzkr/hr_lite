@@ -6,10 +6,10 @@ RSpec.describe "Leadership settings", type: :request do
 
   before { HrLite.config.leadership_emails = [ "lead@x.test" ] }
 
-  describe "gating: policy screens are leadership-only" do
+  describe "gating: policy screens are for people who govern profiles (Leadership, and HR from 0.24.0)" do
     %w[/hr/admin/leave_types /hr/admin/office_locations /hr/admin/holidays /hr/admin/setting/edit].each do |path|
-      it "blocks admins from #{path}" do
-        sign_in admin
+      it "blocks managers from #{path}" do
+        sign_in user_with_roles(HrLite::Role::MANAGER)
         get path
         expect(response).to redirect_to("/hr/")
       end

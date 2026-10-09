@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "The money tier stands apart from leadership", type: :request do
   let(:employee) { create(:user, name: "Meera", email: "meera@example.com") }
   # Governs people and policy, but is NOT on the money list.
-  let(:leader) { create(:user, name: "Khushboo", email: "khushboo@example.com", admin: true) }
+  let(:leader) { create(:user, name: "Khushboo", email: "khushboo@example.com") }
   # On the money list only — the payroll operator who governs nothing else.
   let(:payroll_operator) { create(:user, name: "Dev", email: "dev@example.com") }
 

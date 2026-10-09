@@ -1,6 +1,9 @@
 module HrLite
   module Admin
     class PayrollRunsController < SuperadminController
+      # Approvers (HR) read runs and approve them without running payroll.
+      skip_before_action :require_money_access!, only: %i[index show approve]
+      before_action :require_approver_or_money!, only: %i[index show approve]
       # The register carries every bank account: its own key, not just payroll.manage.
       before_action -> { hr_require_permission!("payroll.export", scope: :all) }, only: :register
       def index
@@ -41,8 +44,8 @@ module HrLite
         transition { |run| run.compute!(actor: hr_current_user) && "Computed — review the slips." }
       end
 
-      def finalize
-        transition { |run| run.finalize!(actor: hr_current_user) && "Run finalized." }
+      def approve
+        transition { |run| run.approve!(actor: hr_current_user) && (run.published? ? "Second approval — run finalized and published." : "Approved — one more approver publishes it.") }
       end
 
       def unlock
@@ -74,12 +77,19 @@ module HrLite
 
       private
 
+      def require_approver_or_money!
+        return if hr_can?("payroll.manage", scope: :all)
+
+        hr_require_permission!("payroll.approve", scope: :all)
+      end
+
       def transition
         run = PayrollRun.find(params[:id])
         notice = yield(run)
         redirect_to admin_payroll_run_path(run), notice: notice
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_payroll_run_path(run), alert: "That step is not available from #{run.status}."
+      rescue ActiveRecord::RecordInvalid => e
+        alert = e.message.match?(/approver/) ? e.message.sub(/\AValidation failed: /, "").capitalize + "." : "That step is not available from #{run.status}."
+        redirect_to admin_payroll_run_path(run), alert: alert
       end
 
       def register_csv(run)

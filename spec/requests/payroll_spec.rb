@@ -11,12 +11,14 @@ RSpec.describe "Payroll over HTTP", type: :request do
 
   before { HrLite.config.leadership_emails = [ "lead@x.test" ] }
 
-  describe "leadership gating" do
-    it "blocks admins from payroll and employee profiles" do
+  describe "HR access" do
+    it "lets HR read and approve payroll and edit employees, but not run payroll" do
       sign_in admin
       get "/hr/admin/payroll_runs"
-      expect(response).to redirect_to("/hr/")
+      expect(response).to have_http_status(:ok)
       get "/hr/admin/employees"
+      expect(response).to have_http_status(:ok)
+      post "/hr/admin/payroll_runs", params: { payroll_run: { period_month: "2027-06" } }
       expect(response).to redirect_to("/hr/")
     end
   end
@@ -37,7 +39,7 @@ RSpec.describe "Payroll over HTTP", type: :request do
 
       profile = HrLite::EmployeeProfile.last
       post "/hr/admin/employees/#{profile.id}/salary_structures", params: { salary_structure: {
-        effective_from: "2027-01-01", basic: "40000", hra: "20000", special_allowance: "15000",
+        effective_from: "2027-01-01", annual_ctc: "900000",
         pf_applicable: "1", esi_applicable: "1", pt_state: "none"
       } }
       expect(HrLite::SalaryStructure.count).to eq(1)
@@ -45,35 +47,31 @@ RSpec.describe "Payroll over HTTP", type: :request do
       expect(response.body).to include("EMP000001")
     end
 
-    it "fills the lines from an annual CTC without saving, then saves what was shown" do
+    it "saves a structure from the CTC alone, and refuses one without it" do
       profile = create(:employee_profile)
       lines = { effective_from: "2027-01-01", pf_applicable: "1", esi_applicable: "0", pt_state: "none" }
-      post "/hr/admin/employees/#{profile.id}/salary_structures",
-           params: { fill_from_ctc: "Fill from CTC", salary_structure: lines.merge(annual_ctc: "420000") }
-      expect(response.body).to include("Filled from CTC").and include('value="8700.0"')
-      expect(HrLite::SalaryStructure.count).to eq(0)
-
-      post "/hr/admin/employees/#{profile.id}/salary_structures",
-           params: { salary_structure: lines.merge(basic: "17500", hra: "7000", special_allowance: "8700") }
-      structure = HrLite::SalaryStructure.sole
-      expect(structure.special_allowance).to eq(8700)
-
-      patch "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}",
-            params: { fill_from_ctc: "Fill from CTC", salary_structure: { annual_ctc: "420000", other_earnings: "20000" } }
+      post "/hr/admin/employees/#{profile.id}/salary_structures", params: { salary_structure: lines }
       expect(response).to have_http_status(:unprocessable_entity)
-      expect(response.body).to include("CTC is too low for this split")
-      expect(structure.reload.other_earnings).to be_nil
+      expect(response.body).to include("Annual ctc can&#39;t be blank")
+
+      post "/hr/admin/employees/#{profile.id}/salary_structures",
+           params: { salary_structure: lines.merge(annual_ctc: "420000", basic: "99999") }
+      structure = HrLite::SalaryStructure.sole
+      expect([ structure.basic, structure.special_allowance, structure.annual_ctc ]).to eq([ 17_500, 7858, 420_000 ])
+
+      get "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}/edit"
+      expect(response.body).to include("Employer Gratuity", "₹35,000.00")
     end
 
     it "splits a CTC on the rate card of the month it takes effect" do
       allow(HrLite::StatutoryRateCard).to receive(:for).and_wrap_original do |original, month|
         month < Date.new(2028, 4, 1) ? original.call(month) : original.call(month).deep_merge(pf: { wage_ceiling: 25_000 })
       end
-      post "/hr/admin/employees/#{create(:employee_profile).id}/salary_structures", params: { fill_from_ctc: "Fill from CTC",
+      post "/hr/admin/employees/#{create(:employee_profile).id}/salary_structures", params: {
         salary_structure: { effective_from: "2028-04-01", annual_ctc: "420000", pf_applicable: "1", esi_applicable: "0", pt_state: "none" } }
 
       # Employer PF on the April card's ₹25,000 ceiling is ₹2,100, not today's ₹1,800.
-      expect(response.body).to include('value="8400.0"').and include("CTC ₹35,000.00 a month")
+      expect(HrLite::SalaryStructure.sole.special_allowance).to eq(7558)
     end
 
     it "re-renders invalid submissions" do
@@ -91,8 +89,8 @@ RSpec.describe "Payroll over HTTP", type: :request do
       get "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}/edit"
       expect(response.body).to include("Edit structure")
       patch "/hr/admin/employees/#{profile.id}/salary_structures/#{structure.id}",
-            params: { salary_structure: { hra: "25000" } }
-      expect(structure.reload.hra).to eq(25000)
+            params: { salary_structure: { annual_ctc: "480000", metro: "1" } }
+      expect([ structure.reload.basic, structure.hra ]).to eq([ 20_000, 10_000 ])
     end
 
     it "shows masked PII on the employee card and lists staff without profiles" do
@@ -123,11 +121,18 @@ RSpec.describe "Payroll over HTTP", type: :request do
       patch "/hr/admin/salary_slips/#{slip.id}", params: { salary_slip: { lop_override: "0" } }
       expect(slip.reload.payable_days).to eq(30)
 
-      post "/hr/admin/payroll_runs/#{run.id}/finalize"
-      expect(run.reload).to be_finalized
+      post "/hr/admin/payroll_runs/#{run.id}/approve"
+      expect(run.reload.first_approved_by_id).to eq(leader.id)
+      post "/hr/admin/payroll_runs/#{run.id}/approve"
+      expect(flash[:alert]).to eq("Needs a second, different approver.")
 
-      post "/hr/admin/payroll_runs/#{run.id}/publish"
+      sign_in admin # HR: the second approver finalizes and publishes
+      get "/hr/admin/payroll_runs/#{run.id}"
+      expect(response.body).to include("Approve and publish")
+      post "/hr/admin/payroll_runs/#{run.id}/approve"
       expect(run.reload).to be_published
+      expect(flash[:notice]).to eq("Second approval — run finalized and published.")
+      sign_in leader
 
       get "/hr/admin/payroll_runs/#{run.id}/register.csv"
       expect(response.body).to include("Net pay").and include(profile.employee_code)

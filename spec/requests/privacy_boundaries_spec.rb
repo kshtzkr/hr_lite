@@ -49,9 +49,7 @@ RSpec.describe "Privacy boundaries", type: :request do
     expect(response.body).to include("•••• 7888")
   end
 
-  it "keeps the admin tier out of payroll (leadership-only money)" do
-    admin = create(:user, admin: true)
-    sign_in admin
+  it "keeps plain employees out of payroll and employee pages" do
     get "/hr/admin/payroll_runs"
     expect(response).to have_http_status(:redirect)
 

@@ -16,7 +16,7 @@ module HrLite
       return unless run.draft? && run.salary_slips.none?
 
       run.compute!(actor: nil)
-      payroll = HrLite.users_holding("payroll.manage", scope: :all).to_a
+      payroll = HrLite.users_holding("payroll.approve", scope: :all).to_a | HrLite.users_holding("payroll.manage", scope: :all).to_a
       Notifications.publish(
         "payroll.draft_ready",
         title: "Payroll #{run.label} computed from attendance — #{run.salary_slips.count} slips await review",

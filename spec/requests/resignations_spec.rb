@@ -66,12 +66,12 @@ RSpec.describe "Resignations", type: :request do
       expect(bells.map { |b| b[:kind] }).to include("resignation.accepted")
     end
 
-    it "is leadership-only and pending-only" do
+    it "is for people who govern profiles only, and pending-only" do
       sign_in employee
       post "/hr/resignation", params: { resignation: { proposed_last_day: Date.current + 30 } }
       resignation = HrLite::Resignation.last
 
-      sign_in create(:user, :admin)
+      sign_in user_with_roles(HrLite::Role::MANAGER)
       post "/hr/admin/resignations/#{resignation.id}/accept"
       expect(response).to redirect_to("/hr/")
       expect(resignation.reload).to be_pending

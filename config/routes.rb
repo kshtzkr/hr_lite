@@ -123,7 +123,7 @@ HrLite::Engine.routes.draw do
     resources :payroll_runs, only: %i[index show new create destroy] do
       member do
         post :compute
-        post :finalize
+        post :approve
         post :unlock
         post :publish
         get :register

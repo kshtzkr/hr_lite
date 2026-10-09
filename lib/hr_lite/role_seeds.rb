@@ -36,8 +36,8 @@ module HrLite
         grants: {
           "leave.request" => "self", "leave.view" => "all", "leave.approve" => "all",
           "leave.manage" => "all", "attendance.view" => "all", "attendance.manage" => "all",
-          "profile.view" => "all", "payroll.view" => "self",
-          "appraisal.view" => "self", "resignation.view" => "all",
+          "profile.view" => "all", "payroll.view" => "all", "payroll.approve" => "all",
+          "salary.view" => "all", "salary.manage" => "all", "profile.manage" => "all", "appraisal.view" => "self", "resignation.view" => "all",
           "document.view" => "all", "tax.view" => "self",
           "expense.claim" => "self", "benefit.view" => "all", "benefit.manage" => "all",
           "hr_request.raise" => "self", "hr_request.manage" => "all", "policy.view" => "all",

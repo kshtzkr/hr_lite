@@ -10,9 +10,15 @@ module HrLite
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
 
-    encrypted_money :basic, :hra, :special_allowance, :other_earnings
-    # Typed on the form to fill the lines; CTC is always derived, never stored.
-    attribute :annual_ctc, :decimal
+    encrypted_money :basic, :hra, :special_allowance, :other_earnings, :annual_ctc
+
+    # Gratuity accrues at 15/26 days of Basic a year (4.81%), inside the CTC.
+    GRATUITY_RATE = BigDecimal("0.0481")
+
+    # The CTC is the input: saving one splits it, so no line is typed by hand.
+    before_validation :fill_from_ctc, if: -> { annual_ctc.present? }
+    # The admin form saves in this context: people only ever type the CTC.
+    validates :annual_ctc, presence: true, on: :ctc_form
 
     validates :effective_from, presence: true, uniqueness: { scope: :user_id }
     validates :basic, presence: true
@@ -49,7 +55,7 @@ module HrLite
       earnings, deductions, employer = [
         { "Basic" => basic, "HRA" => hra, "Special allowance" => special_allowance, "Other" => other_earnings },
         { "PF" => pf&.employee, "ESI" => esi.employee, "Professional tax" => pts.first },
-        { "PF" => pf && (pf.employer_eps + pf.employer_epf), "ESI" => esi.employer }
+        { "PF" => pf && (pf.employer_eps + pf.employer_epf), "ESI" => esi.employer, "Gratuity" => gratuity }
       ].map { |rows| rows.select { |_, amount| Money.d(amount).positive? } }
       monthly_ctc = gross + employer.values.sum(BigDecimal(0))
       in_hand = gross - deductions.values.sum(BigDecimal(0))
@@ -76,14 +82,22 @@ module HrLite
       (earlier || self).monthly_gross
     end
 
-    # Owner's split of annual_ctc: Basic 50% of the monthly CTC, HRA 40% of
-    # Basic, employer PF and ESI paid out of the CTC; Special takes the rest.
+    # Only a CTC-split structure carries gratuity in its CTC; older hand-typed
+    # ones never did, and their CTC must not move.
+    def gratuity
+      Money.round_rupee(Money.d(basic) * GRATUITY_RATE) if annual_ctc.present? && basic
+    end
+
+    # Owner's split of annual_ctc (the labour codes' 50% wage floor): Basic 50%
+    # of the monthly CTC, HRA 50% of Basic in a metro and 40% elsewhere,
+    # employer PF, ESI and gratuity paid out of the CTC; Special takes the rest.
     def fill_from_ctc(on: effective_from || Date.current)
       monthly_ctc = Money.round_rupee(Money.d(annual_ctc) / 12)
       self.basic = Money.round_rupee(monthly_ctc / 2)
-      self.hra = Money.round_rupee(basic * BigDecimal("0.4"))
+      self.hra = Money.round_rupee(basic * BigDecimal(metro ? "0.5" : "0.4"))
+      self.other_earnings = nil
       self.special_allowance = 0
-      rest = monthly_ctc - Money.d(breakup(on: on).dig(:employer, "PF"))
+      rest = monthly_ctc - Money.d(breakup(on: on).dig(:employer, "PF")) - Money.d(gratuity)
       # Employer ESI is a share of the gross beside it: gross + ESI = rest.
       gross = (rest / (1 + StatutoryRateCard.for(on.beginning_of_month)[:esi][:employer_rate])).floor
       self.special_allowance = gross - basic - hra - Money.d(other_earnings)

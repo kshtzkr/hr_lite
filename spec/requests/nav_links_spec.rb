@@ -106,9 +106,10 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
     it "tells the recorder why someone may be missing, and links the fix to whoever can make it" do
       sign_in hr
       get "/hr/admin/leave_requests/new"
+      # HR edits employee profiles too (0.24.0), so it is offered the fix directly.
       expect(response.body).to include('placeholder="Start typing a name or code…"')
         .and include("Only people with an HR profile are listed.")
-        .and include("Ask leadership to set up their HR profile.")
+        .and include("Set up their profile")
 
       sign_in user_with_roles(HrLite::Role::LEADERSHIP, name: "Lata")
       get "/hr/admin/leave_requests/new"

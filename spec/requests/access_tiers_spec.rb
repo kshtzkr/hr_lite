@@ -28,8 +28,8 @@ RSpec.describe "Access tiers", type: :request do
       expect(response).to redirect_to("/hr/")
     end
 
-    it "denies admins who are not leadership" do
-      sign_in admin
+    it "denies managers" do
+      sign_in user_with_roles(HrLite::Role::MANAGER)
       get "/hr/admin/audit_logs"
       expect(response).to redirect_to("/hr/")
     end
