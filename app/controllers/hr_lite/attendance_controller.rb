@@ -9,6 +9,7 @@ module HrLite
       @day_status = DayStatus.new(user: hr_current_user, range: @month.beginning_of_month..@month.end_of_month)
       @counts = @day_status.counts
       @counts[:absent] -= 1 if @month.all_month.cover?(Date.current) && @day_status.for(Date.current).kind == :absent
+      @pending_dates = RegularizationRequest.pending.where(user_id: hr_current_user.id, date: @month.all_month).pluck(:date).to_set
       # ?day= opens the day detail; garbage (parsed as today), other months and the future open nothing.
       day = parse_date_param(params[:day])
       @day = day if params[:day] == day.iso8601 && @month.all_month.cover?(day) && day <= Date.current

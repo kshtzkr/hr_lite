@@ -107,6 +107,21 @@ RSpec.describe "Attendance", type: :request do
         expect(card.text).to include("Pending").and include("10:00 – 19:00")
         expect(card.text).not_to include("Fix this day")
       end
+
+      it "marks a day with a pending ticket on the grid and keys it in the legend" do
+        create(:regularization_request, user: user, date: Date.new(2026, 10, 6))
+        get "/hr/attendance", params: { month: "2026-10" }
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="6 Oct, Absent, fix pending"]')
+        expect(cell["class"].split).to include("hrl-mgrid__day--pending")
+        expect(response.body).to include("Fix pending</span>")
+      end
+
+      it "does not mark a day whose ticket was approved or rejected" do
+        create(:regularization_request, user: user, date: Date.new(2026, 10, 5), status: "approved")
+        create(:regularization_request, user: user, date: Date.new(2026, 10, 6), status: "rejected")
+        get "/hr/attendance", params: { month: "2026-10" }
+        expect(Nokogiri::HTML(response.body).css(".hrl-mgrid__day.hrl-mgrid__day--pending")).to be_empty
+      end
     end
 
     it "names the month arrows by month and year" do

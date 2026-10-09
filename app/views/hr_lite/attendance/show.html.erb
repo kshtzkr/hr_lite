@@ -18,7 +18,7 @@
       <% end %>
     </div>
   </div>
-  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status,
+  <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status, pending_dates: @pending_dates,
              link_builder: ->(d) { hr_lite.attendance_path(month: @month.strftime("%Y-%m"), day: d.iso8601, anchor: "day") if d <= Date.current } %>
   <p class="hrl-small hrl-muted hrl-mt">Forgot to check in or out on some day?
     <a href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>
