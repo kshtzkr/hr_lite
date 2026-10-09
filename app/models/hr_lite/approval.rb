@@ -14,6 +14,11 @@ module HrLite
     scope :pending, -> { where(status: "pending") }
     scope :at_position, ->(position) { where(position: position) }
     scope :recent_first, -> { order(created_at: :desc) }
+    # Rows addressed to `user`, plus rows of anybody who has delegated to them while away.
+    scope :pending_for, lambda { |user|
+      standing_in_for = ApprovalDelegation.live_on(Date.current).where(to_user_id: user.id).pluck(:from_user_id)
+      pending.where(approver_id: [ user.id, *standing_in_for ])
+    }
 
     STATUSES.each { |s| define_method("#{s}?") { status == s } }
 

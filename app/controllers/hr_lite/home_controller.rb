@@ -6,6 +6,7 @@ module HrLite
                               .includes(:user).where(user_id: HrLite.active_employees.map(&:id))
                               .sort_by { |leave| hr_display_name(leave.user).downcase }
       @attention = attention_days
+      @waiting = Approval.pending_for(hr_current_user).count
       @mine_pending = [ LeaveRequest.includes(:leave_type), RegularizationRequest, CompOffRequest ]
                       .flat_map { |scope| scope.pending.where(user_id: hr_current_user.id).order(created_at: :desc).limit(5) }
                       .max_by(5, &:created_at)
