@@ -334,6 +334,7 @@ RSpec.describe "Loans over HTTP", type: :request do
 
       get "/hr/admin/loans/new"
       expect(response).to have_http_status(:ok)
+      expect(Nokogiri::HTML(response.body).css("select[data-hrl-filter]").map { |s| s["name"] }).to eq([ "loan[user_id]" ])
 
       get "/hr/admin/loans/#{loan.id}"
       expect(response.body).to include("5,000")

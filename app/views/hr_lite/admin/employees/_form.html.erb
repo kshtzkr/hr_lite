@@ -1,13 +1,12 @@
 <section class="hrl-card">
   <%= form_with model: profile, url: url, method: method, scope: :employee_profile, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: profile %>
-    <%= f.hidden_field :user_id %>
     <% if profile.new_record? && profile.user_id.blank? %>
       <div class="hrl-field">
         <%= f.label :user_id, "Existing staff member" %>
         <%= f.select :user_id, HrLite.employees.map { |u| [ HrLite.display_name(u), u.id ] },
                      { include_blank: "— onboard a brand-new person below —" },
-                     data: { hrl_filter: "Type a name to filter" } %>
+                     data: { hrl_filter: "Filter existing staff" } %>
       </div>
       <fieldset class="hrl-card">
         <legend class="hrl-card__title">New login (onboarding)</legend>
@@ -28,6 +27,8 @@
             password. Fill it only if you want to hand a password over yourself.</p>
         </div>
       </fieldset>
+    <% else %>
+      <%= f.hidden_field :user_id %>
     <% end %>
     <% if profile.persisted? %>
       <div class="hrl-field">
@@ -53,7 +54,7 @@
       <%= f.select :manager_id,
                    candidates.map { |u| [ HrLite.display_name(u), u.id ] },
                    { include_blank: "— nobody (top of the org) —" },
-                   data: { hrl_filter: "Type a name to filter" } %>
+                   data: { hrl_filter: "Filter Reports to" } %>
     </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
     <div class="hrl-field"><%= f.label :work_location %><%= f.text_field :work_location %></div>

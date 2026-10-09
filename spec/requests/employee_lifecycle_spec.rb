@@ -29,6 +29,16 @@ RSpec.describe "Employee lifecycle", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
       expect(User.find_by(email: "asha@example.com")).to be_nil
     end
+
+    # Each filter box is named for its field, and the staff label binds to the select, not a hidden twin.
+    it "marks both staff pickers for type-to-filter, each with its own label" do
+      get "/hr/admin/employees/new"
+      page = Nokogiri::HTML(response.body)
+
+      expect(page.css("select[data-hrl-filter]").map { |s| [ s["name"], s["data-hrl-filter"] ] })
+        .to eq([ [ "employee_profile[user_id]", "Filter existing staff" ], [ "employee_profile[manager_id]", "Filter Reports to" ] ])
+      expect(page.css("#employee_profile_user_id").map(&:name)).to eq([ "select" ])
+    end
   end
 
   describe "the reporting line" do
