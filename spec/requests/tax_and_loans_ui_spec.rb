@@ -173,6 +173,18 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(response.body).to include("80D")
     end
 
+    it "reopens a saved draft with every section still on the form" do
+      patch "/hr/tax_declaration", params: {
+        tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+          "0" => { section: "80c", declared_amount: "1000" }
+        } }
+      }
+      get "/hr/tax_declaration"
+
+      sections = Nokogiri::HTML(response.body).css("input[name$='[section]']").map { |i| i["value"] }
+      expect(sections).to match_array(HrLite::TaxDeclarationItem::SECTIONS)
+    end
+
     it "never shows somebody else's" do
       other = user_with_roles(HrLite::Role::EMPLOYEE)
       HrLite::TaxDeclaration.create!(user_id: other.id, regime: "old",

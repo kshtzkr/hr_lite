@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Team attendance: the day arrows are heard as "Previous day, Wednesday 7 October" and "Next day, …", a flagged row prints its reason beside the badge instead of in a tooltip, and "Edit / half day" is a 44px link (was 86x16) that opens the employee's month at the fix form.
 - Attendance month grid: today with no punch yet shows "Today" with an accent ring instead of a red "A", and the Absent count on My attendance and an employee's admin month leaves it out. Every today cell gets the ring. Only the views change: `DayStatus` and `AttendanceSummary`, and so payroll, still count an unpunched today as absent.
 - A double tap on a submit button sends one request: the button locks (dimmed, `aria-busy`) once the form submits, stays live when a confirm prompt is cancelled, and unlocks when Back restores the page. Punch forms keep their own location flow.
+- Tax declaration: reopening a saved declaration shows a line for every section again (80C, 80D, NPS, home-loan interest, HRA, other), not only the sections already claimed, so a claim can be added in another section after the first save.
 
 ## [0.21.3] - 2026-10-09
 
