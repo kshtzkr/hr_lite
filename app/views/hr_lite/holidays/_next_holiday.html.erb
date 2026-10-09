@@ -1,12 +1,15 @@
 <section class="hrl-card">
-  <h2 class="hrl-card__title">Next holiday</h2>
-  <% holiday = HrLite::Holiday.company_wide.upcoming.first %>
-  <% if holiday %>
-    <p><strong><%= holiday.name %></strong><br>
-      <span class="hrl-muted hrl-small"><%= holiday.date.strftime("%A, %d %B %Y") %>
-        (<%= (holiday.date - Date.current).to_i %> days away)</span></p>
+  <h2 class="hrl-card__title">Upcoming holidays</h2>
+  <% holidays = HrLite::Holiday.company_wide.upcoming.where(date: ..Date.current + 60).limit(3).to_a %>
+  <% if holidays.any? %>
+    <div class="hrl-feed">
+      <% holidays.each do |holiday| %>
+        <% days = (holiday.date - Date.current).to_i %>
+        <div class="hrl-feed__item"><div class="hrl-feed__body"><%= holiday.date.strftime("%a %-d %b") %> · <%= holiday.name %> · <%= days.zero? ? "today" : "in #{pluralize(days, "day")}" %></div></div>
+      <% end %>
+    </div>
   <% else %>
-    <p class="hrl-muted hrl-small">No upcoming holidays on the calendar.</p>
+    <p class="hrl-muted hrl-small">No holidays in the next 2 months.</p>
   <% end %>
-  <a class="hrl-small" href="<%= hr_lite.calendar_path %>">Company calendar</a>
+  <a class="hrl-card__link" href="<%= hr_lite.holidays_path %>">All holidays</a>
 </section>
