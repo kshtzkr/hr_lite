@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.1] - 2026-10-10
+
+No migrations.
+
 ### Added
 - An employee's admin month (Team attendance → name) lists "Where they punched": each day's check-in and check-out time and place, a Map link that opens the exact spot in Google Maps, and how far apart the two were (warning badge over 500 m).
 
