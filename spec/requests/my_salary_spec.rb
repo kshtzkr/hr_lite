@@ -24,6 +24,28 @@ RSpec.describe "My salary on the slips page", type: :request do
     expect(response.body).not_to include("99,999")
   end
 
+  context "with a current structure" do
+    before do
+      create(:salary_structure, lines.merge(user: user, effective_from: Date.new(2026, 4, 1),
+                                            basic: 17_500, hra: 7000, special_allowance: 8700))
+      sign_in user
+      get "/hr/salary_slips"
+    end
+
+    it "lists the slips before the salary card" do
+      expect(response.body.index(">Slips</h2>")).to be < response.body.index(">My salary</h2>")
+    end
+
+    it "keeps the structure amounts inside a closed details" do
+      main = Nokogiri::HTML(response.body).at_css("main")
+      details = main.at_css("details")
+      expect(details["open"]).to be_nil
+      expect(details.text).to include("₹33,200")
+      details.remove
+      expect(main.text).not_to include("₹33,200")
+    end
+  end
+
   it "sums a year of professional tax, February top-up included" do
     travel_to Date.new(2027, 2, 10)
     HrLite::ProfessionalTaxSlab.create!(state: "maharashtra", effective_from: Date.new(2025, 4, 1),
