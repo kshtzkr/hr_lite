@@ -173,6 +173,7 @@ module HrLite
 
       [ [ :check_in_at, check_in_at ], [ :check_out_at, check_out_at ] ].each do |attr, time|
         next unless time
+        next if attr == :check_out_at && check_in_at && time.to_date == date + 1 && time < check_in_at + 1.day # night shift
 
         errors.add(attr, "must be on #{date.strftime('%d %b')}") unless time.to_date == date
       end

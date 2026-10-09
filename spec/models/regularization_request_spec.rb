@@ -41,8 +41,8 @@ RSpec.describe HrLite::RegularizationRequest do
       expect(request.errors[:base].join).to include("check-in time")
     end
 
-    it "pins the times to the ticket's date" do
-      request = build_request(check_out_at: (tuesday + 1).in_time_zone.change(hour: 2))
+    it "pins the times to the ticket's date (a night shift may end before the next day's check-in time)" do
+      request = build_request(check_out_at: (tuesday + 1).in_time_zone.change(hour: 11))
       expect(request).not_to be_valid
       expect(request.errors[:check_out_at].join).to include("must be on")
     end
