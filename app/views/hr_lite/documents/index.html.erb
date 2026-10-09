@@ -26,7 +26,7 @@
             <tr>
               <td data-label="Document">
                 <strong><%= doc.title %></strong>
-                <div class="hrl-small hrl-muted"><%= doc.category.humanize %></div>
+                <div class="hrl-small hrl-muted"><%= doc.category.humanize.sub(/\APan\z/, "PAN") %></div>
               </td>
               <td data-label="Expires">
                 <%= doc.expires_on ? doc.expires_on.strftime("%d %b %Y") : "—" %>
@@ -62,7 +62,7 @@
     <div class="hrl-field">
       <%= f.label :category, id: "hrl-doc-category", for: nil %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-doc-category">
-        <% (HrLite::Document::SENSITIVE_CATEGORIES.map { |c| [ c.humanize, c ] } +
+        <% (HrLite::Document::SENSITIVE_CATEGORIES.map { |c| [ c.humanize.sub(/\APan\z/, "PAN"), c ] } +
             [ [ "Offer letter", "offer_letter" ], [ "Certificate", "certificate" ], [ "Other", "other" ] ]).each do |label, value| %>
           <label><%= f.radio_button :category, value, required: true %><span><%= label %></span></label>
         <% end %>

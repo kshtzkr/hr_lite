@@ -68,6 +68,7 @@ RSpec.describe "Documents over HTTP", type: :request do
 
       expect(radios.size).to eq(7)
       expect(radios.none? { |r| r["checked"] }).to be(true)
+      expect(radios.map { |r| r.parent.text.strip }.first(2)).to eq([ "Aadhaar", "PAN" ])
     end
 
     it "reopens the upload form with errors when no category is picked" do

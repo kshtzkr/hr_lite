@@ -209,6 +209,7 @@ RSpec.describe "Employee self-service", type: :request, no_legacy_bridge: true d
       radios = Nokogiri::HTML(response.body).css('input[type=radio][name="hr_request[category]"]')
       expect(radios.map { |r| r["value"] }).to eq(HrLite::HrRequest::CATEGORIES)
       expect(radios.none? { |r| r["checked"] }).to be(true)
+      expect(radios.to_a.last(2).map { |r| r.parent.text.strip }).to eq([ "ID card", "Other" ])
 
       post "/hr/hr_requests", params: { hr_request: { category: "payroll_query", subject: "PF query" } }
       expect(HrLite::HrRequest.last.category).to eq("payroll_query")

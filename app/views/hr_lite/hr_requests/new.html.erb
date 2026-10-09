@@ -9,7 +9,7 @@
       <%= f.label :category, "What is this about", id: "hrl-request-category", for: nil %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-request-category">
         <% HrLite::HrRequest::CATEGORIES.each do |c| %>
-          <label><%= f.radio_button :category, c, required: true %><span><%= c.humanize %></span></label>
+          <label><%= f.radio_button :category, c, required: true %><span><%= HrLite::HrRequest.category_label(c) %></span></label>
         <% end %>
       </div>
     </div>
