@@ -20,6 +20,36 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).to include("Leave request submitted.").and include("05 Jul – 06 Jul")
     end
 
+    it "treats a blank To as a one-day request" do
+      post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: "" } }
+      expect(HrLite::LeaveRequest.last).to have_attributes(start_date: monday, end_date: monday)
+    end
+
+    it "pre-checks the type and fills From from the query, with Full day checked" do
+      get "/hr/leave_requests/new", params: { leave_type_id: type.id, date: "2027-07-05" }
+      form = Nokogiri::HTML(response.body)
+      expect(form.at_css("input[name='leave_request[leave_type_id]'][value='#{type.id}']")["checked"]).to be_present
+      expect(form.at_css("input[name='leave_request[start_date]']")["value"]).to eq("2027-07-05")
+      expect(form.at_css("input[name='leave_request[end_date]']")["value"]).to be_nil
+      expect(form.at_css("input[name='leave_request[half_day_part]'][value='']")["checked"]).to be_present
+      expect(response.body).to include("Casual · 12 left")
+    end
+
+    it "still rejects a half day that spans two dates" do
+      post "/hr/leave_requests", params: {
+        leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1, half_day_part: "first" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("only for single-day requests")
+    end
+
+    it "keeps the probation cap and its message" do
+      create(:employee_profile, user: user, date_of_joining: Date.new(2027, 6, 1), probation_until: Date.new(2027, 11, 30))
+      post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("During probation only 1 day of leave a month is allowed")
+    end
+
     it "re-renders with errors on invalid input" do
       post "/hr/leave_requests", params: {
         leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday - 1 }

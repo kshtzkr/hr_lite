@@ -151,6 +151,9 @@ module HrLite
       HrLite::AmountInWords.words(amount)
     end
 
+    # Day counts without a trailing ".0": 1.0 -> "1", 0.5 -> "0.5".
+    def hrl_days(days) = number_with_precision(days, precision: 1, strip_insignificant_zeros: true)
+
     def hrl_duration(seconds)
       return "\u2014" if seconds.nil?
 

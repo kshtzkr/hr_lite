@@ -10,7 +10,9 @@
         </span>
       <% end %>
     </div>
-    <a class="hrl-btn hrl-mt" href="<%= hr_lite.new_leave_request_path %>">Apply for leave</a>
+    <% unless local_assigns[:compact] %>
+      <a class="hrl-btn hrl-mt" href="<%= hr_lite.new_leave_request_path %>">Apply for leave</a>
+    <% end %>
   <% else %>
     <p class="hrl-muted hrl-small">No leave types configured yet.</p>
   <% end %>

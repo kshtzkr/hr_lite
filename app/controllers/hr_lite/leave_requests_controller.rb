@@ -12,12 +12,14 @@ module HrLite
     end
 
     def new
-      @request = LeaveRequest.new(start_date: Date.current, end_date: Date.current)
+      @request = LeaveRequest.new(start_date: (parse_date_param(params[:date]) if params[:date].present?),
+                                  leave_type_id: params[:leave_type_id])
       @balances = balance_cards
     end
 
     def create
       @request = LeaveRequest.new(request_params.merge(user_id: hr_current_user.id))
+      @request.end_date ||= @request.start_date # a blank "To" means one day
       if @request.save
         # Say it now, not on the payslip: days past the balance are unpaid.
         short = @request.days_beyond_balance

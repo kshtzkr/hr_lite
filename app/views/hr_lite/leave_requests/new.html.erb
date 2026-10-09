@@ -4,27 +4,36 @@
   <h1 class="hrl-page__title">Apply for leave</h1>
 </div>
 
-<%= render "hr_lite/leave_requests/balance_chips" %>
-<p class="hrl-small hrl-muted">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.</p>
+<%= render "hr_lite/leave_requests/balance_chips", compact: true %>
 
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.leave_requests_path, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <div class="hrl-field">
-      <%= f.label :leave_type_id, "Type" %>
-      <%= f.collection_select :leave_type_id, HrLite::LeaveType.active, :id, :name %>
+      <%= f.label :leave_type_id, "Type", id: "hrl-leave-type" %>
+      <% left = @balances.index_by(&:leave_type_id) %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-leave-type">
+        <% HrLite::LeaveType.active.each_with_index do |type, i| %>
+          <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><%= " · Unpaid" unless type.paid %></span></label>
+        <% end %>
+      </div>
+      <p class="hrl-hint">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.</p>
     </div>
     <div class="hrl-field">
       <%= f.label :start_date, "From" %>
       <%= f.date_field :start_date, required: true %>
     </div>
     <div class="hrl-field">
-      <%= f.label :end_date, "To" %>
+      <%= f.label :end_date, "To (leave blank for one day)" %>
       <%= f.date_field :end_date %>
     </div>
     <div class="hrl-field">
-      <%= f.label :half_day_part, "Day" %>
-      <%= f.select :half_day_part, HrLite::DAY_PARTS %>
+      <%= f.label :half_day_part, "Day", id: "hrl-day-part" %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-day-part">
+        <% HrLite::DAY_PARTS.each do |label, value| %>
+          <label><%= f.radio_button :half_day_part, value %><span><%= label %></span></label>
+        <% end %>
+      </div>
     </div>
     <div class="hrl-field">
       <%= f.label :reason, "Reason (optional)" %>
