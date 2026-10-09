@@ -33,7 +33,7 @@
     <% if profile.persisted? %>
       <div class="hrl-field">
         <%= f.label :employee_code %>
-        <input class="hrl-input" type="text" value="<%= profile.employee_code %>" disabled>
+        <input class="hrl-input" type="text" id="employee_profile_employee_code" value="<%= profile.employee_code %>" disabled>
         <p class="hrl-hint">System-assigned; the prefix lives under Settings.</p>
       </div>
     <% else %>

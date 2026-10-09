@@ -87,6 +87,8 @@ RSpec.describe "Payroll screens and edge branches", type: :request do
 
     get "/hr/admin/employees/#{profile.id}/edit"
     expect(response.body).to include("Edit #{profile.employee_code}")
+    # The read-only code carries the id its "Employee code" label points at.
+    expect(Nokogiri::HTML(response.body).at_css("#employee_profile_employee_code[disabled]")["value"]).to eq(profile.employee_code)
 
     # employee_code is system-assigned and no longer accepted from forms.
     original_code = profile.employee_code
