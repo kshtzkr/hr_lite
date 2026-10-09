@@ -10,14 +10,14 @@
     <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
     <%# Counted live, not from the create-time cache: a holiday added after
         the request was filed changes what the balance is actually debited. %>
-    <dt>Working days</dt><dd><%= HrLite::LeaveDayCounter.count(@request).to_f %></dd>
+    <dt>Working days</dt><dd><%= hrl_days(HrLite::LeaveDayCounter.count(@request)) %></dd>
     <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
     <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
     <% unless @request.leave_type.unlimited? %>
       <dt>Balance</dt>
-      <dd><%= @balance.available.to_f %> of <%= @balance.entitled.to_f %> available</dd>
+      <dd><%= hrl_days(@balance.available) %> of <%= hrl_days(@balance.entitled) %> available</dd>
       <% if (@request.pending? || @request.approved?) && (short = @request.days_beyond_balance).positive? %>
-        <dt>Loss of pay</dt><dd><%= short.to_s("F") %> day(s) beyond the balance will be unpaid</dd>
+        <dt>Loss of pay</dt><dd><%= hrl_days(short) %> day(s) beyond the balance will be unpaid</dd>
       <% end %>
     <% end %>
     <% if @request.decision_note.present? %><dt>Decision note</dt><dd><%= @request.decision_note %></dd><% end %>

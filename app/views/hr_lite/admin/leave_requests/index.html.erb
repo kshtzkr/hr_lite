@@ -26,7 +26,7 @@
               <td data-label="Employee"><%= hr_display_name(request.user) %></td>
               <td data-label="Type"><%= request.leave_type.name %></td>
               <td data-label="Dates"><%= request.date_range_label %></td>
-              <td data-label="Days" class="hrl-num"><%= request.days_count.to_f %></td>
+              <td data-label="Days" class="hrl-num"><%= hrl_days(request.days_count) %></td>
               <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(request) %>">Open</a></td>
             </tr>
           <% end %>

@@ -9,7 +9,7 @@
 <section class="hrl-card">
   <dl class="hrl-deflist">
     <dt>Day worked</dt><dd><%= @request.date_worked.strftime("%A, %d %B %Y") %></dd>
-    <dt>Credit</dt><dd><%= @request.credit_days.to_f %> day</dd>
+    <dt>Credit</dt><dd><%= hrl_days(@request.credit_days) %> day</dd>
     <dt>Reason</dt><dd><%= @request.reason %></dd>
     <dt>Status</dt><dd><%= hrl_request_status_badge(@request.status) %></dd>
     <dt>Punch that day</dt>
@@ -40,7 +40,7 @@
         <%= f.text_area :decision_note, id: "approve_note" %>
       </div>
       <div class="hrl-form-actions">
-        <%= f.button "Approve — credit #{@request.credit_days.to_f} day",
+        <%= f.button "Approve — credit #{hrl_days(@request.credit_days)} day",
                      type: :submit, class: "hrl-btn hrl-btn--primary" %>
       </div>
     <% end %>

@@ -24,7 +24,7 @@ module HrLite
       if @request.save
         # Say it now, not on the payslip: days past the balance are unpaid.
         short = @request.days_beyond_balance
-        redirect_to leave_requests_path, notice: "Leave request submitted.#{" #{short.to_s('F')} day(s) are beyond your balance and will be unpaid if approved." if short.positive?}"
+        redirect_to leave_requests_path, notice: "Leave request submitted.#{" #{helpers.hrl_days(short)} day(s) are beyond your balance and will be unpaid if approved." if short.positive?}"
       else
         @balances = balance_cards
         @out_soon = colleagues_out_soon
