@@ -78,11 +78,17 @@ RSpec.describe "Payroll screens and edge branches", type: :request do
     expect(response.body).to include("New employee profile")
 
     profile = create(:employee_profile)
+    structure = create(:salary_structure, user: profile.user)
     get "/hr/admin/employees/#{profile.id}"
     expect(response.body).to include("Salary structures")
+    # Stacks into labelled rows on phones, with a 44px Edit.
+    table = Nokogiri::HTML(response.body).at_css("table.hrl-table--stack:has(td[data-label='Gross'])")
+    expect(table.at_css("a.hrl-btn")["href"]).to end_with("/salary_structures/#{structure.id}/edit")
 
     get "/hr/admin/employees/#{profile.id}/edit"
     expect(response.body).to include("Edit #{profile.employee_code}")
+    # The read-only code carries the id its "Employee code" label points at.
+    expect(Nokogiri::HTML(response.body).at_css("#employee_profile_employee_code[disabled]")["value"]).to eq(profile.employee_code)
 
     # employee_code is system-assigned and no longer accepted from forms.
     original_code = profile.employee_code

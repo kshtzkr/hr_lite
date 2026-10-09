@@ -329,6 +329,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
   background: var(--hrl-card); color: var(--hrl-ink);
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
+.hrl-filter { appearance: none; margin-bottom: var(--hrl-gap-target); } /* select_filter.js search box above its select */
 .hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: var(--hrl-target); }
 .hrl-field--check input {
   width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
@@ -351,6 +352,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-chiprow label {
   border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-pill); padding: .4rem .8rem;
   font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; min-height: var(--hrl-target); display: inline-flex; align-items: center;
+  min-width: var(--hrl-target); justify-content: center;
 }
 .hrl-chiprow input { position: absolute; opacity: 0; pointer-events: none; }
 .hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked) { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }
@@ -456,6 +458,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-right { margin-left: auto; }
 .hrl-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .hrl-row--mb { margin-bottom: var(--hrl-s-3); }
+.hrl-row--tabs > .hrl-btn { padding-inline: var(--hrl-s-2); } /* four approvals tabs fit one row beside the rail at 768px */
 
 /* Long-form policy text. Constrained measure — a policy read across the
    full width of a laptop is a policy nobody finishes. */

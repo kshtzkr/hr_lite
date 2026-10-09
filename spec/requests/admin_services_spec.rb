@@ -142,6 +142,17 @@ RSpec.describe "Admin services", type: :request, no_legacy_bridge: true do
 
       expect(response.body).to include("Currently out", "MacBook Air", "Meera")
     end
+
+    # select_filter.js adds a search box only in front of a marked select; the
+    # select keeps its name, so without JS the hand-over above still posts user_id.
+    it "marks the hand-over picker for type-to-filter, and not the short selects" do
+      get "/hr/admin/assets"
+      expect(Nokogiri::HTML(response.body).css("select[data-hrl-filter]").map { |s| s["name"] }).to eq([ "user_id" ])
+      expect(response.body).to include("hr_lite/select_filter")
+
+      get "/hr/admin/leave_requests/new"
+      expect(Nokogiri::HTML(response.body).css("select[data-hrl-filter]")).to be_empty
+    end
   end
 
   describe "joining and leaving checklists" do
@@ -242,7 +253,8 @@ RSpec.describe "Admin index screens", type: :request, no_legacy_bridge: true do
     get "/hr/admin/assets/new"
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Serial number")
+    expect(response.body).to include("Serial number", %(type="radio" value="laptop"))
+    expect(response.body).not_to include("checked")
   end
 
   it "keeps the desk closed to somebody who cannot run it" do

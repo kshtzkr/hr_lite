@@ -1,13 +1,14 @@
 <%# locals: active (:leaves | :comp_off | :regularizations | :balances) %>
-<div class="hrl-row hrl-row--mb">
-  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :leaves %>"
+<% tab = ->(key) { tag.attributes(class: [ "hrl-btn", ("hrl-btn--primary" if active == key) ], aria: { current: ("page" if active == key) }) } %>
+<div class="hrl-row hrl-row--mb hrl-row--tabs">
+  <a <%= tab.(:leaves) %>
      href="<%= hr_lite.admin_leave_requests_path %>">Leaves</a>
-  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :comp_off %>"
+  <a <%= tab.(:comp_off) %>
      href="<%= hr_lite.admin_comp_off_requests_path %>">Comp-off
     <% if (n = HrLite::CompOffRequest.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
-  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :regularizations %>"
+  <a <%= tab.(:regularizations) %>
      href="<%= hr_lite.admin_regularization_requests_path %>">Regularization
     <% if (n = HrLite::RegularizationRequest.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
-  <a class="hrl-btn <%= 'hrl-btn--primary' if active == :balances %>"
+  <a <%= tab.(:balances) %>
      href="<%= hr_lite.admin_leave_balances_path %>">Balances</a>
 </div>

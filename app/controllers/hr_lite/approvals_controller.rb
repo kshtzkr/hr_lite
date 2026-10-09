@@ -8,24 +8,13 @@ module HrLite
   # screen and each sees only their own rows.
   class ApprovalsController < ApplicationController
     def index
-      @approvals = paginate(mine.includes(:step, :subject).order(:created_at))
+      @approvals = paginate(Approval.pending_for(hr_current_user).includes(:step, :subject).order(:created_at))
       @delegations = ApprovalDelegation.live_on(Date.current)
                                        .where(from_user_id: hr_current_user.id)
                                        .includes(:to_user)
       @covering_for = ApprovalDelegation.live_on(Date.current)
                                         .where(to_user_id: hr_current_user.id)
                                         .includes(:from_user)
-    end
-
-    private
-
-    # Rows addressed to this person, plus rows belonging to anybody who has
-    # delegated to them while they are away.
-    def mine
-      standing_in_for = ApprovalDelegation.live_on(Date.current)
-                                          .where(to_user_id: hr_current_user.id)
-                                          .pluck(:from_user_id)
-      Approval.pending.where(approver_id: [ hr_current_user.id, *standing_in_for ])
     end
   end
 end

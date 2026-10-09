@@ -7,17 +7,17 @@
 
 <section class="hrl-card">
   <div class="hrl-table-wrap">
-    <table class="hrl-table">
+    <table class="hrl-table hrl-table--stack">
       <thead>
         <tr><th>Employee</th><% @types.each do |type| %><th class="hrl-num"><%= type.code %></th><% end %></tr>
       </thead>
       <tbody>
         <% @employees.each do |employee| %>
           <tr>
-            <td><%= hr_display_name(employee) %></td>
+            <td data-label="Employee"><%= hr_display_name(employee) %></td>
             <% @types.each do |type| %>
               <% balance = HrLite::LeaveBalance.for(employee, type, @year) %>
-              <td class="hrl-num"><strong><%= hrl_days(balance.available) %></strong> left<br><span class="hrl-small hrl-muted"><%= hrl_days(balance.used) %>/<%= hrl_days(balance.entitled) %> used</span></td>
+              <td data-label="<%= type.code %>" class="hrl-num"><span><strong><%= hrl_days(balance.available) %></strong> left<br><span class="hrl-small hrl-muted"><%= hrl_days(balance.used) %>/<%= hrl_days(balance.entitled) %> used</span></span></td>
             <% end %>
           </tr>
         <% end %>

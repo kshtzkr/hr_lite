@@ -45,7 +45,8 @@
               <% elsif asset.available? %>
                 <%= form_with url: hr_lite.assign_admin_asset_path(asset), method: :post do %>
                   <%= select_tag :user_id,
-                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }), class: "hrl-input" %>
+                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }), class: "hrl-input",
+                        data: { hrl_filter: "Type a name to filter" } %>
                   <%= submit_tag "Hand over", class: "hrl-btn" %>
                 <% end %>
               <% end %>

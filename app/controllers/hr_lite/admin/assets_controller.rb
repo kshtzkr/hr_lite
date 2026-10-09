@@ -11,7 +11,7 @@ module HrLite
       end
 
       def new
-        @asset = Asset.new
+        @asset = Asset.new(category: nil) # no chip preselected over the column default
       end
 
       def create

@@ -80,6 +80,39 @@ RSpec.describe "The approval inbox", type: :request, no_legacy_bridge: true do
 
     expect(response.body).to include("/hr/admin/leave_requests/#{leave.id}")
   end
+
+  it "counts a stand-in's covered rows on Home with a button to the inbox" do
+    leave!
+    stand_in = user_with_roles(HrLite::Role::EMPLOYEE, name: "Priya")
+    HrLite::ApprovalDelegation.create!(from_user: manager, to_user: stand_in,
+                                        starts_on: Date.current, ends_on: Date.current + 5)
+
+    expect(HrLite::Approval.pending_for(stand_in).count).to eq(1)
+    sign_in stand_in
+    get "/hr/"
+    expect(response.body).to include("1 request waiting on you", "Review requests")
+  end
+
+  it "shows no waiting card on Home to someone with nothing pending" do
+    leave!
+    sign_in other_manager
+    get "/hr/"
+    expect(response.body).not_to include("waiting on you")
+  end
+
+  # With no flow, leave is decided off the HR queue, so the manager's reports' requests count there.
+  it "counts a manager's own queue on Home when no flow routes leave, never the requester's" do
+    HrLite::ApprovalFlow.update_all(active: false)
+    leave!
+
+    sign_in manager
+    get "/hr/"
+    expect(response.body).to include("1 request waiting on you", %(href="/hr/admin/leave_requests"))
+
+    sign_in employee
+    get "/hr/"
+    expect(response.body).not_to include("waiting on you")
+  end
 end
 
 RSpec.describe HrLite::ApprovalEscalationJob, no_legacy_bridge: true do

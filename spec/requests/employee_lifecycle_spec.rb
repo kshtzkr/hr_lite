@@ -29,6 +29,16 @@ RSpec.describe "Employee lifecycle", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
       expect(User.find_by(email: "asha@example.com")).to be_nil
     end
+
+    # Each filter box is named for its field, and the staff label binds to the select, not a hidden twin.
+    it "marks both staff pickers for type-to-filter, each with its own label" do
+      get "/hr/admin/employees/new"
+      page = Nokogiri::HTML(response.body)
+
+      expect(page.css("select[data-hrl-filter]").map { |s| [ s["name"], s["data-hrl-filter"] ] })
+        .to eq([ [ "employee_profile[user_id]", "Filter existing staff" ], [ "employee_profile[manager_id]", "Filter Reports to" ] ])
+      expect(page.css("#employee_profile_user_id").map(&:name)).to eq([ "select" ])
+    end
   end
 
   describe "the reporting line" do
@@ -48,6 +58,22 @@ RSpec.describe "Employee lifecycle", type: :request do
       get "/hr/admin/employees/#{profile.id}/edit"
 
       expect(response.body).to include(%(<option selected="selected" value="#{boss.id}">Ketan</option>))
+    end
+  end
+
+  describe "the blood group chips" do
+    let!(:profile) { create(:employee_profile, blood_group: "B+") }
+
+    it "keeps the stored group checked on edit" do
+      get "/hr/admin/employees/#{profile.id}/edit"
+
+      expect(response.body).to match(/<input type="radio" value="B\+" checked="checked"/)
+    end
+
+    it "clears it with the Not set chip" do
+      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { blood_group: "" } }
+
+      expect(profile.reload.blood_group).to be_nil
     end
   end
 

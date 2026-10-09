@@ -6,8 +6,12 @@
     <%= render "hr_lite/shared/form_errors", record: @asset %>
     <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
     <div class="hrl-field">
-      <%= f.label :category %>
-      <%= f.select :category, HrLite::Asset::CATEGORIES.map { |c| [ c.humanize, c ] } %>
+      <%= f.label :category, id: "hrl-asset-category", for: nil %>
+      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-asset-category">
+        <% HrLite::Asset::CATEGORIES.each do |c| %>
+          <label><%= f.radio_button :category, c, required: true %><span><%= c.humanize %></span></label>
+        <% end %>
+      </div>
     </div>
     <div class="hrl-field">
       <%= f.label :serial_number, "Serial number (optional)" %>

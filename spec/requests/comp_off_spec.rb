@@ -80,6 +80,13 @@ RSpec.describe "Comp-off requests", type: :request do
       expect(response.body).to include("No approved comp-off requests")
     end
 
+    it "marks only the Comp-off tab as the current page" do
+      get "/hr/admin/comp_off_requests"
+      tabs = Nokogiri::HTML(response.body).css(".hrl-row--tabs a") # the compact row that fits beside the rail at 768px
+      expect(tabs.find { |a| a.text.start_with?("Comp-off") }["aria-current"]).to eq("page")
+      expect(tabs.find { |a| a.text.start_with?("Leaves") }["aria-current"]).to be_nil
+    end
+
     it "shows the punch context and approves, crediting the balance" do
       create(:attendance_record, user: user, date: sunday,
              check_in_at: sunday.in_time_zone.change(hour: 10),
