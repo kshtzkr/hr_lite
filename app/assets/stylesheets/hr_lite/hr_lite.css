@@ -398,12 +398,12 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 
 /* Month grid (attendance) */
 /* minmax(0, …): a bare 1fr never shrinks below its nowrap tags and pushes Sa/Su off a phone */
-/* Phone: 4px card padding and 2px gaps let seven cells reach 44px wide at 360px. */
+/* Phone: the grid alone reaches 4px from the card edge, with 2px gaps, so seven cells are 44px wide at 360px. */
 .hrl-mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
-.hrl-card:has(> .hrl-mgrid) { padding-inline: var(--hrl-s-1); }
+.hrl-card > .hrl-mgrid { margin-inline: calc(var(--hrl-s-1) - .95rem); }
 @media (min-width: 481px) {
   .hrl-mgrid { gap: 3px; }
-  .hrl-card:has(> .hrl-mgrid) { padding-inline: .95rem; }
+  .hrl-card > .hrl-mgrid { margin-inline: 0; }
 }
 .hrl-mgrid__head { text-align: center; color: var(--hrl-muted); font-size: var(--hrl-t-micro); padding: .2rem 0; }
 .hrl-mgrid__day {

@@ -108,6 +108,7 @@ RSpec.describe "Attendance", type: :request do
         get "/hr/attendance", params: { month: "2026-10", day: "2026-10-06" }
         card = Nokogiri::HTML(response.body).at_css("#day")
         expect(card.text).to include("Tue, 6 Oct").and include("Absent")
+        expect(card.at_css("h2 .hrl-badge")["class"]).to eq("hrl-badge hrl-badge--bad")
         expect(card.at_css('a[href="/hr/regularization_requests/new?date=2026-10-06"]').text).to eq("Fix this day")
       end
 

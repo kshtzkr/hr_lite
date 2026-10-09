@@ -20,7 +20,7 @@
     </div>
   </div>
   <%= render "hr_lite/attendance/month_grid", month: @month, day_status: @day_status,
-             link_builder: ->(date) { hr_lite.admin_attendance_path(@employee.id, date: date, month: @month.strftime("%Y-%m")) } %>
+             link_builder: ->(date) { hr_lite.admin_attendance_path(@employee.id, date: date, month: @month.strftime("%Y-%m"), anchor: "regularize") if date <= Date.current } %>
   <p class="hrl-small hrl-muted hrl-mt">Tap a date to fix its punches.</p>
 </section>
 

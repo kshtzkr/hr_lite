@@ -61,6 +61,14 @@ RSpec.describe "Admin attendances", type: :request do
         expect(response.body).to include('aria-label="Absent 5 days"')
       end
     end
+
+    it "links each day up to today to its fix form" do
+      travel_to(Date.new(2026, 10, 8)) do
+        get "/hr/admin/attendances/#{employee.id}"
+        expect(response.body).to include("date=2026-10-08&amp;month=2026-10#regularize")
+        expect(response.body).not_to include("date=2026-10-09")
+      end
+    end
   end
 
   describe "PATCH /hr/admin/attendances/:user_id (regularization)" do

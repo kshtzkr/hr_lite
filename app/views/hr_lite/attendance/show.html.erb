@@ -27,10 +27,12 @@
 
 <% if @day %>
   <% rec, leave = @day_info.record, @day_info.leave
-     part = rec&.half_day_part.presence || leave&.half_day_part.presence %>
+     part = rec&.half_day_part.presence || leave&.half_day_part.presence
+     open_today = @day == Date.current && @day_info.kind == :absent
+     tone = { present: "ok", half_day: "ok", absent: "bad", holiday: "warn", weekend: "muted" }[@day_info.kind] unless open_today %>
   <section class="hrl-card" id="day">
     <h2 class="hrl-card__title"><%= @day.strftime("%a, %-d %b") %>
-      <span class="hrl-badge"><%= @day == Date.current && @day_info.kind == :absent ? "Not checked in yet" : HrLite::ApplicationHelper::DAY_STATES[@day_info.kind][1] %></span></h2>
+      <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>"><%= open_today ? "Not checked in yet" : HrLite::ApplicationHelper::DAY_STATES[@day_info.kind][1] %></span></h2>
     <dl class="hrl-deflist">
       <dt>In</dt><dd><%= rec&.check_in_at&.strftime("%H:%M") || "—" %></dd>
       <dt>Out</dt><dd><%= rec&.check_out_at&.strftime("%H:%M") || "—" %></dd>
