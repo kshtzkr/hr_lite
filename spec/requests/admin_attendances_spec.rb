@@ -52,6 +52,15 @@ RSpec.describe "Admin attendances", type: :request do
       expect(response.body).to include("Fix #{(Date.current - 1).strftime('%A, %d %B')}")
         .and include("regularization_note")
     end
+
+    it "shows today without a punch as Today and leaves it out of the absent count" do
+      travel_to(Date.new(2026, 10, 8)) do # Thu; Oct 1, 2, 5, 6, 7 are past working days
+        get "/hr/admin/attendances/#{employee.id}"
+        cell = Nokogiri::HTML(response.body).at_css('[aria-label="8 Oct, Today, not checked in yet"]')
+        expect(cell["class"].split).not_to include("hrl-mgrid__day--absent")
+        expect(response.body).to include('aria-label="Absent 5 days"')
+      end
+    end
   end
 
   describe "PATCH /hr/admin/attendances/:user_id (regularization)" do

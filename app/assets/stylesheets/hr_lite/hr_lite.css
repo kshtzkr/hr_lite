@@ -408,9 +408,11 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-mgrid__head { text-align: center; color: var(--hrl-muted); font-size: var(--hrl-t-micro); padding: .2rem 0; }
 .hrl-mgrid__day {
   min-height: var(--hrl-target); border-radius: var(--hrl-radius-sm); background: var(--hrl-card);
-  border: 1px solid var(--hrl-line); padding: .2rem; font-size: var(--hrl-t-small);
+  border: 1px solid var(--hrl-line); padding: .2rem calc(var(--hrl-s-1) / 2); font-size: var(--hrl-t-small);
   display: flex; flex-direction: column; gap: .1rem; position: relative;
 }
+/* 2px side padding on phones leaves "Today" its 32px in a 39px cell at 320px. */
+@media (min-width: 481px) { .hrl-mgrid__day { padding-inline: .2rem; } }
 .hrl-mgrid__day--muted { color: var(--hrl-muted); }
 .hrl-mgrid__num { font-weight: 600; }
 .hrl-mgrid__tag { font-size: var(--hrl-t-micro); color: var(--hrl-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
