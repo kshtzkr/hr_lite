@@ -84,6 +84,21 @@ RSpec.describe "Leave requests", type: :request do
       expect(request.reload).to be_approved
     end
 
+    it "lists each request as one row linking to it, with the status badge" do
+      request = create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday)
+      get "/hr/leave_requests"
+      row = Nokogiri::HTML(response.body).at_css("a.hrl-listrow[href='/hr/leave_requests/#{request.id}']")
+      expect(row.text.squish).to include("Casual").and include("Pending").and include("05 Jul · 1 day")
+      expect(row.at_css(".hrl-badge--ok, .hrl-badge--bad")).to be_nil
+    end
+
+    it "shows a rejected request's status as a bad badge" do
+      request = create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday)
+      request.reject!(actor: create(:user, :admin), note: "Busy week")
+      get "/hr/leave_requests/#{request.id}"
+      expect(Nokogiri::HTML(response.body).at_css(".hrl-deflist .hrl-badge--bad").text).to eq("Rejected")
+    end
+
     it "shows balances on the index" do
       get "/hr/leave_requests"
       expect(response.body).to include("Leave balance")

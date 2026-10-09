@@ -235,6 +235,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-card > p:first-child { margin-top: 0; }
 .hrl-card__link, .hrl-backlink { display: inline-flex; gap: var(--hrl-s-1); align-items: center; min-height: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
+.hrl-listrow { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: var(--hrl-s-1) var(--hrl-s-3); padding: var(--hrl-s-3) 0; border-bottom: 1px solid var(--hrl-line); min-height: var(--hrl-target); color: var(--hrl-ink); }
+.hrl-listrow:last-child { border-bottom: 0; }
 /* The punch status stays in the accessibility tree (no `hidden`) so its first message is announced; empty, it takes no space. */
 [data-hrl-geo-status]:empty { margin: 0; }
 .hrl-grid { display: grid; gap: .85rem; grid-template-columns: 1fr; margin-bottom: .85rem; }

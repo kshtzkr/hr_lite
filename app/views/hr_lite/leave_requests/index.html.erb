@@ -15,26 +15,13 @@
 
 <section class="hrl-card">
   <% if @requests.any? %>
-    <div class="hrl-table-wrap">
-      <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          <% @requests.each do |request| %>
-            <tr>
-              <td data-label="Type"><span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= request.leave_type.color %>"><%= request.leave_type.code %></span></td>
-              <td data-label="Dates"><%= request.date_range_label %></td>
-              <td data-label="Days" class="hrl-num"><%= hrl_days(request.days_count) %></td>
-              <td data-label="Status">
-                <span class="hrl-badge <%= { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted" }[request.status] %>"><%= request.status.humanize %></span>
-              </td>
-              <td data-label="">
-                <a class="hrl-small" href="<%= hr_lite.leave_request_path(request) %>">View</a>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
+    <% @requests.each do |request| %>
+      <a class="hrl-listrow" href="<%= hr_lite.leave_request_path(request) %>">
+        <span><span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= request.leave_type.color %>"><%= request.leave_type.code %></span> <%= request.leave_type.name %></span>
+        <%= hrl_request_status_badge(request.status) %>
+        <span class="hrl-small hrl-muted"><%= request.date_range_label %> · <%= pluralize(hrl_days(request.days_count), "day") %></span>
+      </a>
+    <% end %>
     <%= hrl_pagination %>
   <% else %>
     <p class="hrl-card--empty">No leave requests yet.</p>
