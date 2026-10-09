@@ -114,6 +114,30 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(page.css(".hrl-main .hrl-btn--primary").map { |b| b.text.strip }).to eq([ "Submit to HR" ])
     end
 
+    it "submits the amounts on screen, not the last saved draft" do
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+        "0" => { section: "80c", declared_amount: "1000" }
+      } } }
+      item = HrLite::TaxDeclaration.find_by!(user_id: employee.id).tax_declaration_items.first
+
+      patch "/hr/tax_declaration", params: { submit_to_hr: "1", tax_declaration: { regime: "old", tax_declaration_items_attributes: {
+        "0" => { id: item.id, section: "80c", declared_amount: "5000" }
+      } } }
+
+      declaration = HrLite::TaxDeclaration.find_by!(user_id: employee.id)
+      expect(declaration).to be_submitted
+      expect(declaration.declared_total).to eq(5_000)
+    end
+
+    it "keeps the claims open when a save fails under the new regime" do
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "new", tax_declaration_items_attributes: {
+        "0" => { section: "80c", declared_amount: "-5" }
+      } } }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(Nokogiri::HTML(response.body).at_css("details:has(input[name*=declared_amount])")["open"]).not_to be_nil
+    end
+
     it "falls back to this financial year when the param is nonsense" do
       get "/hr/tax_declaration?financial_year=not-a-date"
 

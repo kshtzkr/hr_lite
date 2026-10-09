@@ -38,7 +38,7 @@
     </div>
   </section>
 
-  <details class="hrl-card" <%= "open" unless @declaration.regime == "new" %>>
+  <details class="hrl-card" <%= "open" if @declaration.regime != "new" || @declaration.errors.any? %>>
     <summary class="hrl-btn">Deductions (old regime only)</summary>
     <%= f.fields_for :tax_declaration_items do |item| %>
       <div class="hrl-field">
@@ -46,8 +46,8 @@
         <%= item.label :declared_amount, item.object.section_label %>
         <%= item.text_field :declared_amount,
               value: item.object.declared_amount&.to_s("F"), inputmode: "decimal" %>
-        <%= item.label :label, "What it is (optional)", class: "hrl-sr-only" %>
-        <%= item.text_field :label, placeholder: "What it is (optional)", class: "hrl-mt" %>
+        <%= item.label :label, "What it is (optional)", class: "hrl-mt hrl-muted" %>
+        <%= item.text_field :label %>
         <% if item.object.persisted? && item.object.verified_amount %>
           <span class="hrl-small hrl-muted">
             HR verified <%= hrl_money(item.object.verified_amount) %>
@@ -67,11 +67,7 @@
   <div class="hrl-form-actions">
     <%= f.submit "Save draft", class: submittable ? "hrl-btn" : "hrl-btn hrl-btn--primary" %>
     <% if submittable %>
-      <button type="submit" form="hrl-tax-submit" class="hrl-btn hrl-btn--primary">Submit to HR</button>
+      <button type="submit" name="submit_to_hr" value="1" class="hrl-btn hrl-btn--primary">Submit to HR</button>
     <% end %>
   </div>
-<% end %>
-<% if submittable %>
-  <%# Its own form (the button above points here): a form inside the PATCH form would post its _method. %>
-  <%= form_with url: hr_lite.submit_tax_declaration_path, id: "hrl-tax-submit", local: true do %><% end %>
 <% end %>
