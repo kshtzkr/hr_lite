@@ -18,10 +18,15 @@ module HrLite
       range = (Date.current - 7)..(Date.current - 1)
       days = DayStatus.new(user: hr_current_user, range: range)
       pending = RegularizationRequest.pending.where(user_id: hr_current_user.id, date: range).pluck(:date)
+      profile = EmployeeProfile.find_by(user_id: hr_current_user.id)
       (range.to_a - pending).filter_map do |date|
         day = days.for(date)
+        # The day card offers no Fix on these; days outside employment are not absences.
+        next if %i[holiday weekend leave].include?(day.kind) || (profile && !profile.active_on?(date))
+
+        # Yesterday's open shift may still be running; the punch card offers its check-out.
         reason = if day.kind == :absent then "Absent"
-        elsif day.record&.check_in_at && !day.record.check_out_at then "No check-out"
+        elsif day.record&.check_in_at && !day.record.check_out_at && date < Date.current - 1 then "No check-out"
         elsif day.record&.flagged? then "Flagged"
         end
         [ date, reason ] if reason

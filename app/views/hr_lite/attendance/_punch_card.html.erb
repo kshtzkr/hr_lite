@@ -65,7 +65,7 @@
   <% local_assigns[:attention]&.each do |date, reason| %>
     <div class="hrl-feed__item hrl-row">
       <div class="hrl-feed__body"><%= date.strftime("%a %-d %b") %> · <%= reason %></div>
-      <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path(date: date) %>">Fix</a>
+      <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path(date: date) %>">Fix<span class="hrl-sr-only"> <%= date.strftime("%a %-d %b") %></span></a>
     </div>
   <% end %>
 
