@@ -20,6 +20,38 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).to include("Leave request submitted.").and include("05 Jul – 06 Jul")
     end
 
+    it "treats a blank To as a one-day request" do
+      post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: "" } }
+      expect(HrLite::LeaveRequest.last).to have_attributes(start_date: monday, end_date: monday)
+    end
+
+    it "pre-checks the type and fills From from the query, with Full day checked" do
+      type.update!(name: "Casual leave")
+      get "/hr/leave_requests/new", params: { leave_type_id: type.id, date: "2027-07-05" }
+      form = Nokogiri::HTML(response.body)
+      expect(form.at_css("input[name='leave_request[leave_type_id]'][value='#{type.id}']")["checked"]).to be_present
+      expect(form.at_css("input[name='leave_request[start_date]']")["value"]).to eq("2027-07-05")
+      expect(form.at_css("input[name='leave_request[end_date]']")["value"]).to be_nil
+      expect(form.at_css("input[name='leave_request[half_day_part]'][value='']")["checked"]).to be_present
+      expect(response.body).to include("Casual · 12 left")
+      expect(form.css("label[for]").map { |l| l["for"] }).to all(satisfy { |id| form.at_css("##{id}") })
+    end
+
+    it "still rejects a half day that spans two dates" do
+      post "/hr/leave_requests", params: {
+        leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1, half_day_part: "first" }
+      }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("only for single-day requests")
+    end
+
+    it "keeps the probation cap and its message" do
+      create(:employee_profile, user: user, date_of_joining: Date.new(2027, 6, 1), probation_until: Date.new(2027, 11, 30))
+      post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("During probation only 1 day of leave a month is allowed")
+    end
+
     it "re-renders with errors on invalid input" do
       post "/hr/leave_requests", params: {
         leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday - 1 }
@@ -54,17 +86,63 @@ RSpec.describe "Leave requests", type: :request do
       expect(request.reload).to be_approved
     end
 
+    it "lists each request as one row linking to it, with the status badge" do
+      request = create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday)
+      get "/hr/leave_requests"
+      row = Nokogiri::HTML(response.body).at_css("a.hrl-listrow[href='/hr/leave_requests/#{request.id}']")
+      expect(row.text.squish).to include("Casual").and include("Pending").and include("05 Jul · 1 day")
+      expect(row.at_css(".hrl-badge--ok, .hrl-badge--bad")).to be_nil
+    end
+
+    it "shows a rejected request's status as a bad badge" do
+      request = create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday)
+      request.reject!(actor: create(:user, :admin), note: "Busy week")
+      get "/hr/leave_requests/#{request.id}"
+      expect(Nokogiri::HTML(response.body).at_css(".hrl-deflist .hrl-badge--bad").text).to eq("Rejected")
+    end
+
     it "shows balances on the index" do
       get "/hr/leave_requests"
       expect(response.body).to include("Leave balance")
     end
+
+    it "lists colleagues on approved leave in the next 2 weeks below the form, by name and dates only" do
+      sick = create(:leave_type, name: "Sick leave", code: "SL")
+      away = ->(who, from, status = "approved") { create(:leave_request, user: who, leave_type: sick, start_date: from, end_date: from, status: status) }
+      away.call(create(:user, name: "Priya"), monday)
+      away.call(create(:user, name: "Kiran"), monday, "pending")
+      away.call(user, monday)
+      away.call(create(:user, name: "Later"), Date.new(2027, 7, 21))
+
+      get "/hr/leave_requests/new"
+
+      card = Nokogiri::HTML(response.body).css("section.hrl-card").last.text
+      expect(card).to include("Out in the next 2 weeks").and include("Priya").and include("05 Jul")
+      expect(card).not_to include("Kiran")
+      expect(card).not_to include("Asha")
+      expect(card).not_to include("Later")
+      expect(card).not_to include("Sick leave")
+      expect(response.body.index("Out in the next 2 weeks")).to be > response.body.index("Submit request")
+    end
   end
 
   describe "balances page" do
-    it "renders per-type cards for a chosen year" do
+    it "says Credited on the comp-off card, Entitled on the others, each with an Apply link for its type" do
       type
+      comp = create(:leave_type, name: "Comp off", comp_off: true, annual_quota: 0)
       get "/hr/leave_balances", params: { year: 2027 }
-      expect(response.body).to include("Casual").and include("Entitled")
+      cards = Nokogiri::HTML(response.body).css("section.hrl-card")
+      expect(cards.to_h { |card| [ card.at_css("h2").text, card.at_css("dt").text ] })
+        .to eq("Casual" => "Entitled", "Comp off" => "Credited")
+      expect(cards.map { |card| card.at_css("a.hrl-card__link")["href"] })
+        .to match_array([ type, comp ].map { |t| "/hr/leave_requests/new?leave_type_id=#{t.id}" })
+    end
+
+    it "shows an empty state, not a bare title, when no paid type is set up" do
+      create(:leave_type, paid: false)
+      get "/hr/leave_balances"
+      expect(response.body).to include("No leave types set up yet. Ask HR.")
+      expect(response.body).not_to include("hrl-deflist")
     end
   end
 

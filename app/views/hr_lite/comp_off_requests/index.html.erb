@@ -21,7 +21,7 @@
           <% @requests.each do |request| %>
             <tr>
               <td data-label="Day worked"><%= request.date_worked.strftime("%a, %d %b %Y") %></td>
-              <td data-label="Credit" class="hrl-num"><%= request.credit_days.to_f %></td>
+              <td data-label="Credit" class="hrl-num"><%= hrl_days(request.credit_days) %></td>
               <td data-label="Status"><%= hrl_request_status_badge(request.status) %></td>
               <td data-label="Note" class="hrl-small hrl-muted"><%= request.decision_note.presence || "—" %></td>
               <td data-label="" class="<%= 'hrl-cell--void' unless request.pending? %>">

@@ -8,8 +8,8 @@
   <dl class="hrl-deflist">
     <dt>Type</dt><dd><%= @request.leave_type.name %></dd>
     <dt>Dates</dt><dd><%= @request.date_range_label %></dd>
-    <dt>Days</dt><dd><%= @request.days_count.to_f %></dd>
-    <dt>Status</dt><dd><span class="hrl-badge"><%= @request.status.humanize %></span></dd>
+    <dt>Days</dt><dd><%= hrl_days(@request.days_count) %></dd>
+    <dt>Status</dt><dd><%= hrl_request_status_badge(@request.status) %></dd>
     <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
     <% if @request.decision_note.present? %><dt>Decision note</dt><dd><%= @request.decision_note %></dd><% end %>
     <% if @request.decided_at %><dt>Decided</dt><dd><%= @request.decided_at.strftime("%d %b %Y") %> by <%= hr_display_name(@request.decided_by) %></dd><% end %>

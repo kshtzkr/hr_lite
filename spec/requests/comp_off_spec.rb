@@ -20,6 +20,7 @@ RSpec.describe "Comp-off requests", type: :request do
 
       follow_redirect!
       expect(response.body).to include("Comp-off request sent").and include("Sun, 04 Jul 2027")
+      expect(Nokogiri::HTML(response.body).at_css("td[data-label='Credit']").text).to eq("1")
     end
 
     it "re-renders with the policy error for a working day" do
@@ -85,7 +86,7 @@ RSpec.describe "Comp-off requests", type: :request do
              check_out_at: sunday.in_time_zone.change(hour: 16))
 
       get "/hr/admin/comp_off_requests/#{request_row.id}"
-      expect(response.body).to include("10:00–16:00")
+      expect(response.body).to include("10:00–16:00").and include("credit 1 day")
 
       post "/hr/admin/comp_off_requests/#{request_row.id}/approve"
       follow_redirect!

@@ -23,7 +23,7 @@
             <tr>
               <td data-label="Employee"><%= hr_display_name(request.user) %></td>
               <td data-label="Day worked"><%= request.date_worked.strftime("%a, %d %b %Y") %></td>
-              <td data-label="Credit" class="hrl-num"><%= request.credit_days.to_f %></td>
+              <td data-label="Credit" class="hrl-num"><%= hrl_days(request.credit_days) %></td>
               <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_comp_off_request_path(request) %>">Open</a></td>
             </tr>
           <% end %>

@@ -20,7 +20,7 @@
         <div class="hrl-feed__item">
           <div class="hrl-feed__body">
             <strong><%= hr_display_name(request.user) %></strong>
-            — <%= request.leave_type.name %>, <%= request.date_range_label %> (<%= request.days_count.to_f %> d)
+            — <%= request.leave_type.name %>, <%= request.date_range_label %> (<%= hrl_days(request.days_count) %> d)
           </div>
           <a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(request) %>">Decide</a>
         </div>
@@ -32,7 +32,7 @@
           <div class="hrl-feed__body">
             <strong><%= hr_display_name(request.user) %></strong>
             — comp-off for <%= request.date_worked.strftime("%d %b") %>
-            (<%= request.credit_days.to_f %> d)
+            (<%= hrl_days(request.credit_days) %> d)
           </div>
           <a class="hrl-btn" href="<%= hr_lite.admin_comp_off_request_path(request) %>">Decide</a>
         </div>
