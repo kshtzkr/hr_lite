@@ -103,6 +103,9 @@ module DemoSeeds
       user_id: employee.id, leave_type: sick, half_day: true, reason: "Dentist",
       start_date: next_working_day(Date.current + 14), end_date: next_working_day(Date.current + 14)
     )
+
+    # Inside Home's 60-day holiday window; the fixed national dates may all be past.
+    HrLite::Holiday.create!(date: next_working_day(Date.current + 30), name: "Foundation Day")
   end
 
   # Pending comp-off + regularization requests so the approvals tabs and the
