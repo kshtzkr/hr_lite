@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-10-10
+
 - HR and admins can fix leave they recorded (type, dates, half day) at any time, past dates included, without cancelling it. A reason is required; it is kept as the decision note and in the audit log (`leave.corrected`), and the balance and loss-of-pay split are worked out again.
 
 ## [0.26.0] - 2026-10-10
