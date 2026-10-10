@@ -115,6 +115,22 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       expect(response.body).to include("Not enough Comp off balance")
     end
 
+    it "fixes recorded past leave in place with a reason, no cancel" do
+      sign_in hr
+      record
+      leave = HrLite::LeaveRequest.last
+      fix = ->(reason) { patch "/hr/admin/leave_requests/#{leave.id}", params: { correction_reason: reason, leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } } }
+
+      fix.call("")
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(leave.reload.end_date).to eq(monday)
+
+      fix.call("Was out Tuesday too")
+      expect(leave.reload).to have_attributes(status: "approved", end_date: monday + 1, decision_note: "Corrected: Was out Tuesday too")
+      expect(leave.balance.used).to eq(2)
+      expect(HrLite::AuditLog.where(action: "leave.corrected")).to exist
+    end
+
     it "lists the people HR can record leave for" do
       sign_in hr
       get "/hr/admin/leave_requests/new"

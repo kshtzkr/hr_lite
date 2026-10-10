@@ -37,6 +37,23 @@ module HrLite
         render :new, status: :unprocessable_entity
       end
 
+      # Leave HR recorded is fixed in place, any time, with a reason.
+      def edit
+        @request = find_recorded
+      end
+
+      def update
+        @request = find_recorded
+        reason = params[:correction_reason].to_s.strip
+        @request.errors.add(:base, "A reason is required to fix this leave") if reason.blank?
+        attrs = params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day_part)
+        if reason.present? && @request.correct!(actor: hr_current_user, attrs: attrs, reason: reason)
+          return redirect_to(admin_leave_request_path(@request), notice: "Leave fixed.")
+        end
+
+        render :edit, status: :unprocessable_entity
+      end
+
       def approve
         request = find_decidable
         if request.approve!(actor: hr_current_user, note: params[:decision_note].presence)
@@ -90,6 +107,8 @@ module HrLite
       end
 
       def find_decidable = decidable.find(params[:id])
+
+      def find_recorded = decidable.approved.where.not(created_by_id: nil).where("created_by_id <> user_id").find(params[:id])
 
       def recordable = hr_scope(EmployeeProfile.includes(:user), "leave.approve").where.not(user_id: hr_current_user.id)
     end

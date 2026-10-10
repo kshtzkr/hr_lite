@@ -24,6 +24,16 @@
   </dl>
 </section>
 
+<% if @request.approved? && @request.recorded_by_hr? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Fix</h2>
+    <p class="hrl-small hrl-muted">Recorded by HR. Change it any time — no need to cancel.</p>
+    <div class="hrl-form-actions">
+      <a class="hrl-btn" href="<%= hr_lite.edit_admin_leave_request_path(@request) %>">Fix this leave</a>
+    </div>
+  </section>
+<% end %>
+
 <%# An approved leave that has not started yet can still be called off — the
     balance is recomputed live, so cancelling gives the days straight back. %>
 <% if @request.cancellable_by?(hr_current_user) && !@request.pending? %>
