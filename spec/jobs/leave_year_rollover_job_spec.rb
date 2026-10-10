@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe HrLite::LeaveYearRolloverJob do
-  let(:user) { create(:user) }
+  let(:user) { create(:employee_profile).user } # accrual runs from the joining date
   let!(:carry_type) { create(:leave_type, annual_quota: 15, carry_forward_cap: 10) }
 
   it "carries min(available, cap) into the new year" do

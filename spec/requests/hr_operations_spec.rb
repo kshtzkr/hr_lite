@@ -134,6 +134,20 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       expect(HrLite::AuditLog.where(action: "leave.corrected")).to exist
     end
 
+    it "cancels past approved leave only with a reason" do
+      sign_in hr
+      record
+      leave = HrLite::LeaveRequest.last
+
+      post "/hr/admin/leave_requests/#{leave.id}/cancel", params: { decision_note: " " }
+      expect(flash[:alert]).to include("reason is required")
+      expect(leave.reload).to be_approved
+
+      post "/hr/admin/leave_requests/#{leave.id}/cancel", params: { decision_note: "Came to office after all" }
+      expect(leave.reload).to have_attributes(status: "cancelled", decision_note: "Came to office after all")
+      expect(leave.balance.used).to eq(0)
+    end
+
     it "lists the people HR can record leave for" do
       sign_in hr
       get "/hr/admin/leave_requests/new"

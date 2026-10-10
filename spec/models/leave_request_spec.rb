@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe HrLite::LeaveRequest do
-  let(:user) { create(:user, name: "Asha") }
+  let(:user) { create(:employee_profile, user: create(:user, name: "Asha")).user }
   let(:type) { create(:leave_type, name: "Casual", annual_quota: 12) }
   # Anchor on a known Monday so weekend math is deterministic.
   let(:monday) { Date.new(2027, 7, 5) }
@@ -160,12 +160,13 @@ RSpec.describe HrLite::LeaveRequest do
       expect(request.reload).to be_cancelled
     end
 
-    it "cannot cancel past approved leave" do
+    it "owner cannot cancel past approved leave; HR can" do
       request = create(:leave_request, user: user, leave_type: type,
                        start_date: monday, end_date: monday)
       request.approve!(actor: admin)
       travel_to(monday + 1) do
         expect(request.reload.cancellable_by?(user)).to be(false)
+        expect(request.cancellable_by?(admin)).to be(true)
       end
     end
 

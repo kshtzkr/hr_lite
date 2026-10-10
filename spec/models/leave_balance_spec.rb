@@ -1,9 +1,14 @@
 require "rails_helper"
 
 RSpec.describe HrLite::LeaveBalance do
-  let(:user) { create(:user) }
+  let(:user) { create(:employee_profile).user } # accrual runs from the joining date
 
   describe "#entitled" do
+    it "accrues nothing without a joining date" do
+      type = create(:leave_type, annual_quota: 12)
+      expect(described_class.for(create(:user), type, 2027).entitled(as_of: Date.new(2027, 12, 31))).to eq(0)
+    end
+
     it "yearly_upfront: full quota plus carry and adjustment" do
       type = create(:leave_type, annual_quota: 12)
       balance = described_class.for(user, type, 2027)

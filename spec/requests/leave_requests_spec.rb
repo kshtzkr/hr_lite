@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Leave requests", type: :request do
-  let(:user) { create(:user, name: "Asha") }
+  let(:user) { create(:employee_profile, user: create(:user, name: "Asha")).user }
   let(:type) { create(:leave_type, name: "Casual", annual_quota: 12) }
   let(:monday) { Date.new(2027, 7, 5) }
 
@@ -46,7 +46,7 @@ RSpec.describe "Leave requests", type: :request do
     end
 
     it "keeps the probation cap and its message" do
-      create(:employee_profile, user: user, date_of_joining: Date.new(2027, 6, 1), probation_until: Date.new(2027, 11, 30))
+      HrLite::EmployeeProfile.find_by!(user_id: user.id).update!(date_of_joining: Date.new(2027, 6, 1), probation_until: Date.new(2027, 11, 30))
       post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("During probation only 1 day of leave a month is allowed")

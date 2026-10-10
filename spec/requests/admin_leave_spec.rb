@@ -75,6 +75,7 @@ RSpec.describe "Admin leave management", type: :request do
       get "/hr/admin/leave_balances", params: { year: 2027 }
       expect(response.body).to include("Asha")
       expect(response.body).to include("used</span>")
+      expect(response.body).to include("No joining date") # Asha has no HR profile
     end
 
     it "labels each balance cell so the matrix stacks on phones" do

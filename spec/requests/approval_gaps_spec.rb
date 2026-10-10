@@ -40,7 +40,7 @@ RSpec.describe "Approval gaps", type: :request do
 
     it "cancels it and releases the balance" do
       sign_in admin
-      post "/hr/admin/leave_requests/#{request_row.id}/cancel"
+      post "/hr/admin/leave_requests/#{request_row.id}/cancel", params: { decision_note: "Trip called off" }
 
       expect(request_row.reload.status).to eq("cancelled")
       expect(flash[:notice]).to include("balance is released")
@@ -53,15 +53,23 @@ RSpec.describe "Approval gaps", type: :request do
       expect(response.body).to include("Cancel this leave")
     end
 
-    it "refuses once the leave has started" do
+    it "cancels leave that has already started" do
       started = create(:leave_request, :approved, user: employee, leave_type: leave_type,
                        start_date: Date.current - 1, end_date: Date.current + 1)
 
       sign_in admin
-      post "/hr/admin/leave_requests/#{started.id}/cancel"
+      post "/hr/admin/leave_requests/#{started.id}/cancel", params: { decision_note: "Came in after all" }
 
-      expect(started.reload.status).to eq("approved")
-      expect(flash[:alert]).to include("cannot be cancelled").or include("can be cancelled")
+      expect(started.reload.status).to eq("cancelled")
+    end
+
+    it "refuses leave that is already cancelled" do
+      request_row.update!(status: "cancelled")
+
+      sign_in admin
+      post "/hr/admin/leave_requests/#{request_row.id}/cancel", params: { decision_note: "again" }
+
+      expect(flash[:alert]).to include("can no longer be cancelled")
     end
   end
 

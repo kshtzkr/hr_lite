@@ -91,23 +91,25 @@ module HrLite
 
     # Owner may cancel while pending, or an approved future leave (quota
     # returns automatically because `used` is computed). Admins may cancel
-    # any pending/approved future leave.
+    # anybody else's pending/approved leave at any time, past dates included.
     def cancellable_by?(actor)
-      return false unless pending? || (approved? && start_date > Date.current)
+      return false unless pending? || approved?
+      return pending? || start_date > Date.current if user_id == actor.id
 
-      user_id == actor.id || HrLite.admin?(actor) || HrLite.leadership?(actor)
+      HrLite.admin?(actor) || HrLite.leadership?(actor)
     end
 
-    def cancel!(actor:)
+    def cancel!(actor:, note: nil)
       was_approved = approved?
       transaction do
         self.status = "cancelled"
         self.decided_by_id = actor.id
         self.decided_at = Time.current
+        self.decision_note = note if note.present?
         save!
         # Cancelling an APPROVED leave hands the days back to the balance, so
         # it is a quota change as much as a status change.
-        audit!("cancelled", actor, was_approved ? "was approved" : nil)
+        audit!("cancelled", actor, [ note.presence, was_approved ? "was approved" : nil ].compact.join("; ").presence)
         # And nobody should still be asked to decide a request that has been
         # called off — it would sit in their inbox for ever.
         approval_route.cancel_all!

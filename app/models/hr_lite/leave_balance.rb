@@ -97,7 +97,8 @@ module HrLite
     # nil when the person joins only after this leave year ends.
     def accrual_start(range)
       doj = employment_window.first
-      return range.first if doj.nil? || doj <= range.first
+      return nil if doj.nil? # no joining date, no accrual — never a full year by default
+      return range.first if doj <= range.first
 
       start = doj.day <= 15 ? doj.beginning_of_month : doj.next_month.beginning_of_month
       start > range.last ? nil : start
