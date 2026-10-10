@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-10-10
+
+- HR and leadership can cancel any approved or pending leave at any time, past dates included. A reason is required; it is kept as the decision note and in the audit log. Employees still cancel their own leave only before it starts. A cancelled past day with no punch shows as absent.
+
 ## [0.27.0] - 2026-10-10
 
 - HR and admins can fix leave they recorded (type, dates, half day) at any time, past dates included, without cancelling it. A reason is required; it is kept as the decision note and in the audit log (`leave.corrected`), and the balance and loss-of-pay split are worked out again.

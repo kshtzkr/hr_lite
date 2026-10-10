@@ -73,12 +73,14 @@ module HrLite
       # not be released at all, and the quota stayed spent.
       def cancel
         request = find_decidable
-        if request.cancellable_by?(hr_current_user)
-          request.cancel!(actor: hr_current_user)
-          redirect_to admin_leave_requests_path, notice: "Leave cancelled — the balance is released."
+        note = params[:decision_note].to_s.strip
+        if !request.cancellable_by?(hr_current_user)
+          redirect_to admin_leave_request_path(request), alert: "This leave can no longer be cancelled."
+        elsif note.blank?
+          redirect_to admin_leave_request_path(request), alert: "A reason is required to cancel."
         else
-          redirect_to admin_leave_request_path(request),
-                      alert: "Only pending leave, or approved leave that has not started, can be cancelled."
+          request.cancel!(actor: hr_current_user, note: note)
+          redirect_to admin_leave_requests_path, notice: "Leave cancelled — the balance is released."
         end
       end
 

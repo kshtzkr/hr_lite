@@ -34,15 +34,19 @@
   </section>
 <% end %>
 
-<%# An approved leave that has not started yet can still be called off — the
+<%# HR can call off approved leave at any time, past dates included — the
     balance is recomputed live, so cancelling gives the days straight back. %>
 <% if @request.cancellable_by?(hr_current_user) && !@request.pending? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Cancel</h2>
-    <p class="hrl-small hrl-muted">Releases the days back to their balance. Only possible
-      before the leave starts.</p>
+    <p class="hrl-small hrl-muted">Releases the days back to their balance. A past day with
+      no punch will then show as absent.</p>
     <%= form_with url: hr_lite.cancel_admin_leave_request_path(@request), method: :post, local: true,
                   html: { data: { turbo_confirm: "Cancel this approved leave?" } } do %>
+      <div class="hrl-field">
+        <label for="cancel_note">Reason (required)</label>
+        <textarea name="decision_note" id="cancel_note" class="hrl-input" required></textarea>
+      </div>
       <div class="hrl-form-actions">
         <button class="hrl-btn hrl-btn--danger" type="submit">Cancel this leave</button>
       </div>

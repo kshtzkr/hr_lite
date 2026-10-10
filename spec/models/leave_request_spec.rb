@@ -160,12 +160,13 @@ RSpec.describe HrLite::LeaveRequest do
       expect(request.reload).to be_cancelled
     end
 
-    it "cannot cancel past approved leave" do
+    it "owner cannot cancel past approved leave; HR can" do
       request = create(:leave_request, user: user, leave_type: type,
                        start_date: monday, end_date: monday)
       request.approve!(actor: admin)
       travel_to(monday + 1) do
         expect(request.reload.cancellable_by?(user)).to be(false)
+        expect(request.cancellable_by?(admin)).to be(true)
       end
     end
 
