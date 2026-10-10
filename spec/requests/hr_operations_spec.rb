@@ -121,6 +121,9 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       leave = HrLite::LeaveRequest.last
       fix = ->(reason) { patch "/hr/admin/leave_requests/#{leave.id}", params: { correction_reason: reason, leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } } }
 
+      get "/hr/admin/leave_requests/#{leave.id}/edit"
+      expect(response.body).to include("Reason for the fix")
+
       fix.call("")
       expect(response).to have_http_status(:unprocessable_entity)
       expect(leave.reload.end_date).to eq(monday)
