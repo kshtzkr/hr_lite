@@ -5,6 +5,7 @@ module HrLite
         @year = sanitized_year
         @types = LeaveType.active.where(paid: true).where.not(annual_quota: nil)
         @employees = HrLite.employees.select { |employee| hr_reaches?("leave.view", employee) }
+        @no_joining_date = @employees.map(&:id) - EmployeeProfile.where(user_id: @employees.map(&:id)).where.not(date_of_joining: nil).pluck(:user_id)
       end
 
       # Manual credit/debit — also the comp-off credit mechanism.

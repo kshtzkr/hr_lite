@@ -14,7 +14,7 @@
       <tbody>
         <% @employees.each do |employee| %>
           <tr>
-            <td data-label="Employee"><%= hr_display_name(employee) %></td>
+            <td data-label="Employee"><%= hr_display_name(employee) %><% if @no_joining_date.include?(employee.id) %><br><span class="hrl-badge hrl-badge--bad">No joining date — no leave accrues</span><% end %></td>
             <% @types.each do |type| %>
               <% balance = HrLite::LeaveBalance.for(employee, type, @year) %>
               <td data-label="<%= type.code %>" class="hrl-num"><span><strong><%= hrl_days(balance.available) %></strong> left<br><span class="hrl-small hrl-muted"><%= hrl_days(balance.used) %>/<%= hrl_days(balance.entitled) %> used</span></span></td>

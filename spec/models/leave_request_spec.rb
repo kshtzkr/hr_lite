@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe HrLite::LeaveRequest do
-  let(:user) { create(:user, name: "Asha") }
+  let(:user) { create(:employee_profile, user: create(:user, name: "Asha")).user }
   let(:type) { create(:leave_type, name: "Casual", annual_quota: 12) }
   # Anchor on a known Monday so weekend math is deterministic.
   let(:monday) { Date.new(2027, 7, 5) }

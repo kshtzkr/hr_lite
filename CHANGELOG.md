@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.28.0] - 2026-10-10
 
 - HR and leadership can cancel any approved or pending leave at any time, past dates included. A reason is required; it is kept as the decision note and in the audit log. Employees still cancel their own leave only before it starts. A cancelled past day with no punch shows as absent.
+- Leave always accrues from the joining date. Somebody with no joining date (no HR profile) now accrues nothing instead of a full year, and the team balances grid flags them with "No joining date".
 
 ## [0.27.0] - 2026-10-10
 
