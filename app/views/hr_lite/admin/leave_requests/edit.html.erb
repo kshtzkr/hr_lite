@@ -1,0 +1,30 @@
+<% content_for(:page_title) { "Fix leave" } %>
+<a class="hrl-backlink" href="<%= hr_lite.admin_leave_request_path(@request) %>"><span aria-hidden="true">‹</span> Leave</a>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Fix leave — <%= hr_display_name(@request.user) %></h1>
+  <p class="hrl-page__sub">Change the type, dates or day. The balance and loss of pay are worked out again, and they get an email.</p>
+</div>
+
+<section class="hrl-card">
+  <%= form_with model: @request, url: hr_lite.admin_leave_request_path(@request), method: :patch, local: true do |f| %>
+    <%= render "hr_lite/shared/form_errors", record: @request %>
+    <div class="hrl-field">
+      <%= f.label :leave_type_id, "Type" %>
+      <%= f.collection_select :leave_type_id, HrLite::LeaveType.active, :id, :name %>
+    </div>
+    <div class="hrl-field"><%= f.label :start_date, "From" %><%= f.date_field :start_date %></div>
+    <div class="hrl-field"><%= f.label :end_date, "To" %><%= f.date_field :end_date %></div>
+    <div class="hrl-field">
+      <%= f.label :half_day_part, "Day" %>
+      <%= f.select :half_day_part, HrLite::DAY_PARTS %>
+    </div>
+    <div class="hrl-field">
+      <%= label_tag :correction_reason, "Reason for the fix (required)" %>
+      <%= text_area_tag :correction_reason, params[:correction_reason], required: true, class: "hrl-input" %>
+    </div>
+    <div class="hrl-form-actions">
+      <%= f.submit "Save fix", class: "hrl-btn hrl-btn--primary" %>
+      <a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(@request) %>">Back</a>
+    </div>
+  <% end %>
+</section>

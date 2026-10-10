@@ -123,6 +123,24 @@ module HrLite
       true
     end
 
+    # HR fixes leave it recorded — any time, even past dates — without a
+    # cancel. Re-run as a fresh recording so the create checks and the
+    # balance / loss-of-pay split are worked out exactly as the first time.
+    def correct!(actor:, attrs:, reason:)
+      fixed = false
+      transaction do
+        assign_attributes(attrs.merge(status: "pending", paid_days: nil, half_day: false))
+        raise ActiveRecord::Rollback unless valid?(:create) && save(validate: false)
+
+        audit!("corrected", actor, reason)
+        fixed = approve_outright!(actor: actor, note: "Corrected: #{reason}") || raise(ActiveRecord::Rollback)
+      end
+      errors.add(:base, "Not enough #{leave_type.name} balance") unless fixed || errors.any?
+      fixed
+    end
+
+    def recorded_by_hr? = created_by_id.present? && created_by_id != user_id
+
     def date_range_label
       if start_date == end_date
         "#{start_date.strftime('%d %b')}#{half_day ? " (#{half_day_part.present? ? "#{half_day_part} half" : 'half day'})" : ''}"
@@ -229,8 +247,6 @@ module HrLite
         }.compact
       )
     end
-
-    def recorded_by_hr? = created_by_id.present? && created_by_id != user_id
 
     # The balance covers whole half-days only, never less than nothing.
     def covered_by(available) = [ (BigDecimal(available.to_s) * 2).floor / BigDecimal(2), 0 ].max

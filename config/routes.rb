@@ -60,7 +60,7 @@ HrLite::Engine.routes.draw do
     resources :attendances, only: %i[index show update], param: :user_id do
       collection { get :week }
     end
-    resources :leave_requests, only: %i[index show new create] do
+    resources :leave_requests, only: %i[index show new create edit update] do
       member { post :approve; post :reject; post :cancel }
     end
     resources :leave_balances, only: :index do
