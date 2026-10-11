@@ -33,6 +33,14 @@ RSpec.describe "Employee ID card", type: :request do
     expect(response.body).to include("or call +91 99901 19989")
   end
 
+  it "offers a Share image with the photo served from this site" do
+    profile.photo.attach(io: StringIO.new("\x89PNG\r\n\x1A\n".b), filename: "me.png", content_type: "image/png")
+    sign_in employee
+    get "/hr/id_card"
+
+    expect(response.body).to include(%(data-hrl-share="id-card-ESA-000427.png"), "hr_lite/share", "/rails/active_storage/blobs/proxy/")
+  end
+
   it "lets HR open a colleague's card to print it" do
     sign_in hr
     get "/hr/id_card/#{employee.id}"

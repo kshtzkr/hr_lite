@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-10-11
+
+- ID card: Share button. Draws front and back side by side into one PNG and opens the phone's share sheet (WhatsApp, mail…); desktops download the PNG. The card photo is now served through the Active Storage proxy (same site), so it shows up in the image when storage redirects to a cloud bucket. Vendors html-to-image 1.11.11 (MIT).
+
 ## [0.28.0] - 2026-10-10
 
 - HR and leadership can cancel any approved or pending leave at any time, past dates included. A reason is required; it is kept as the decision note and in the audit log. Employees still cancel their own leave only before it starts. A cancelled past day with no punch shows as absent.
