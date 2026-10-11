@@ -39,6 +39,7 @@ RSpec.describe "Employee ID card", type: :request do
     get "/hr/id_card"
 
     expect(response.body).to include(%(data-hrl-share="id-card-ESA-000427.png"), "hr_lite/share", "/rails/active_storage/blobs/proxy/")
+    expect(response.body).to include("data-hrl-photo-input", "data-hrl-photo-zoom", "hr_lite/photo_crop")
   end
 
   it "lets HR open a colleague's card to print it" do
