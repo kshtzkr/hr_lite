@@ -24,6 +24,11 @@
   <p class="hrl-small hrl-muted hrl-mt">Tap a date to fix its punches.</p>
 </section>
 
+<% if HrLite.config.attendance_slots %>
+  <%= render "slot", employee: @employee %>
+  <%= render "hr_lite/attendance/penalties", user: @employee, month: @month, removable: @employee.id != hr_current_user.id %>
+<% end %>
+
 <% if @punches.any? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Where they punched</h2>

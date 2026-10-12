@@ -12,6 +12,7 @@ require_relative "../spec/dummy/config/environment"
 HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
 HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
 HrLite.config.require_punch_location = true
+HrLite.config.attendance_slots = true
 
 ActiveRecord::Migration.verbose = false
 load File.expand_path("../spec/dummy/db/schema.rb", __dir__)

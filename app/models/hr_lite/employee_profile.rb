@@ -20,6 +20,17 @@ module HrLite
     # read as zero income for the months it cannot see.
     encrypted_money :declared_annual_deductions, :fy_opening_gross, :fy_opening_tds
 
+    # HR-granted late allowance; it delays the penalty clock. Colleagues see
+    # the category, only HR sees the note (encrypted: it can be medical).
+    BUFFER_MINUTES = [ 60, 120 ].freeze
+    BUFFER_REASONS = { "parental_care" => "Parental care", "medical" => "Medical",
+                       "health" => "Health", "other" => "Other" }.freeze
+    encrypts :buffer_note
+    normalizes :buffer_minutes, with: ->(v) { v.presence }
+    validates :buffer_minutes, inclusion: { in: BUFFER_MINUTES }, allow_nil: true
+    validates :buffer_reason, inclusion: { in: BUFFER_REASONS.keys }, if: :buffer_minutes
+    validates :buffer_note, presence: true, if: -> { buffer_minutes && buffer_reason == "other" }
+
     TAX_REGIMES = %w[new old].freeze
     BLOOD_GROUPS = %w[A+ A- B+ B- AB+ AB- O+ O-].freeze
     normalizes :blood_group, with: ->(v) { v.presence } # the "Not set" chip posts ""

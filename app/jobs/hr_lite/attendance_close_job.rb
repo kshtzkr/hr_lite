@@ -27,10 +27,22 @@ module HrLite
           tell(user, date, "attendance.short_day",
                "You worked #{(record.worked_duration / 3600.0).round(1)} of #{record.required_hours}h on #{day} — marked half day")
         end
+        penalize_short_day(record) if record&.check_out_at
       end
     end
 
     private
+
+    # Out before the slot's required checkout: +30 min on the next working day.
+    def penalize_short_day(record)
+      return unless HrLite.config.attendance_slots && record.check_out_at < record.required_check_out_at
+
+      next_day = AttendancePenalty.next_working_days(record.date, 1).first
+      AttendancePenalty.find_or_create_by!(attendance_record: record, reason: "short_day", date: next_day) do |p|
+        p.user_id = record.user_id
+        p.minutes = AttendanceSlot::STEP_MINUTES
+      end
+    end
 
     def tell(user, date, event, title)
       rule = HrLite.config.self_regularization

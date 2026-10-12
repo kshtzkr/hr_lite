@@ -25,6 +25,10 @@
     · <a href="<%= hr_lite.regularization_requests_path %>">My tickets</a></p>
 </section>
 
+<% if HrLite.config.attendance_slots %>
+  <%= render "hr_lite/attendance/penalties", user: hr_current_user, month: @month %>
+<% end %>
+
 <% if @day %>
   <% rec, leave = @day_info.record, @day_info.leave
      part = rec&.half_day_part.presence || leave&.half_day_part.presence

@@ -53,6 +53,7 @@ module HrLite
 
         apply_geo_flags(record)
         record.save!
+        apply_slot_rules(record) if @kind == :check_in && HrLite.config.attendance_slots
       end
       notify_if_flagged(record)
       Result.new(record: record)
@@ -84,6 +85,25 @@ module HrLite
 
     def already_in_message(record)
       "Already checked in at #{record.check_in_at.in_time_zone(HrLite.config.time_zone).strftime('%H:%M')}."
+    end
+
+    # Late ladder against slot + buffer; after 11:00 also +1h on the next two
+    # working days; after 11:30 the day is a half day. The buffer shifts all three.
+    def apply_slot_rules(record)
+      local = record.check_in_at.in_time_zone(HrLite.config.time_zone)
+      arrived = local.hour * 60 + local.min - EmployeeProfile.where(user_id: @user.id).pick(:buffer_minutes).to_i
+      late = AttendanceSlot.penalty_minutes(arrived - AttendanceSlot.start_minute_for(@user.id, record.date))
+      penalize(record, record.date, late, "late") if late.positive?
+      return if arrived <= AttendanceSlot::CARRY_AFTER_MINUTE
+
+      AttendancePenalty.next_working_days(record.date, 2).each { |day| penalize(record, day, 60, "late_carry") }
+      return if arrived <= AttendanceSlot::HALF_DAY_AFTER_MINUTE
+
+      record.update!(status: "half_day", regularization_note: AttendanceRecord::LATE_HALF_DAY_NOTE)
+    end
+
+    def penalize(record, date, minutes, reason)
+      AttendancePenalty.create!(user_id: @user.id, date: date, minutes: minutes, reason: reason, attendance_record: record)
     end
 
     def apply_geo_flags(record)

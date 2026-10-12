@@ -1,0 +1,33 @@
+<% slot = HrLite::AttendanceSlot.current(hr_current_user.id, Date.current)
+   start = slot&.start_minute || HrLite::AttendanceSlot::DEFAULT_START_MINUTE
+   due = record&.required_check_out_at %>
+<div class="hrl-row hrl-row--mb hrl-small">
+  <span class="hrl-badge">Slot <%= HrLite::AttendanceSlot.label(start) %><%= " (default)" unless slot %></span>
+  <% if slot&.locked? %><span class="hrl-muted">Locked till <%= slot.ends_on.strftime("%-d %b") %></span><% end %>
+</div>
+<% if due && record.check_out_at %>
+  <% short = due - record.check_out_at %>
+  <p class="hrl-small">Checkout was due <%= due.strftime("%H:%M") %>.
+    <% if short.positive? %><span class="hrl-badge hrl-badge--bad">Short by <%= hrl_duration(short) %></span> +30 min goes on your next working day.<% end %></p>
+<% elsif due %>
+  <% left = due - Time.current %>
+  <p class="hrl-small">Checked in <%= record.check_in_at.strftime("%H:%M") %> · checkout at <strong><%= due.strftime("%H:%M") %></strong> ·
+    <%= left.positive? ? "#{hrl_duration(left)} left" : "you can check out" %></p>
+<% end %>
+<% HrLite::AttendancePenalty.active.where(user_id: hr_current_user.id, date: Date.current).each do |penalty| %>
+  <p class="hrl-small"><span class="hrl-badge hrl-badge--warn">+<%= penalty.minutes %> min</span> <%= penalty.label %></p>
+<% end %>
+<% unless slot&.locked? || record&.check_in_at %>
+  <%= form_with url: hr_lite.slot_attendance_path, method: :post, local: true, class: "hrl-mt" do %>
+    <div class="hrl-field">
+      <label for="hrl-slot-start">Check-in slot</label>
+      <%= select_tag :start_minute, options_for_select(HrLite::AttendanceSlot::START_MINUTES.map { |m| [ "#{HrLite::AttendanceSlot.label(m)} – out #{HrLite::AttendanceSlot.label(m + HrLite::AttendanceSlot::DAY_MINUTES)}", m ] }, start), id: "hrl-slot-start" %>
+    </div>
+    <div class="hrl-field">
+      <label for="hrl-slot-period">For</label>
+      <%= select_tag :period, options_for_select(HrLite::AttendanceSlot::PERIODS.invert), id: "hrl-slot-period" %>
+    </div>
+    <button type="submit" class="hrl-btn hrl-btn--block">Save and lock slot</button>
+    <p class="hrl-small hrl-muted">Once saved, only HR can change it for that period.</p>
+  <% end %>
+<% end %>

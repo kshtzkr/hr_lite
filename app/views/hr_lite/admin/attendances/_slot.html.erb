@@ -1,0 +1,24 @@
+<% slot = HrLite::AttendanceSlot.current(employee.id, Date.current) %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Check-in slot</h2>
+  <p class="hrl-small">
+    <span class="hrl-badge"><%= HrLite::AttendanceSlot.label(slot&.start_minute || HrLite::AttendanceSlot::DEFAULT_START_MINUTE) %><%= " (default)" unless slot %></span>
+    <% if slot %><%= slot.locked? ? "Locked" : "Unlocked" %> till <%= slot.ends_on.strftime("%-d %b") %><% end %>
+  </p>
+  <% if slot&.locked? %>
+    <%= form_with url: hr_lite.unlock_slot_admin_attendance_path(employee.id), method: :post, local: true do %>
+      <button type="submit" class="hrl-btn">Unlock so they can pick again</button>
+    <% end %>
+  <% end %>
+  <%= form_with url: hr_lite.slot_admin_attendance_path(employee.id), method: :post, local: true, class: "hrl-mt" do %>
+    <div class="hrl-field">
+      <label for="hrl-admin-slot-start">Set slot</label>
+      <%= select_tag :start_minute, options_for_select(HrLite::AttendanceSlot::START_MINUTES.map { |m| [ HrLite::AttendanceSlot.label(m), m ] }, slot&.start_minute || HrLite::AttendanceSlot::DEFAULT_START_MINUTE), id: "hrl-admin-slot-start" %>
+    </div>
+    <div class="hrl-field">
+      <label for="hrl-admin-slot-period">For</label>
+      <%= select_tag :period, options_for_select(HrLite::AttendanceSlot::PERIODS.invert), id: "hrl-admin-slot-period" %>
+    </div>
+    <button type="submit" class="hrl-btn">Set and lock</button>
+  <% end %>
+</section>
