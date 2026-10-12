@@ -23,6 +23,9 @@ HrLite::Engine.routes.draw do
   resources :wfh_requests, only: %i[index create] do
     member { post :cancel }
   end
+  resources :work_locations, only: %i[index create] do
+    member { post :activate; post :remove }
+  end
   resources :approvals, only: :index
   resources :expenses, only: %i[index new create] do
     member { post :cancel }
@@ -78,6 +81,9 @@ HrLite::Engine.routes.draw do
       member { post :approve; post :reject }
     end
     resources :wfh_requests, only: %i[index show create] do
+      member { post :approve; post :reject }
+    end
+    resources :work_locations, only: :index do
       member { post :approve; post :reject }
     end
     resources :roles, except: :show do

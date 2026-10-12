@@ -79,6 +79,7 @@
   <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
   <% if HrLite.config.office_geofence %>
     · <a class="hrl-card__link" href="<%= hr_lite.wfh_requests_path %>">Work from home</a>
+    · <a class="hrl-card__link" href="<%= hr_lite.work_locations_path %>">WFH locations</a>
   <% end %>
 
   <% if local_assigns.key?(:attention) %>

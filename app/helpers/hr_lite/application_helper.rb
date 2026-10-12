@@ -2,7 +2,7 @@ module HrLite
   module ApplicationHelper
     NAV_ITEMS = [
       { label: "Home",       path: :root_path,           match: [ "/" ], group: "My work" },
-      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests", "/wfh_requests" ], group: "My work" },
+      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests", "/wfh_requests", "/work_locations" ], group: "My work" },
       { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ], group: "My work" },
       { label: "Team",       path: :team_path,           match: [ "/team" ], group: "My work" },
       # The phone tab bar shows the first four; the rest fill the More sheet,
@@ -33,7 +33,7 @@ module HrLite
     ADMIN_NAV_ITEMS = [
       { label: "Overview",        path: :admin_overview_path,        match: [ "/admin/overview" ] },
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
-      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests", "/admin/wfh_requests" ] },
+      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests", "/admin/wfh_requests", "/admin/work_locations" ] },
       { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] },
       { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ],
         if: -> { hr_can?("expense.approve", scope: :team) } },

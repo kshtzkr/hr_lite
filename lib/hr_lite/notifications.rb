@@ -72,7 +72,10 @@ module HrLite
       "wfh.requested"         => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
       "wfh.approved"          => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "wfh.rejected"          => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
-      "wfh.cancelled"         => { bell: true,  email: false, leadership_email: false, leadership_bell: false }
+      "wfh.cancelled"         => { bell: true,  email: false, leadership_email: false, leadership_bell: false },
+      "work_location.requested" => { bell: true, email: false, leadership_email: false, leadership_bell: false },
+      "work_location.approved"  => { bell: true, email: true,  leadership_email: false, leadership_bell: false },
+      "work_location.rejected"  => { bell: true, email: true,  leadership_email: false, leadership_bell: false }
     }.freeze
 
     class << self

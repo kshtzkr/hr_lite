@@ -1,0 +1,42 @@
+<% content_for(:page_title) { "WFH locations" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">WFH locations</h1>
+</div>
+
+<%= render "hr_lite/admin/shared/approvals_tabs", active: :locations %>
+
+<div class="hrl-row hrl-row--mb">
+  <span class="hrl-small hrl-muted">Status</span>
+  <% HrLite::WorkLocation::STATUSES.each do |status| %>
+    <a class="hrl-btn <%= 'hrl-btn--primary' if @status == status %>" href="<%= hr_lite.admin_work_locations_path(status: status) %>"><%= status.humanize %></a>
+  <% end %>
+</div>
+
+<section class="hrl-card">
+  <% if @locations.any? %>
+    <% @locations.each do |location| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= hr_display_name(location.user) %></strong> · <%= location.name %> <%= hrl_request_status_badge(location.status) %>
+          <div class="hrl-small hrl-muted"><%= location.address.presence || "No address given" %> · ±<%= location.accuracy_m %> m ·
+            <a class="hrl-card__link" href="<%= location.map_url %>" target="_blank" rel="noopener noreferrer">Map<span class="hrl-sr-only"> of <%= location.name %></span></a>
+            · registered <%= location.created_at.strftime("%-d %b %H:%M") %></div>
+          <% if location.decision_note.present? %><div class="hrl-small hrl-muted">Note: <%= location.decision_note %></div><% end %>
+        </div>
+        <% if location.pending? && location.user_id != hr_current_user.id %>
+          <%= form_with url: hr_lite.approve_admin_work_location_path(location), method: :post, local: true, class: "hrl-row" do %>
+            <button type="submit" class="hrl-btn hrl-btn--primary">Approve<span class="hrl-sr-only"> <%= location.name %></span></button>
+          <% end %>
+          <%= form_with url: hr_lite.reject_admin_work_location_path(location), method: :post, local: true, class: "hrl-row" do %>
+            <label class="hrl-sr-only" for="reject-loc-<%= location.id %>">Reason to reject</label>
+            <input type="text" class="hrl-input" name="decision_note" id="reject-loc-<%= location.id %>" required placeholder="Reason to reject">
+            <button type="submit" class="hrl-btn hrl-btn--danger">Reject</button>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No <%= @status %> locations.</p>
+  <% end %>
+</section>
