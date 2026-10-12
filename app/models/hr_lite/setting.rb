@@ -6,6 +6,8 @@ module HrLite
     WEEKEND_POLICIES = %w[sun_only sat_sun second_fourth_sat_sun].freeze
 
     validates :weekend_policy, inclusion: { in: WEEKEND_POLICIES }
+    validates :lunch_break_minutes, numericality: { only_integer: true, in: 5..120 }
+    validates :short_break_minutes, numericality: { only_integer: true, in: 1..60 }
     validates :employee_code_prefix, presence: true,
                                      format: { with: /\A[A-Za-z]{1,10}-?\z/, message: "letters only (max 10), optionally ending in -" }
 
