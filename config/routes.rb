@@ -89,6 +89,7 @@ HrLite::Engine.routes.draw do
     resources :work_locations, only: :index do
       member { post :approve; post :reject }
     end
+    get "work_modes", to: "work_modes#index", as: :work_modes
     post "work_modes/:user_id", to: "work_modes#override", as: :work_mode_override
     resources :roles, except: :show do
       resources :assignments, only: %i[create destroy], controller: "role_assignments"
