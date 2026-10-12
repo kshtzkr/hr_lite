@@ -20,6 +20,12 @@ RSpec.describe "Office geofence and WFH", type: :request do
 
   def record = HrLite::AttendanceRecord.find_by(user_id: employee.id, date: Date.current)
 
+  # An approved, active home location where `outside` is.
+  def home_at_outside
+    HrLite::WorkLocation.create!(user_id: employee.id, name: "Home", lat: 28.6187, lng: 77.36604, accuracy_m: 20,
+                                 status: "approved", active: true)
+  end
+
   describe "check-in" do
     it "allows a check-in inside the 500 m radius" do
       post "/hr/attendance/check_in", params: inside
@@ -48,6 +54,7 @@ RSpec.describe "Office geofence and WFH", type: :request do
 
     it "lets an approved WFH day check in remotely and links the record" do
       request = wfh("approved")
+      home_at_outside
       post "/hr/attendance/check_in", params: outside
       expect(record.wfh_request_id).to eq(request.id)
       expect(record).not_to be_flagged
@@ -58,17 +65,18 @@ RSpec.describe "Office geofence and WFH", type: :request do
     it "counts a check-in inside the radius as office even with WFH approved" do
       wfh("approved")
       post "/hr/attendance/check_in", params: inside
-      expect(record).to have_attributes(wfh: false, wfh_request_id: nil)
+      expect(record).to have_attributes(work_mode: "office", wfh_request_id: nil)
     end
 
-    it "lets permanent WFH check in from anywhere, and inside the radius as office" do
+    it "treats permanent WFH as standing approval at the home location, and inside the radius as office" do
       create(:employee_profile, user: employee, permanent_wfh: true)
+      home_at_outside
       post "/hr/attendance/check_in", params: outside
-      expect(record).to have_attributes(wfh: true, wfh_request_id: nil)
+      expect(record).to have_attributes(work_mode: "wfh", wfh_request_id: nil)
 
       record.destroy
       post "/hr/attendance/check_in", params: inside
-      expect(record.wfh).to be(false)
+      expect(record.work_mode).to eq("office")
     end
 
     it "gives no exception for pending, rejected or other-date approvals" do
