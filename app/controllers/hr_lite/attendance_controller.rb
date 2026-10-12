@@ -25,6 +25,29 @@ module HrLite
       punch(:check_out)
     end
 
+    # Saving locks the slot for the period; a locked one only HR changes.
+    def slot
+      raise ActiveRecord::RecordNotFound unless HrLite.config.attendance_slots
+
+      period = params[:period].to_s
+      to = AttendanceSlot.ends_on_for(period, Date.current)
+      if AttendanceSlot.where(user_id: hr_current_user.id, locked: true).overlapping(Date.current, to).exists?
+        return redirect_to attendance_path, alert: "Your slot is locked for that period. Ask HR to change it."
+      end
+      # Today's penalty was priced on the slot at check-in; picking one now would rewrite it.
+      if AttendanceRecord.where(user_id: hr_current_user.id, date: Date.current).where.not(check_in_at: nil).exists?
+        return redirect_to attendance_path, alert: "Pick your slot before checking in."
+      end
+
+      slot = AttendanceSlot.new(user_id: hr_current_user.id, set_by_id: hr_current_user.id, period: period,
+                                start_minute: params[:start_minute].to_i, starts_on: Date.current, ends_on: to)
+      if slot.save
+        redirect_to attendance_path, notice: "Slot #{AttendanceSlot.label(slot.start_minute)} saved and locked until #{to.strftime('%d %b')}."
+      else
+        redirect_to attendance_path, alert: slot.errors.full_messages.to_sentence
+      end
+    end
+
     private
 
     def punch(kind)

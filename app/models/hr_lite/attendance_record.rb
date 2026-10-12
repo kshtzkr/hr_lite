@@ -3,8 +3,9 @@ module HrLite
     STATUSES = %w[present half_day].freeze
     AUTO_CHECKOUT_NOTE = "Auto check-out: no check-out punched".freeze
     SHORT_DAY_NOTE = "Short day: under the required hours".freeze
-    # Half days the close job set (not HR); an approved ticket lifts them.
-    AUTO_NOTES = [ AUTO_CHECKOUT_NOTE, SHORT_DAY_NOTE ].freeze
+    LATE_HALF_DAY_NOTE = "Half day: checked in after 11:30".freeze
+    # Half days the system set (not HR); an approved ticket lifts them.
+    AUTO_NOTES = [ AUTO_CHECKOUT_NOTE, SHORT_DAY_NOTE, LATE_HALF_DAY_NOTE ].freeze
     # Check-in and check-out further apart than this are called out on the board.
     PUNCH_GAP_ALERT_M = 500
 
@@ -43,6 +44,15 @@ module HrLite
     def short?
       hours = required_hours
       !!(hours && worked_duration && worked_duration < hours.hours)
+    end
+
+    # config.attendance_slots: slot start + 8h30 + the day's active penalties.
+    def required_check_out_at
+      return unless HrLite.config.attendance_slots && check_in_at
+
+      extra = AttendancePenalty.active.where(user_id: user_id, date: date).sum(:minutes)
+      date.in_time_zone(HrLite.config.time_zone) +
+        (AttendanceSlot.start_minute_for(user_id, date) + AttendanceSlot::DAY_MINUTES + extra).minutes
     end
 
     # Metres between where the day was checked in and checked out.

@@ -115,7 +115,8 @@ module HrLite
           :user_id, :manager_id, :designation, :date_of_birth, :date_of_joining,
           :date_of_exit, :probation_until, :department, :work_location, :pan_number, :pf_uan, :esi_number,
           :bank_account_number, :bank_ifsc, :bank_name, :tax_regime, :declared_annual_deductions,
-          :fy_opening_gross, :fy_opening_tds, :blood_group, :emergency_contact
+          :fy_opening_gross, :fy_opening_tds, :blood_group, :emergency_contact,
+          :buffer_minutes, :buffer_reason, :buffer_note
         )
       end
 

@@ -111,6 +111,35 @@ module HrLite
         end
       end
 
+      # HR sets a locked slot from today for the period.
+      def slot
+        @employee = find_manageable_employee
+        period = params[:period].to_s
+        slot = AttendanceSlot.new(user_id: @employee.id, set_by_id: hr_current_user.id, period: period,
+                                  start_minute: params[:start_minute].to_i, starts_on: Date.current,
+                                  ends_on: AttendanceSlot.ends_on_for(period, Date.current))
+        flash_for = slot.save ? { notice: "Slot set to #{AttendanceSlot.label(slot.start_minute)}." } : { alert: slot.errors.full_messages.to_sentence }
+        redirect_to admin_attendance_path(@employee.id), flash_for
+      end
+
+      # Lets the employee pick a new slot themselves.
+      def unlock_slot
+        @employee = find_manageable_employee
+        AttendanceSlot.where(user_id: @employee.id, locked: true).where(ends_on: Date.current..).find_each { |s| s.update!(locked: false) }
+        redirect_to admin_attendance_path(@employee.id), notice: "Slot unlocked. #{hr_display_name(@employee)} can pick a new one."
+      end
+
+      def remove_penalty
+        @employee = find_manageable_employee
+        penalty = AttendancePenalty.active.where(user_id: @employee.id).find(params[:penalty_id])
+        reason = params[:removal_reason].to_s.strip
+        month = penalty.date.strftime("%Y-%m")
+        return redirect_to admin_attendance_path(@employee.id, month: month), alert: "A reason is required." if reason.blank?
+
+        penalty.update!(removed_at: Time.current, removed_by_id: hr_current_user.id, removal_reason: reason)
+        redirect_to admin_attendance_path(@employee.id, month: month), notice: "Penalty removed."
+      end
+
       private
 
       # Viewing somebody's month and rewriting their punches are different

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-10-13
+
+- Attendance slots (`config.attendance_slots = true`, off by default). Employees pick a check-in slot (09:00, 09:30, 10:00 or 10:30; checkout 8h30 later) for today, this week or this month. Saving locks it. HR sets or unlocks a slot from the employee's attendance page. No slot means 10:00.
+- Late penalties. After 5 minutes of grace, each started half hour late adds 30 minutes to that day's checkout. A check-in after 11:00 also adds 1 hour to each of the next two working days, and one after 11:30 makes the day a half day (an approved regularization ticket lifts it). Leaving before the required checkout adds 30 minutes to the next working day (nightly close job). The punch card shows the slot, the required checkout, time left and any shortage, and My attendance lists the month's penalties. HR removes a penalty with a reason; the row is kept.
+- Late buffer. HR gives an employee 1h or 2h with a reason (parental care, medical, health, other) on their profile. It delays the penalty clock. Colleagues see the category on the team board; the note is HR-only and encrypted.
+
 ## [0.29.0] - 2026-10-11
 
 - ID card: Share button. Draws front and back side by side into one PNG and opens the phone's share sheet (WhatsApp, mail…); desktops download the PNG. The card photo is now served through the Active Storage proxy (same site), so it shows up in the image when storage redirects to a cloud bucket. Vendors html-to-image 1.11.11 (MIT).

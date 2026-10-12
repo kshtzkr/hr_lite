@@ -16,7 +16,9 @@ module HrLite
                   # e.g. 6 — default probation for new hires (admin edits per employee)
                   :probation_months,
                   # true = a punch without GPS is refused (default: recorded and flagged)
-                  :require_punch_location
+                  :require_punch_location,
+                  # true = check-in slots, late penalties and HR buffers (default off)
+                  :attendance_slots
 
     attr_reader :leave_year_start_month, :slip_release_day, :self_regularization, :work_hours
 
@@ -102,6 +104,7 @@ module HrLite
       @slip_release_day       = nil # e.g. 10 = slips open on the 10th of the next month
       @self_regularization    = nil # e.g. { within_days: 2, per_week: 2 } — employees fix their own missed punch
       @require_punch_location = false
+      @attendance_slots       = false
       @work_hours             = nil # e.g. { day: 8, probation_day: 9, week: 40 } — short days close as half days
 
       # Leadership onboarding/offboarding. onboard_user must return a saved

@@ -74,6 +74,17 @@
       <%= f.label :probation_until, "On probation until (blank = not on probation)" %>
       <%= f.date_field :probation_until %>
     </div>
+    <% if HrLite.config.attendance_slots %>
+      <div class="hrl-field">
+        <%= f.label :buffer_minutes, "Late buffer (delays late penalties; colleagues see the reason category)" %>
+        <%= f.select :buffer_minutes, HrLite::EmployeeProfile::BUFFER_MINUTES.map { |m| [ "#{m / 60}h", m ] }, include_blank: "None" %>
+      </div>
+      <div class="hrl-field">
+        <%= f.label :buffer_reason, "Buffer reason" %>
+        <%= f.select :buffer_reason, HrLite::EmployeeProfile::BUFFER_REASONS.invert, include_blank: "Choose one" %>
+      </div>
+      <div class="hrl-field"><%= f.label :buffer_note, "Buffer note (HR only; required for Other)" %><%= f.text_area :buffer_note, rows: 2 %></div>
+    <% end %>
     <div class="hrl-field">
       <%= f.label :date_of_exit, "Date of exit (leave blank while employed)" %>
       <%= f.date_field :date_of_exit %>
