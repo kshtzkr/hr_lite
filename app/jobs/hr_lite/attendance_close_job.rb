@@ -29,9 +29,16 @@ module HrLite
         end
         penalize_short_day(record) if record&.check_out_at
       end
+      close_work_modes(date) if HrLite.config.office_geofence
     end
 
     private
+
+    # Anything still running from that day ends at its close; Offline stays open.
+    def close_work_modes(date)
+      day_end = [ date.in_time_zone(HrLite.config.time_zone).end_of_day, Time.current ].min
+      WorkModeEvent.open.where.not(mode: "offline").where(started_at: ..day_end).find_each { |e| e.close!("day_closed", at: day_end) }
+    end
 
     # Out before the slot's required checkout: +30 min on the next working day.
     def penalize_short_day(record)

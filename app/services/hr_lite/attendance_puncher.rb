@@ -68,6 +68,7 @@ module HrLite
         apply_geo_flags(record)
         record.save!
         apply_slot_rules(record) if @kind == :check_in && HrLite.config.attendance_slots
+        track_work_mode(record) if HrLite.config.office_geofence
       end
       notify_if_flagged(record)
       Result.new(record: record)
@@ -120,6 +121,19 @@ module HrLite
 
       @mode = "wfh"
       nil
+    end
+
+    # Check-in opens the day's system-set mode; check-out ends everything and
+    # opens Offline. The timeline keeps every earlier row.
+    def track_work_mode(record)
+      if @kind == :check_in
+        WorkModeEvent.start!(user_id: @user.id, mode: record.work_mode || "office", source: "system",
+                             attendance_record: record, wfh_request_id: record.wfh_request_id,
+                             work_location_id: record.work_location_id, title: @field[:purpose], destination: @field[:place])
+      else
+        WorkModeEvent.close_all!(@user.id, "checked_out")
+        WorkModeEvent.start!(user_id: @user.id, mode: "offline", source: "system", attendance_record: record)
+      end
     end
 
     def location_error
