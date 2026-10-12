@@ -4,7 +4,7 @@
    timed = status.overlay&.until || (status.primary.until if status.primary.until.respond_to?(:hour)) %>
 <div class="hrl-row hrl-row--mb hrl-small" role="status">
   <span class="hrl-modes"><%= hrl_status_icons(status) %></span>
-  <strong><%= status.primary.label %></strong><% if status.overlay %> · <%= status.overlay.label %><% end %>
+  <span><strong><%= status.primary.label %></strong><% if status.overlay %> · <%= status.overlay.label %><% end %></span>
   <% if status.primary.source == "system" && !status.overlay %><span class="hrl-muted">(automatic)</span><% end %>
   <% if timed %>
     <span class="hrl-muted">until <%= timed.strftime("%H:%M") %> ·
@@ -22,7 +22,7 @@
     <div class="hrl-mode-switch">
       <% %w[lunch short_break office].each do |mode| %>
         <%= button_to hr_lite.work_mode_path, params: { mode: mode }, method: :post, class: "hrl-btn hrl-btn--block" do %>
-          <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: HrLite::WorkModeEvent.label(mode), source: "employee")) %>
+          <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: HrLite::WorkModeEvent.label(mode))) %>
           <%= HrLite::WorkModeEvent.label(mode) %>
         <% end %>
       <% end %>

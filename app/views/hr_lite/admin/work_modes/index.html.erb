@@ -1,6 +1,6 @@
 <% content_for(:page_title) { "Work modes" } %>
 <% live = @date == Date.current
-   modes = HrLite::WorkModeEvent::MODES.map { |k, v| [ k, v[0] ] } + HrLite::WorkStatus::DERIVED.except("offline").to_a + [ [ "offline", "Offline" ] ] %>
+   modes = HrLite::WorkModeEvent::MODES.map { |k, v| [ k, v[0] ] } + HrLite::WorkStatus::DERIVED.except("offline").to_a %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Work modes — <%= live ? "now" : @date.strftime("%a %-d %b") %></h1>
   <div class="hrl-page__actions">
@@ -23,7 +23,7 @@
   <% modes.each do |mode, label| %>
     <% next unless @by_mode[mode]&.any? %>
     <a class="hrl-kpi" href="#mode-<%= mode %>"><div class="hrl-kpi__value"><%= @by_mode[mode].size %></div>
-      <div class="hrl-kpi__label"><%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: label, source: "employee")) %> <%= label %></div></a>
+      <div class="hrl-kpi__label"><%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: label)) %> <%= label %></div></a>
   <% end %>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @needs_review.size %></div><div class="hrl-kpi__label">Needs review</div></div>
 </div>

@@ -56,6 +56,12 @@ module DemoSeeds
     HrLite::EmployeeProfile.find_by(user_id: employee.id).update!(manager_id: admin.id)
     HrLite::EmployeeProfile.find_by(user_id: colleague.id).update!(manager_id: admin.id)
 
+    # Work modes: Dev is field staff (sales); Meera has an approved home in Koramangala.
+    HrLite::EmployeeProfile.find_by(user_id: colleague.id).update!(field_staff: true)
+    HrLite::WorkLocation.create!(user_id: employee.id, name: "Home", lat: 12.9352, lng: 77.6245, accuracy_m: 15,
+                                 address: "Koramangala 5th Block", status: "approved", active: true, decided_by_id: admin.id,
+                                 decided_at: Time.current)
+
     seed_attendance(employee, office)
     seed_attendance(colleague, office, flagged: true)
     seed_leaves(employee, admin, leadership)

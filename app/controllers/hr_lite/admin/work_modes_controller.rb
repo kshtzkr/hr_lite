@@ -23,7 +23,8 @@ module HrLite
         working_day = WorkingCalendar.new(@date..@date).working_day?(@date) && @date <= Date.current
         @needs_review = working_day ? ids.reject { |id| on_leave.include?(id) || records[id]&.check_in_at } : []
         @field = records.values.select { |r| %w[travelling outside_meeting].include?(r.work_mode) }
-        @field_events = WorkModeEvent.where(attendance_record_id: @field.map(&:id), source: "system").index_by(&:attendance_record_id)
+        @field_events = WorkModeEvent.where(attendance_record_id: @field.map(&:id), source: "system", mode: %w[travelling outside_meeting])
+                                     .index_by(&:attendance_record_id)
 
         if (@person = params[:user_id].presence && @people[params[:user_id].to_i])
           day = @date.in_time_zone(HrLite.config.time_zone).all_day

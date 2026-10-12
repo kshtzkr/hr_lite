@@ -30,6 +30,15 @@ RSpec.describe "HR work-modes board", type: :request do
     expect(kpi("In office")).to eq(1)
     expect(kpi("Needs review")).to eq(2) # Ravi and the admin: no check-in
     expect(response.body).to include("Acme").and include("Renewal")
+    expect(response.body.scan(%(id="mode-offline")).size).to eq(1)
+  end
+
+  it "keeps the field check-in details after the person checks out" do
+    rec = HrLite::AttendanceRecord.find_by(user_id: asha.id)
+    HrLite::WorkModeEvent.close_all!(asha.id, "checked_out")
+    HrLite::WorkModeEvent.start!(user_id: asha.id, mode: "offline", source: "system", attendance_record: rec)
+    get "/hr/admin/work_modes"
+    expect(response.body[/Field check-ins.*?<\/section>/m]).to include("Acme")
   end
 
   it "filters the Sales team" do
