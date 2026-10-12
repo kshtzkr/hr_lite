@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-10-13
+
+- Office geofence (`config.office_geofence = true`, off by default). A check-in must come from inside an active office's radius (Admin → Offices), with a GPS fix at least that precise; otherwise it is refused with "You are not within the office location. Please request Work From Home (WFH) approval from HR." A denied or failed location says why. Check-out is unchanged.
+- Work from home requests. Employees request one or more dates from today up to 30 days ahead, with a reason; a 30-day calendar marks pending, approved and rejected dates. Overlapping live requests are refused. HR approves or rejects (a remark is required to reject) from Approvals → WFH; nobody decides their own. Only an approved request covering today lets a check-in skip the geofence; the day's record links to it and shows "WFH". Submission and decisions are audited and notified; a notification failure never blocks either.
+- WFH board for HR: employees requested and approved, pending and rejected counts, who is home on a chosen date (each person once) with whether they checked in, and every schedule, filtered by date range, name, department, status and WFH attendance.
+
 ## [0.30.0] - 2026-10-13
 
 - Attendance slots (`config.attendance_slots = true`, off by default). Employees pick a check-in slot (09:00, 09:30, 10:00 or 10:30; checkout 8h30 later) for today, this week or this month. Saving locks it. HR sets or unlocks a slot from the employee's attendance page. No slot means 10:00.

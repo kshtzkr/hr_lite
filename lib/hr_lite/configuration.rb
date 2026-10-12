@@ -18,7 +18,9 @@ module HrLite
                   # true = a punch without GPS is refused (default: recorded and flagged)
                   :require_punch_location,
                   # true = check-in slots, late penalties and HR buffers (default off)
-                  :attendance_slots
+                  :attendance_slots,
+                  # true = check-in only inside an active office radius, unless WFH is approved for the day
+                  :office_geofence
 
     attr_reader :leave_year_start_month, :slip_release_day, :self_regularization, :work_hours
 
@@ -105,6 +107,7 @@ module HrLite
       @self_regularization    = nil # e.g. { within_days: 2, per_week: 2 } — employees fix their own missed punch
       @require_punch_location = false
       @attendance_slots       = false
+      @office_geofence        = false
       @work_hours             = nil # e.g. { day: 8, probation_day: 9, week: 40 } — short days close as half days
 
       # Leadership onboarding/offboarding. onboard_user must return a saved

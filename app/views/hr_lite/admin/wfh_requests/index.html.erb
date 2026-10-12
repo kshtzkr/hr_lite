@@ -1,0 +1,73 @@
+<% content_for(:page_title) { "WFH" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Work from home</h1>
+</div>
+
+<%= render "hr_lite/admin/shared/approvals_tabs", active: :wfh %>
+
+<section class="hrl-card">
+  <%= form_with url: hr_lite.admin_wfh_requests_path, method: :get, local: true do %>
+    <div class="hrl-field"><label for="wfh-from">From</label><%= date_field_tag :from, @from, id: "wfh-from" %></div>
+    <div class="hrl-field"><label for="wfh-to">To</label><%= date_field_tag :to, @to, id: "wfh-to" %></div>
+    <div class="hrl-field"><label for="wfh-q">Employee name</label><%= search_field_tag :q, params[:q], id: "wfh-q" %></div>
+    <% if @departments.any? %>
+      <div class="hrl-field"><label for="wfh-dept">Department</label><%= select_tag :department, options_for_select(@departments, params[:department]), include_blank: "All", id: "wfh-dept" %></div>
+    <% end %>
+    <div class="hrl-field"><label for="wfh-status">Status</label><%= select_tag :status, options_for_select(HrLite::WfhRequest::STATUSES.map { |s| [ s.humanize, s ] }, @status), include_blank: "All", id: "wfh-status" %></div>
+    <div class="hrl-field"><label for="wfh-on">Who is home on</label><%= date_field_tag :on, @on, id: "wfh-on" %></div>
+    <div class="hrl-field"><label for="wfh-att">WFH attendance</label><%= select_tag :attendance, options_for_select([ [ "Checked in", "checked_in" ], [ "Not checked in", "not_checked_in" ] ], @attendance), include_blank: "All", id: "wfh-att" %></div>
+    <div class="hrl-form-actions">
+      <button type="submit" class="hrl-btn hrl-btn--primary">Filter</button>
+      <a class="hrl-btn" href="<%= hr_lite.admin_wfh_requests_path %>">Reset</a>
+    </div>
+  <% end %>
+</section>
+
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:requested] %></div><div class="hrl-kpi__label">Employees requested</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:approved] %></div><div class="hrl-kpi__label">Employees approved</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:pending] %></div><div class="hrl-kpi__label">Pending requests</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:rejected] %></div><div class="hrl-kpi__label">Rejected requests</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @home_count %></div><div class="hrl-kpi__label">Home on <%= @on.strftime("%-d %b") %></div></div>
+</div>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Working from home on <%= @on.strftime("%a %-d %b") %></h2>
+  <% if @home.any? %>
+    <% @home.each do |request| %>
+      <div class="hrl-feed__item hrl-row">
+        <div class="hrl-feed__body"><strong><%= hr_display_name(request.user) %></strong> · <%= request.dates_label %>
+          <span class="<%= class_names("hrl-badge", @punched.include?(request.user_id) ? "hrl-badge--ok" : "hrl-badge--muted") %>"><%= @punched.include?(request.user_id) ? "Checked in" : "Not checked in" %></span></div>
+        <a class="hrl-btn" href="<%= hr_lite.admin_wfh_request_path(request) %>">Open<span class="hrl-sr-only"> <%= hr_display_name(request.user) %>'s request</span></a>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="hrl-card--empty">Nobody approved for WFH on this date.</p>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Schedules <%= @from.strftime("%-d %b") %> – <%= @to.strftime("%-d %b") %></h2>
+  <% if @requests.any? %>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack">
+        <thead><tr><th>Employee</th><th>Dates</th><th>Reason</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @requests.each do |request| %>
+            <tr>
+              <td data-label="Employee"><%= hr_display_name(request.user) %></td>
+              <td data-label="Dates"><%= request.dates_label %> <span class="hrl-small hrl-muted">· <%= pluralize(request.days, "day") %></span></td>
+              <td data-label="Reason"><%= truncate(request.reason, length: 80) %></td>
+              <td data-label="Submitted"><%= request.created_at.strftime("%-d %b") %></td>
+              <td data-label="Status"><%= hrl_request_status_badge(request.status) %></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_wfh_request_path(request) %>">Open</a></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <%= hrl_pagination %>
+  <% else %>
+    <p class="hrl-card--empty">No WFH requests match.</p>
+  <% end %>
+</section>
