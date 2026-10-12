@@ -77,7 +77,7 @@ HrLite::Engine.routes.draw do
     resources :regularization_requests, only: %i[index show] do
       member { post :approve; post :reject }
     end
-    resources :wfh_requests, only: %i[index show] do
+    resources :wfh_requests, only: %i[index show create] do
       member { post :approve; post :reject }
     end
     resources :roles, except: :show do

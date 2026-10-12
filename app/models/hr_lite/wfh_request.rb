@@ -4,9 +4,11 @@ module HrLite
   class WfhRequest < ApplicationRecord
     STATUSES = %w[pending approved rejected cancelled].freeze
     MAX_DAYS_AHEAD = 30
+    HR_MAX_DAYS = 60 # a span HR grants directly
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :decided_by, class_name: HrLite.config.user_class, optional: true
+    belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
 
     validates :start_date, :end_date, :reason, presence: true
     validates :status, inclusion: { in: STATUSES }
@@ -21,6 +23,18 @@ module HrLite
     STATUSES.each { |s| define_method("#{s}?") { status == s } }
 
     def self.approved_for(user_id, date) = approved.where(user_id: user_id).overlapping(date, date).first
+
+    # HR grants WFH outright: approved on creation, up to HR_MAX_DAYS long.
+    def self.grant!(user_id:, by:, start_date:, end_date:, reason:)
+      request = create!(user_id: user_id, start_date: start_date, end_date: end_date, reason: reason,
+                        status: "approved", created_by_id: by.id, decided_by_id: by.id, decided_at: Time.current)
+      AuditLog.record!(action: "wfh.granted", subject: request, actor: by,
+                       changes: { "dates" => request.dates_label, "reason" => reason })
+      request.send(:announce, "wfh.approved", "HR gave you WFH — #{request.dates_label}", reason, "/wfh_requests", [ request.user ])
+      request
+    end
+
+    def granted? = created_by_id.present? && created_by_id != user_id
 
     def dates_label
       start_date == end_date ? start_date.strftime("%a %-d %b") : "#{start_date.strftime('%-d %b')} – #{end_date.strftime('%-d %b')}"
@@ -77,7 +91,11 @@ module HrLite
 
       errors.add(:start_date, "cannot be in the past") if start_date < Date.current
       errors.add(:end_date, "must be on or after the start date") if end_date < start_date
-      errors.add(:end_date, "must be within #{MAX_DAYS_AHEAD} days from today") if end_date > Date.current + MAX_DAYS_AHEAD
+      if granted?
+        errors.add(:end_date, "HR can grant at most #{HR_MAX_DAYS} days at a time") if days > HR_MAX_DAYS
+      elsif end_date > Date.current + MAX_DAYS_AHEAD
+        errors.add(:end_date, "must be within #{MAX_DAYS_AHEAD} days from today")
+      end
     end
 
     def no_overlap

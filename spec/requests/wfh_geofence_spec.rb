@@ -55,6 +55,22 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(response.body).to include("WFH")
     end
 
+    it "counts a check-in inside the radius as office even with WFH approved" do
+      wfh("approved")
+      post "/hr/attendance/check_in", params: inside
+      expect(record).to have_attributes(wfh: false, wfh_request_id: nil)
+    end
+
+    it "lets permanent WFH check in from anywhere, and inside the radius as office" do
+      create(:employee_profile, user: employee, permanent_wfh: true)
+      post "/hr/attendance/check_in", params: outside
+      expect(record).to have_attributes(wfh: true, wfh_request_id: nil)
+
+      record.destroy
+      post "/hr/attendance/check_in", params: inside
+      expect(record.wfh).to be(false)
+    end
+
     it "gives no exception for pending, rejected or other-date approvals" do
       wfh("pending")
       wfh("rejected")
@@ -143,6 +159,27 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(response.body).to include("Client visit that day")
     end
 
+    it "gives WFH directly for up to 60 days, approved at once" do
+      create(:employee_profile, user: employee)
+      post "/hr/admin/wfh_requests", params: { user_id: employee.id, start_date: Date.current + 1, end_date: Date.current + 60, reason: "Post-surgery" }
+      expect(HrLite::WfhRequest.last).to have_attributes(status: "approved", created_by_id: admin.id, decided_by_id: admin.id)
+      expect(HrLite::AuditLog.where(action: "wfh.granted").count).to eq(1)
+
+      post "/hr/admin/wfh_requests", params: { user_id: colleague.id, start_date: Date.current, end_date: Date.current + 60, reason: "x" }
+      expect(flash[:alert]).to include("at most 60 days")
+      post "/hr/admin/wfh_requests", params: { user_id: colleague.id, start_date: Date.current - 1, end_date: Date.current, reason: "x" }
+      expect(flash[:alert]).to include("past")
+      post "/hr/admin/wfh_requests", params: { user_id: admin.id, start_date: Date.current, end_date: Date.current, reason: "x" }
+      expect(response).to have_http_status(:not_found)
+      expect(HrLite::WfhRequest.count).to eq(1)
+    end
+
+    it "does not let an employee give WFH" do
+      sign_in employee
+      post "/hr/admin/wfh_requests", params: { user_id: employee.id, start_date: Date.current, end_date: Date.current, reason: "x" }
+      expect(HrLite::WfhRequest.count).to eq(0)
+    end
+
     it "cannot re-decide a decided request or decide their own" do
       decided = wfh("approved")
       post "/hr/admin/wfh_requests/#{decided.id}/reject", params: { decision_note: "Changed my mind" }
@@ -173,9 +210,15 @@ RSpec.describe "Office geofence and WFH", type: :request do
       get "/hr/admin/wfh_requests", params: { q: "dev", status: "rejected" }
       expect(response.body).to include("Dev").and include("Rejected")
 
+      create(:employee_profile, user: create(:user, name: "Ravi"), permanent_wfh: true)
+      HrLite::EmployeeProfile.find_by(user_id: employee.id).update!(permanent_wfh: true) # also has a request: counted once
+      get "/hr/admin/wfh_requests"
+      expect(response.body.scan(%r{hrl-kpi__value">(\d+)<}).flatten.last.to_i).to eq(3)
+      expect(response.body).to include("Permanent WFH")
+
       get "/hr/admin/wfh_requests", params: { attendance: "not_checked_in" }
       home = response.body[/Working from home on.*?<\/section>/m]
-      expect(home).to include("Asha")
+      expect(home).to include("Asha").and include("Ravi")
       expect(home).not_to include("Dev")
     end
   end

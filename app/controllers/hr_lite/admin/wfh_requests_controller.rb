@@ -21,14 +21,23 @@ module HrLite
           rejected: range.where(status: "rejected").count
         }
 
-        # One approved request per person per date (no overlaps), uniq anyway.
-        @home = visible.approved.overlapping(@on, @on).includes(:user).order(:user_id).to_a.uniq(&:user_id)
-        @punched = AttendanceRecord.where(date: @on, user_id: @home.map(&:user_id)).where.not(check_in_at: nil).pluck(:user_id).to_set
-        @home_count = @home.size
-        @home = @home.select { |r| @punched.include?(r.user_id) == (@attendance == "checked_in") } if @attendance
+        load_home(visible)
 
         scoped = @status ? range.where(status: @status) : range
         @requests = paginate(scoped.includes(:user).order(:user_id, :start_date, :id))
+      end
+
+      # HR gives WFH outright, approved on creation, up to 60 days.
+      def create
+        employee = HrLite.user_klass.find(params[:user_id])
+        hr_require_reach!("attendance.manage", employee)
+        raise ActiveRecord::RecordNotFound if employee.id == hr_current_user.id
+
+        request = WfhRequest.grant!(user_id: employee.id, by: hr_current_user, start_date: params[:start_date],
+                                    end_date: params[:end_date], reason: params[:reason].to_s.strip)
+        redirect_to admin_wfh_requests_path, notice: "WFH given to #{hr_display_name(employee)} for #{request.dates_label}."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_wfh_requests_path, alert: "Could not give WFH: #{e.record.errors.full_messages.to_sentence}"
       end
 
       def show
@@ -59,6 +68,22 @@ module HrLite
 
       # Nobody decides their own request; out-of-scope ids are a 404.
       def decidable = hr_scope(WfhRequest.all, "attendance.manage").where.not(user_id: hr_current_user.id)
+
+      HomeRow = Struct.new(:user, :label, :request)
+
+      # Everyone home on @on: an approved request, else permanent WFH. One row a person.
+      def load_home(visible)
+        rows = visible.approved.overlapping(@on, @on).includes(:user).order(:user_id)
+                      .map { |r| HomeRow.new(r.user, r.dates_label, r) }.uniq { |row| row.user.id }
+        permanent = hr_scope(EmployeeProfile.where(permanent_wfh: true), "attendance.view")
+        permanent = permanent.where(user_id: filtered_user_ids) if filtered_user_ids
+        ids = permanent.pluck(:user_id) - rows.map { |row| row.user.id }
+        rows += HrLite.user_klass.where(id: ids).map { |u| HomeRow.new(u, "Permanent WFH", nil) }
+        @records = AttendanceRecord.where(date: @on, user_id: rows.map { |row| row.user.id }).where.not(check_in_at: nil).index_by(&:user_id)
+        @home_count = rows.size
+        @home = @attendance ? rows.select { |row| @records.key?(row.user.id) == (@attendance == "checked_in") } : rows
+        @grantable = HrLite.employees.select { |u| u.id != hr_current_user.id && hr_reaches?("attendance.manage", u) }
+      end
 
       def filtered_user_ids
         return @filtered_user_ids if defined?(@filtered_user_ids)

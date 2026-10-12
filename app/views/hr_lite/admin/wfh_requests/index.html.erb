@@ -34,17 +34,35 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Working from home on <%= @on.strftime("%a %-d %b") %></h2>
   <% if @home.any? %>
-    <% @home.each do |request| %>
+    <% @home.each do |row| %>
+      <% rec = @records[row.user.id]
+         state, tone = rec ? (rec.wfh ? [ "WFH check-in", "ok" ] : [ "In office", "muted" ]) : [ "Not checked in", "muted" ] %>
       <div class="hrl-feed__item hrl-row">
-        <div class="hrl-feed__body"><strong><%= hr_display_name(request.user) %></strong> · <%= request.dates_label %>
-          <span class="<%= class_names("hrl-badge", @punched.include?(request.user_id) ? "hrl-badge--ok" : "hrl-badge--muted") %>"><%= @punched.include?(request.user_id) ? "Checked in" : "Not checked in" %></span></div>
-        <a class="hrl-btn" href="<%= hr_lite.admin_wfh_request_path(request) %>">Open<span class="hrl-sr-only"> <%= hr_display_name(request.user) %>'s request</span></a>
+        <div class="hrl-feed__body"><strong><%= hr_display_name(row.user) %></strong> · <%= row.label %>
+          <span class="hrl-badge hrl-badge--<%= tone %>"><%= state %></span></div>
+        <% if row.request %>
+          <a class="hrl-btn" href="<%= hr_lite.admin_wfh_request_path(row.request) %>">Open<span class="hrl-sr-only"> <%= hr_display_name(row.user) %>'s request</span></a>
+        <% end %>
       </div>
     <% end %>
   <% else %>
-    <p class="hrl-card--empty">Nobody approved for WFH on this date.</p>
+    <p class="hrl-card--empty">Nobody is working from home on this date.</p>
   <% end %>
 </section>
+
+<% if @grantable.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Give WFH</h2>
+    <p class="hrl-small hrl-muted">Approved straight away, up to <%= HrLite::WfhRequest::HR_MAX_DAYS %> days from today or later.</p>
+    <%= form_with url: hr_lite.admin_wfh_requests_path, method: :post, local: true do %>
+      <div class="hrl-field"><label for="grant-user">Employee</label><%= select_tag :user_id, options_for_select(@grantable.map { |u| [ hr_display_name(u), u.id ] }), include_blank: "Choose one", required: true, id: "grant-user" %></div>
+      <div class="hrl-field"><label for="grant-from">From</label><%= date_field_tag :start_date, Date.current, min: Date.current, required: true, id: "grant-from" %></div>
+      <div class="hrl-field"><label for="grant-to">To</label><%= date_field_tag :end_date, Date.current, min: Date.current, required: true, id: "grant-to" %></div>
+      <div class="hrl-field"><label for="grant-reason">Reason</label><%= text_area_tag :reason, nil, rows: 2, required: true, id: "grant-reason" %></div>
+      <div class="hrl-form-actions"><button type="submit" class="hrl-btn hrl-btn--primary">Give WFH</button></div>
+    <% end %>
+  </section>
+<% end %>
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Schedules <%= @from.strftime("%-d %b") %> – <%= @to.strftime("%-d %b") %></h2>

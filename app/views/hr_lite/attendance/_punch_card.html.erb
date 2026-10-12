@@ -18,7 +18,7 @@
     <% if record&.check_out_at %>
       <span class="hrl-badge hrl-badge--muted">Out <%= record.check_out_at.strftime("%H:%M") %></span>
     <% end %>
-    <% if record&.wfh_request_id %>
+    <% if record&.wfh %>
       <span class="hrl-badge hrl-badge--ok">WFH</span>
     <% end %>
     <% if record&.flagged? %>

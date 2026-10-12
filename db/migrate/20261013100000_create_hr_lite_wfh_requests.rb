@@ -9,6 +9,7 @@ class CreateHrLiteWfhRequests < ActiveRecord::Migration[8.1]
       t.bigint :decided_by_id
       t.datetime :decided_at
       t.text :decision_note
+      t.bigint :created_by_id
 
       t.timestamps
     end
