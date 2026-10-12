@@ -46,3 +46,7 @@
     <% end %>
   </section>
 <% end %>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+<% end %>

@@ -34,6 +34,9 @@
   <% if HrLite.config.attendance_slots %>
     <%= render "hr_lite/attendance/slot", record: record %>
   <% end %>
+  <% if HrLite.config.office_geofence %>
+    <%= render "hr_lite/attendance/work_mode", record: record %>
+  <% end %>
   <% if record&.flagged? %>
     <p class="hrl-small">Flagged: <%= record.flag_note %></p>
   <% end %>

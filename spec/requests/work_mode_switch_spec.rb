@@ -102,4 +102,14 @@ RSpec.describe "Switching work modes", type: :request do
     post "/hr/admin/work_modes/#{admin.id}", params: { mode: "busy", minutes: 30, reason: "x" }
     expect(response).to have_http_status(:not_found)
   end
+
+  it "shows the current mode with icons, its source, and a countdown on the punch card" do
+    check_in
+    get "/hr/attendance"
+    expect(response.body).to include("In office").and include("set automatically").and include("hrl-mode--auto")
+    switch("busy", minutes: 60)
+    get "/hr/attendance"
+    expect(response.body).to include("hrl-mode--busy").and include("set by the employee").and include("data-hrl-countdown")
+      .and include("End busy now")
+  end
 end
