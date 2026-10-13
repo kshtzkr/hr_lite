@@ -20,11 +20,13 @@ RSpec.describe "On leave this week on Home", type: :request do
 
     get "/hr/"
 
-    expect(response.body).to include("Priya").and include("08 Jul – 12 Jul")
+    # Scoped to the card: Today's check-ins lists everyone not in yet.
+    week = response.body[%r{On leave this week</h2>.*?</section>}m]
+    expect(week).to include("Priya").and include("08 Jul – 12 Jul")
     expect(response.body).to include('title="On leave: 08 Jul – 12 Jul"')
-    expect(response.body).not_to include("Ravi")
-    expect(response.body).not_to include("Kiran")
-    expect(response.body).not_to include("Gone")
+    expect(week).not_to include("Ravi")
+    expect(week).not_to include("Kiran")
+    expect(week).not_to include("Gone")
     # The viewer's own balance chip names the type; the week card must not.
     expect(response.body[%r{On leave this week</h2>.*?</section>}m]).not_to include("Sick leave")
   end
@@ -46,8 +48,9 @@ RSpec.describe "On leave this week on Home", type: :request do
 
       get "/hr/"
 
-      expect(response.body).to include("Priya")
-      expect(response.body).not_to include("Ravi")
+      week = response.body[%r{On leave this week</h2>.*?</section>}m]
+      expect(week).to include("Priya")
+      expect(week).not_to include("Ravi")
     end
   end
 
