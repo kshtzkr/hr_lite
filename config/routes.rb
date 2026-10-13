@@ -23,6 +23,7 @@ HrLite::Engine.routes.draw do
   resources :wfh_requests, only: %i[index create] do
     member { post :cancel }
   end
+  get "work_time", to: "work_time#show", as: :work_time
   resource :work_mode, only: :create do
     post :end_overlay
   end

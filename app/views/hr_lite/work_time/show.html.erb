@@ -1,0 +1,9 @@
+<% content_for(:page_title) { "My work time" } %>
+<% content_for(:back, "Attendance") %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My work time</h1>
+</div>
+<p class="hrl-small hrl-muted">Only you and HR can see this page's detail. Times come from your recorded check-ins and work modes.</p>
+<% if @period_error %><div class="hrl-errors" role="alert"><%= @period_error %></div><% end %>
+<%= render "hr_lite/work_time/report", result: @result, period: @period, records: @records,
+           path: ->(p) { hr_lite.work_time_path(p) } %>

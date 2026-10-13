@@ -1,0 +1,72 @@
+<%# locals: result (WorkModeDurations::Result), period, path (->(params) { url }), records (optional), names (optional {id => name}) %>
+<% path = local_assigns[:path]
+   records = local_assigns[:records] || []
+   names = local_assigns[:names]
+   label = ->(m) { HrLite::WorkModeEvent.label(m) || m.humanize } %>
+
+<section class="hrl-card">
+  <div class="hrl-row hrl-row--tabs hrl-row--mb">
+    <% HrLite::WorkModeDurations::Period::KINDS.excluding("custom").each do |kind| %>
+      <a class="hrl-btn <%= 'hrl-btn--primary' if period.kind == kind %>" <%= 'aria-current="page"'.html_safe if period.kind == kind %>
+         href="<%= path.(period: kind, date: period.from) %>"><%= kind.capitalize %></a>
+    <% end %>
+  </div>
+  <div class="hrl-row hrl-row--mb">
+    <% unless period.kind == "custom" %>
+      <a class="hrl-btn" href="<%= path.(period: period.kind, date: period.shift(-1)) %>" aria-label="Previous <%= period.kind %>">&lsaquo;</a>
+    <% end %>
+    <strong><%= period.label %></strong>
+    <% if period.kind != "custom" && period.to < Date.current %>
+      <a class="hrl-btn" href="<%= path.(period: period.kind, date: period.shift(1)) %>" aria-label="Next <%= period.kind %>">&rsaquo;</a>
+    <% end %>
+  </div>
+  <%= form_with url: path.({}), method: :get, local: true, class: "hrl-row" do %>
+    <input type="hidden" name="period" value="custom">
+    <% (local_assigns[:keep] || {}).each do |k, v| %><input type="hidden" name="<%= k %>" value="<%= v %>"><% end %>
+    <div class="hrl-field"><label for="wt-from">From</label><%= date_field_tag :from, period.from, max: Date.current, id: "wt-from" %></div>
+    <div class="hrl-field"><label for="wt-to">To</label><%= date_field_tag :to, period.to, max: Date.current, id: "wt-to" %></div>
+    <div class="hrl-form-actions"><button type="submit" class="hrl-btn">Show range</button></div>
+  <% end %>
+</section>
+
+<% if result.days_with_data.empty? %>
+  <section class="hrl-card"><p class="hrl-card--empty">No recorded activity in <%= period.label %>. Days with nothing recorded are left out rather than shown as zero.</p></section>
+<% else %>
+  <% office = result.by_mode["office"]; wfh = result.by_mode["wfh"]; field = result.by_mode["travelling"] + result.by_mode["outside_meeting"] %>
+  <div class="hrl-kpis">
+    <% [ [ "Attendance (check-in to check-out)", result.attendance ], [ "Working time", result.working ], [ "Breaks", result.breaks ],
+         [ "In office", office ], [ "Work from home", wfh ], [ "Travel and client meetings", field ], [ "Out of office", result.other ] ].each do |kpi_label, secs| %>
+      <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_duration(secs) %></div><div class="hrl-kpi__label"><%= kpi_label %></div></div>
+    <% end %>
+  </div>
+  <p class="hrl-small hrl-muted">Working time = in office, work from home, travelling, client and other meetings, and busy. It is time in those modes, not a measure of output.
+    Recorded on <%= pluralize(result.days_with_data.size, "day") %>.</p>
+
+  <%= render "hr_lite/work_time/donut", result: result, label: label %>
+  <% if period.kind == "day" %>
+    <%= render "hr_lite/work_time/timeline", result: result, period: period, label: label, names: names %>
+  <% else %>
+    <%= render "hr_lite/work_time/bars", result: result, period: period, label: label, path: path %>
+  <% end %>
+
+  <% manual = result.by_source["employee"] + result.by_source["hr"] %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Set automatically vs chosen</h2>
+    <p class="hrl-small">Automatic (check-in, check-out, timers): <strong><%= hrl_duration(result.by_source["system"]) %></strong> ·
+      chosen by the employee: <strong><%= hrl_duration(result.by_source["employee"]) %></strong>
+      <% if result.by_source["hr"].positive? %> · set by HR: <strong><%= hrl_duration(result.by_source["hr"]) %></strong><% end %></p>
+  </section>
+
+  <% if records.any? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Check-ins</h2>
+      <% records.each do |r| %>
+        <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">
+          <% if names %><strong><%= names[r.user_id] %></strong> · <% end %>
+          <%= r.date.strftime("%a %-d %b") %> · in <%= r.check_in_at.strftime("%H:%M") %> · out <%= r.check_out_at&.strftime("%H:%M") || "—" %>
+          <% if r.work_mode_label %> · <%= r.work_mode_label %><% end %>
+        </div></div>
+      <% end %>
+    </section>
+  <% end %>
+<% end %>

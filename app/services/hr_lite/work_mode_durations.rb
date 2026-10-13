@@ -33,6 +33,20 @@ module HrLite
         end
       end
 
+      # From request params: period=, date=, from=, to=. Returns [period, error].
+      def self.from_params(params, today)
+        date = [ parse_date(params[:date]) || today, today ].min
+        [ build(params[:period], date, from: parse_date(params[:from]), to: parse_date(params[:to])), nil ]
+      rescue ArgumentError => e
+        [ build("week", today), e.message ]
+      end
+
+      def self.parse_date(value)
+        Date.iso8601(value.to_s)
+      rescue Date::Error
+        nil
+      end
+
       def initialize(kind, from, to)
         @kind, @from, @to = kind, from, to
       end
