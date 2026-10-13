@@ -4,16 +4,16 @@ module HrLite
   # A punch left open is checked out at the day's end and paid as a half day,
   # and so is a closed punch short of config.work_hours.
   # Nobody punched in already reads as absent (DayStatus), so they are only
-  # told. Leave days are left alone.
+  # told. Leave days, and each person's weekends and office holidays, are left alone.
   class AttendanceCloseJob < ApplicationJob
     def perform(date: (Time.current - 12.hours).to_date)
-      return unless WorkingCalendar.new(date..date).working_day?(date)
-
+      calendars = WorkingCalendar.by_office(date..date)
+      offices = EmployeeProfile.pluck(:user_id, :office_location_id).to_h
       on_leave = LeaveRequest.active_on(date).pluck(:user_id)
       records = AttendanceRecord.for_date(date).index_by(&:user_id)
       day = date.strftime("%d %b")
       HrLite.active_employees(on: date).each do |user|
-        next if on_leave.include?(user.id)
+        next if on_leave.include?(user.id) || !calendars[offices[user.id]].working_day?(date)
 
         record = records[user.id]
         if record.nil? || record.check_in_at.nil?
@@ -44,7 +44,7 @@ module HrLite
     def penalize_short_day(record)
       return unless HrLite.config.attendance_slots && record.check_out_at < record.required_check_out_at
 
-      next_day = AttendancePenalty.next_working_days(record.date, 1).first
+      next_day = AttendancePenalty.next_working_days(record.user_id, record.date, 1).first
       AttendancePenalty.find_or_create_by!(attendance_record: record, reason: "short_day", date: next_day) do |p|
         p.user_id = record.user_id
         p.minutes = AttendanceSlot::STEP_MINUTES

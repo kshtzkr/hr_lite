@@ -11,12 +11,13 @@
   <% if @holidays.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Date</th><th>Holiday</th><th>Optional</th><th></th></tr></thead>
+        <thead><tr><th>Date</th><th>Holiday</th><th>Applies to</th><th>Optional</th><th></th></tr></thead>
         <tbody>
           <% @holidays.each do |holiday| %>
             <tr>
               <td data-label="Date"><%= holiday.date.strftime("%a, %d %b %Y") %></td>
               <td data-label="Holiday"><%= holiday.name %></td>
+              <td data-label="Applies to"><%= holiday.office_label %></td>
               <td data-label="Optional"><%= holiday.optional ? "Yes" : "No" %></td>
               <td data-label="">
                 <%= button_to "Remove", hr_lite.admin_holiday_path(holiday), method: :delete,
@@ -39,6 +40,10 @@
     <%= form_with model: @holiday, url: hr_lite.admin_holidays_path, local: true do |f| %>
       <div class="hrl-field"><%= f.label :date %><%= f.date_field :date %></div>
       <div class="hrl-field"><%= f.label :name %><%= f.text_field :name %></div>
+      <% if @offices.any? %>
+        <div class="hrl-field"><%= f.label :office_location_id, "Applies to" %>
+          <%= f.select :office_location_id, @offices, { include_blank: "All offices" }, data: { hrl_filter: ("Type an office" if @offices.size > 5) } %></div>
+      <% end %>
       <div class="hrl-field hrl-field--check"><%= f.check_box :optional %><%= f.label :optional, "Optional / restricted" %></div>
       <div class="hrl-form-actions"><%= f.submit "Add holiday", class: "hrl-btn hrl-btn--primary" %></div>
     <% end %>
@@ -48,6 +53,10 @@
     <h2 class="hrl-card__title">Bulk paste</h2>
     <p class="hrl-small hrl-muted">One per line: <code>YYYY-MM-DD, Name</code> (append <code>, optional</code> for restricted holidays). Duplicates are skipped.</p>
     <%= form_with url: hr_lite.bulk_create_admin_holidays_path, method: :post, local: true do %>
+      <% if @offices.any? %>
+        <div class="hrl-field"><label for="bulk-office">Applies to</label>
+          <%= select_tag :office_location_id, options_for_select(@offices), include_blank: "All offices", id: "bulk-office", data: { hrl_filter: ("Type an office" if @offices.size > 5) } %></div>
+      <% end %>
       <div class="hrl-field">
         <textarea name="lines" class="hrl-input" rows="6" placeholder="2026-11-09, Diwali&#10;2026-03-04, Holi"></textarea>
       </div>

@@ -43,7 +43,7 @@
       <dt>Worked</dt><dd><%= hrl_duration(rec&.worked_duration) %></dd>
       <% if part %><dt>Half</dt><dd><%= HrLite::DAY_PARTS.rassoc(part)&.first %></dd><% end %>
       <% if leave %><dt>Leave</dt><dd><%= leave.leave_type.name %></dd><% end %>
-      <% if @day_info.kind == :holiday %><dt>Holiday</dt><dd><%= HrLite::Holiday.find_by(date: @day)&.name %></dd><% end %>
+      <% if @day_info.kind == :holiday %><dt>Holiday</dt><dd><%= HrLite::Holiday.company_wide.for_office(HrLite::WorkingCalendar.office_for(hr_current_user.id)).where(date: @day).pick(:name) %></dd><% end %>
       <% if rec&.flagged? %><dt>Flag</dt><dd><%= rec.flag_note %></dd><% end %>
       <% if @day_ticket %><dt>Ticket</dt><dd><%= hrl_request_status_badge(@day_ticket.status) %> <%= @day_ticket.times_label %></dd><% end %>
     </dl>

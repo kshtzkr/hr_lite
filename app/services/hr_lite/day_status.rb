@@ -13,7 +13,7 @@ module HrLite
     def initialize(user:, range:)
       @range = range
       @records = AttendanceRecord.where(user_id: user.id, date: range).index_by(&:date)
-      @calendar = WorkingCalendar.new(range)
+      @calendar = WorkingCalendar.for_user(user.id, range)
       @leaves = LeaveRequest.approved.includes(:leave_type)
                             .where(user_id: user.id)
                             .overlapping_range(range.first, range.last).to_a

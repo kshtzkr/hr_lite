@@ -37,7 +37,7 @@ module DemoSeeds
 
     [ leadership, admin, employee, colleague ].each_with_index do |user, index|
       HrLite::EmployeeProfile.create!(
-        user_id: user.id, employee_code: format("EMP%03d", index + 1),
+        user_id: user.id, employee_code: format("EMP%03d", index + 1), office_location_id: office.id,
         designation: user.designation || "Manager",
         date_of_joining: Date.current.prev_year.beginning_of_year,
         department: index.even? ? "Operations" : "Sales",

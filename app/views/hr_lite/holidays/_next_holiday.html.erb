@@ -1,6 +1,6 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Upcoming holidays</h2>
-  <% holidays = HrLite::Holiday.company_wide.upcoming.where(date: ..Date.current + 60).limit(3).to_a %>
+  <% holidays = HrLite::Holiday.company_wide.for_office(HrLite::WorkingCalendar.office_for(hr_current_user.id)).upcoming.where(date: ..Date.current + 60).limit(3).to_a %>
   <% if holidays.any? %>
     <div class="hrl-feed">
       <% holidays.each do |holiday| %>

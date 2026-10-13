@@ -20,8 +20,8 @@ module HrLite
 
     scope :active, -> { where(removed_at: nil) }
 
-    def self.next_working_days(date, count)
-      calendar = WorkingCalendar.new((date + 1)..(date + 31))
+    def self.next_working_days(user_id, date, count)
+      calendar = WorkingCalendar.for_user(user_id, (date + 1)..(date + 31))
       ((date + 1)..(date + 31)).select { |d| calendar.working_day?(d) }.first(count)
     end
 

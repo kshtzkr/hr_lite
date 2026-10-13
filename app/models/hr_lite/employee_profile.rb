@@ -12,6 +12,8 @@ module HrLite
     # Reporting line (L1). Optional; the org chart treats manager-less
     # profiles as roots (founders/directors).
     belongs_to :manager, class_name: HrLite.config.user_class, optional: true
+    # Decides which office holidays apply; none = only all-office holidays.
+    belongs_to :office_location, optional: true
 
     encrypts :pan_number, :pf_uan, :esi_number, :bank_account_number, :bank_ifsc, :blood_group, :emergency_contact
     # fy_opening_*: income already paid this financial year that this install

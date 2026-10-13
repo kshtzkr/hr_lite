@@ -25,17 +25,20 @@ module HrLite
       # The current week counts only the days already over.
       def week
         @monday = parse_date_param(params[:date]).beginning_of_week(:monday)
-        calendar = WorkingCalendar.new(@monday..(@monday + 4))
-        days = (@monday..[ @monday + 4, Date.current - 1 ].min).select { |d| calendar.working_day?(d) }
+        span = @monday..[ @monday + 4, Date.current - 1 ].min
+        calendars = WorkingCalendar.by_office(@monday..(@monday + 4))
         visible = hr_access.visible_user_ids("attendance.view")
         employees = HrLite.active_employees(on: @monday)
         employees = employees.select { |user| visible.include?(user.id) } if visible
-        records = AttendanceRecord.where(user_id: employees.map(&:id), date: days).group_by(&:user_id)
-        on_leave = days.index_with { |d| LeaveRequest.active_on(d).where(half_day: false).pluck(:user_id) }
+        offices = EmployeeProfile.where(user_id: employees.map(&:id)).pluck(:user_id, :office_location_id).to_h
+        records = AttendanceRecord.where(user_id: employees.map(&:id), date: span).group_by(&:user_id)
+        on_leave = span.index_with { |d| LeaveRequest.active_on(d).where(half_day: false).pluck(:user_id) }
         week_hours = HrLite.config.work_hours&.dig(:week)
 
         @rows = employees.map do |user|
-          worked = records.fetch(user.id, []).filter_map(&:worked_duration)
+          # Each person's own working days: their office's holidays are off.
+          days = span.select { |d| calendars[offices[user.id]].working_day?(d) }
+          worked = records.fetch(user.id, []).select { |r| days.include?(r.date) }.filter_map(&:worked_duration)
           hours = worked.sum / 3600.0
           target = week_hours && week_hours * days.count { |d| on_leave[d].exclude?(user.id) } / 5.0
           { user: user, hours: hours, avg: worked.any? ? hours / worked.size : nil, target: target,
