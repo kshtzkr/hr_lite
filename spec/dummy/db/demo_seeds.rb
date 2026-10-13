@@ -64,6 +64,7 @@ module DemoSeeds
 
     seed_attendance(employee, office)
     seed_attendance(colleague, office, flagged: true)
+    seed_work_modes(employee)
     seed_leaves(employee, admin, leadership)
     seed_kudos(employee, colleague, admin)
     seed_tickets(employee, colleague)
@@ -100,6 +101,29 @@ module DemoSeeds
       )
       record.add_flag!("Check-in 2.4 km from Head office (±35 m)") if flagged && days_ago.odd?
       record.save!
+    end
+  end
+
+  # A mode timeline behind each seeded day, so My work time has charts:
+  # office all day with a lunch, a busy hour on most days, a client meeting
+  # on Wednesdays, Offline after check-out.
+  def seed_work_modes(user)
+    HrLite::AttendanceRecord.where(user_id: user.id).where.not(check_out_at: nil).order(:date).each do |r|
+      r.update_columns(work_mode: "office")
+      add = ->(mode, from, to, source = "employee") do
+        HrLite::WorkModeEvent.create!(user_id: user.id, mode: mode, source: source, started_at: from, ended_at: to,
+                                      end_reason: "switched", attendance_record_id: r.id)
+      end
+      noon = r.date.in_time_zone.change(hour: 13)
+      if r.date.wednesday?
+        add.("office", r.check_in_at, noon - 2.hours, "system")
+        add.("outside_meeting", noon - 2.hours, r.check_out_at, "employee")
+      else
+        add.("office", r.check_in_at, r.check_out_at, "system")
+        add.("busy", noon - 2.hours, noon - 1.hour) unless r.date.friday?
+      end
+      add.("lunch", noon, noon + 30.minutes)
+      add.("offline", r.check_out_at, r.check_out_at + 14.hours, "system")
     end
   end
 
