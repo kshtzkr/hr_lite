@@ -20,19 +20,39 @@
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @board.rows.size %></div><div class="hrl-kpi__label">Team size</div></div>
 </div>
 
+<% if @statuses %>
+  <section class="hrl-card">
+    <%= form_with url: hr_lite.team_path, method: :get, local: true, class: "hrl-row" do %>
+      <% if @departments.any? %>
+        <div class="hrl-field"><label for="team-dept">Department</label><%= select_tag :department, options_for_select(@departments, params[:department]), include_blank: "All", id: "team-dept" %></div>
+      <% end %>
+      <div class="hrl-field"><label for="team-mode">Mode</label><%= select_tag :mode, options_for_select(HrLite::WorkModeEvent::MODES.map { |k, v| [ v[0], k ] } + HrLite::WorkStatus::DERIVED.map { |k, v| [ v, k ] }.reject { |_, k| k == "offline" }, @mode), include_blank: "All", id: "team-mode" %></div>
+      <div class="hrl-field"><label for="team-avail">Availability</label><%= select_tag :availability, options_for_select([ [ "Available", "available" ], [ "Not available", "unavailable" ] ], @availability), include_blank: "All", id: "team-avail" %></div>
+      <div class="hrl-form-actions"><button type="submit" class="hrl-btn">Filter</button></div>
+    <% end %>
+  </section>
+<% end %>
+
 <section class="hrl-card">
-  <% if @board.rows.any? %>
+  <% rows = @rows || @board.rows %>
+  <% if rows.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Name</th><th>Status</th><th>Hours <%= @date == Date.current ? "today" : "that day" %></th><th>Hours this month</th></tr></thead>
+        <thead><tr><th>Name</th><% if @statuses %><th>Now</th><% end %><th>Status</th><th>Hours <%= @date == Date.current ? "today" : "that day" %></th><th>Hours this month</th></tr></thead>
         <tbody>
-          <% @board.rows.each do |row| %>
+          <% rows.each do |row| %>
             <tr>
               <td data-label="Name">
                 <span><%= tag.strong hr_display_name(row.user), title: ("On leave: #{row.leave.date_range_label}" if row.leave) %><% if row.profile&.designation.present? %>
                   <span class="hrl-small hrl-muted"> · <%= row.profile.designation %></span><% end %><% if HrLite.config.attendance_slots && row.profile&.buffer_minutes %>
                   <span class="hrl-badge hrl-badge--muted">+<%= row.profile.buffer_minutes / 60 %>h buffer · <%= HrLite::EmployeeProfile::BUFFER_REASONS[row.profile.buffer_reason] %></span><% end %></span>
               </td>
+              <% if (st = @statuses&.dig(row.user.id)) %>
+                <td data-label="Now"><span class="hrl-modes"><%= hrl_status_icons(st) %></span>
+                  <span class="hrl-small"><%= st.primary.place || st.primary.label %><% if st.overlay %> · <%= st.overlay.label %><% end %>
+                    <% if (till = st.overlay&.until || (st.primary.until if st.primary.until.respond_to?(:hour))) %> · until <%= till.strftime("%H:%M") %><% end %></span>
+                  <% if st.updated_at %><span class="hrl-small hrl-muted"> · since <%= st.updated_at.strftime("%H:%M") %></span><% end %></td>
+              <% end %>
               <td data-label="Status"><%= hrl_team_status(row) %></td>
               <td data-label="Hours <%= @date == Date.current ? "today" : "that day" %>" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>
               <td data-label="Hours this month" class="hrl-num"><%= hrl_duration(row.month_seconds) %></td>
@@ -42,7 +62,7 @@
       </table>
     </div>
   <% else %>
-    <p class="hrl-card--empty">Nobody to show for this date.</p>
+    <p class="hrl-card--empty">Nobody to show<%= @rows ? " for these filters" : " for this date" %>.</p>
   <% end %>
   <p class="hrl-small hrl-muted hrl-mt">Forgot a punch yourself?
     <a class="hrl-card__link" href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a></p>

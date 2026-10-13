@@ -6,12 +6,19 @@ module HrLite
     LATE_HALF_DAY_NOTE = "Half day: checked in after 11:30".freeze
     # Half days the system set (not HR); an approved ticket lifts them.
     AUTO_NOTES = [ AUTO_CHECKOUT_NOTE, SHORT_DAY_NOTE, LATE_HALF_DAY_NOTE ].freeze
+    # Where the day was worked, set at check-in under config.office_geofence.
+    WORK_MODES = { "office" => "Office", "wfh" => "WFH", "travelling" => "Travelling",
+                   "outside_meeting" => "Client meeting" }.freeze
     # Check-in and check-out further apart than this are called out on the board.
     PUNCH_GAP_ALERT_M = 500
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :regularized_by, class_name: HrLite.config.user_class, optional: true
     belongs_to :wfh_request, optional: true
+    belongs_to :work_location, optional: true
+
+    def remote? = work_mode.present? && work_mode != "office"
+    def work_mode_label = WORK_MODES[work_mode]
 
     validates :date, presence: true, uniqueness: { scope: :user_id }
     validates :status, inclusion: { in: STATUSES }

@@ -569,3 +569,14 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 /* Notifications link, shown only when the host configures one. */
 .hrl-bell { display: inline-flex; align-items: center; gap: .4rem; min-height: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
 .hrl-bell__count { min-width: 1.4rem; padding: 0 .4rem; border-radius: var(--hrl-radius-pill); background: var(--hrl-accent); color: var(--hrl-accent-ink); font-size: var(--hrl-t-micro); text-align: center; }
+
+/* Work-mode icons. A small dot marks a mode the system set. */
+.hrl-modes { display: inline-flex; gap: .25rem; vertical-align: middle; }
+.hrl-mode { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: var(--hrl-radius-pill); background: var(--hrl-bg); color: var(--hrl-ink); flex: none; }
+.hrl-mode--office, .hrl-mode--wfh { background: var(--hrl-ok-bg); color: var(--hrl-ok); }
+.hrl-mode--travelling, .hrl-mode--outside_meeting, .hrl-mode--meeting { background: var(--hrl-info-bg); color: var(--hrl-accent); }
+.hrl-mode--lunch, .hrl-mode--short_break, .hrl-mode--busy, .hrl-mode--out_of_office { background: var(--hrl-warn-bg); color: var(--hrl-warn); }
+.hrl-mode--sick_leave, .hrl-mode--on_leave, .hrl-mode--holiday { background: var(--hrl-warn-bg); color: var(--hrl-warn); }
+.hrl-mode--auto::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 7px; height: 7px; border-radius: var(--hrl-radius-pill); background: var(--hrl-muted); border: 1.5px solid var(--hrl-card); }
+.hrl-mode-switch { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--hrl-gap-target); margin-top: .5rem; }
+.hrl-mode-switch > details { grid-column: 1 / -1; }

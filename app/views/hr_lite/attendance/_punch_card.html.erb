@@ -18,8 +18,8 @@
     <% if record&.check_out_at %>
       <span class="hrl-badge hrl-badge--muted">Out <%= record.check_out_at.strftime("%H:%M") %></span>
     <% end %>
-    <% if record&.wfh %>
-      <span class="hrl-badge hrl-badge--ok">WFH</span>
+    <% if record&.work_mode_label %>
+      <span class="hrl-badge hrl-badge--ok"><%= record.work_mode_label %></span>
     <% end %>
     <% if record&.flagged? %>
       <span class="hrl-badge hrl-badge--bad">Flagged</span>
@@ -33,6 +33,9 @@
   </div>
   <% if HrLite.config.attendance_slots %>
     <%= render "hr_lite/attendance/slot", record: record %>
+  <% end %>
+  <% if HrLite.config.office_geofence %>
+    <%= render "hr_lite/attendance/work_mode", record: record %>
   <% end %>
   <% if record&.flagged? %>
     <p class="hrl-small">Flagged: <%= record.flag_note %></p>
@@ -53,6 +56,18 @@
                   html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <% if HrLite.config.office_geofence && HrLite::EmployeeProfile.where(user_id: hr_current_user.id).pick(:field_staff) %>
+        <details>
+          <summary class="hrl-btn hrl-btn--block">Checking in from the field?</summary>
+          <fieldset class="hrl-field">
+            <legend class="hrl-small">Where are you?</legend>
+            <label class="hrl-field--check"><input type="radio" name="field[mode]" value="travelling"> Travelling</label>
+            <label class="hrl-field--check"><input type="radio" name="field[mode]" value="outside_meeting"> Client meeting</label>
+          </fieldset>
+          <div class="hrl-field"><label for="field-purpose">Purpose</label><input type="text" class="hrl-input" id="field-purpose" name="field[purpose]" maxlength="120"></div>
+          <div class="hrl-field"><label for="field-place">Destination or client</label><input type="text" class="hrl-input" id="field-place" name="field[place]" maxlength="120"></div>
+        </details>
+      <% end %>
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
@@ -79,6 +94,7 @@
   <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
   <% if HrLite.config.office_geofence %>
     · <a class="hrl-card__link" href="<%= hr_lite.wfh_requests_path %>">Work from home</a>
+    · <a class="hrl-card__link" href="<%= hr_lite.work_locations_path %>">WFH locations</a>
   <% end %>
 
   <% if local_assigns.key?(:attention) %>

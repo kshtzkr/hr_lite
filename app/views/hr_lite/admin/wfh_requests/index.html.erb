@@ -36,7 +36,7 @@
   <% if @home.any? %>
     <% @home.each do |row| %>
       <% rec = @records[row.user.id]
-         state, tone = rec ? (rec.wfh ? [ "WFH check-in", "ok" ] : [ "In office", "muted" ]) : [ "Not checked in", "muted" ] %>
+         state, tone = rec ? (rec.work_mode == "wfh" ? [ "WFH check-in", "ok" ] : [ "#{rec.work_mode_label || 'Checked in'}", "muted" ]) : [ "Not checked in", "muted" ] %>
       <div class="hrl-feed__item hrl-row">
         <div class="hrl-feed__body"><strong><%= hr_display_name(row.user) %></strong> · <%= row.label %>
           <span class="hrl-badge hrl-badge--<%= tone %>"><%= state %></span></div>

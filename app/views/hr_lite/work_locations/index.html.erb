@@ -1,0 +1,52 @@
+<% content_for(:page_title) { "WFH locations" } %>
+<% content_for(:back, "Attendance") %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">My WFH locations</h1>
+</div>
+
+<section class="hrl-card">
+  <p class="hrl-small hrl-muted">On an approved WFH day you check in within <%= HrLite::WorkLocation::FENCE_M %> m of your active location.
+    Register up to <%= HrLite::WorkLocation::MAX_LIVE %> places; HR approves each one. Your location is read only when you check in or tap
+    "Register here" — never tracked in between. Teammates see "Home", never the address.</p>
+  <% if @locations.any? %>
+    <% @locations.each do |location| %>
+      <div class="hrl-feed__item hrl-row">
+        <div class="hrl-feed__body">
+          <strong><%= location.name %></strong>
+          <% if location.active? %><span class="hrl-badge hrl-badge--ok">Active</span><% end %>
+          <%= hrl_request_status_badge(location.status) %>
+          <% if location.address.present? %><div class="hrl-small hrl-muted"><%= location.address %></div><% end %>
+          <% if location.decision_note.present? %><div class="hrl-small hrl-muted">HR: <%= location.decision_note %></div><% end %>
+        </div>
+        <% if location.approved? && !location.active? %>
+          <%= button_to "Use this", hr_lite.activate_work_location_path(location), method: :post, class: "hrl-btn" %>
+        <% end %>
+        <%= button_to "Remove", hr_lite.remove_work_location_path(location), method: :post, class: "hrl-btn hrl-btn--danger",
+                      form: { data: { turbo_confirm: "Remove #{location.name}?" } } %>
+      </div>
+    <% end %>
+  <% else %>
+    <p class="hrl-card--empty">No locations yet.</p>
+  <% end %>
+</section>
+
+<%= render "hr_lite/shared/form_errors", record: @location %>
+
+<% if @locations.size < HrLite::WorkLocation::MAX_LIVE %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Register where you are now</h2>
+    <%= form_with url: hr_lite.work_locations_path, method: :post, local: true,
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": true } } do %>
+      <div class="hrl-field"><label for="loc-name">Name</label><%= text_field_tag :name, @location.name, required: true, maxlength: 60, placeholder: "Home", id: "loc-name" %></div>
+      <div class="hrl-field"><label for="loc-address">Address or landmark (optional, HR only)</label><%= text_field_tag :address, @location.address, maxlength: 200, id: "loc-address" %></div>
+      <input type="hidden" name="lat"><input type="hidden" name="lng">
+      <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--block">Register here</button>
+      <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
+    <% end %>
+  </section>
+<% end %>
+
+<% content_for :scripts do %>
+  <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+<% end %>

@@ -1,0 +1,102 @@
+<% content_for(:page_title) { "Work modes" } %>
+<% live = @date == Date.current
+   modes = HrLite::WorkModeEvent::MODES.map { |k, v| [ k, v[0] ] } + HrLite::WorkStatus::DERIVED.except("offline").to_a %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Work modes — <%= live ? "now" : @date.strftime("%a %-d %b") %></h1>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_work_modes_path(date: @date, department: "Sales") %>">Sales team</a>
+  </div>
+</div>
+
+<section class="hrl-card">
+  <%= form_with url: hr_lite.admin_work_modes_path, method: :get, local: true, class: "hrl-row" do %>
+    <div class="hrl-field"><label for="wm-date">Date</label><%= date_field_tag :date, @date, max: Date.current, id: "wm-date" %></div>
+    <% if @departments.any? %>
+      <div class="hrl-field"><label for="wm-dept">Department</label><%= select_tag :department, options_for_select(@departments, params[:department]), include_blank: "All", id: "wm-dept" %></div>
+    <% end %>
+    <div class="hrl-form-actions"><button type="submit" class="hrl-btn">Show</button></div>
+  <% end %>
+  <p class="hrl-small hrl-muted"><%= live ? "Live status. A person can count twice when a break or meeting sits on top of their work mode." : "Everyone who spent any time in each mode that day." %></p>
+</section>
+
+<div class="hrl-kpis">
+  <% modes.each do |mode, label| %>
+    <% next unless @by_mode[mode]&.any? %>
+    <a class="hrl-kpi" href="#mode-<%= mode %>"><div class="hrl-kpi__value"><%= @by_mode[mode].size %></div>
+      <div class="hrl-kpi__label"><%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: label)) %> <%= label %></div></a>
+  <% end %>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @needs_review.size %></div><div class="hrl-kpi__label">Needs review</div></div>
+</div>
+
+<% if @needs_review.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Needs review — working day, no leave, no check-in</h2>
+    <% @needs_review.each do |id| %>
+      <div class="hrl-feed__item hrl-row"><div class="hrl-feed__body"><%= hr_display_name(@people[id]) %></div>
+        <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(id, month: @date.strftime("%Y-%m")) %>">Their month</a></div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @field.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Field check-ins</h2>
+    <% @field.each do |record| %>
+      <% event = @field_events[record.id] %>
+      <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">
+        <strong><%= hr_display_name(@people[record.user_id]) %></strong> · <%= record.work_mode_label %> · <%= record.check_in_at.strftime("%H:%M") %>
+        <% if event %> · <%= [ event.title, event.client, event.destination ].compact_blank.join(" · ") %><% end %>
+        <% if record.check_in_lat %> · <a class="hrl-card__link" href="https://www.google.com/maps?q=<%= record.check_in_lat %>,<%= record.check_in_lng %>" target="_blank" rel="noopener noreferrer">Map</a><% end %>
+      </div></div>
+    <% end %>
+  </section>
+<% end %>
+
+<% modes.each do |mode, label| %>
+  <% next unless @by_mode[mode]&.any? %>
+  <section class="hrl-card" id="mode-<%= mode %>">
+    <h2 class="hrl-card__title"><%= label %></h2>
+    <% @by_mode[mode].each do |id| %>
+      <div class="hrl-feed__item hrl-row"><div class="hrl-feed__body"><%= hr_display_name(@people[id]) %></div>
+        <a class="hrl-btn" href="<%= hr_lite.admin_work_modes_path(date: @date, department: params[:department], user_id: id, anchor: "timeline") %>">Timeline<span class="hrl-sr-only"> for <%= hr_display_name(@people[id]) %></span></a></div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if @person %>
+  <section class="hrl-card" id="timeline">
+    <h2 class="hrl-card__title"><%= hr_display_name(@person) %> — <%= @date.strftime("%a %-d %b") %></h2>
+    <% if @timeline.any? %>
+      <% @timeline.each do |event| %>
+        <% ended = event.ended_at || (event.ends_at if event.expired?) %>
+        <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">
+          <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: event.mode, label: event.label, source: event.source)) %>
+          <strong><%= event.started_at.strftime("%H:%M") %>–<%= ended&.strftime("%H:%M") || "now" %></strong> <%= event.label %>
+          · <%= hrl_duration((ended || Time.current) - event.started_at) %>
+          · <%= HrLite::ApplicationHelper::MODE_SOURCES[event.source] %><% if event.set_by && event.source == "hr" %> (<%= hr_display_name(event.set_by) %>)<% end %>
+          <% details = [ event.title, event.client, event.destination, (@locations[event.work_location_id]&.name if event.work_location_id), event.reason ].compact_blank %>
+          <% if details.any? %><div class="hrl-muted"><%= details.join(" · ") %></div><% end %>
+          <% if event.overrun %><span class="hrl-badge hrl-badge--warn">Ended at the limit</span><% end %>
+        </div></div>
+      <% end %>
+    <% else %>
+      <p class="hrl-card--empty">No mode changes recorded that day.</p>
+    <% end %>
+
+    <% if live && @person.id != hr_current_user.id %>
+      <details>
+        <summary class="hrl-btn">Set their mode</summary>
+        <%= form_with url: hr_lite.admin_work_mode_override_path(@person.id), method: :post, local: true do %>
+          <div class="hrl-field"><label for="ov-mode">Mode</label><%= select_tag :mode, options_for_select(HrLite::WorkModeSwitch::SELECTABLE.map { |m| [ HrLite::WorkModeEvent.label(m), m ] }), id: "ov-mode" %></div>
+          <div class="hrl-field"><label for="ov-title">Title / purpose (meeting, travel, client meeting)</label><input class="hrl-input" id="ov-title" name="title" maxlength="120"></div>
+          <div class="hrl-field"><label for="ov-client">Client</label><input class="hrl-input" id="ov-client" name="client" maxlength="120"></div>
+          <div class="hrl-field"><label for="ov-dest">Destination</label><input class="hrl-input" id="ov-dest" name="destination" maxlength="120"></div>
+          <div class="hrl-field"><label for="ov-cat">Out-of-office reason</label><%= select_tag :category, options_for_select(HrLite::WorkModeSwitch::OUT_OF_OFFICE_REASONS.invert), include_blank: "—", id: "ov-cat" %></div>
+          <div class="hrl-field"><label for="ov-until">Ends at</label><input class="hrl-input" type="time" id="ov-until" name="until"></div>
+          <div class="hrl-field"><label for="ov-reason">Why HR is setting it (required)</label><input class="hrl-input" id="ov-reason" name="reason" maxlength="200" required></div>
+          <button type="submit" class="hrl-btn hrl-btn--primary">Set mode</button>
+        <% end %>
+      </details>
+    <% end %>
+  </section>
+<% end %>

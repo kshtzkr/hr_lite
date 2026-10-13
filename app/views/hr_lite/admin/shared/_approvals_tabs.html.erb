@@ -1,4 +1,4 @@
-<%# locals: active (:leaves | :comp_off | :regularizations | :wfh | :balances) %>
+<%# locals: active (:leaves | :comp_off | :regularizations | :wfh | :locations | :balances) %>
 <% tab = ->(key) { tag.attributes(class: [ "hrl-btn", ("hrl-btn--primary" if active == key) ], aria: { current: ("page" if active == key) }) } %>
 <div class="hrl-row hrl-row--mb hrl-row--tabs">
   <a <%= tab.(:leaves) %>
@@ -12,6 +12,9 @@
   <a <%= tab.(:wfh) %>
      href="<%= hr_lite.admin_wfh_requests_path %>">WFH
     <% if (n = HrLite::WfhRequest.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
+  <a <%= tab.(:locations) %>
+     href="<%= hr_lite.admin_work_locations_path %>">Locations
+    <% if (n = HrLite::WorkLocation.pending.count).positive? %><span class="hrl-badge hrl-badge--warn"><%= n %></span><% end %></a>
   <a <%= tab.(:balances) %>
      href="<%= hr_lite.admin_leave_balances_path %>">Balances</a>
 </div>
