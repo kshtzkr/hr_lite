@@ -1,0 +1,36 @@
+<%# Share of tracked time (working + breaks + out of office; Offline excluded). %>
+<% total = result.tracked
+   modes = result.by_mode.except("offline").select { |_, s| s.positive? }.sort_by { |_, s| -s }
+   counts = result.segments.group_by(&:mode).transform_values(&:size)
+   offset = 25.0 %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Where the time went</h2>
+  <% if total.positive? %>
+    <div class="hrl-chart-row">
+      <svg class="hrl-donut" viewBox="0 0 42 42" role="img" aria-label="Share of tracked time by work mode; details in the table">
+        <circle cx="21" cy="21" r="15.915" fill="none" class="hrl-donut__track" stroke-width="6"></circle>
+        <% modes.each do |mode, secs| %>
+          <% pct = secs * 100.0 / total %>
+          <circle cx="21" cy="21" r="15.915" fill="none" stroke-width="6" class="hrl-stroke--<%= mode %>"
+                  stroke-dasharray="<%= pct.round(3) %> <%= (100 - pct).round(3) %>" stroke-dashoffset="<%= offset.round(3) %>">
+            <title><%= label.(mode) %>: <%= hrl_duration(secs) %> (<%= pct.round %>%)</title>
+          </circle>
+          <% offset -= pct %>
+        <% end %>
+      </svg>
+      <table class="hrl-table hrl-small">
+        <thead><tr><th>Mode</th><th class="hrl-num">Time</th><th class="hrl-num">Share</th><th class="hrl-num">Stretches</th></tr></thead>
+        <tbody>
+          <% modes.each do |mode, secs| %>
+            <tr><td><span class="hrl-swatch hrl-fill-bg--<%= mode %>" aria-hidden="true"></span> <%= label.(mode) %></td>
+              <td class="hrl-num"><%= hrl_duration(secs) %></td><td class="hrl-num"><%= (secs * 100.0 / total).round %>%</td>
+              <td class="hrl-num"><%= counts[mode] %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <p class="hrl-small hrl-muted">Shares are of tracked time (<%= hrl_duration(total) %>: working, breaks and out of office). Offline (<%= hrl_duration(result.offline) %>) is not included.</p>
+  <% else %>
+    <p class="hrl-card--empty">Only offline time recorded.</p>
+  <% end %>
+</section>

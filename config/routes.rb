@@ -23,6 +23,7 @@ HrLite::Engine.routes.draw do
   resources :wfh_requests, only: %i[index create] do
     member { post :cancel }
   end
+  get "work_time", to: "work_time#show", as: :work_time
   resource :work_mode, only: :create do
     post :end_overlay
   end
@@ -90,6 +91,7 @@ HrLite::Engine.routes.draw do
       member { post :approve; post :reject }
     end
     get "work_modes", to: "work_modes#index", as: :work_modes
+    get "work_time", to: "work_time#index", as: :work_time
     post "work_modes/:user_id", to: "work_modes#override", as: :work_mode_override
     resources :roles, except: :show do
       resources :assignments, only: %i[create destroy], controller: "role_assignments"

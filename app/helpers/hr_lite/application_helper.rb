@@ -35,6 +35,8 @@ module HrLite
       { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
       { label: "Work modes",      path: :admin_work_modes_path,      match: [ "/admin/work_modes" ],
         if: -> { HrLite.config.office_geofence } },
+      { label: "Work time",       path: :admin_work_time_path,       match: [ "/admin/work_time" ],
+        if: -> { HrLite.config.office_geofence && hr_can?("work_analytics.view", scope: :team) } },
       { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests", "/admin/wfh_requests", "/admin/work_locations" ] },
       { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] },
       { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ],

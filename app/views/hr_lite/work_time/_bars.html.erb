@@ -1,0 +1,44 @@
+<%# Stacked bars per bucket (day / week / month), Offline left out. %>
+<% buckets = result.by_bucket
+   totals = buckets.transform_values { |m| m.except("offline").values.sum }
+   max = [ totals.values.max.to_f, 1 ].max
+   w = 12; gap = 4; h = 100
+   fmt = { day: "%-d", week: "%-d %b", month: "%b" }[period.bucket] %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">By <%= period.bucket %></h2>
+  <div class="hrl-chart-scroll">
+    <svg class="hrl-bars" viewBox="0 0 <%= buckets.size * (w + gap) %> <%= h + 14 %>" role="img"
+         aria-label="Time per <%= period.bucket %> stacked by work mode; tallest bar <%= hrl_duration(max) %>; details in the table">
+      <% buckets.each_with_index do |(key, modes), i| %>
+        <% x = i * (w + gap); y = h %>
+        <a href="<%= path.(period: period.bucket == :day ? "day" : (period.bucket == :week ? "week" : "month"), date: key) %>">
+          <% modes.except("offline").sort.each do |mode, secs| %>
+            <% next unless secs.positive? %>
+            <% bh = secs / max * h; y -= bh %>
+            <rect x="<%= x %>" y="<%= y.round(2) %>" width="<%= w %>" height="<%= bh.round(2) %>" class="hrl-fill--<%= mode %>">
+              <title><%= key.strftime(fmt) %> · <%= label.(mode) %>: <%= hrl_duration(secs) %></title>
+            </rect>
+          <% end %>
+          <rect x="<%= x %>" y="0" width="<%= w %>" height="<%= h %>" fill="transparent"><title><%= key.strftime(fmt) %>: <%= hrl_duration(totals[key]) %> — open</title></rect>
+        </a>
+        <% if buckets.size <= 16 || (i % 7).zero? %>
+          <text x="<%= x + w / 2.0 %>" y="<%= h + 11 %>" text-anchor="middle" class="hrl-bars__label"><%= key.strftime(fmt) %></text>
+        <% end %>
+      <% end %>
+    </svg>
+  </div>
+  <details class="hrl-small">
+    <summary>Show as a table</summary>
+    <table class="hrl-table">
+      <thead><tr><th><%= period.bucket.to_s.capitalize %></th><th class="hrl-num">Working</th><th class="hrl-num">Breaks</th><th class="hrl-num">Total</th></tr></thead>
+      <tbody>
+        <% buckets.each do |key, modes| %>
+          <tr><td><%= key.strftime(period.bucket == :day ? "%a %-d %b" : fmt) %></td>
+            <td class="hrl-num"><%= hrl_duration(HrLite::WorkModeDurations::WORKING.sum { |m| modes[m] }) %></td>
+            <td class="hrl-num"><%= hrl_duration(HrLite::WorkModeDurations::BREAKS.sum { |m| modes[m] }) %></td>
+            <td class="hrl-num"><%= hrl_duration(totals[key]) %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </details>
+</section>

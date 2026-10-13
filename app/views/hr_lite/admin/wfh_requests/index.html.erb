@@ -55,7 +55,7 @@
     <h2 class="hrl-card__title">Give WFH</h2>
     <p class="hrl-small hrl-muted">Approved straight away, up to <%= HrLite::WfhRequest::HR_MAX_DAYS %> days from today or later.</p>
     <%= form_with url: hr_lite.admin_wfh_requests_path, method: :post, local: true do %>
-      <div class="hrl-field"><label for="grant-user">Employee</label><%= select_tag :user_id, options_for_select(@grantable.map { |u| [ hr_display_name(u), u.id ] }), include_blank: "Choose one", required: true, id: "grant-user" %></div>
+      <div class="hrl-field"><label for="grant-user">Employee</label><%= select_tag :user_id, options_for_select(@grantable.map { |u| [ hr_display_name(u), u.id ] }), include_blank: "Choose one", required: true, id: "grant-user", data: { hrl_filter: ("Type a name to filter" if @grantable.size > 5) } %></div>
       <div class="hrl-field"><label for="grant-from">From</label><%= date_field_tag :start_date, Date.current, min: Date.current, required: true, id: "grant-from" %></div>
       <div class="hrl-field"><label for="grant-to">To</label><%= date_field_tag :end_date, Date.current, min: Date.current, required: true, id: "grant-to" %></div>
       <div class="hrl-field"><label for="grant-reason">Reason</label><%= text_area_tag :reason, nil, rows: 2, required: true, id: "grant-reason" %></div>

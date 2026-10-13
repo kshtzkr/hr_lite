@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-10-13
+
+- Work time. Time per work mode, worked out from the mode timeline on every request (a correction shows at once; a break on top of a work mode counts once, as the break). Periods: day, week, month, quarter, year, custom (up to 366 days). Working time = in office, WFH, travelling, client and other meetings, busy; breaks = lunch and short breaks; out of office and offline are shown apart and never counted as working. Employees see their own under My work time; others need the new `work_analytics.view` permission (HR, Leadership and Super Admin get it; Manager does not by default) on Admin → Work time, where opening one person's breakdown is audited. Charts are server-drawn SVG: summary cards, a share donut with its denominator stated, stacked bars that open a day, and an hour-by-hour day strip. HR also gets a "worth a look" list: missing check-outs, worked days with no modes, modes with no check-in.
+
 ## [0.32.0] - 2026-10-13
 
 - Work modes (with `office_geofence`). Check-in sets the day's mode automatically: inside an office radius it is In office; on an approved WFH day (dated or permanent) it must be within 500 m of the person's active approved home location; field staff (a profile switch) may check in from anywhere as Travelling or Client meeting, saying why and where. Check-out ends everything and sets Offline. Employees switch to In office, WFH, Travelling, Client meeting, Meeting, Lunch break (one a day, ends itself at the limit), Short break, Busy or Out of office; a mode is a status and never changes where the day's attendance was authorised. Timed modes end on the server (`WorkModeExpireJob`), with or without the page open. Holidays, leave and sick leave show automatically from their own records and take precedence. Every change is kept in a timeline with its source (system, employee, HR) and audited.

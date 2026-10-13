@@ -1,0 +1,26 @@
+<%# A day as one horizontal strip per person: 00:00 to 24:00. A dashed edge marks a system-set stretch. %>
+<% day_start = period.from.in_time_zone(HrLite.config.time_zone)
+   rows = result.segments.group_by(&:user_id)
+   pct = ->(t) { ((t - day_start) / 86_400.0 * 100).clamp(0, 100) } %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">The day, hour by hour</h2>
+  <% rows.each do |user_id, segs| %>
+    <% if names %><p class="hrl-small"><strong><%= names[user_id] %></strong></p><% end %>
+    <svg class="hrl-timeline" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="Work modes through the day; details in the list below">
+      <% segs.each do |seg| %>
+        <rect x="<%= pct.(seg.from).round(3) %>" y="1" width="<%= [ pct.(seg.to) - pct.(seg.from), 0.15 ].max.round(3) %>" height="8"
+              class="<%= class_names("hrl-fill--#{seg.mode}", "hrl-timeline__auto": seg.source == "system") %>">
+          <title><%= label.(seg.mode) %> · <%= seg.from.strftime("%H:%M") %>–<%= seg.to.strftime("%H:%M") %> · <%= hrl_duration(seg.seconds) %> · <%= HrLite::ApplicationHelper::MODE_SOURCES[seg.source] %></title>
+        </rect>
+      <% end %>
+    </svg>
+    <div class="hrl-timeline__axis hrl-small hrl-muted" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+    <ol class="hrl-timeline__list hrl-small">
+      <% segs.each do |seg| %>
+        <li><span class="hrl-swatch hrl-fill-bg--<%= seg.mode %>" aria-hidden="true"></span>
+          <strong><%= seg.from.strftime("%H:%M") %>–<%= seg.to.strftime("%H:%M") %></strong> <%= label.(seg.mode) %> · <%= hrl_duration(seg.seconds) %>
+          <span class="hrl-muted">· <%= HrLite::ApplicationHelper::MODE_SOURCES[seg.source] %></span></li>
+      <% end %>
+    </ol>
+  <% end %>
+</section>
