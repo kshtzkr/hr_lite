@@ -605,3 +605,8 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-timeline__auto { stroke: var(--hrl-card); stroke-width: .3; stroke-dasharray: .6 .4; }
 .hrl-timeline__axis { display: flex; justify-content: space-between; }
 .hrl-timeline__list { margin: .5rem 0 0; padding-left: 1.2rem; display: grid; gap: .25rem; }
+.hrl-chart-tip { position: absolute; z-index: 30; max-width: 16rem; padding: .4rem .6rem; border-radius: var(--hrl-radius-sm); background: var(--hrl-ink); color: var(--hrl-card); font-size: var(--hrl-t-small); pointer-events: none; }
+[data-hrl-tip]:focus { outline: 2px solid var(--hrl-accent); outline-offset: 1px; }
+.hrl-custom-status { display: inline-flex; gap: .3rem; align-items: center; overflow-wrap: anywhere; }
+.hrl-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: .25rem; margin-top: .4rem; }
+.hrl-emoji { min-height: var(--hrl-target); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-card); font-size: 1.25rem; cursor: pointer; }

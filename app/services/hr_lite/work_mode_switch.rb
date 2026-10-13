@@ -13,6 +13,22 @@ module HrLite
 
     def self.call(...) = new(...).call
 
+    CLEAR_AFTER = { "30" => 30.minutes, "60" => 1.hour, "240" => 4.hours, "today" => :today, "never" => nil }.freeze
+
+    # A person's own status, Slack-style: works with or without a check-in
+    # and clears itself on the chosen timer.
+    def self.set_status(user:, text:, emoji:, clear_after:)
+      now = Time.current
+      span = CLEAR_AFTER.fetch(clear_after.to_s, :today)
+      ends_at = span == :today ? now.in_time_zone(HrLite.config.time_zone).end_of_day : (span && now + span)
+      event = WorkModeEvent.start!(user_id: user.id, mode: "custom", source: "employee", actor: user, at: now,
+                                   title: text.to_s.strip.truncate(100).presence, emoji: emoji.to_s.strip.presence, ends_at: ends_at)
+      WorkModeExpireJob.set(wait_until: ends_at).perform_later(event.id) if ends_at
+      Result.new(event, nil)
+    rescue ActiveRecord::RecordInvalid => e
+      Result.new(nil, e.record.errors.full_messages.to_sentence)
+    end
+
     # params: title, client, destination, reason, minutes, until ("HH:MM" today)
     def initialize(user:, mode:, source:, actor:, params: {})
       @user = user
@@ -66,19 +82,29 @@ module HrLite
     def travelling_attrs
       return "Say where you are going and why." unless @p[:destination] && @p[:title]
 
-      timed(base.merge(destination: @p[:destination], title: @p[:title], client: @p[:client]), required: false)
+      with_lead(base.merge(destination: @p[:destination], title: @p[:title], client: @p[:client])) { |a| timed(a, required: false) }
     end
 
     def outside_meeting_attrs
-      return "Say who you are meeting and why." unless @p[:client] && @p[:title]
+      return "Say who you are meeting and why." unless (@p[:client] || @p[:crm_ref]) && @p[:title]
 
-      timed(base.merge(client: @p[:client], title: @p[:title], destination: @p[:destination]), required: false)
+      with_lead(base.merge(client: @p[:client], title: @p[:title], destination: @p[:destination])) { |a| timed(a, required: false) }
     end
 
     def meeting_attrs
       return "Give the meeting a title." unless @p[:title]
 
-      timed(base.merge(title: @p[:title], client: @p[:client]))
+      with_lead(base.merge(title: @p[:title], client: @p[:client])) { |a| timed(a) }
+    end
+
+    # A picked CRM lead must exist (config.crm_find); its name fills the client.
+    def with_lead(attrs)
+      return yield(attrs) unless @p[:crm_ref]
+
+      lead = HrLite.config.crm_find&.call(@p[:crm_ref])
+      return "That lead was not found." unless lead
+
+      yield(attrs.merge(crm_ref: @p[:crm_ref], client: attrs[:client] || lead[:label].to_s.truncate(120)))
     end
 
     def busy_attrs = timed(base)

@@ -11,6 +11,7 @@
       <span data-hrl-countdown="<%= timed.iso8601 %>"><%= hrl_duration([ timed - Time.current, 0 ].max) %> left</span></span>
   <% end %>
 </div>
+<%= render "hr_lite/attendance/custom_status", status: status %>
 <% if status.half_day_leave %><p class="hrl-small hrl-muted">Half-day leave today (<%= status.half_day_leave.half_day_part || "half day" %>).</p><% end %>
 
 <% if working %>
@@ -45,6 +46,7 @@
           <input type="hidden" name="mode" value="meeting">
           <div class="hrl-field"><label for="mt-title">Meeting</label><input class="hrl-input" id="mt-title" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="mt-client">Client (optional)</label><input class="hrl-input" id="mt-client" name="client" maxlength="120"></div>
+          <%= render "hr_lite/attendance/crm_picker", id: "mt-crm" %>
           <div class="hrl-field"><label for="mt-until">Ends at</label><input class="hrl-input" type="time" id="mt-until" name="until" required></div>
           <button type="submit" class="hrl-btn hrl-btn--primary">Start meeting</button>
         <% end %>
@@ -56,6 +58,7 @@
           <div class="hrl-field"><label for="tr-dest">Going to</label><input class="hrl-input" id="tr-dest" name="destination" maxlength="120" required></div>
           <div class="hrl-field"><label for="tr-why">Purpose</label><input class="hrl-input" id="tr-why" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="tr-client">Client (optional)</label><input class="hrl-input" id="tr-client" name="client" maxlength="120"></div>
+          <%= render "hr_lite/attendance/crm_picker", id: "tr-crm" %>
           <div class="hrl-field"><label for="tr-until">Back by (optional)</label><input class="hrl-input" type="time" id="tr-until" name="until"></div>
           <button type="submit" class="hrl-btn hrl-btn--primary">Start travelling</button>
         <% end %>
@@ -64,7 +67,8 @@
         <summary class="hrl-btn hrl-btn--block">Client meeting (outside)</summary>
         <%= form_with url: hr_lite.work_mode_path, method: :post, local: true, data: { turbo_confirm: "Switch to an outside-office meeting?" } do %>
           <input type="hidden" name="mode" value="outside_meeting">
-          <div class="hrl-field"><label for="om-client">Client or prospect</label><input class="hrl-input" id="om-client" name="client" maxlength="120" required></div>
+          <%= render "hr_lite/attendance/crm_picker", id: "om-crm" %>
+          <div class="hrl-field"><label for="om-client">Client or prospect<%= " (or link a lead above)" if HrLite.config.crm_search %></label><input class="hrl-input" id="om-client" name="client" maxlength="120"<%= " required" unless HrLite.config.crm_search %>></div>
           <div class="hrl-field"><label for="om-why">Purpose</label><input class="hrl-input" id="om-why" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="om-where">Where (optional)</label><input class="hrl-input" id="om-where" name="destination" maxlength="120"></div>
           <div class="hrl-field"><label for="om-until">Ends at (optional)</label><input class="hrl-input" type="time" id="om-until" name="until"></div>

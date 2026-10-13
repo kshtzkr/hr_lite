@@ -9,7 +9,7 @@
     <svg class="hrl-timeline" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="Work modes through the day; details in the list below">
       <% segs.each do |seg| %>
         <rect x="<%= pct.(seg.from).round(3) %>" y="1" width="<%= [ pct.(seg.to) - pct.(seg.from), 0.15 ].max.round(3) %>" height="8"
-              class="<%= class_names("hrl-fill--#{seg.mode}", "hrl-timeline__auto": seg.source == "system") %>">
+              class="<%= class_names("hrl-fill--#{seg.mode}", "hrl-timeline__auto": seg.source == "system") %>" data-hrl-tip tabindex="0">
           <title><%= label.(seg.mode) %> · <%= seg.from.strftime("%H:%M") %>–<%= seg.to.strftime("%H:%M") %> · <%= hrl_duration(seg.seconds) %> · <%= HrLite::ApplicationHelper::MODE_SOURCES[seg.source] %></title>
         </rect>
       <% end %>

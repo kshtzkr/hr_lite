@@ -14,7 +14,8 @@ module HrLite
       "lunch" => [ "Lunch break", "overlay", nil ],
       "short_break" => [ "Short break", "overlay", nil ],
       "busy" => [ "Busy", "overlay", nil ],
-      "out_of_office" => [ "Out of office", "overlay", nil ]
+      "out_of_office" => [ "Out of office", "overlay", nil ],
+      "custom" => [ "Custom status", "status", nil ]
     }.freeze
     SOURCES = %w[system employee hr].freeze
     END_REASONS = %w[switched expired ended checked_out day_closed].freeze
@@ -27,6 +28,7 @@ module HrLite
     validates :source, inclusion: { in: SOURCES }
     validates :end_reason, inclusion: { in: END_REASONS }, allow_nil: true
     validates :title, :client, :destination, length: { maximum: 120 }
+    validate :custom_status_shape, if: -> { mode == "custom" }
     validate :ends_after_start
 
     before_validation { self.layer = MODES.dig(mode, 1) if mode }
@@ -34,6 +36,7 @@ module HrLite
     scope :open, -> { where(ended_at: nil) }
     scope :primary, -> { where(layer: "primary") }
     scope :overlay, -> { where(layer: "overlay") }
+    scope :work, -> { where.not(layer: "status") }
 
     def self.label(mode) = MODES.dig(mode, 0)
 
@@ -49,9 +52,10 @@ module HrLite
       end
     end
 
-    # Ends every open row for the person (check-out, day close).
+    # Ends every open work row for the person (check-out). A custom status
+    # stays: it is the person's own and clears on its own timer.
     def self.close_all!(user_id, reason, at: Time.current)
-      open.where(user_id: user_id).lock.each { |e| e.close!(reason, at: at) }
+      open.work.where(user_id: user_id).lock.each { |e| e.close!(reason, at: at) }
     end
 
     def label = self.class.label(mode)
@@ -64,6 +68,14 @@ module HrLite
     end
 
     private
+
+    # Text and/or one emoji; the emoji is a single symbol, never words.
+    def custom_status_shape
+      errors.add(:base, "Write a status or pick an emoji.") if title.blank? && emoji.blank?
+      return if emoji.blank?
+
+      errors.add(:emoji, "must be a single emoji") unless emoji.grapheme_clusters.size == 1 && emoji !~ /[[:alnum:][:space:]]/
+    end
 
     def ends_after_start
       errors.add(:ends_at, "must be after the start") if ends_at && started_at && ends_at <= started_at

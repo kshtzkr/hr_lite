@@ -9,11 +9,16 @@ module HrLite
     SICK_CODE = "SL".freeze
 
     Entry = Struct.new(:mode, :label, :source, :since, :until, :place, :event, keyword_init: true)
-    Status = Struct.new(:primary, :overlay, :half_day_leave, :updated_at, keyword_init: true) do
+    Status = Struct.new(:primary, :overlay, :custom, :half_day_leave, :updated_at, keyword_init: true) do
       def available? = primary.mode.in?(%w[office wfh travelling outside_meeting]) && (overlay.nil? || overlay.mode == "meeting")
     end
 
     def self.for(user_id, at: Time.current) = for_users([ user_id ], at: at)[user_id]
+
+    # When an open Busy or Meeting ends, or nil when the person is reachable.
+    def self.do_not_disturb_until(user_id, at: Time.current)
+      WorkModeEvent.open.overlay.where(user_id: user_id, mode: %w[busy meeting]).where("ends_at > ?", at).maximum(:ends_at)
+    end
 
     def self.for_users(user_ids, at: Time.current)
       date = at.in_time_zone(HrLite.config.time_zone).to_date
@@ -37,9 +42,10 @@ module HrLite
         else derived("offline")
         end
       overlay = from(overlay_event) if overlay_event && primary.event
+      custom = events.find { |e| e.layer == "status" && !e.expired?(at) }
 
-      Status.new(primary: primary, overlay: overlay, half_day_leave: leaves.find(&:half_day),
-                 updated_at: events.map(&:started_at).max)
+      Status.new(primary: primary, overlay: overlay, custom: custom, half_day_leave: leaves.find(&:half_day),
+                 updated_at: events.reject { |e| e.layer == "status" }.map(&:started_at).max)
     end
 
     def self.derived(mode, until_at: nil) = Entry.new(mode: mode, label: DERIVED[mode], source: "system", until: until_at)

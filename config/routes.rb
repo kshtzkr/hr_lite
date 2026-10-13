@@ -26,6 +26,9 @@ HrLite::Engine.routes.draw do
   get "work_time", to: "work_time#show", as: :work_time
   resource :work_mode, only: :create do
     post :end_overlay
+    get :crm_search
+    post :status
+    post :clear_status
   end
   resources :work_locations, only: %i[index create] do
     member { post :activate; post :remove }

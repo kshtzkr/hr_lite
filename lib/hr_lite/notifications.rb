@@ -134,9 +134,11 @@ module HrLite
           next if user.email.blank?
 
           begin
-            EventMailer.event(to: user.email, subject: title, heading: title,
-                              body: body, lines: lines, path: path,
-                              link_url: link_url).deliver_later
+            mail = EventMailer.event(to: user.email, subject: title, heading: title,
+                                     body: body, lines: lines, path: path, link_url: link_url)
+            # Busy or in a meeting: the email waits until that ends.
+            held = WorkStatus.do_not_disturb_until(user.id) if HrLite.config.office_geofence
+            held ? mail.deliver_later(wait_until: held) : mail.deliver_later
           rescue => e
             Rails.logger.error("[hr_lite] event email failed: #{e.class}: #{e.message}")
           end

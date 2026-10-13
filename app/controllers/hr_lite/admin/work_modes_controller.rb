@@ -43,7 +43,7 @@ module HrLite
         raise ActiveRecord::RecordNotFound if employee.id == hr_current_user.id
 
         result = WorkModeSwitch.call(user: employee, mode: params[:mode], source: "hr", actor: hr_current_user,
-                                     params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category))
+                                     params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category, :crm_ref))
         flash_for = result.ok? ? { notice: "#{hr_display_name(employee)} is now: #{result.event.label}." } : { alert: result.error }
         redirect_back fallback_location: admin_attendance_path(employee.id), **flash_for
       end
@@ -61,7 +61,7 @@ module HrLite
       # A past date: everyone who spent any time in each mode that day.
       def day_modes(ids)
         day = @date.in_time_zone(HrLite.config.time_zone).all_day
-        rows = WorkModeEvent.where(user_id: ids).where("started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)", day.last, day.first)
+        rows = WorkModeEvent.work.where(user_id: ids).where("started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)", day.last, day.first)
                             .distinct.pluck(:mode, :user_id)
         out = rows.group_by(&:first).transform_values { |pairs| pairs.map(&:last).uniq }
         out["on_leave"] = LeaveRequest.active_on(@date).where(user_id: ids, half_day: false).pluck(:user_id).uniq

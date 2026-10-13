@@ -93,4 +93,37 @@ RSpec.describe HrLite::WorkModeDurations do
     r = described_class.call([ asha.id, dev.id ], period("day"), now: t(20))
     expect(r.by_mode["office"]).to eq(6.5.hours)
   end
+
+  describe "caching a finished period" do
+    around do |example|
+      original = Rails.cache
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
+      example.run
+    ensure
+      Rails.cache = original
+    end
+
+    it "serves a past week from the cache, and recomputes after a correction" do
+      owners_day
+      week = period("week")
+      allow(described_class).to receive(:new).and_call_original
+      travel_to(t(10, date: day + 7)) do
+        first = described_class.call([ asha.id ], week)
+        expect(described_class.call([ asha.id ], week).working).to eq(first.working)
+      end
+      expect(described_class).to have_received(:new).once
+
+      HrLite::WorkModeEvent.find_by(mode: "busy").update!(ended_at: t(11, 30)) # busy cut short
+      travel_to(t(10, date: day + 7)) do
+        expect(described_class.call([ asha.id ], week).by_mode["busy"]).to eq(30.minutes)
+      end
+      expect(described_class).to have_received(:new).twice
+    end
+
+    it "never caches a period that includes today" do
+      owners_day
+      expect(Rails.cache).not_to receive(:fetch)
+      described_class.call([ asha.id ], period("day"), now: t(20))
+    end
+  end
 end
