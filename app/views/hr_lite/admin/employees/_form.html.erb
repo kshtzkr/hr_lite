@@ -85,6 +85,9 @@
       </div>
       <div class="hrl-field"><%= f.label :buffer_note, "Buffer note (HR only; required for Other)" %><%= f.text_area :buffer_note, rows: 2 %></div>
     <% end %>
+    <% if HrLite.config.office_geofence %>
+      <div class="hrl-field hrl-field--check"><%= f.check_box :permanent_wfh %><%= f.label :permanent_wfh, "Permanent work from home (checks in from anywhere; inside the office it counts as office)" %></div>
+    <% end %>
     <div class="hrl-field">
       <%= f.label :date_of_exit, "Date of exit (leave blank while employed)" %>
       <%= f.date_field :date_of_exit %>

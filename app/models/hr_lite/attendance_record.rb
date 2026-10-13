@@ -11,6 +11,7 @@ module HrLite
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :regularized_by, class_name: HrLite.config.user_class, optional: true
+    belongs_to :wfh_request, optional: true
 
     validates :date, presence: true, uniqueness: { scope: :user_id }
     validates :status, inclusion: { in: STATUSES }

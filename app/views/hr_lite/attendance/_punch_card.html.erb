@@ -18,6 +18,9 @@
     <% if record&.check_out_at %>
       <span class="hrl-badge hrl-badge--muted">Out <%= record.check_out_at.strftime("%H:%M") %></span>
     <% end %>
+    <% if record&.wfh %>
+      <span class="hrl-badge hrl-badge--ok">WFH</span>
+    <% end %>
     <% if record&.flagged? %>
       <span class="hrl-badge hrl-badge--bad">Flagged</span>
     <% end %>
@@ -74,6 +77,9 @@
   <% end %>
 
   <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
+  <% if HrLite.config.office_geofence %>
+    · <a class="hrl-card__link" href="<%= hr_lite.wfh_requests_path %>">Work from home</a>
+  <% end %>
 
   <% if local_assigns.key?(:attention) %>
     <div class="hrl-row">

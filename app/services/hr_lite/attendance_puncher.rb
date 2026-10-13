@@ -6,6 +6,7 @@ module HrLite
   class AttendancePuncher
     # What the browser can legitimately report (geo_punch.js).
     GEO_STATUSES = %w[ok denied unavailable timeout insecure].freeze
+    OFF_SITE_MESSAGE = "You are not within the office location. Please request Work From Home (WFH) approval from HR.".freeze
 
     Result = Struct.new(:record, :error, keyword_init: true) do
       def ok? = error.nil?
@@ -34,6 +35,10 @@ module HrLite
                                  "or raise a regularization ticket.")
       end
 
+      if (error = geofence_error)
+        return Result.new(error: error)
+      end
+
       record = resolve_record
       return Result.new(error: "No open check-in to close.") if record.nil?
 
@@ -43,6 +48,8 @@ module HrLite
           return Result.new(record: record, error: already_in_message(record)) if record.check_in_at.present?
 
           stamp(record, :check_in)
+          record.wfh = !!@remote
+          record.wfh_request_id = @wfh&.id if @remote
         when :check_out
           return Result.new(record: record, error: "Check in first.") if record.check_in_at.blank?
 
@@ -74,6 +81,31 @@ module HrLite
       AttendanceRecord.find_or_create_by!(user_id: @user.id, date: Date.current)
     rescue ActiveRecord::RecordNotUnique
       retry
+    end
+
+    # config.office_geofence: a check-in must be inside an office radius with
+    # a fix at least that precise, unless HR approved WFH for today or made
+    # the person permanent WFH. Inside the radius the day is office either way.
+    def geofence_error
+      return unless @kind == :check_in && HrLite.config.office_geofence && OfficeLocation.active.exists?
+      return if in_office?
+
+      @wfh = WfhRequest.approved_for(@user.id, Date.current)
+      @remote = @wfh.present? || EmployeeProfile.where(user_id: @user.id).pick(:permanent_wfh)
+      return if @remote
+      return OFF_SITE_MESSAGE if @lat && @lng
+
+      "We could not read your location (#{@geo_status}). Turn location on and try again, " \
+        "or request Work From Home (WFH) approval from HR."
+    end
+
+    def in_office?
+      return false unless @lat && @lng && @accuracy_m.to_f.positive?
+
+      OfficeLocation.active.any? do |office|
+        @accuracy_m.to_f <= office.radius_m &&
+          Geo.distance_m(office.lat, office.lng, @lat.to_f, @lng.to_f) <= office.radius_m
+      end
     end
 
     def stamp(record, side)
@@ -112,6 +144,8 @@ module HrLite
       if @lat.nil? || @lng.nil?
         reason = @geo_status == "ok" ? "unavailable" : @geo_status
         record.add_flag!("#{label} without GPS (#{reason})")
+      elsif record.wfh
+        nil # WFH: off-site is the point
       elsif OfficeLocation.active.exists? && !OfficeLocation.covering?(@lat, @lng)
         office = OfficeLocation.nearest(@lat, @lng)
         distance_km = (Geo.distance_m(office.lat, office.lng, @lat, @lng) / 1000.0).round(1)

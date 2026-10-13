@@ -68,7 +68,11 @@ module HrLite
       "regularization.requested" => { bell: true, email: false, leadership_email: true,  leadership_bell: false },
       "regularization.approved"  => { bell: true, email: true,  leadership_email: true,  leadership_bell: false },
       "regularization.rejected"  => { bell: true, email: true,  leadership_email: false, leadership_bell: false },
-      "regularization.cancelled" => { bell: true, email: false, leadership_email: true,  leadership_bell: false }
+      "regularization.cancelled" => { bell: true, email: false, leadership_email: true,  leadership_bell: false },
+      "wfh.requested"         => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },
+      "wfh.approved"          => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "wfh.rejected"          => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
+      "wfh.cancelled"         => { bell: true,  email: false, leadership_email: false, leadership_bell: false }
     }.freeze
 
     class << self

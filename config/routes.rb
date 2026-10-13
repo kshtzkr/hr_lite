@@ -20,6 +20,9 @@ HrLite::Engine.routes.draw do
   resources :regularization_requests, only: %i[index new create] do
     member { post :cancel }
   end
+  resources :wfh_requests, only: %i[index create] do
+    member { post :cancel }
+  end
   resources :approvals, only: :index
   resources :expenses, only: %i[index new create] do
     member { post :cancel }
@@ -72,6 +75,9 @@ HrLite::Engine.routes.draw do
       member { post :approve; post :reject }
     end
     resources :regularization_requests, only: %i[index show] do
+      member { post :approve; post :reject }
+    end
+    resources :wfh_requests, only: %i[index show create] do
       member { post :approve; post :reject }
     end
     resources :roles, except: :show do
