@@ -51,7 +51,8 @@
                 <td data-label="Now"><span class="hrl-modes"><%= hrl_status_icons(st) %></span>
                   <span class="hrl-small"><%= st.primary.place || st.primary.label %><% if st.overlay %> · <%= st.overlay.label %><% end %>
                     <% if (till = st.overlay&.until || (st.primary.until if st.primary.until.respond_to?(:hour))) %> · until <%= till.strftime("%H:%M") %><% end %></span>
-                  <% if st.updated_at %><span class="hrl-small hrl-muted"> · since <%= st.updated_at.strftime("%H:%M") %></span><% end %></td>
+                  <% if st.updated_at %><span class="hrl-small hrl-muted"> · since <%= st.updated_at.strftime("%H:%M") %></span><% end %>
+                  <% if st.custom %><div class="hrl-custom-status hrl-small"><% if st.custom.emoji %><span aria-hidden="true"><%= st.custom.emoji %></span> <% end %><%= st.custom.title %></div><% end %></td>
               <% end %>
               <td data-label="Status"><%= hrl_team_status(row) %></td>
               <td data-label="Hours <%= @date == Date.current ? "today" : "that day" %>" class="hrl-num"><%= hrl_duration(row.day_seconds) %></td>

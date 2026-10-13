@@ -1,0 +1,26 @@
+<%# The person's own status (text + emoji), Slack-style. Independent of check-in. %>
+<% custom = status.custom
+   picks = %w[🏠 🏢 ✈️ 🚗 🚆 🏖️ 🤒 🤧 🩺 🍽️ ☕ 🎧 🎯 💻 📞 📅 🗓️ 🤝 💼 📍 🧳 🏔️ 🌴 🏕️ 📝 📊 🔒 🚫 ⏳ 🔕 🎉 🙏 👶 👨‍👩‍👧 🏥 📚 🎤 🛠️ 🌙 🌧️] %>
+<% if custom %>
+  <div class="hrl-row hrl-row--mb hrl-small">
+    <span class="hrl-custom-status"><% if custom.emoji %><span aria-hidden="true"><%= custom.emoji %></span> <% end %><%= custom.title || "Status" %></span>
+    <% if custom.ends_at %><span class="hrl-muted">until <%= custom.ends_at.strftime(custom.ends_at.to_date == Date.current ? "%H:%M" : "%-d %b %H:%M") %></span><% end %>
+    <%= button_to "Clear status", hr_lite.clear_status_work_mode_path, method: :post, class: "hrl-btn" %>
+  </div>
+<% end %>
+<details>
+  <summary class="hrl-btn hrl-btn--block"><%= custom ? "Change my status" : "Set a status" %></summary>
+  <%= form_with url: hr_lite.status_work_mode_path, method: :post, local: true, data: { "hrl-emoji-form": true } do %>
+    <div class="hrl-field"><label for="st-emoji">Emoji</label>
+      <input class="hrl-input" id="st-emoji" name="emoji" maxlength="16" value="<%= custom&.emoji %>" placeholder="Pick or type one" autocomplete="off">
+      <div class="hrl-emoji-grid" role="group" aria-label="Pick an emoji">
+        <% picks.each do |e| %><button type="button" class="hrl-emoji" data-hrl-emoji="<%= e %>" aria-label="Use <%= e %>"><%= e %></button><% end %>
+      </div>
+    </div>
+    <div class="hrl-field"><label for="st-text">What's your status?</label>
+      <input class="hrl-input" id="st-text" name="text" maxlength="100" value="<%= custom&.title %>" placeholder="e.g. Visiting the Ladakh camp"></div>
+    <div class="hrl-field"><label for="st-clear">Clear after</label>
+      <%= select_tag :clear_after, options_for_select([ [ "30 minutes", "30" ], [ "1 hour", "60" ], [ "4 hours", "240" ], [ "Today", "today" ], [ "Don't clear", "never" ] ], "today"), id: "st-clear" %></div>
+    <button type="submit" class="hrl-btn hrl-btn--primary">Save status</button>
+  <% end %>
+</details>

@@ -9,7 +9,7 @@ module HrLite
     SICK_CODE = "SL".freeze
 
     Entry = Struct.new(:mode, :label, :source, :since, :until, :place, :event, keyword_init: true)
-    Status = Struct.new(:primary, :overlay, :half_day_leave, :updated_at, keyword_init: true) do
+    Status = Struct.new(:primary, :overlay, :custom, :half_day_leave, :updated_at, keyword_init: true) do
       def available? = primary.mode.in?(%w[office wfh travelling outside_meeting]) && (overlay.nil? || overlay.mode == "meeting")
     end
 
@@ -42,9 +42,10 @@ module HrLite
         else derived("offline")
         end
       overlay = from(overlay_event) if overlay_event && primary.event
+      custom = events.find { |e| e.layer == "status" && !e.expired?(at) }
 
-      Status.new(primary: primary, overlay: overlay, half_day_leave: leaves.find(&:half_day),
-                 updated_at: events.map(&:started_at).max)
+      Status.new(primary: primary, overlay: overlay, custom: custom, half_day_leave: leaves.find(&:half_day),
+                 updated_at: events.reject { |e| e.layer == "status" }.map(&:started_at).max)
     end
 
     def self.derived(mode, until_at: nil) = Entry.new(mode: mode, label: DERIVED[mode], source: "system", until: until_at)

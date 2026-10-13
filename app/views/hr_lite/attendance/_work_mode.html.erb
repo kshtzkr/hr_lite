@@ -11,6 +11,7 @@
       <span data-hrl-countdown="<%= timed.iso8601 %>"><%= hrl_duration([ timed - Time.current, 0 ].max) %> left</span></span>
   <% end %>
 </div>
+<%= render "hr_lite/attendance/custom_status", status: status %>
 <% if status.half_day_leave %><p class="hrl-small hrl-muted">Half-day leave today (<%= status.half_day_leave.half_day_part || "half day" %>).</p><% end %>
 
 <% if working %>

@@ -27,6 +27,8 @@ HrLite::Engine.routes.draw do
   resource :work_mode, only: :create do
     post :end_overlay
     get :crm_search
+    post :status
+    post :clear_status
   end
   resources :work_locations, only: %i[index create] do
     member { post :activate; post :remove }

@@ -13,6 +13,16 @@ module HrLite
       end
     end
 
+    def status
+      result = WorkModeSwitch.set_status(user: hr_current_user, text: params[:text], emoji: params[:emoji], clear_after: params[:clear_after])
+      result.ok? ? redirect_to(attendance_path, notice: "Status set.") : redirect_to(attendance_path, alert: result.error)
+    end
+
+    def clear_status
+      WorkModeEvent.open.where(user_id: hr_current_user.id, layer: "status").find_each { |e| e.close!("ended") }
+      redirect_to attendance_path, notice: "Status cleared."
+    end
+
     # Lead type-ahead for the meeting forms; the host decides who sees what.
     def crm_search
       query = params[:q].to_s.strip

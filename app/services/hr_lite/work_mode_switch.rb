@@ -13,6 +13,22 @@ module HrLite
 
     def self.call(...) = new(...).call
 
+    CLEAR_AFTER = { "30" => 30.minutes, "60" => 1.hour, "240" => 4.hours, "today" => :today, "never" => nil }.freeze
+
+    # A person's own status, Slack-style: works with or without a check-in
+    # and clears itself on the chosen timer.
+    def self.set_status(user:, text:, emoji:, clear_after:)
+      now = Time.current
+      span = CLEAR_AFTER.fetch(clear_after.to_s, :today)
+      ends_at = span == :today ? now.in_time_zone(HrLite.config.time_zone).end_of_day : (span && now + span)
+      event = WorkModeEvent.start!(user_id: user.id, mode: "custom", source: "employee", actor: user, at: now,
+                                   title: text.to_s.strip.truncate(100).presence, emoji: emoji.to_s.strip.presence, ends_at: ends_at)
+      WorkModeExpireJob.set(wait_until: ends_at).perform_later(event.id) if ends_at
+      Result.new(event, nil)
+    rescue ActiveRecord::RecordInvalid => e
+      Result.new(nil, e.record.errors.full_messages.to_sentence)
+    end
+
     # params: title, client, destination, reason, minutes, until ("HH:MM" today)
     def initialize(user:, mode:, source:, actor:, params: {})
       @user = user

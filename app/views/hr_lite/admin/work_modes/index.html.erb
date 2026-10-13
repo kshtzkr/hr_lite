@@ -74,7 +74,7 @@
           <strong><%= event.started_at.strftime("%H:%M") %>–<%= ended&.strftime("%H:%M") || "now" %></strong> <%= event.label %>
           · <%= hrl_duration((ended || Time.current) - event.started_at) %>
           · <%= HrLite::ApplicationHelper::MODE_SOURCES[event.source] %><% if event.set_by && event.source == "hr" %> (<%= hr_display_name(event.set_by) %>)<% end %>
-          <% details = [ event.title, event.client, event.destination, (@locations[event.work_location_id]&.name if event.work_location_id), event.reason ].compact_blank %>
+          <% details = [ event.emoji, event.title, event.client, event.destination, (@locations[event.work_location_id]&.name if event.work_location_id), event.reason ].compact_blank %>
           <% if details.any? %><div class="hrl-muted"><%= details.join(" · ") %></div><% end %>
           <% if event.crm_ref && (lead = HrLite.config.crm_find&.call(event.crm_ref)) %>
             <a class="hrl-card__link" href="<%= lead[:url] %>">Lead: <%= lead[:label] %></a>

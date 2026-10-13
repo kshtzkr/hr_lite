@@ -61,7 +61,7 @@ module HrLite
       # A past date: everyone who spent any time in each mode that day.
       def day_modes(ids)
         day = @date.in_time_zone(HrLite.config.time_zone).all_day
-        rows = WorkModeEvent.where(user_id: ids).where("started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)", day.last, day.first)
+        rows = WorkModeEvent.work.where(user_id: ids).where("started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)", day.last, day.first)
                             .distinct.pluck(:mode, :user_id)
         out = rows.group_by(&:first).transform_values { |pairs| pairs.map(&:last).uniq }
         out["on_leave"] = LeaveRequest.active_on(@date).where(user_id: ids, half_day: false).pluck(:user_id).uniq
