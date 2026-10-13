@@ -12,6 +12,7 @@
   <% end %>
 </div>
 <%= render "hr_lite/attendance/custom_status", status: status %>
+<%= render "hr_lite/attendance/calendar_connection" %>
 <% if status.half_day_leave %><p class="hrl-small hrl-muted">Half-day leave today (<%= status.half_day_leave.half_day_part || "half day" %>).</p><% end %>
 
 <% if working %>

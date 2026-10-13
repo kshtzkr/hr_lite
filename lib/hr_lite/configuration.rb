@@ -26,6 +26,9 @@ module HrLite
                   :calendar_events,
                   # -> { user ids with a connected calendar }
                   :calendar_users,
+                  # ->(user) { { connected:, label:, connect_url:, disconnect_url: } or nil } —
+                  # the one-click "Connect Google Calendar" button (nil = no button)
+                  :calendar_connection,
                   # ->(user, query) { [{ id:, label: }] } — leads to link to a client meeting
                   :crm_search,
                   # ->(id) { { label:, url: } or nil } — one lead, to validate and link it
