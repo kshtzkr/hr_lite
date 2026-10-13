@@ -15,6 +15,11 @@ module HrLite
 
     def self.for(user_id, at: Time.current) = for_users([ user_id ], at: at)[user_id]
 
+    # When an open Busy or Meeting ends, or nil when the person is reachable.
+    def self.do_not_disturb_until(user_id, at: Time.current)
+      WorkModeEvent.open.overlay.where(user_id: user_id, mode: %w[busy meeting]).where("ends_at > ?", at).maximum(:ends_at)
+    end
+
     def self.for_users(user_ids, at: Time.current)
       date = at.in_time_zone(HrLite.config.time_zone).to_date
       events = WorkModeEvent.open.where(user_id: user_ids).group_by(&:user_id)
