@@ -45,7 +45,7 @@ RSpec.describe "Work-mode edges" do
     end
 
     it "refuses an end time it cannot read" do
-      expect(switch("busy", until: "99:99").error).to include("when it ends")
+      expect(switch("busy", until: "99:99").error).to include("Pick how long")
     end
 
     it "switches to WFH with today's approval, using the active home" do

@@ -1,0 +1,16 @@
+<%# How long a mode lasts: real radios styled as chips (selected state exposed).
+    locals: mode, id, optional (adds "Until I change it", the default) %>
+<% choices = HrLite::WorkModeSwitch.duration_choices(mode)
+   optional = local_assigns[:optional]
+   default = optional ? "" : (choices.include?("30") ? "30" : choices.last) %>
+<fieldset class="hrl-field">
+  <legend class="hrl-small"><strong>How long</strong></legend>
+  <div class="hrl-chiprow" role="radiogroup" aria-label="How long">
+    <% if optional %>
+      <label><input type="radio" name="duration" value="" <%= "checked" if default == "" %>><span>Until I change it</span></label>
+    <% end %>
+    <% choices.each do |key| %>
+      <label><input type="radio" name="duration" id="<%= id %>-<%= key %>" value="<%= key %>" <%= "checked" if key == default %>><span><%= HrLite::WorkModeSwitch::DURATION_LABELS[key] %></span></label>
+    <% end %>
+  </div>
+</fieldset>
