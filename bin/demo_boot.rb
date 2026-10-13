@@ -14,6 +14,10 @@ HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
 HrLite.config.require_punch_location = true
 HrLite.config.attendance_slots = true
 HrLite.config.office_geofence = true
+# Sample CRM for the lead picker (a real host wires its own leads).
+DEMO_LEADS = { "1" => "Rahul Mehta · Bali", "2" => "Neha Rao · Ladakh", "3" => "Arjun Shah · Dubai" }.freeze
+HrLite.config.crm_search = ->(_user, q) { DEMO_LEADS.select { |_, l| l.downcase.include?(q.downcase) }.map { |id, l| { id: id, label: l } } }
+HrLite.config.crm_find = ->(id) { DEMO_LEADS[id.to_s] && { label: DEMO_LEADS[id.to_s], url: "#lead-#{id}" } }
 
 ActiveRecord::Migration.verbose = false
 load File.expand_path("../spec/dummy/db/schema.rb", __dir__)

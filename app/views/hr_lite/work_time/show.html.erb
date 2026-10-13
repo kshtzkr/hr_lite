@@ -7,3 +7,4 @@
 <% if @period_error %><div class="hrl-errors" role="alert"><%= @period_error %></div><% end %>
 <%= render "hr_lite/work_time/report", result: @result, period: @period, records: @records,
            path: ->(p) { hr_lite.work_time_path(p) } %>
+<% content_for :scripts do %><%= javascript_include_tag "hr_lite/chart_tip", defer: true %><% end %>

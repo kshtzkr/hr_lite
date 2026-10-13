@@ -11,7 +11,7 @@
         <circle cx="21" cy="21" r="15.915" fill="none" class="hrl-donut__track" stroke-width="6"></circle>
         <% modes.each do |mode, secs| %>
           <% pct = secs * 100.0 / total %>
-          <circle cx="21" cy="21" r="15.915" fill="none" stroke-width="6" class="hrl-stroke--<%= mode %>"
+          <circle cx="21" cy="21" r="15.915" fill="none" stroke-width="6" class="hrl-stroke--<%= mode %>" data-hrl-tip tabindex="0"
                   stroke-dasharray="<%= pct.round(3) %> <%= (100 - pct).round(3) %>" stroke-dashoffset="<%= offset.round(3) %>">
             <title><%= label.(mode) %>: <%= hrl_duration(secs) %> (<%= pct.round %>%)</title>
           </circle>
