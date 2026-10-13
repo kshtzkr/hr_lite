@@ -43,7 +43,7 @@ module HrLite
         raise ActiveRecord::RecordNotFound if employee.id == hr_current_user.id
 
         result = WorkModeSwitch.call(user: employee, mode: params[:mode], source: "hr", actor: hr_current_user,
-                                     params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category))
+                                     params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category, :crm_ref))
         flash_for = result.ok? ? { notice: "#{hr_display_name(employee)} is now: #{result.event.label}." } : { alert: result.error }
         redirect_back fallback_location: admin_attendance_path(employee.id), **flash_for
       end

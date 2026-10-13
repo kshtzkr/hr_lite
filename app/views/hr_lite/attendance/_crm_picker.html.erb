@@ -1,0 +1,9 @@
+<%# A lead from the CRM, searched as you type (config.crm_search). Optional. %>
+<% if HrLite.config.crm_search %>
+  <div class="hrl-field" data-hrl-crm="<%= hr_lite.crm_search_work_mode_path %>">
+    <label for="<%= id %>-q">Link a lead (optional)</label>
+    <input type="search" class="hrl-input" id="<%= id %>-q" placeholder="Type a name or phone" autocomplete="off">
+    <label class="hrl-sr-only" for="<%= id %>">Lead</label>
+    <select name="crm_ref" id="<%= id %>"><option value="">No lead</option></select>
+  </div>
+<% end %>
