@@ -1,0 +1,40 @@
+<% content_for(:page_title) { "Work time" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Work time<%= " — #{@names[@person.id]}" if @person %></h1>
+  <% if @person %>
+    <div class="hrl-page__actions">
+      <a class="hrl-btn" href="<%= hr_lite.admin_work_modes_path(date: @period.to, user_id: @person.id, anchor: "timeline") %>">Day timeline</a>
+    </div>
+  <% end %>
+</div>
+
+<section class="hrl-card">
+  <%= form_with url: hr_lite.admin_work_time_path, method: :get, local: true, class: "hrl-row" do %>
+    <input type="hidden" name="period" value="<%= @period.kind %>">
+    <input type="hidden" name="date" value="<%= @period.from %>">
+    <% if @period.kind == "custom" %><input type="hidden" name="from" value="<%= @period.from %>"><input type="hidden" name="to" value="<%= @period.to %>"><% end %>
+    <div class="hrl-field"><label for="wt-user">Employee</label>
+      <%= select_tag :user_id, options_for_select(@employees.map { |u| [ @names[u.id], u.id ] }, @person&.id), include_blank: "Everyone (totals only)", id: "wt-user", data: { hrl_filter: ("Type a name to filter" if @employees.size > 5) } %></div>
+    <% if @departments.any? %>
+      <div class="hrl-field"><label for="wt-dept">Department</label><%= select_tag :department, options_for_select(@departments, params[:department]), include_blank: "All", id: "wt-dept" %></div>
+    <% end %>
+    <div class="hrl-form-actions"><button type="submit" class="hrl-btn hrl-btn--primary">Show</button></div>
+  <% end %>
+  <p class="hrl-small hrl-muted"><%= @person ? "Opening one person's work time is recorded in the audit trail." : "Totals across #{pluralize(@employees.size, 'person')}; pick someone for their own breakdown." %></p>
+</section>
+
+<% if @period_error %><div class="hrl-errors" role="alert"><%= @period_error %></div><% end %>
+
+<% keep = { user_id: @person&.id, department: params[:department] }.compact %>
+<%= render "hr_lite/work_time/report", result: @result, period: @period, records: @records, keep: keep,
+           names: (@names if @person), timeline: @person.present?, path: ->(p) { hr_lite.admin_work_time_path(keep.merge(p)) } %>
+
+<% if @result.gaps.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Worth a look</h2>
+    <% @result.gaps.sort_by { |_, date, _| date }.first(200).each do |user_id, date, reason| %>
+      <div class="hrl-feed__item hrl-row hrl-small"><div class="hrl-feed__body"><strong><%= @names[user_id] %></strong> · <%= date.strftime("%a %-d %b") %> · <%= reason %></div>
+        <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(user_id, month: date.strftime("%Y-%m"), date: date, anchor: "regularize") %>">Open day</a></div>
+    <% end %>
+  </section>
+<% end %>

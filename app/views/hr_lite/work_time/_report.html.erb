@@ -1,4 +1,4 @@
-<%# locals: result (WorkModeDurations::Result), period, path (->(params) { url }), records (optional), names (optional {id => name}) %>
+<%# locals: result (WorkModeDurations::Result), period, path (->(params) { url }), records, names, keep, timeline (all optional) %>
 <% path = local_assigns[:path]
    records = local_assigns[:records] || []
    names = local_assigns[:names]
@@ -44,7 +44,9 @@
 
   <%= render "hr_lite/work_time/donut", result: result, label: label %>
   <% if period.kind == "day" %>
-    <%= render "hr_lite/work_time/timeline", result: result, period: period, label: label, names: names %>
+    <% if local_assigns.fetch(:timeline, true) %>
+      <%= render "hr_lite/work_time/timeline", result: result, period: period, label: label, names: names %>
+    <% end %>
   <% else %>
     <%= render "hr_lite/work_time/bars", result: result, period: period, label: label, path: path %>
   <% end %>
