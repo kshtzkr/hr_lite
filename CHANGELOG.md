@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.1] - 2026-10-13
+
+- Spacing: forms, buttons and expandable sections stacked in a card no longer touch (only form fields carried spacing, so "Set a status" sat on "Change my mode", "Save status" on "Check in", "Out of office" on "Check out"). One card-level rule gives them a 12px gap. The emoji grid, lead picker, check-in badges, punch-card links (now wrapping as whole items, no dangling dots) and the admin month's In/Out map links all keep at least the 8px gap between touch targets. Measured at 360 px and 1280 px across Home, Attendance, WFH, WFH locations, My work time, Team and the HR work-mode, WFH, locations, work-time, attendance, holidays and employee screens: no stacked targets closer than 8px, no horizontal scroll.
+
 ## [0.35.0] - 2026-10-13
 
 - Today's check-ins on Home: everyone in today, split into on time, late and not in yet (leave, holidays and weekends left out). "On time" uses each person's own slot plus their HR buffer and the grace minutes, the same rule as the late penalty. Hover or tap a person for their check-in, how late, check-out and hours worked (or hours so far).

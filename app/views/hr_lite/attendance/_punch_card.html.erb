@@ -91,12 +91,15 @@
     </div>
   <% end %>
 
-  <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
-  <% if HrLite.config.office_geofence %>
-    · <a class="hrl-card__link" href="<%= hr_lite.wfh_requests_path %>">Work from home</a>
-    · <a class="hrl-card__link" href="<%= hr_lite.work_locations_path %>">WFH locations</a>
-    · <a class="hrl-card__link" href="<%= hr_lite.work_time_path %>">My work time</a>
-  <% end %>
+  <%# Links wrap as whole items; no separator dots left dangling at a line end. %>
+  <div class="hrl-links">
+    <a class="hrl-card__link" href="<%= hr_lite.attendance_path %>">View my month</a>
+    <% if HrLite.config.office_geofence %>
+      <a class="hrl-card__link" href="<%= hr_lite.wfh_requests_path %>">Work from home</a>
+      <a class="hrl-card__link" href="<%= hr_lite.work_locations_path %>">WFH locations</a>
+      <a class="hrl-card__link" href="<%= hr_lite.work_time_path %>">My work time</a>
+    <% end %>
+  </div>
 
   <% if local_assigns.key?(:attention) %>
     <div class="hrl-row">

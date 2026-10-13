@@ -234,6 +234,18 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card--empty { text-align: center; color: var(--hrl-muted); padding: 1.8rem 1rem; }
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-card > p:first-child { margin-top: 0; }
+/* Vertical rhythm: forms, buttons and disclosures stacked in a card never
+   touch (only .hrl-field carried spacing, so a button above a form, or an
+   open disclosure above the next control, sat flush). 12px >= the 8px
+   minimum gap between touch targets. */
+.hrl-card > :is(form, details, .button_to) + *,
+.hrl-card > * + :is(form, details, .button_to) { margin-top: .75rem; }
+details[open] > summary.hrl-btn { margin-bottom: .75rem; }
+.hrl-links { display: flex; flex-wrap: wrap; gap: var(--hrl-gap-target) 1rem; margin-bottom: var(--hrl-gap-target); }
+[data-hrl-crm] select { margin-top: var(--hrl-gap-target); }
+.hrl-checkins + .hrl-card__link { margin-top: var(--hrl-gap-target); }
+.hrl-punch-line + .hrl-punch-line { margin-top: var(--hrl-gap-target); }
+details > form > button[type=submit], details > form > .hrl-btn { margin-top: .25rem; }
 .hrl-card__link, .hrl-backlink { display: inline-flex; gap: var(--hrl-s-1); align-items: center; min-height: var(--hrl-target); min-width: var(--hrl-target); font-size: var(--hrl-t-small); font-weight: 600; }
 .hrl-listrow { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: var(--hrl-s-1) var(--hrl-s-3); padding: var(--hrl-s-3) 0; border-bottom: 1px solid var(--hrl-line); min-height: var(--hrl-target); color: var(--hrl-ink); overflow-wrap: anywhere; }
 .hrl-listrow:last-child { border-bottom: 0; }
@@ -608,7 +620,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-chart-tip { position: absolute; z-index: 30; max-width: 16rem; padding: .4rem .6rem; border-radius: var(--hrl-radius-sm); background: var(--hrl-ink); color: var(--hrl-card); font-size: var(--hrl-t-small); pointer-events: none; }
 [data-hrl-tip]:focus { outline: 2px solid var(--hrl-accent); outline-offset: 1px; }
 .hrl-custom-status { display: inline-flex; gap: .3rem; align-items: center; overflow-wrap: anywhere; }
-.hrl-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: .25rem; margin-top: .4rem; }
+.hrl-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: var(--hrl-gap-target); margin-top: var(--hrl-gap-target); }
 .hrl-emoji { min-height: var(--hrl-target); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-card); font-size: 1.25rem; cursor: pointer; }
 /* Today's check-ins: one initials badge per person; hover/tap shows times. */
 .hrl-checkins + .hrl-checkins { margin-top: .6rem; }
