@@ -30,6 +30,7 @@ module HrLite
       "profile.manage" => [ "People", "Create and edit employee profiles, onboard and offboard" ],
       "attendance.view" => [ "Attendance", "See attendance records" ],
       "attendance.manage" => [ "Attendance", "Correct punches and decide regularization tickets" ],
+      "work_analytics.view" => [ "Attendance", "See another person's work-time analytics (time per work mode, day timelines)" ],
       "leave.request" => [ "Leave", "Apply for leave and comp-off" ],
       "leave.view" => [ "Leave", "See leave requests and balances" ],
       "leave.approve" => [ "Leave", "Approve, reject and cancel leave and comp-off" ],
