@@ -1,0 +1,15 @@
+<%# One-click link to the person's own calendar (config.calendar_connection). %>
+<% link = HrLite.config.calendar_connection&.call(hr_current_user) %>
+<% if link %>
+  <div class="hrl-row hrl-small">
+    <% if link[:connected] %>
+      <span class="hrl-badge hrl-badge--ok">Calendar connected</span>
+      <span class="hrl-muted"><%= link[:label] %> · meetings set your status by themselves</span>
+      <%= button_to "Disconnect", link[:disconnect_url], method: :delete, class: "hrl-btn",
+                    form: { data: { turbo_confirm: "Stop reading your calendar?" } } %>
+    <% else %>
+      <a class="hrl-btn hrl-btn--block" href="<%= link[:connect_url] %>">Connect Google Calendar</a>
+      <span class="hrl-muted">One tap: meetings on your calendar then set your status to Meeting by themselves.</span>
+    <% end %>
+  </div>
+<% end %>
