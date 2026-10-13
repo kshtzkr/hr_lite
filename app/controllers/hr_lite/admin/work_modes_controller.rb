@@ -20,8 +20,11 @@ module HrLite
         @by_mode = @date == Date.current ? live_modes(ids) : day_modes(ids)
         records = AttendanceRecord.for_date(@date).where(user_id: ids).index_by(&:user_id)
         on_leave = LeaveRequest.active_on(@date).where(user_id: ids, half_day: false).pluck(:user_id).to_set
-        working_day = WorkingCalendar.new(@date..@date).working_day?(@date) && @date <= Date.current
-        @needs_review = working_day ? ids.reject { |id| on_leave.include?(id) || records[id]&.check_in_at } : []
+        calendars = WorkingCalendar.by_office(@date..@date)
+        offices = EmployeeProfile.where(user_id: ids).pluck(:user_id, :office_location_id).to_h
+        @needs_review = @date > Date.current ? [] : ids.select do |id|
+          calendars[offices[id]].working_day?(@date) && !on_leave.include?(id) && !records[id]&.check_in_at
+        end
         @field = records.values.select { |r| %w[travelling outside_meeting].include?(r.work_mode) }
         @field_events = WorkModeEvent.where(attendance_record_id: @field.map(&:id), source: "system", mode: %w[travelling outside_meeting])
                                      .index_by(&:attendance_record_id)

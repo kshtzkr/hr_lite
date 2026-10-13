@@ -62,7 +62,7 @@ module HrLite
       # Building one per request meant a Holiday query and a Setting query
       # each — and the admin balances grid reads this cell for every employee
       # times every leave type.
-      calendar = WorkingCalendar.new(range)
+      calendar = WorkingCalendar.for_user(user_id, range)
       # Loss-of-pay days (beyond paid_days) never drew on the balance.
       requests.sum { |request| [ LeaveDayCounter.count(request, calendar: calendar), request.paid_days ].compact.min }
     end

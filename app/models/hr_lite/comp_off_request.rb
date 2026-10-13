@@ -45,7 +45,7 @@ module HrLite
       raise MissingCompOffType if type.nil?
 
       transition!("approved", actor, note) do
-        raise StaleOffDay if WorkingCalendar.new(date_worked..date_worked).working_day?(date_worked)
+        raise StaleOffDay if WorkingCalendar.for_user(user_id, date_worked..date_worked).working_day?(date_worked)
 
         # (A duplicate live request for the same date cannot exist — the
         # partial unique index on [user_id, date_worked] guarantees it.)
@@ -141,7 +141,7 @@ module HrLite
       return unless date_worked
       return if date_worked > Date.current
 
-      calendar = WorkingCalendar.new(date_worked..date_worked)
+      calendar = WorkingCalendar.for_user(user_id, date_worked..date_worked)
       if calendar.working_day?(date_worked)
         errors.add(:date_worked, "was a regular working day — comp-off is for working on a weekend or holiday")
       end

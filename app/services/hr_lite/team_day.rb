@@ -13,10 +13,10 @@ module HrLite
 
     def initialize(date: Date.current)
       @date = date
-      @calendar = WorkingCalendar.new(date..date)
+      @calendars = WorkingCalendar.by_office(date..date)
     end
 
-    attr_reader :date, :calendar
+    attr_reader :date
 
     def rows
       @rows ||= build_rows
@@ -49,7 +49,7 @@ module HrLite
         leave = leaves[user.id]
         Row.new(
           user: user, profile: profile,
-          kind: kind_for(record, leave),
+          kind: kind_for(record, leave, @calendars[profile&.office_location_id]),
           record: record, leave: leave,
           day_seconds: seconds_worked(record),
           month_seconds: (month_records[user.id] || []).sum { |r| seconds_worked(r) || 0 },
@@ -58,9 +58,9 @@ module HrLite
       end
     end
 
-    def kind_for(record, leave)
-      return :holiday if @calendar.holiday?(@date)
-      return :weekend if @calendar.weekend?(@date)
+    def kind_for(record, leave, calendar)
+      return :holiday if calendar.holiday?(@date)
+      return :weekend if calendar.weekend?(@date)
       return (leave.half_day ? :half_day_leave : :leave) if leave
 
       if record&.check_in_at

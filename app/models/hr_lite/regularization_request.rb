@@ -44,7 +44,7 @@ module HrLite
     # day HR already decided or rejected, stays HR's call.
     def self_fixable?
       rule = HrLite.config.self_regularization
-      return false unless rule && date >= Date.current - rule[:within_days] && WorkingCalendar.new(date..date).working_day?(date)
+      return false unless rule && date >= Date.current - rule[:within_days] && WorkingCalendar.for_user(user_id, date..date).working_day?(date)
 
       day = punch
       fills_gap = (check_in_at.nil? || !day&.check_in_at) &&

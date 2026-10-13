@@ -58,7 +58,7 @@ module HrLite
     def unpaid_on(date)
       return 0 if paid_days.nil?
 
-      @leave_calendar ||= WorkingCalendar.new(start_date..end_date)
+      @leave_calendar ||= WorkingCalendar.for_user(user_id, start_date..end_date)
       through = LeaveDayCounter.count_range(start_date: start_date, end_date: date, half_day: half_day,
                                             calendar: @leave_calendar)
       (through - paid_days).clamp(0, half_day ? BigDecimal("0.5") : 1)

@@ -39,7 +39,7 @@ module HrLite
 
     # Most recent non-working day — the day they most likely worked extra.
     def default_date
-      calendar = WorkingCalendar.new((Date.current - 14)..Date.current)
+      calendar = WorkingCalendar.for_user(hr_current_user.id, (Date.current - 14)..Date.current)
       (0..14).map { |i| Date.current - i }.find { |d| !calendar.working_day?(d) } || Date.current
     end
   end

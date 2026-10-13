@@ -169,7 +169,7 @@ module HrLite
       penalize(record, record.date, late, "late") if late.positive?
       return if arrived <= AttendanceSlot::CARRY_AFTER_MINUTE
 
-      AttendancePenalty.next_working_days(record.date, 2).each { |day| penalize(record, day, 60, "late_carry") }
+      AttendancePenalty.next_working_days(record.user_id, record.date, 2).each { |day| penalize(record, day, 60, "late_carry") }
       return if arrived <= AttendanceSlot::HALF_DAY_AFTER_MINUTE
 
       record.update!(status: "half_day", regularization_note: AttendanceRecord::LATE_HALF_DAY_NOTE)

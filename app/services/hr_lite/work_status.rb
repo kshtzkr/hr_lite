@@ -19,8 +19,9 @@ module HrLite
       date = at.in_time_zone(HrLite.config.time_zone).to_date
       events = WorkModeEvent.open.where(user_id: user_ids).group_by(&:user_id)
       leaves = LeaveRequest.active_on(date).includes(:leave_type).where(user_id: user_ids).group_by(&:user_id)
-      calendar = WorkingCalendar.new(date..date)
-      user_ids.index_with { |id| build(date, at, calendar, events.fetch(id, []), leaves.fetch(id, [])) }
+      offices = EmployeeProfile.where(user_id: user_ids).pluck(:user_id, :office_location_id).to_h
+      calendars = WorkingCalendar.by_office(date..date)
+      user_ids.index_with { |id| build(date, at, calendars[offices[id]], events.fetch(id, []), leaves.fetch(id, [])) }
     end
 
     def self.build(date, at, calendar, events, leaves)

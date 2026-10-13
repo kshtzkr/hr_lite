@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-10-13
+
+- Holidays per office. A holiday applies to every office or to one (Admin → Holidays: "Applies to", also for bulk paste), and each employee can belong to an office (Admin → Employee: Office). Everything that decides whether a day is a working day now uses that person's calendar: attendance and absences, the nightly close, leave day counts and balances, loss of pay and payslips, comp-off, self-fix tickets, late carry-over, the team board, work status and weekly hours. Employees see their own office's holidays; announcements go only to the office concerned. People with no office get the all-office holidays, exactly as before. Two offices may now close on the same date.
+
 ## [0.33.0] - 2026-10-13
 
 - Work time. Time per work mode, worked out from the mode timeline on every request (a correction shows at once; a break on top of a work mode counts once, as the break). Periods: day, week, month, quarter, year, custom (up to 366 days). Working time = in office, WFH, travelling, client and other meetings, busy; breaks = lunch and short breaks; out of office and offline are shown apart and never counted as working. Employees see their own under My work time; others need the new `work_analytics.view` permission (HR, Leadership and Super Admin get it; Manager does not by default) on Admin → Work time, where opening one person's breakdown is audited. Charts are server-drawn SVG: summary cards, a share donut with its denominator stated, stacked bars that open a day, and an hour-by-hour day strip. HR also gets a "worth a look" list: missing check-outs, worked days with no modes, modes with no check-in.

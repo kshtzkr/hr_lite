@@ -58,6 +58,11 @@
     </div>
     <div class="hrl-field"><%= f.label :department %><%= f.text_field :department %></div>
     <div class="hrl-field"><%= f.label :work_location %><%= f.text_field :work_location %></div>
+    <% offices = HrLite::OfficeLocation.order(:name).pluck(:name, :id) %>
+    <% if offices.any? %>
+      <div class="hrl-field"><%= f.label :office_location_id, "Office (decides which office holidays apply)" %>
+        <%= f.select :office_location_id, offices, { include_blank: "None — only all-office holidays" }, data: { hrl_filter: ("Type an office" if offices.size > 5) } %></div>
+    <% end %>
     <div class="hrl-field"><%= f.label :date_of_birth %><%= f.date_field :date_of_birth %></div>
     <div class="hrl-field"><%= f.label :date_of_joining %><%= f.date_field :date_of_joining %></div>
     <div class="hrl-field">

@@ -47,7 +47,7 @@ module HrLite
         [ Date.new(year, 8, 15), "Independence Day" ],
         [ Date.new(year, 10, 2), "Gandhi Jayanti" ]
       ].filter_map do |date, name|
-        next if Holiday.exists?(date: date)
+        next if Holiday.exists?(date: date, office_location_id: nil)
 
         Holiday.create!(date: date, name: name)
         "holiday #{name} #{year}"
