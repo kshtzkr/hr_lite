@@ -20,7 +20,16 @@ module HrLite
                   # true = check-in slots, late penalties and HR buffers (default off)
                   :attendance_slots,
                   # true = check-in only inside an active office radius, unless WFH is approved for the day
-                  :office_geofence
+                  :office_geofence,
+                  # ->(user, from, to) { [{ id:, title:, starts_at:, ends_at: }] } — timed,
+                  # accepted events; starts Meeting mode by itself. Pairs with calendar_users.
+                  :calendar_events,
+                  # -> { user ids with a connected calendar }
+                  :calendar_users,
+                  # ->(user, query) { [{ id:, label: }] } — leads to link to a client meeting
+                  :crm_search,
+                  # ->(id) { { label:, url: } or nil } — one lead, to validate and link it
+                  :crm_find
 
     attr_reader :leave_year_start_month, :slip_release_day, :self_regularization, :work_hours
 
