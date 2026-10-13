@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.35.0] - 2026-10-13
 
+- Today's check-ins on Home: everyone in today, split into on time, late and not in yet (leave, holidays and weekends left out). "On time" uses each person's own slot plus their HR buffer and the grace minutes, the same rule as the late penalty. Hover or tap a person for their check-in, how late, check-out and hours worked (or hours so far).
 - Custom status, Slack-style: your own text and an emoji (pick from a grid or type one), clearing after 30 minutes, 1 hour, 4 hours, today, or never. It works without a check-in, survives check-out and the nightly close, shows beside your name on the team board, and is never counted in work-time analytics.
 - Meetings from the calendar. With `config.calendar_events` and `config.calendar_users` set, Meeting mode starts on its own when a calendar meeting begins and ends with it. `CalendarMeetingSyncJob` runs on a schedule and can sync one person instantly (for calendar change notifications): a cancelled or declined invite ends the meeting, a moved one moves it, and nothing overrides a break or a mode the person chose.
 - One-click "Connect Google Calendar" on the punch card (`config.calendar_connection`): the host supplies the connect and disconnect links, so anyone can link a personal Gmail calendar alongside the organisation's Workspace calendars.

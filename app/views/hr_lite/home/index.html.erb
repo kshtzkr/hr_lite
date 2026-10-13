@@ -30,6 +30,7 @@
       <% end %>
     </section>
   <% end %>
+  <%= render "hr_lite/home/today_checkins" %>
   <%= render "hr_lite/holidays/next_holiday" %>
 
   <section class="hrl-card">
@@ -72,6 +73,7 @@
 
 <% content_for :scripts do %>
   <%= javascript_include_tag "hr_lite/geo_punch", defer: true %>
+  <%= javascript_include_tag "hr_lite/chart_tip", defer: true %>
   <%= javascript_include_tag "hr_lite/countdown", defer: true %>
   <%= javascript_include_tag "hr_lite/crm_picker", defer: true %>
   <%= javascript_include_tag "hr_lite/emoji_pick", defer: true %>

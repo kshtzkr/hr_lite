@@ -1,0 +1,31 @@
+<%# Today's check-ins: on time, late, not in yet. Hover or tap a person for times. %>
+<% groups = HrLite::TodayCheckins.new.groups
+   tip = ->(p) do
+     r = p.record
+     parts = [ hr_display_name(p.user) ]
+     if r
+       parts << "In #{r.check_in_at.strftime('%H:%M')}#{" (#{p.late_minutes} min late)" if p.late?}"
+       parts << (r.check_out_at ? "Out #{r.check_out_at.strftime('%H:%M')} · #{hrl_duration(r.worked_duration)} worked" : "#{hrl_duration(Time.current - r.check_in_at)} so far")
+     else
+       parts << "Not checked in yet"
+     end
+     parts.join(" · ")
+   end %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Today's check-ins</h2>
+  <% [ [ :on_time, "On time", "ok" ], [ :late, "Late", "warn" ], [ :not_in, "Not in yet", "muted" ] ].each do |key, label, tone| %>
+    <div class="hrl-checkins">
+      <p class="hrl-small"><span class="hrl-badge hrl-badge--<%= tone %>"><%= label %> · <%= groups[key].size %></span></p>
+      <% if groups[key].any? %>
+        <ul class="hrl-checkins__people">
+          <% groups[key].each do |p| %>
+            <li><button type="button" class="hrl-person hrl-person--<%= tone %>" data-hrl-tip="<%= tip.(p) %>" title="<%= tip.(p) %>" aria-label="<%= tip.(p) %>">
+              <%= hr_display_name(p.user).to_s.scan(/[[:alpha:]]+/).first(2).map { |w| w[0] }.join.upcase %>
+            </button></li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+  <% end %>
+  <a class="hrl-card__link" href="<%= hr_lite.team_path %>">Team board</a>
+</section>

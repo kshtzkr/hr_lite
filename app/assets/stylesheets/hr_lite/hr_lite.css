@@ -610,3 +610,9 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-custom-status { display: inline-flex; gap: .3rem; align-items: center; overflow-wrap: anywhere; }
 .hrl-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: .25rem; margin-top: .4rem; }
 .hrl-emoji { min-height: var(--hrl-target); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-card); font-size: 1.25rem; cursor: pointer; }
+/* Today's check-ins: one initials badge per person; hover/tap shows times. */
+.hrl-checkins + .hrl-checkins { margin-top: .6rem; }
+.hrl-checkins__people { display: flex; flex-wrap: wrap; gap: var(--hrl-gap-target); margin: .4rem 0 0; padding: 0; list-style: none; }
+.hrl-person { width: var(--hrl-target); height: var(--hrl-target); border-radius: var(--hrl-radius-pill); border: 2px solid var(--hrl-line); background: var(--hrl-bg); color: var(--hrl-ink); font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; }
+.hrl-person--ok { border-color: var(--hrl-ok); background: var(--hrl-ok-bg); color: var(--hrl-ok); }
+.hrl-person--warn { border-color: var(--hrl-warn); background: var(--hrl-warn-bg); color: var(--hrl-warn); }
