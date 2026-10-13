@@ -1,33 +1,55 @@
 module HrLite
-  # Run every few minutes by the host. Asks the host's calendar hook for each
-  # connected person's meetings starting soon and schedules Meeting mode for
-  # their start. Re-runs are harmless: a meeting opens once per event.
+  # Keeps Meeting mode in step with each person's calendar. The host runs it
+  # for everyone every few minutes, and for one person the moment Google says
+  # their calendar changed. Each run schedules meetings starting soon and
+  # reconciles open ones: a cancelled or declined invite ends the meeting, a
+  # moved end time moves it. Re-runs are harmless.
   class CalendarMeetingSyncJob < ApplicationJob
     WINDOW = 10.minutes
 
-    def perform
+    def perform(user_ids = nil)
       hook = HrLite.config.calendar_events
       return unless hook && HrLite.config.calendar_users && HrLite.config.office_geofence
 
       now = Time.current
-      HrLite.user_klass.where(id: HrLite.config.calendar_users.call).find_each do |user|
-        meetings(hook, user, now).each do |m|
-          next unless m[:id] && m[:starts_at] && m[:ends_at] && m[:ends_at] > now && m[:starts_at] < now + WINDOW
+      ids = HrLite.config.calendar_users.call
+      ids &= Array(user_ids).map(&:to_i) if user_ids
+      HrLite.user_klass.where(id: ids).find_each do |user|
+        meetings = self.class.meetings(hook, user, now, now + WINDOW)
+        next if meetings.nil? # the calendar could not be read: leave everything as it is
 
-          CalendarMeetingStartJob.set(wait_until: [ m[:starts_at], now ].max)
-                                 .perform_later(user.id, m[:id].to_s, m[:title].to_s, m[:ends_at].iso8601)
+        reconcile(user, meetings, now)
+        meetings.each do |m|
+          next unless m[:starts_at] < now + WINDOW && m[:ends_at] > now
+
+          CalendarMeetingStartJob.set(wait_until: [ m[:starts_at], now ].max).perform_later(user.id, m[:id])
         end
       end
     end
 
+    # Timed meetings overlapping from..to, or nil when the hook fails.
+    def self.meetings(hook, user, from, to)
+      Array(hook.call(user, from, to)).map { |m| m.to_h.symbolize_keys }
+                                      .select { |m| m[:id].present? && m[:starts_at] && m[:ends_at] }
+                                      .each { |m| m[:id] = m[:id].to_s }
+    rescue => e
+      Rails.logger.warn("[hr_lite] calendar read failed for user #{user.id}: #{e.class}: #{e.message}")
+      nil
+    end
+
     private
 
-    # One person's calendar failing (revoked access, Google down) never stops the rest.
-    def meetings(hook, user, now)
-      Array(hook.call(user, now, now + WINDOW)).map { |m| m.to_h.symbolize_keys }
-    rescue => e
-      Rails.logger.warn("[hr_lite] calendar sync failed for user #{user.id}: #{e.class}: #{e.message}")
-      []
+    def reconcile(user, meetings, now)
+      by_id = meetings.index_by { |m| m[:id] }
+      WorkModeEvent.open.where(user_id: user.id, source: "system").where.not(calendar_event_id: nil).find_each do |event|
+        meeting = by_id[event.calendar_event_id]
+        if meeting.nil? || meeting[:starts_at] > now
+          event.close!("ended", at: now) # cancelled, declined or moved later
+        elsif meeting[:ends_at] != event.ends_at && meeting[:ends_at] > now
+          event.update!(ends_at: meeting[:ends_at])
+          WorkModeExpireJob.set(wait_until: meeting[:ends_at]).perform_later(event.id)
+        end
+      end
     end
   end
 end
