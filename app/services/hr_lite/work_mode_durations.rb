@@ -86,7 +86,25 @@ module HrLite
       def tracked = working + breaks + other
     end
 
-    def self.call(user_ids, period, now: Time.current) = new(Array(user_ids), period, now).call
+    # A period that is over is cached under a key built from the newest change
+    # to its events and check-ins, so a correction is picked up on the next
+    # read. A period that includes today is always worked out live.
+    def self.call(user_ids, period, now: Time.current)
+      ids = Array(user_ids)
+      return new(ids, period, now).call if period.to >= now.in_time_zone(HrLite.config.time_zone).to_date
+
+      Rails.cache.fetch(cache_key(ids, period)) { new(ids, period, now).call }
+    end
+
+    def self.cache_key(ids, period)
+      zone = Time.find_zone!(HrLite.config.time_zone)
+      start = zone.local(period.from.year, period.from.month, period.from.day)
+      finish = zone.local(period.to.year, period.to.month, period.to.day).end_of_day
+      events = WorkModeEvent.where(user_id: ids).where("started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)", finish, start)
+      records = AttendanceRecord.where(user_id: ids, date: period.from..period.to)
+      [ "hr_lite/work_time/v1", Digest::SHA256.hexdigest(ids.sort.join(",")), period.kind, period.from, period.to,
+        events.count, events.maximum(:updated_at)&.to_f, records.count, records.maximum(:updated_at)&.to_f ].join("/")
+    end
 
     def initialize(user_ids, period, now)
       @ids = user_ids
