@@ -13,6 +13,17 @@ module HrLite
 
     def self.call(...) = new(...).call
 
+    # How long a mode lasts, picked per use (owner, 2026-10-13): 15 min up to a day.
+    DURATIONS = { "15" => 15.minutes, "30" => 30.minutes, "60" => 1.hour, "120" => 2.hours,
+                  "240" => 4.hours, "day" => 1.day }.freeze
+    DURATION_LABELS = { "15" => "15 min", "30" => "30 min", "60" => "1 h", "120" => "2 h", "240" => "4 h", "day" => "1 day" }.freeze
+
+    # The lengths offered for a mode: breaks never past their company limit.
+    def self.duration_choices(mode)
+      cap = { "lunch" => Setting.instance.lunch_break_minutes, "short_break" => Setting.instance.short_break_minutes }[mode.to_s]
+      cap ? DURATIONS.keys.select { |k| DURATIONS[k] <= cap.minutes } : DURATIONS.keys
+    end
+
     CLEAR_AFTER = { "30" => 30.minutes, "60" => 1.hour, "240" => 4.hours, "today" => :today, "never" => nil }.freeze
 
     # A person's own status, Slack-style: works with or without a check-in
@@ -120,10 +131,18 @@ module HrLite
       day = @now.in_time_zone(HrLite.config.time_zone).all_day
       return "You have already taken lunch today." if WorkModeEvent.where(user_id: @user.id, mode: "lunch", started_at: day).exists?
 
-      base.merge(ends_at: @now + Setting.instance.lunch_break_minutes.minutes)
+      capped_break(Setting.instance.lunch_break_minutes)
     end
 
-    def short_break_attrs = base.merge(ends_at: @now + Setting.instance.short_break_minutes.minutes)
+    def short_break_attrs = capped_break(Setting.instance.short_break_minutes)
+
+    # A break runs the picked length (never past the limit), or the full limit.
+    def capped_break(limit)
+      return base.merge(ends_at: @now + limit.minutes) unless @p[:duration]
+      return "That break length is over the #{limit}-minute limit." unless self.class.duration_choices(@mode).include?(@p[:duration])
+
+      base.merge(ends_at: @now + DURATIONS[@p[:duration]])
+    end
 
     def parse_until
       Time.zone.parse("#{@now.to_date} #{@p[:until]}") if @p[:until]
@@ -131,12 +150,18 @@ module HrLite
       nil
     end
 
-    # minutes (30/60/…) or until "HH:MM" today; must be in the future, today.
+    # A picked length (15 min … 1 day), or minutes / an "HH:MM" end time;
+    # always in the future and at most a day away.
     def timed(attrs, required: true)
-      ends_at = @p[:minutes] ? @now + @p[:minutes].to_i.minutes : parse_until
+      return "Pick how long from the choices." if @p[:duration] && !DURATIONS.key?(@p[:duration])
+
+      ends_at = if @p[:duration] then @now + DURATIONS[@p[:duration]]
+      elsif @p[:minutes] then @now + @p[:minutes].to_i.minutes
+      else parse_until
+      end
       return attrs unless ends_at || required
-      return "Pick when it ends." unless ends_at
-      return "The end time must be later today." unless ends_at > @now && ends_at <= @now.end_of_day
+      return "Pick how long." unless ends_at
+      return "The end time must be later than now, and at most a day away." unless ends_at > @now && ends_at <= @now + 1.day
 
       attrs.merge(ends_at: ends_at)
     end

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-10-13
+
+- Pick how long a mode lasts: Busy, Meeting and Out of office offer 15 min, 30 min, 1 h, 2 h, 4 h or 1 day (30 min preselected); Travelling and Client meeting also offer "Until I change it" (the default). Lunch and short break offer only lengths within their company limit — lunch 15 or 30 min by default — and one tap still takes the full limit; a longer break is refused. Every mode ends on its own at the picked time; the longest is a day. The choices are real radio buttons shown as 44px chips with 8px gaps.
+
 ## [0.35.1] - 2026-10-13
 
 - Spacing: forms, buttons and expandable sections stacked in a card no longer touch (only form fields carried spacing, so "Set a status" sat on "Change my mode", "Save status" on "Check in", "Out of office" on "Check out"). One card-level rule gives them a 12px gap. The emoji grid, lead picker, check-in badges, punch-card links (now wrapping as whole items, no dangling dots) and the admin month's In/Out map links all keep at least the 8px gap between touch targets. Measured at 360 px and 1280 px across Home, Attendance, WFH, WFH locations, My work time, Team and the HR work-mode, WFH, locations, work-time, attendance, holidays and employee screens: no stacked targets closer than 8px, no horizontal scroll.

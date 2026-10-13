@@ -69,7 +69,7 @@ RSpec.describe "Switching work modes", type: :request do
     expect(status(at: Time.zone.local(2026, 10, 20, 11, 1)).overlay).to be_nil
 
     switch("busy", until: "08:00")
-    expect(flash[:alert]).to include("later today")
+    expect(flash[:alert]).to include("later than now")
   end
 
   it "only allows the WFH mode with WFH approved for today" do
@@ -111,5 +111,43 @@ RSpec.describe "Switching work modes", type: :request do
     get "/hr/attendance"
     expect(response.body).to include("hrl-mode--busy").and include("set by the employee").and include("data-hrl-countdown")
       .and include("End busy now")
+  end
+
+  it "lets each mode run a picked length, from 15 minutes up to a day, and refuses anything else" do
+    check_in
+    switch("busy", duration: "15")
+    expect(status.overlay.until).to eq(Time.zone.local(2026, 10, 20, 9, 45))
+    switch("meeting", title: "Planning", duration: "day")
+    expect(status.overlay.until).to eq(Time.zone.local(2026, 10, 21, 9, 30))
+    switch("out_of_office", category: "personal", duration: "240")
+    expect(status.overlay.until).to eq(Time.zone.local(2026, 10, 20, 13, 30))
+    switch("busy", duration: "45")
+    expect(flash[:alert]).to include("choices")
+  end
+
+  it "runs travelling until changed, or for a picked length" do
+    check_in
+    switch("travelling", destination: "Gurgaon", title: "Visit", duration: "")
+    expect(status.primary.until).to be_nil
+    switch("travelling", destination: "Gurgaon", title: "Visit", duration: "120")
+    expect(status.primary.until).to eq(Time.zone.local(2026, 10, 20, 11, 30))
+  end
+
+  it "keeps breaks within their limit: a shorter lunch is fine, a longer one is refused" do
+    check_in
+    expect(HrLite::WorkModeSwitch.duration_choices("lunch")).to eq(%w[15 30])
+    expect(HrLite::WorkModeSwitch.duration_choices("short_break")).to eq([])
+    switch("lunch", duration: "60")
+    expect(flash[:alert]).to include("30-minute limit")
+    switch("lunch", duration: "15")
+    expect(status.overlay.until).to eq(Time.zone.local(2026, 10, 20, 9, 45))
+  end
+
+  it "offers the lengths as chips in each form" do
+    check_in
+    get "/hr/attendance"
+    expect(response.body).to include('name="duration" id="dur-busy-15" value="15"').and include("1 day").and include("Until I change it")
+    expect(response.body).to include('id="dur-lunch-30"')
+    expect(response.body).not_to include('id="dur-lunch-60"')
   end
 end

@@ -22,22 +22,37 @@
   <details>
     <summary class="hrl-btn hrl-btn--block">Change my mode</summary>
     <div class="hrl-mode-switch">
-      <% %w[lunch short_break office].each do |mode| %>
-        <%= button_to hr_lite.work_mode_path, params: { mode: mode }, method: :post, class: "hrl-btn hrl-btn--block" do %>
-          <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: HrLite::WorkModeEvent.label(mode))) %>
-          <%= HrLite::WorkModeEvent.label(mode) %>
-        <% end %>
+      <%= button_to hr_lite.work_mode_path, params: { mode: "office" }, method: :post, class: "hrl-btn hrl-btn--block" do %>
+        <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: "office", label: HrLite::WorkModeEvent.label("office"))) %>
+        <%= HrLite::WorkModeEvent.label("office") %>
       <% end %>
       <% if HrLite::WfhRequest.approved_for(hr_current_user.id, Date.current) || HrLite::EmployeeProfile.where(user_id: hr_current_user.id).pick(:permanent_wfh) %>
         <%= button_to "Work from home", hr_lite.work_mode_path, params: { mode: "wfh" }, method: :post, class: "hrl-btn hrl-btn--block" %>
+      <% end %>
+      <%# Breaks: one tap for the full limit, or pick a shorter length when the limit allows a choice. %>
+      <% %w[lunch short_break].each do |mode| %>
+        <% if HrLite::WorkModeSwitch.duration_choices(mode).size > 1 %>
+          <details>
+            <summary class="hrl-btn hrl-btn--block"><%= HrLite::WorkModeEvent.label(mode) %></summary>
+            <%= form_with url: hr_lite.work_mode_path, method: :post, local: true do %>
+              <input type="hidden" name="mode" value="<%= mode %>">
+              <%= render "hr_lite/attendance/duration_chips", mode: mode, id: "dur-#{mode}" %>
+              <button type="submit" class="hrl-btn hrl-btn--primary">Start <%= HrLite::WorkModeEvent.label(mode).downcase %></button>
+            <% end %>
+          </details>
+        <% else %>
+          <%= button_to hr_lite.work_mode_path, params: { mode: mode }, method: :post, class: "hrl-btn hrl-btn--block" do %>
+            <%= hrl_mode_icon(HrLite::WorkStatus::Entry.new(mode: mode, label: HrLite::WorkModeEvent.label(mode))) %>
+            <%= HrLite::WorkModeEvent.label(mode) %>
+          <% end %>
+        <% end %>
       <% end %>
 
       <details>
         <summary class="hrl-btn hrl-btn--block">Busy / focus</summary>
         <%= form_with url: hr_lite.work_mode_path, method: :post, local: true do %>
           <input type="hidden" name="mode" value="busy">
-          <div class="hrl-field"><label for="busy-minutes">For</label>
-            <%= select_tag :minutes, options_for_select([ [ "30 minutes", 30 ], [ "1 hour", 60 ], [ "2 hours", 120 ] ]), id: "busy-minutes" %></div>
+          <%= render "hr_lite/attendance/duration_chips", mode: "busy", id: "dur-busy" %>
           <button type="submit" class="hrl-btn hrl-btn--primary">Set busy</button>
         <% end %>
       </details>
@@ -48,7 +63,7 @@
           <div class="hrl-field"><label for="mt-title">Meeting</label><input class="hrl-input" id="mt-title" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="mt-client">Client (optional)</label><input class="hrl-input" id="mt-client" name="client" maxlength="120"></div>
           <%= render "hr_lite/attendance/crm_picker", id: "mt-crm" %>
-          <div class="hrl-field"><label for="mt-until">Ends at</label><input class="hrl-input" type="time" id="mt-until" name="until" required></div>
+          <%= render "hr_lite/attendance/duration_chips", mode: "meeting", id: "dur-meeting" %>
           <button type="submit" class="hrl-btn hrl-btn--primary">Start meeting</button>
         <% end %>
       </details>
@@ -60,7 +75,7 @@
           <div class="hrl-field"><label for="tr-why">Purpose</label><input class="hrl-input" id="tr-why" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="tr-client">Client (optional)</label><input class="hrl-input" id="tr-client" name="client" maxlength="120"></div>
           <%= render "hr_lite/attendance/crm_picker", id: "tr-crm" %>
-          <div class="hrl-field"><label for="tr-until">Back by (optional)</label><input class="hrl-input" type="time" id="tr-until" name="until"></div>
+          <%= render "hr_lite/attendance/duration_chips", mode: "travelling", id: "dur-travelling", optional: true %>
           <button type="submit" class="hrl-btn hrl-btn--primary">Start travelling</button>
         <% end %>
       </details>
@@ -72,7 +87,7 @@
           <div class="hrl-field"><label for="om-client">Client or prospect<%= " (or link a lead above)" if HrLite.config.crm_search %></label><input class="hrl-input" id="om-client" name="client" maxlength="120"<%= " required" unless HrLite.config.crm_search %>></div>
           <div class="hrl-field"><label for="om-why">Purpose</label><input class="hrl-input" id="om-why" name="title" maxlength="120" required></div>
           <div class="hrl-field"><label for="om-where">Where (optional)</label><input class="hrl-input" id="om-where" name="destination" maxlength="120"></div>
-          <div class="hrl-field"><label for="om-until">Ends at (optional)</label><input class="hrl-input" type="time" id="om-until" name="until"></div>
+          <%= render "hr_lite/attendance/duration_chips", mode: "outside_meeting", id: "dur-om", optional: true %>
           <button type="submit" class="hrl-btn hrl-btn--primary">Start client meeting</button>
         <% end %>
       </details>
@@ -82,7 +97,7 @@
           <input type="hidden" name="mode" value="out_of_office">
           <div class="hrl-field"><label for="oo-why">Reason</label>
             <%= select_tag :category, options_for_select(HrLite::WorkModeSwitch::OUT_OF_OFFICE_REASONS.invert), id: "oo-why" %></div>
-          <div class="hrl-field"><label for="oo-until">Back by</label><input class="hrl-input" type="time" id="oo-until" name="until" required></div>
+          <%= render "hr_lite/attendance/duration_chips", mode: "out_of_office", id: "dur-oo" %>
           <p class="hrl-small hrl-muted">Away for a full day? <a href="<%= hr_lite.new_leave_request_path %>">Apply for leave</a> instead.</p>
           <button type="submit" class="hrl-btn hrl-btn--primary">Set out of office</button>
         <% end %>

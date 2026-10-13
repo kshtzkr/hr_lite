@@ -5,7 +5,7 @@ module HrLite
 
     def create
       result = WorkModeSwitch.call(user: hr_current_user, mode: params[:mode], source: "employee", actor: hr_current_user,
-                                   params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category, :crm_ref))
+                                   params: params.permit(:title, :client, :destination, :reason, :minutes, :until, :category, :crm_ref, :duration))
       if result.ok?
         redirect_to attendance_path, notice: "You are now: #{result.event.label}."
       else
