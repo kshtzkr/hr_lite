@@ -27,6 +27,11 @@ RSpec.describe "Office geofence and WFH", type: :request do
   end
 
   describe "check-in" do
+    it "offers Request WFH on the home page" do
+      get "/hr"
+      expect(response.body).to include(%(href="/hr/wfh_requests">Request WFH</a>))
+    end
+
     it "allows a check-in inside the 500 m radius" do
       post "/hr/attendance/check_in", params: inside
       expect(record.check_in_at).to be_present
@@ -37,6 +42,8 @@ RSpec.describe "Office geofence and WFH", type: :request do
       post "/hr/attendance/check_in", params: outside
       expect(flash[:alert]).to eq(HrLite::AttendancePuncher::OFF_SITE_MESSAGE)
       expect(record).to be_nil
+      follow_redirect!
+      expect(response.body).to include(%(href="/hr/wfh_requests">Request WFH</a>))
     end
 
     it "refuses a fix too vague to prove presence (accuracy wider than the radius)" do
