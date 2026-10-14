@@ -21,6 +21,9 @@
     <% if record&.work_mode_label %>
       <span class="hrl-badge hrl-badge--ok"><%= record.work_mode_label %></span>
     <% end %>
+    <% if record&.check_in_place == "home" && record.work_location %>
+      <span class="hrl-badge hrl-badge--muted"><%= record.work_location.name %> · <%= HrLite::WorkLocation::FENCE_M %> m</span>
+    <% end %>
     <% if record&.flagged? %>
       <span class="hrl-badge hrl-badge--bad">Flagged</span>
     <% end %>
@@ -68,6 +71,17 @@
           <div class="hrl-field"><label for="field-place">Destination or client</label><input type="text" class="hrl-input" id="field-place" name="field[place]" maxlength="120"></div>
         </details>
       <% end %>
+      <% if flash[:punch_offer] == "home" %>
+        <fieldset class="hrl-field">
+          <legend class="hrl-small">Is this your home location?</legend>
+          <% if HrLite::WorkLocation.live.where(user_id: hr_current_user.id).count < HrLite::WorkLocation::MAX_LIVE %>
+            <label class="hrl-field--check"><input type="radio" name="place" value="home" required> Yes, save this place as a home location</label>
+          <% else %>
+            <p class="hrl-small"><%= HrLite::WorkLocationsController::CAP_MESSAGE %></p>
+          <% end %>
+          <label class="hrl-field--check"><input type="radio" name="place" value="travel" required> No, I am travelling</label>
+        </fieldset>
+      <% end %>
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
@@ -76,6 +90,9 @@
                   html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
+      <% if flash[:punch_offer] == "travel" %>
+        <div class="hrl-field"><label class="hrl-field--check"><input type="checkbox" name="place" value="travel" required> I am travelling — check out here</label></div>
+      <% end %>
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
         <%= record.check_out_at ? "Update check-out" : "Check out" %>
       </button>

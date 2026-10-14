@@ -7,8 +7,8 @@ module HrLite
     # What the browser can legitimately report (geo_punch.js).
     GEO_STATUSES = %w[ok denied unavailable timeout insecure].freeze
     OFF_SITE_MESSAGE = "You are not within the office location. Please request Work From Home (WFH) approval from HR.".freeze
-    HOME_ASK_MESSAGE = "You are not at any of your home locations. Is this your home location? Tick \"Save this place " \
-                       "as a home location\", or choose Travelling, and check in again.".freeze
+    HOME_ASK_MESSAGE = "You are not at any of your home locations. Is this your home location? " \
+                       "Answer on the card below and check in again.".freeze
     HOME_CAP_MESSAGE = "You already have #{WorkLocation::MAX_LIVE} home locations. Ask HR to change one, or choose Travelling.".freeze
     HOME_FIX_MESSAGE = "Your location is not precise enough to save as home (#{WorkLocation::MAX_ACCURACY_M} m or better). " \
                        "Step outside or wait for GPS and try again.".freeze
