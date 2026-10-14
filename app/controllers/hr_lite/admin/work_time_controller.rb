@@ -32,7 +32,7 @@ module HrLite
         end
 
         @result = WorkModeDurations.call(ids, @period)
-        @records = @person ? AttendanceRecord.where(user_id: @person.id, date: @period.from..@period.to).where.not(check_in_at: nil).order(:date).limit(400) : []
+        @records = @person ? AttendanceRecord.includes(:work_location, :check_out_work_location).where(user_id: @person.id, date: @period.from..@period.to).where.not(check_in_at: nil).order(:date).limit(400) : []
       end
     end
   end

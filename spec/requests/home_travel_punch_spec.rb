@@ -81,3 +81,47 @@ RSpec.describe "Home detection and travel punches", type: :request do
     expect(record.reload).to have_attributes(check_in_place: "office", check_out_place: nil)
   end
 end
+
+RSpec.describe "Home and travel on screen", type: :request do
+  let(:employee) { create(:user, name: "Asha Rao") }
+  let(:admin) { create(:user, :admin) }
+  let(:home) { { lat: "28.5355", lng: "77.3910", accuracy_m: "20", geo_status: "ok" } }
+  let(:away) { home.merge(lat: "28.5455", accuracy_m: "30") }
+
+  before do
+    HrLite.config.office_geofence = true
+    create(:office_location, lat: 28.61270779585808, lng: 77.36605830864376, radius_m: 500)
+    create(:employee_profile, user: employee, permanent_wfh: true)
+    sign_in employee
+  end
+
+  it "puts the home question, then the travelling box, on the punch card" do
+    post "/hr/attendance/check_in", params: home
+    follow_redirect!
+    expect(response.body).to include("Is this your home location?", %(value="home"), %(value="travel"))
+
+    post "/hr/attendance/check_in", params: home.merge(place: "home")
+    get "/hr/attendance"
+    expect(response.body).to include("Home 1 · 500 m")
+    expect(response.body).not_to include("Is this your home location?")
+
+    post "/hr/attendance/check_out", params: away
+    follow_redirect!
+    expect(response.body).to include("I am travelling — check out here")
+  end
+
+  it "shows the day's trail to the employee, HR and the home page" do
+    post "/hr/attendance/check_in", params: home.merge(place: "home")
+    post "/hr/attendance/check_out", params: away.merge(place: "travel")
+    route = "https://www.google.com/maps/dir/?api=1&amp;origin=28.5355,77.391&amp;destination=28.5455,77.391"
+
+    get "/hr/work_time", params: { period: "day" }
+    expect(response.body).to include("Check-in: Home (Home 1)", "0 m from home", "±20 m", "Check-out: Travel", "1,112 m from home", route)
+
+    sign_in admin
+    get "/hr/admin/attendances/#{employee.id}"
+    expect(response.body).to include("Check-in: Home (Home 1)", "Check-out: Travel", "View route on Google Maps")
+    get "/hr"
+    expect(response.body).to include("Check-in: Home → Check-out: Travel")
+  end
+end

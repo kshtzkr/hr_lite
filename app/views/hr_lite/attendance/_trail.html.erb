@@ -1,0 +1,13 @@
+<%# locals: record — one day's start and end: time, place, metres from home, GPS accuracy, route. %>
+<% [ [ :check_in, "Check-in" ], [ :check_out, "Check-out" ] ].each do |side, label| %>
+  <% next unless (at = record.public_send("#{side}_at")) %>
+  <% home_m = record.public_send("#{side}_home_m")
+     accuracy = record.public_send("#{side}_accuracy_m")
+     home = side == :check_in ? record.work_location : record.check_out_work_location %>
+  <div class="hrl-punch-line"><%= label %>: <%= record.place_label(side) || "Unknown place" %><% if home && record.public_send("#{side}_place") == "home" %> (<%= home.name %>)<% end %> · <%= at.strftime("%H:%M") %>
+    <% if home_m %> · <%= number_with_delimiter(home_m) %> m from home<% end %>
+    <% if accuracy %> · ±<%= accuracy %> m<% end %></div>
+<% end %>
+<% if (route = record.route_url) %>
+  <div class="hrl-punch-line"><a class="hrl-card__link" href="<%= route %>" target="_blank" rel="noopener noreferrer">View route on Google Maps<span class="hrl-sr-only"> for <%= record.date.strftime("%-d %b") %></span></a></div>
+<% end %>
