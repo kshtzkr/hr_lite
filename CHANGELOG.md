@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-10-14
+
+- Home detection: a WFH check-in matches any approved home within 500 m, and the nearest one becomes active. From anywhere else the punch card asks "Is this your home location?". Yes saves the place as an approved, active home straight away (a GPS fix good to 500 m, fewer than three live homes, audit row `work_location.self_saved`). No checks in as Travelling. The question comes back at every check-in from a place that is not a home.
+- WFH locations: "Register here" saves an approved home at once, and the first one becomes active. With three live homes the employee can no longer use, switch or remove one (refused server-side too); HR has a Remove button on Admin → WFH locations, which now opens on approved homes. Removing a home never rewrites past attendance.
+- Travel: any WFH employee (not only field staff) may check in or out as Travelling away from their homes. A day begun at home that checks out away from every home must tick "I am travelling". A travel day can end at home without asking. No HR approval; the place is always shown.
+- Every punch records its place (office, home, travel), the matched home on check-in and check-out, and metres to the nearest home. New columns on `hr_lite_attendance_records`: `check_in_place`, `check_out_place`, `check_out_work_location_id`, `check_in_home_m`, `check_out_home_m` (migration 20261014031000; older days stay blank).
+- Daily trail: My work time (private), HR's per-person attendance and HR work time show "Check-in: Home (name) · 09:15 · 35 m from home · ±20 m", the same for check-out, and a "View route on Google Maps" link from start to end. Today's check-ins adds "Check-in: Home → Check-out: Travel" to each person.
+- Messages: `HOME_ASK_MESSAGE`, `HOME_CAP_MESSAGE`, `HOME_FIX_MESSAGE` and `TRAVEL_OUT_MESSAGE` replace `HOME_OFF_SITE_MESSAGE` and `NO_HOME_MESSAGE`. `WorkLocation::MAX_ACCURACY_M` is now 500 (was 100).
+- Choice rows (radio/checkbox) inside a `.hrl-field` keep their 44px row layout and 8px gaps (the field-staff check-in choices were affected too).
+
 ## [0.36.1] - 2026-10-14
 
 - The home page punch card has a "Request WFH" button beside Apply leave (when the office geofence is on).

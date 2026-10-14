@@ -10,15 +10,36 @@ RSpec.describe "WFH work locations", type: :request do
 
   def register(name, params = fix) = post("/hr/work_locations", params: params.merge(name: name, address: "Flat 4, Sector 18"))
 
-  it "registers up to three locations, pending HR, and refuses a fourth" do
+  it "saves up to three homes at once, approved, the first active, and refuses a fourth" do
     %w[Home Parents Studio].each { |name| register(name) }
-    expect(HrLite::WorkLocation.where(user_id: employee.id).pluck(:status).uniq).to eq([ "pending" ])
+    mine = HrLite::WorkLocation.where(user_id: employee.id).order(:id)
+    expect(mine.pluck(:status).uniq).to eq([ "approved" ])
+    expect(mine.pluck(:active)).to eq([ true, false, false ])
 
     register("Fourth")
     expect(response).to have_http_status(:unprocessable_entity)
     expect(response.body).to include("at most 3 locations")
+  end
 
-    HrLite::WorkLocation.last.remove!(actor: employee)
+  it "leaves changes to HR once three homes are saved" do
+    %w[Home Parents Studio].each { |name| register(name) }
+    get "/hr/work_locations"
+    expect(response.body).to include(HrLite::WorkLocationsController::CAP_MESSAGE)
+    expect(response.body).not_to include(">Remove<")
+
+    studio = HrLite::WorkLocation.last
+    post "/hr/work_locations/#{studio.id}/remove"
+    expect(flash[:alert]).to eq(HrLite::WorkLocationsController::CAP_MESSAGE)
+    expect(studio.reload).to be_approved
+
+    sign_in admin
+    get "/hr/admin/work_locations"
+    expect(response.body).to include("Remove")
+    post "/hr/admin/work_locations/#{studio.id}/remove"
+    expect(studio.reload).to have_attributes(status: "removed", active: false)
+    expect(HrLite::AuditLog.where(action: "work_location.removed", actor_id: admin.id).count).to eq(1)
+
+    sign_in employee
     register("Fourth")
     expect(HrLite::WorkLocation.live.where(user_id: employee.id).count).to eq(3)
   end
@@ -31,13 +52,11 @@ RSpec.describe "WFH work locations", type: :request do
 
   it "ignores a posted status or owner" do
     post "/hr/work_locations", params: fix.merge(name: "Home", status: "approved", user_id: colleague.id, active: true)
-    expect(HrLite::WorkLocation.last).to have_attributes(user_id: employee.id, status: "pending", active: false)
+    expect(HrLite::WorkLocation.last).to have_attributes(user_id: employee.id, decided_by_id: nil)
   end
 
-  it "lets HR approve (first approved becomes active) and reject with a note, never their own" do
-    register("Home")
-    register("Parents")
-    home, parents = HrLite::WorkLocation.order(:id).to_a
+  it "lets HR approve a pending one (first approved becomes active) and reject with a note, never their own" do
+    home, parents = %w[Home Parents].map { |n| HrLite::WorkLocation.create!(user_id: employee.id, name: n, lat: 1, lng: 1, accuracy_m: 10) }
     sign_in admin
 
     post "/hr/admin/work_locations/#{home.id}/approve"
@@ -57,7 +76,7 @@ RSpec.describe "WFH work locations", type: :request do
     register("Home")
     register("Parents")
     home, parents = HrLite::WorkLocation.order(:id).to_a
-    home.update!(status: "approved", active: true)
+    parents.update!(status: "pending")
 
     post "/hr/work_locations/#{parents.id}/activate"
     expect(response).to have_http_status(:not_found)

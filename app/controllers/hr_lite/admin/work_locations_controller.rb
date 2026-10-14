@@ -1,10 +1,11 @@
 module HrLite
   module Admin
-    # HR approves the WFH locations employees register. Coordinates are only
-    # shown here, inside attendance.view reach.
+    # HR sees every home employees save, decides any still pending, and is
+    # the only one who changes a person's homes once they have MAX_LIVE.
+    # Coordinates are only shown here, inside attendance.view reach.
     class WorkLocationsController < BaseController
       def index
-        @status = params[:status].presence_in(WorkLocation::STATUSES) || "pending"
+        @status = params[:status].presence_in(WorkLocation::STATUSES) || "approved"
         @locations = paginate(hr_scope(WorkLocation.where(status: @status), "attendance.view")
                                 .includes(:user).order(created_at: :desc))
       end
@@ -18,6 +19,13 @@ module HrLite
         return redirect_to admin_work_locations_path, alert: "A note is required to reject." if note.blank?
 
         decide("rejected", note)
+      end
+
+      # Past attendance keeps its own coordinates and place; nothing is rewritten.
+      def remove
+        location = hr_scope(WorkLocation.live, "attendance.manage").where.not(user_id: hr_current_user.id).find(params[:id])
+        location.remove!(actor: hr_current_user)
+        redirect_to admin_work_locations_path(status: "removed"), notice: "#{location.name} removed for #{HrLite.display_name(location.user)}."
       end
 
       private

@@ -32,6 +32,11 @@
             <input type="text" class="hrl-input" name="decision_note" id="reject-loc-<%= location.id %>" required placeholder="Reason to reject">
             <button type="submit" class="hrl-btn hrl-btn--danger">Reject</button>
           <% end %>
+        <% elsif location.approved? && location.user_id != hr_current_user.id %>
+          <%= button_to hr_lite.remove_admin_work_location_path(location), method: :post, class: "hrl-btn hrl-btn--danger",
+                        form: { data: { turbo_confirm: "Remove #{location.name} for #{hr_display_name(location.user)}?" } } do %>
+            Remove<span class="hrl-sr-only"> <%= location.name %></span>
+          <% end %>
         <% end %>
       </div>
     <% end %>

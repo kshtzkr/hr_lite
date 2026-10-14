@@ -31,11 +31,12 @@ RSpec.describe "Check-in decides the work mode", type: :request do
     expect(record).to have_attributes(work_mode: "wfh", work_location_id: location.id)
   end
 
-  it "refuses WFH check-in away from the registered home" do
+  it "refuses WFH check-in away from the registered home, asking if this is home" do
     approve_wfh
     register_home
     post "/hr/attendance/check_in", params: far_from_home
-    expect(flash[:alert]).to eq(HrLite::AttendancePuncher::HOME_OFF_SITE_MESSAGE)
+    expect(flash[:alert]).to eq(HrLite::AttendancePuncher::HOME_ASK_MESSAGE)
+    expect(flash[:punch_offer]).to eq("home")
     expect(record).to be_nil
   end
 
@@ -48,7 +49,7 @@ RSpec.describe "Check-in decides the work mode", type: :request do
     approve_wfh
     register_home(status: "pending", active: false)
     post "/hr/attendance/check_in", params: home
-    expect(flash[:alert]).to eq(HrLite::AttendancePuncher::NO_HOME_MESSAGE)
+    expect(flash[:alert]).to eq(HrLite::AttendancePuncher::HOME_ASK_MESSAGE)
     expect(record).to be_nil
   end
 

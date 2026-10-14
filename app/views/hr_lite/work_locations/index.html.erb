@@ -5,9 +5,11 @@
 </div>
 
 <section class="hrl-card">
-  <p class="hrl-small hrl-muted">On an approved WFH day you check in within <%= HrLite::WorkLocation::FENCE_M %> m of your active location.
-    Register up to <%= HrLite::WorkLocation::MAX_LIVE %> places; HR approves each one. Your location is read only when you check in or tap
+  <% at_cap = @locations.size >= HrLite::WorkLocation::MAX_LIVE %>
+  <p class="hrl-small hrl-muted">On a WFH day you check in within <%= HrLite::WorkLocation::FENCE_M %> m of any of your homes; the nearest one is picked for you.
+    Save up to <%= HrLite::WorkLocation::MAX_LIVE %> places; after that only HR changes them. Your location is read only when you check in or tap
     "Register here" — never tracked in between. Teammates see "Home", never the address.</p>
+  <% if at_cap %><p class="hrl-small"><%= HrLite::WorkLocationsController::CAP_MESSAGE %></p><% end %>
   <% if @locations.any? %>
     <% @locations.each do |location| %>
       <div class="hrl-feed__item hrl-row">
@@ -18,11 +20,13 @@
           <% if location.address.present? %><div class="hrl-small hrl-muted"><%= location.address %></div><% end %>
           <% if location.decision_note.present? %><div class="hrl-small hrl-muted">HR: <%= location.decision_note %></div><% end %>
         </div>
-        <% if location.approved? && !location.active? %>
-          <%= button_to "Use this", hr_lite.activate_work_location_path(location), method: :post, class: "hrl-btn" %>
+        <% unless at_cap %>
+          <% if location.approved? && !location.active? %>
+            <%= button_to "Use this", hr_lite.activate_work_location_path(location), method: :post, class: "hrl-btn" %>
+          <% end %>
+          <%= button_to "Remove", hr_lite.remove_work_location_path(location), method: :post, class: "hrl-btn hrl-btn--danger",
+                        form: { data: { turbo_confirm: "Remove #{location.name}?" } } %>
         <% end %>
-        <%= button_to "Remove", hr_lite.remove_work_location_path(location), method: :post, class: "hrl-btn hrl-btn--danger",
-                      form: { data: { turbo_confirm: "Remove #{location.name}?" } } %>
       </div>
     <% end %>
   <% else %>

@@ -11,14 +11,25 @@ module HrLite
                    "outside_meeting" => "Client meeting" }.freeze
     # Check-in and check-out further apart than this are called out on the board.
     PUNCH_GAP_ALERT_M = 500
+    # Where each punch happened, set by AttendancePuncher.
+    PLACES = { "office" => "Office", "home" => "Home", "travel" => "Travel" }.freeze
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :regularized_by, class_name: HrLite.config.user_class, optional: true
     belongs_to :wfh_request, optional: true
     belongs_to :work_location, optional: true
+    belongs_to :check_out_work_location, class_name: "HrLite::WorkLocation", optional: true
 
     def remote? = work_mode.present? && work_mode != "office"
     def work_mode_label = WORK_MODES[work_mode]
+    def place_label(side) = PLACES[public_send("#{side}_place")]
+
+    # The day's start and end as a Google Maps route, one tap from the trail.
+    def route_url
+      return unless check_in_lat && check_in_lng && check_out_lat && check_out_lng
+
+      "https://www.google.com/maps/dir/?api=1&origin=#{check_in_lat},#{check_in_lng}&destination=#{check_out_lat},#{check_out_lng}"
+    end
 
     validates :date, presence: true, uniqueness: { scope: :user_id }
     validates :status, inclusion: { in: STATUSES }

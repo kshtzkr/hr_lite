@@ -4,8 +4,8 @@ module HrLite
   class WorkLocation < ApplicationRecord
     STATUSES = %w[pending approved rejected removed].freeze
     MAX_LIVE = 3
-    MAX_ACCURACY_M = 100 # a vaguer fix can't pin a home
     FENCE_M = 500
+    MAX_ACCURACY_M = FENCE_M # owner 2026-10-14: a fix good to the 500 m fence may pin a home
 
     belongs_to :user, class_name: HrLite.config.user_class
     belongs_to :decided_by, class_name: HrLite.config.user_class, optional: true

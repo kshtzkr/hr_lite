@@ -6,10 +6,12 @@
      if r
        parts << "In #{r.check_in_at.strftime('%H:%M')}#{" (#{p.late_minutes} min late)" if p.late?}"
        parts << (r.check_out_at ? "Out #{r.check_out_at.strftime('%H:%M')} · #{hrl_duration(r.worked_duration)} worked" : "#{hrl_duration(Time.current - r.check_in_at)} so far")
+       parts << [ r.place_label(:check_in) && "Check-in: #{r.place_label(:check_in)}",
+                  r.place_label(:check_out) && "Check-out: #{r.place_label(:check_out)}" ].compact.join(" → ").presence
      else
        parts << "Not checked in yet"
      end
-     parts.join(" · ")
+     parts.compact.join(" · ")
    end %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Today's check-ins</h2>

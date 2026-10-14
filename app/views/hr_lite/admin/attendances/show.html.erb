@@ -36,15 +36,17 @@
       <div class="hrl-feed__item hrl-small">
         <div class="hrl-feed__body">
           <strong><%= record.date.strftime("%a %-d %b") %></strong>
+          <%# Days punched before places were recorded keep the older office/WFH lines. %>
           <% [ [ "In", record.check_in_at, record.check_in_lat, record.check_in_lng ],
                [ "Out", record.check_out_at, record.check_out_lat, record.check_out_lng ] ].each do |label, at, lat, lng| %>
-            <% next unless at %>
+            <% next unless at && record.check_in_place.nil? %>
             <div class="hrl-punch-line"><%= label %> <%= at.strftime("%H:%M") %> · <%= record.remote? ? record.work_mode_label : (HrLite::OfficeLocation.place(lat, lng, @offices) || "No GPS") %>
               <% if lat && lng %>
                 · <a class="hrl-card__link" href="https://www.google.com/maps?q=<%= lat %>,<%= lng %>" target="_blank" rel="noopener noreferrer">Map<span class="hrl-sr-only"> of <%= label.downcase %> <%= record.date.strftime("%-d %b") %></span></a>
               <% end %>
             </div>
           <% end %>
+          <% if record.check_in_place %><%= render "hr_lite/attendance/trail", record: record %><% end %>
           <% if (gap = record.punch_gap_m) %>
             <div class="<%= gap > HrLite::AttendanceRecord::PUNCH_GAP_ALERT_M ? "hrl-badge hrl-badge--warn" : "hrl-muted" %>"><%= (gap / 1000.0).round(1) %> km apart</div>
           <% end %>
