@@ -91,7 +91,7 @@ HrLite::Engine.routes.draw do
       member { post :approve; post :reject }
     end
     resources :work_locations, only: :index do
-      member { post :approve; post :reject }
+      member { post :approve; post :reject; post :remove }
     end
     get "work_modes", to: "work_modes#index", as: :work_modes
     get "work_time", to: "work_time#index", as: :work_time
