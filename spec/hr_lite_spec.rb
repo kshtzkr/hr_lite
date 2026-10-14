@@ -206,6 +206,12 @@ RSpec.describe HrLite do
       css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
       expect(css.scan(/^\.hrl-timeline \{/).size).to eq 1
     end
+
+    # A name that is an email is one long word; it ran off the ID card.
+    it "lets the ID card name break inside a long word" do
+      css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
+      expect(css[/^\.hrl-idcard__name \{[^}]*\}/]).to include("overflow-wrap: anywhere")
+    end
   end
 
   describe ".default_mentionable_users" do

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.2] - 2026-10-15
+
+- ID card: a long name no longer runs off the card. When someone has no name and their email stands in for it ("sageashish2714@gmail.com"), it breaks before the "@" onto a second line. Any other unbroken word breaks wherever it has to.
+
 ## [0.40.1] - 2026-10-15
 
 - Managers see their team's tabs. A Manager (leave and attendance at team scope) now gets Home › Company overview, Attendance › Team and Work modes, Leave › Team balances, Inbox (All, Leave requests, Comp-off, Attendance fixes, WFH, Home locations) and Admin › Reports. Those pages already let a manager in and show only their team's rows. The menu hid them unless you had the permission across the whole company or were leadership.
