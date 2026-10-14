@@ -31,19 +31,25 @@ module HrLite
       ] },
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
+      # `queue:` is what the tab's page lets this viewer decide, scoped as that
+      # page scopes it; the counts and the All list read it. All leads the place
+      # whenever any queue tab shows.
       { label: "Inbox", tabs: [
-        { label: "Waiting on me", path: :approvals_path, match: [ "/approvals" ], if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
-        { label: "Leave requests", path: :admin_leave_requests_path, match: [ "/admin/leave_requests" ], if: MANAGE },
+        { label: "All", lead: true, path: :approvals_path, match: [ "/approvals" ], if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
+        { label: "Leave requests", path: :admin_leave_requests_path, match: [ "/admin/leave_requests" ], if: MANAGE,
+          queue: -> { hrl_queue(HrLite::LeaveRequest.where(status: "pending"), "leave.approve") } },
         { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: MANAGE,
-          badge: -> { HrLite::CompOffRequest.pending.count } },
+          queue: -> { hrl_queue(HrLite::CompOffRequest.pending, "leave.approve") } },
         { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: MANAGE,
-          badge: -> { HrLite::RegularizationRequest.pending.count } },
+          queue: -> { hrl_queue(HrLite::RegularizationRequest.pending, "attendance.manage") } },
         { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: MANAGE,
-          badge: -> { HrLite::WfhRequest.pending.count } },
+          queue: -> { hrl_queue(HrLite::WfhRequest.pending, "attendance.manage") } },
         { label: "Home locations", path: :admin_work_locations_path, match: [ "/admin/work_locations" ], if: MANAGE,
-          badge: -> { HrLite::WorkLocation.pending.count } },
-        { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) } },
-        { label: "Documents to verify", path: :admin_documents_path, match: [ "/admin/documents" ], if: LEAD },
+          queue: -> { hrl_queue(HrLite::WorkLocation.pending, "attendance.manage") } },
+        { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) },
+          queue: -> { hrl_queue(HrLite::Expense.where(status: "submitted"), "expense.approve") } },
+        { label: "Documents to verify", path: :admin_documents_path, match: [ "/admin/documents" ], if: LEAD,
+          queue: -> { hrl_queue(HrLite::Document.where(verification: "pending"), "document.view") } },
         { label: "CA review", path: :admin_ca_reviews_path, match: [ "/admin/ca_reviews" ],
           if: -> { hr_can?("payroll.verify", scope: :all) || hr_can?("payroll.approve", scope: :all) } }
       ] },
@@ -128,11 +134,28 @@ module HrLite
     # A place carries its icon (tabs carry none); `hint` adds a second line under the label.
     def hrl_nav_link(item, hint: nil)
       active = hrl_nav_active?(item)
-      count = item[:badge] && instance_exec(&item[:badge])
+      count = hrl_waiting(item)
       text = hint ? tag.span(safe_join([ item[:label], tag.span(hint, class: "hrl-nav__hint") ]), class: "hrl-nav__text") : item[:label]
       link_to hr_lite.public_send(item[:path]), class: "hrl-nav__link #{'hrl-nav__link--active' if active}", aria: { current: (item.fetch(:current, "page") if active) } do
         safe_join([ (hrl_icon(item[:label]) if item[:tabs]), text, (tag.span(count, class: "hrl-badge hrl-badge--warn") if count&.positive?) ].compact, " ")
       end
+    end
+
+    # How many wait in a tab's queue, or across a place's queue tabs; counted once per page.
+    def hrl_waiting(item)
+      queues = (item[:tabs] || [ item ]).select { |t| t[:queue] }
+      queues.sum { |t| (@hrl_waiting ||= {})[t[:label]] ||= instance_exec(&t[:queue]).count } if queues.any?
+    end
+
+    # What a queue page lets this viewer decide: their reach, never their own requests.
+    def hrl_queue(relation, key) = hr_access.scope_relation(relation, key).where.not(user_id: hr_current_user.id)
+
+    # Everything waiting in this viewer's queues, oldest first, as [tab, record].
+    def hrl_inbox_rows(limit = 50)
+      inbox = hrl_sections.find { |s| s[:label] == "Inbox" } or return []
+      inbox[:tabs].select { |t| t[:queue] }
+                  .flat_map { |t| instance_exec(&t[:queue]).includes(:user).order(:created_at).limit(limit).map { |r| [ t, r ] } }
+                  .sort_by { |_, r| r.created_at }.first(limit)
     end
 
     # One stroke icon per place. Decoration only: the label always shows beside it.
@@ -158,7 +181,9 @@ module HrLite
     # tab and lights for any tab's paths (plus its own, e.g. a colleague's timeline).
     def hrl_sections
       @hrl_sections ||= SECTIONS.filter_map do |section|
-        tabs = hrl_nav_items(section[:tabs])
+        rest = hrl_nav_items(section[:tabs].reject { |t| t[:lead] })
+        # A lead tab also shows whenever any other tab in its place does.
+        tabs = section[:tabs].select { |t| t[:lead] && hr_lite_route?(t[:path]) && (rest.any? || instance_exec(&t[:if])) } + rest
         section.merge(tabs: tabs, path: tabs.first[:path], current: "true", match: tabs.flat_map { |t| t[:match] } + section.fetch(:match, [])) if tabs.any?
       end
     end

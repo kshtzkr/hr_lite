@@ -150,6 +150,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Bar items stack the icon over the label; the sheet's links stay in a row. */
 .hrl-tabbar > .hrl-nav__link, .hrl-tabbar__more > summary { flex-direction: column; gap: 2px; padding-block: 2px; line-height: var(--hrl-lh-tight); }
 .hrl-tabbar > .hrl-nav__link .hrl-icon, .hrl-tabbar__more > summary .hrl-icon { width: 22px; height: 22px; }
+/* The Inbox count sits on the icon's corner so the bar keeps its height. */
+.hrl-tabbar > .hrl-nav__link { position: relative; }
+.hrl-tabbar > .hrl-nav__link .hrl-badge { position: absolute; top: 0; left: calc(50% + 2px); }
 /* "More" sheet — everything five tabs cannot hold. Pure <details>: the
    engine ships no Turbo or Stimulus and this must not need any. */
 .hrl-tabbar__more { flex: 1 1 auto; display: flex; }

@@ -13,8 +13,9 @@
   </section>
 <% end %>
 
+<% rows = hrl_inbox_rows %>
 <section class="hrl-card">
-  <% if @approvals.empty? %>
+  <% if @approvals.empty? && rows.empty? %>
     <p class="hrl-muted">Nothing is waiting on you.</p>
   <% else %>
     <div class="hrl-table-wrap">
@@ -42,6 +43,15 @@
                   <a class="hrl-btn" href="<%= path %>">Open</a>
                 <% end %>
               </td>
+            </tr>
+          <% end %>
+          <%# The HR queues this viewer decides; Open lands on that queue's own page. %>
+          <% rows.each do |tab, record| %>
+            <tr>
+              <td data-label="Request"><strong><%= tab[:label] %></strong></td>
+              <td data-label="From"><%= hr_display_name(record.user) %></td>
+              <td data-label="Waiting"><%= time_ago_in_words(record.created_at) %></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.public_send(tab[:path]) %>">Open</a></td>
             </tr>
           <% end %>
         </tbody>

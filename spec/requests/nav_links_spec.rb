@@ -30,7 +30,7 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
 
       finance = user_with_roles(HrLite::Role::FINANCE, name: "Farah")
       sign_in finance
-      get "/hr/"
+      get "/hr/approvals" # Inbox opens on All; Claims is its tab
       expect(response.body).to include('href="/hr/admin/expenses"')
       expect(response.body).not_to include('href="/hr/admin/overview"')
     end

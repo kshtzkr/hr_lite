@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.0] - 2026-10-15
+
+- Inbox › All lists everything waiting on you in one place: approval-flow steps, plus every leave request, comp-off, attendance fix, WFH request, home location, claim and document waiting in the queues you can decide. Rows run oldest first. Each row has an Open button that goes to that queue's own page, where you decide as before. Inline Approve/Reject is not built yet.
+- Inbox shows how many items are waiting, on the menu and on each queue tab. On the phone the count sits on the icon's corner, so the bar keeps its height. Before, the queue tabs counted every pending request in the company. Now they count only what you can decide (your reach, never your own requests), the same scope each queue page uses to decide.
+- All opens Inbox whenever you can see any queue, not only when an approval flow is active. Someone with nothing to decide still has no Inbox.
+- Each Inbox tab's `badge:` is replaced by `queue:`, a scoped relation that drives both the counts and the All list.
+
 ## [0.39.0] - 2026-10-15
 
 - One person's records are tabs: Overview, Attendance, Work time, Documents, Tax, Timeline, ID card. The row replaces the page's usual tab row on the seven per-person pages (the employee page, their attendance month, work time, documents, tax, timeline and ID card), so HR steps through someone's records without picking them again.
