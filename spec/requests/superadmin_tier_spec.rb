@@ -62,6 +62,13 @@ RSpec.describe "Superadmin tier", type: :request do
       expect(response.body).to include("Salary structures").and include("New structure")
       expect(response.body).to include("/admin/payroll_runs")
     end
+
+    it "links the person's work time, attendance and documents from the employee page" do
+      HrLite.config.office_geofence = true
+      get "/hr/admin/employees/#{profile.id}"
+      expect(response.body).to include("/admin/work_time?user_id=#{profile.user_id}")
+        .and include("/admin/attendances/#{profile.user_id}").and include("/admin/documents/for/#{profile.user_id}")
+    end
   end
 
   it "keeps pre-0.5.0 behaviour when superadmin_emails is left empty" do

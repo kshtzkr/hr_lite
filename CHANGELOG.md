@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.3] - 2026-10-14
+
+- Admin → Employees → a person now links to their Work time, Attendance and Documents next to Timeline and ID card. Each button shows only when the viewer can open that screen for that person.
+
 ## [0.37.2] - 2026-10-14
 
 - Employee timeline no longer overlaps itself: the work-time day strip reused the `.hrl-timeline` class and squashed the timeline list to 2rem, so each month's events ran into the next month's heading. The day strip is now `.hrl-daystrip`.
