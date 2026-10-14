@@ -30,7 +30,8 @@
           <% end %>
         </div>
         <div class="hrl-idcard__who">
-          <div class="hrl-idcard__name"><span class="hrl-idcard__green"><%= first %></span> <span class="hrl-idcard__blue"><%= rest %></span></div>
+          <%# An email standing in for the name breaks before its "@", else anywhere (CSS). %>
+          <div class="hrl-idcard__name"><span class="hrl-idcard__green"><%= safe_join(first.to_s.split("@", 2), tag.wbr + "@") %></span> <span class="hrl-idcard__blue"><%= rest %></span></div>
           <div class="hrl-idcard__role"><%= @profile.designation %></div>
         </div>
         <dl class="hrl-idcard__facts">
