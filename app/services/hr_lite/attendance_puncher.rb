@@ -67,6 +67,7 @@ module HrLite
           record.work_mode = @mode
           record.work_location_id = @location&.id
           record.wfh_request_id = @wfh&.id if @mode == "wfh"
+          record.add_flag!("WFH request pending HR approval: #{@wfh.reason}") if @wfh&.pending?
         when :check_out
           return Result.new(record: record, error: "Check in first.") if record.check_in_at.blank?
 
@@ -124,7 +125,8 @@ module HrLite
         return
       end
 
-      @wfh = WfhRequest.approved_for(@user.id, Date.current)
+      # A request HR has not decided yet still lets the person work; the day is flagged for HR.
+      @wfh = WfhRequest.approved_for(@user.id, Date.current) || WfhRequest.pending_for(@user.id, Date.current)
       return OFF_SITE_MESSAGE unless @wfh || profile&.permanent_wfh
 
       @mode, @place = "wfh", "home"

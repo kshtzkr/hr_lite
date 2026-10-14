@@ -23,6 +23,7 @@ module HrLite
     STATUSES.each { |s| define_method("#{s}?") { status == s } }
 
     def self.approved_for(user_id, date) = approved.where(user_id: user_id).overlapping(date, date).first
+    def self.pending_for(user_id, date) = pending.where(user_id: user_id).overlapping(date, date).first
 
     # HR grants WFH outright: approved on creation, up to HR_MAX_DAYS long.
     def self.grant!(user_id:, by:, start_date:, end_date:, reason:)
