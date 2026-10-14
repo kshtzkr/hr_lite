@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.1] - 2026-10-15
+
+- Each of the nine places has a stroke icon in the rail, the phone bar and the More sheet. Icons are `aria-hidden`, and the label always shows beside the icon (in the phone bar, under it). Tabs carry no icons.
+- The More sheet is one column. Under each place it lists that person's tabs in it ("Profile, Documents, ID card, Career, Timeline"), on one line that ends in "…" when it runs long.
+- The rail spaces its links 8 px apart (was 2 px), now that it holds nine items rather than about forty.
+
 ## [0.38.0] - 2026-10-15
 
 - The menu has nine places instead of about 40 links in eight groups: Home, Attendance, Leave, Inbox, Pay, People, Me, Help, Admin. Each place has a row of tabs at the top of its pages. Your own tabs and your team's sit side by side, so "My attendance", "My work time", "Team" and "Team work time" are neighbours. Each place opens on its first tab, and a place shows only when at least one of its tabs does.

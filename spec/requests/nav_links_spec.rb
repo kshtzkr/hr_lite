@@ -47,7 +47,7 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       sign_in employee
       get "/hr/"
       sheet = Nokogiri::HTML(response.body).at_css(".hrl-sheet")
-      expect(sheet.css(".hrl-nav__link").map(&:text)).to eq([ "People", "Me", "Help" ])
+      expect(sheet.css(".hrl-nav__text").map { |t| t.children.first.text }).to eq([ "People", "Me", "Help" ])
       expect(sheet.at_css(".hrl-side__back")).to be_nil
 
       HrLite.config.back_link = { label: "Back to CMS", url: "https://cms.example.test" }
@@ -66,6 +66,15 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
         get path
         expect(Nokogiri::HTML(response.body).at_css(".hrl-backlink")).to be_nil
       end
+    end
+
+    it "gives each place a decorative icon, and names a sheet place's tabs under it" do
+      sign_in employee
+      get "/hr/"
+      page = Nokogiri::HTML(response.body)
+      expect(page.css(".hrl-side__nav a").map { |a| a.at_css("svg.hrl-icon")&.[]("aria-hidden") }.uniq).to eq([ "true" ])
+      me = page.css(".hrl-sheet a").find { |a| a.at_css(".hrl-nav__text")&.children&.first&.text == "Me" }
+      expect(me.at_css(".hrl-nav__hint").text).to eq("Profile, Documents, ID card, Career, Timeline")
     end
 
     it "loads the script that scrolls the menu to the current screen" do

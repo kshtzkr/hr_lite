@@ -21,7 +21,7 @@ RSpec.describe "Phone navigation and the boards", type: :request do
       sign_in leader
       get "/hr/"
 
-      expect(Nokogiri::HTML(response.body).css(".hrl-sheet a").map(&:text)).to include("Admin")
+      expect(Nokogiri::HTML(response.body).css(".hrl-sheet .hrl-nav__text").map { |t| t.children.first.text }).to include("Admin")
       expect(response.body).to include("/hr/admin/overview")
     end
 
