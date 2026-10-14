@@ -1,5 +1,5 @@
 <%# locals: user — one person's records as tabs. Each shows only when its page would open for this viewer. %>
-<% ops = hr_can?("leave.approve", scope: :team) || hr_can?("attendance.manage", scope: :team) || hr_can?("leave.view", scope: :team)
+<% ops = hr_operations?
    profile = HrLite::EmployeeProfile.find_by(user_id: user.id)
    tabs = [
      [ "Overview", (hr_lite.admin_employee_path(profile) if profile && hr_leadership?) ],

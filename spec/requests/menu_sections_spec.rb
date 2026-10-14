@@ -34,6 +34,21 @@ RSpec.describe "Menu places and tabs", type: :request do
     end
   end
 
+  it "shows a team-scope manager the team pages they can open" do
+    sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::MANAGER)
+    expect(tab_hrefs).to include(*%w[
+      /admin/overview /admin/attendances /admin/work_modes /admin/leave_balances /admin/leave_requests
+      /admin/comp_off_requests /admin/regularization_requests /admin/wfh_requests /admin/work_locations /admin/reports
+    ].map { |path| "/hr#{path}" })
+  end
+
+  it "counts only the manager's team in the Inbox badges" do
+    create(:comp_off_request) # someone outside the manager's team
+    sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::MANAGER)
+    get "/hr/admin/comp_off_requests"
+    expect(Nokogiri::HTML(response.body).css(".hrl-tabrow .hrl-badge")).to be_empty
+  end
+
   it "keeps every screen the old menu reached" do
     sign_in user_with_roles(*ROLES)
     old_menu = %w[
