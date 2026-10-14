@@ -1,20 +1,24 @@
 <% content_for(:page_title) { @profile.employee_code } %>
+<% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @profile.user } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">
     <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
-    <a class="hrl-btn" href="<%= hr_lite.id_card_path(user_id: @profile.user_id) %>">ID card</a>
-    <a class="hrl-btn" href="<%= hr_lite.person_timeline_path(@profile.user_id) %>">Timeline</a>
-    <% if HrLite.config.office_geofence && hr_reaches?("work_analytics.view", @profile.user) %><a class="hrl-btn" href="<%= hr_lite.admin_work_time_path(user_id: @profile.user_id) %>">Work time</a><% end %>
-    <% if hr_reaches?("attendance.view", @profile.user) %><a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@profile.user_id) %>">Attendance</a><% end %>
-    <% if hr_reaches?("document.view", @profile.user) %><a class="hrl-btn" href="<%= hr_lite.admin_employee_documents_path(@profile.user_id) %>">Documents</a><% end %>
-    <% if hr_superadmin? %>
-      <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
-      <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
-      <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
-    <% end %>
-    <% if hr_can?("salary.manage", scope: :all) %>
-      <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
+    <%# Their records are the tabs above; the HR actions fold into one Manage button. %>
+    <% if hr_superadmin? || hr_can?("salary.manage", scope: :all) %>
+      <details>
+        <summary class="hrl-btn">Manage</summary>
+        <div class="hrl-row">
+          <% if hr_superadmin? %>
+            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
+            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
+            <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
+          <% end %>
+          <% if hr_can?("salary.manage", scope: :all) %>
+            <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
+          <% end %>
+        </div>
+      </details>
     <% end %>
   </div>
 </div>

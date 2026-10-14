@@ -1,4 +1,5 @@
 <% content_for(:page_title) { "Work time" } %>
+<% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @person } if @person %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Work time<%= " — #{@names[@person.id]}" if @person %></h1>
   <% if @person %>

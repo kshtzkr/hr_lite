@@ -56,7 +56,10 @@
       </header>
 
       <main class="hrl-main" id="hrl-main" tabindex="-1">
-        <% if (section = hrl_current_section) && section[:tabs].many? %>
+        <%# A page about one person puts that person's tabs here instead (shared/_person_tabs). %>
+        <% if content_for?(:tabrow) %>
+          <%= yield :tabrow %>
+        <% elsif (section = hrl_current_section) && section[:tabs].many? %>
           <nav class="hrl-tabrow" aria-label="<%= section[:label] %> sections">
             <% section[:tabs].each do |tab| %><%= hrl_nav_link(tab) %><% end %>
           </nav>
