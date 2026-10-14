@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.36.1] - 2026-10-14
+
+- The home page punch card has a "Request WFH" button beside Apply leave (when the office geofence is on).
+- A check-in refused for being outside the office now carries a "Request WFH" button in the warning, straight to the WFH request form. Before, the only way there was a small link at the bottom of the punch card.
+
 ## [0.36.0] - 2026-10-13
 
 - Pick how long a mode lasts: Busy, Meeting and Out of office offer 15 min, 30 min, 1 h, 2 h, 4 h or 1 day (30 min preselected); Travelling and Client meeting also offer "Until I change it" (the default). Lunch and short break offer only lengths within their company limit — lunch 15 or 30 min by default — and one tap still takes the full limit; a longer break is refused. Every mode ends on its own at the picked time; the longest is a day. The choices are real radio buttons shown as 44px chips with 8px gaps.
