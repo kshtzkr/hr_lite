@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.1] - 2026-10-14
+
+- A WFH request still waiting for HR now lets the person check in away from the office on that day (HR has 24 hours to decide). The day is flagged "WFH request pending HR approval: <reason>", and HR gets the flagged-punch alert with that reason. HR was already told when the request was raised. Rejected requests and requests for other dates are still refused.
+
 ## [0.37.0] - 2026-10-14
 
 - Home detection: a WFH check-in matches any approved home within 500 m, and the nearest one becomes active. From anywhere else the punch card asks "Is this your home location?". Yes saves the place as an approved, active home straight away (a GPS fix good to 500 m, fewer than three live homes, audit row `work_location.self_saved`). No checks in as Travelling. The question comes back at every check-in from a place that is not a home.

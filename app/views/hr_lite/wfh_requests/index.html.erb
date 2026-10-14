@@ -6,7 +6,7 @@
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Request WFH</h2>
-  <p class="hrl-small hrl-muted">Pick dates from today up to <%= HrLite::WfhRequest::MAX_DAYS_AHEAD %> days ahead. HR approves or rejects; only approved dates let you check in away from the office.</p>
+  <p class="hrl-small hrl-muted">Pick dates from today up to <%= HrLite::WfhRequest::MAX_DAYS_AHEAD %> days ahead. HR approves or rejects. While a request is waiting you can still check in away from the office; HR sees the reason. A rejected date cannot.</p>
   <%= form_with model: @request, url: hr_lite.wfh_requests_path, scope: :wfh_request, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <% min, max = @window.first.iso8601, @window.last.iso8601 %>

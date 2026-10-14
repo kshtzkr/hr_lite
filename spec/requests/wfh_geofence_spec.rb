@@ -86,12 +86,22 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(record.work_mode).to eq("office")
     end
 
-    it "gives no exception for pending, rejected or other-date approvals" do
-      wfh("pending")
+    it "gives no exception for rejected or other-date requests" do
       wfh("rejected")
       wfh("approved", from: Date.current + 1, to: Date.current + 2)
       post "/hr/attendance/check_in", params: outside
+      expect(flash[:alert]).to eq(HrLite::AttendancePuncher::OFF_SITE_MESSAGE)
       expect(record).to be_nil
+    end
+
+    it "lets a pending request for today check in, flags the day and tells HR the reason" do
+      home_at_outside
+      request = wfh("pending")
+      sent = []
+      allow(HrLite::Notifications).to receive(:publish) { |event, **opts| sent << [ event, opts[:body] ] }
+      post "/hr/attendance/check_in", params: outside
+      expect(record).to have_attributes(work_mode: "wfh", wfh_request_id: request.id, flagged: true)
+      expect(sent).to include([ "attendance.flagged", "WFH request pending HR approval: Plumber visit" ])
     end
 
     it "keeps check-out working off-site after an office check-in" do
