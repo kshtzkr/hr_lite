@@ -14,14 +14,15 @@ RSpec.describe "Phone navigation and the boards", type: :request do
       get "/hr/"
 
       expect(response.body).to include("hrl-tabbar__more")
-      expect(response.body).to include("/hr/org").and include("/hr/salary_slips").and include("/hr/career")
+      expect(Nokogiri::HTML(response.body).css(".hrl-sheet a").map { |a| a["href"] }).to include("/hr/team", "/hr/profile", "/hr/policies")
     end
 
     it "carries the admin and leadership groups for those entitled to them" do
       sign_in leader
       get "/hr/"
 
-      expect(response.body).to include("/hr/admin/overview").and include("/hr/admin/employees")
+      expect(Nokogiri::HTML(response.body).css(".hrl-sheet a").map(&:text)).to include("Admin")
+      expect(response.body).to include("/hr/admin/overview")
     end
 
     it "offers no admin group to an ordinary employee" do

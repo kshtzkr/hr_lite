@@ -19,7 +19,7 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       get "/hr/leave_requests"
       expect(response.body).to include('href="/hr/profile"').and include('href="/hr/leave_balances"')
       sign_in hr
-      get "/hr/admin/leave_requests"
+      get "/hr/leave_requests"
       expect(response.body).to include('href="/hr/admin/leave_balances"')
     end
 
@@ -43,11 +43,11 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       expect(bar.at_css(".hrl-bell")).to be_nil
     end
 
-    it "groups the More sheet, led by the host's back link only when one is configured" do
+    it "lists the places the tab bar cannot hold in the More sheet, led by the host's back link only when one is configured" do
       sign_in employee
       get "/hr/"
       sheet = Nokogiri::HTML(response.body).at_css(".hrl-sheet")
-      expect(sheet.css(".hrl-side__group").map(&:text)).to include("Money", "Me")
+      expect(sheet.css(".hrl-nav__link").map(&:text)).to eq([ "People", "Me", "Help" ])
       expect(sheet.at_css(".hrl-side__back")).to be_nil
 
       HrLite.config.back_link = { label: "Back to CMS", url: "https://cms.example.test" }
@@ -79,17 +79,16 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       get "/hr/calendar"
       page = Nokogiri::HTML(response.body)
       expect(page.css('a[aria-current="page"]').map { |a| a["href"] }.uniq).to eq([ "/hr/calendar" ])
+      expect(page.at_css('.hrl-tabbar > a[href="/hr/leave_requests"]')["aria-current"]).to eq("true")
+      expect(page.at_css(".hrl-tabbar__more > summary")["aria-current"]).to be_nil
+
+      get "/hr/org"
+      page = Nokogiri::HTML(response.body)
       expect(page.at_css(".hrl-tabbar__more > summary")["class"]).to include("hrl-nav__link--active")
       expect(page.at_css(".hrl-tabbar__more > summary")["aria-current"]).to eq("true")
 
-      get "/hr/"
-      page = Nokogiri::HTML(response.body)
-      expect(page.at_css('a[href="/hr/calendar"]')["aria-current"]).to be_nil
-      expect(page.at_css(".hrl-tabbar__more > summary")["class"]).not_to include("hrl-nav__link--active")
-      expect(page.at_css(".hrl-tabbar__more > summary")["aria-current"]).to be_nil
-
       sign_in hr
-      get "/hr/admin/overview"
+      get "/hr/admin/reports"
       expect(Nokogiri::HTML(response.body).at_css(".hrl-tabbar__more > summary")["class"]).to include("hrl-nav__link--active")
     end
 

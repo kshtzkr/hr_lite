@@ -1,76 +1,96 @@
 module HrLite
   module ApplicationHelper
-    NAV_ITEMS = [
-      { label: "Home",       path: :root_path,           match: [ "/" ], group: "My work" },
-      { label: "Attendance", path: :attendance_path,     match: [ "/attendance", "/regularization_requests", "/wfh_requests", "/work_locations" ], group: "My work" },
-      { label: "Leaves",     path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ], group: "My work" },
-      { label: "Team",       path: :team_path,           match: [ "/team" ], group: "My work" },
-      # The phone tab bar shows the first four; the rest fill the More sheet,
-      # one label per group, so a group's items must stay together.
-      { label: "Calendar",   path: :calendar_path,       match: [ "/calendar", "/holidays" ], group: "Time" },
-      { label: "Expenses",   path: :expenses_path,       match: [ "/expenses" ], group: "Money" },
-      { label: "Benefits",   path: :benefits_path,       match: [ "/benefits" ], group: "Money" },
-      { label: "Slips",      path: :salary_slips_path,   match: [ "/salary_slips" ], group: "Money" },
-      { label: "Tax",        path: :tax_declaration_path, match: [ "/tax_declaration" ], group: "Money" },
-      { label: "Loans",      path: :loans_path,          match: [ "/loans" ], group: "Money" },
-      { label: "Profile",    path: :employee_profile_path, match: [ "/profile", "/resignation" ], group: "Me" },
-      { label: "Documents",  path: :documents_path,      match: [ "/documents" ], group: "Me" },
-      { label: "ID card",    path: :id_card_path,        match: [ "/id_card" ], group: "Me" },
-      { label: "Career",     path: :career_path,         match: [ "/career", "/appraisals" ], group: "Me" },
-      { label: "Timeline",   path: :timeline_path,       match: [ "/timeline" ], group: "Me" },
-      { label: "CA review",  path: :admin_ca_reviews_path, match: [ "/admin/ca_reviews" ], group: "Company",
-        if: -> { hr_can?("payroll.verify", scope: :all) || hr_can?("payroll.approve", scope: :all) } },
-      { label: "Policies",   path: :policies_path,       match: [ "/policies" ], group: "Company" },
-      { label: "Ask HR",     path: :hr_requests_path,    match: [ "/hr_requests" ], group: "Company" },
-      { label: "Org",        path: :org_path,            match: [ "/org" ], group: "Company" },
-      { label: "Kudos",      path: :kudos_path,          match: [ "/kudos" ], group: "Company" },
+    # Who may see a tab: each rule is the one its old menu item had, so a tab
+    # never leads to a page that would refuse.
+    MANAGE = -> { hr_admin? || hr_leadership? }
+    MANAGE_OR_CLAIMS = -> { hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) }
+    LEAD = -> { hr_leadership? }
+    SUPER = -> { hr_superadmin? }
+    GEO = -> { HrLite.config.office_geofence }
+
+    # The menu: nine places, each with tabs. The rail and the phone bar list
+    # the places; the tab row lists the current place's tabs. A place shows
+    # when one of its tabs does, and opens on the first. One URL, one home.
+    SECTIONS = [
+      { label: "Home", tabs: [
+        { label: "Today", path: :root_path, match: [ "/" ] },
+        { label: "Company overview", path: :admin_overview_path, match: [ "/admin/overview" ], if: MANAGE }
+      ] },
+      { label: "Attendance", tabs: [
+        { label: "My attendance", path: :attendance_path, match: [ "/attendance", "/regularization_requests", "/wfh_requests", "/work_locations" ] },
+        { label: "My work time", path: :work_time_path, match: [ "/work_time" ], if: GEO },
+        { label: "Team", path: :admin_attendances_path, match: [ "/admin/attendances" ], if: MANAGE },
+        { label: "Work modes", path: :admin_work_modes_path, match: [ "/admin/work_modes" ], if: -> { instance_exec(&GEO) && instance_exec(&MANAGE) } },
+        { label: "Team work time", path: :admin_work_time_path, match: [ "/admin/work_time" ],
+          if: -> { instance_exec(&GEO) && hr_can?("work_analytics.view", scope: :team) && instance_exec(&MANAGE_OR_CLAIMS) } }
+      ] },
+      { label: "Leave", tabs: [
+        { label: "My leave", path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
+        { label: "Calendar", path: :calendar_path, match: [ "/calendar", "/holidays" ] },
+        { label: "Team balances", path: :admin_leave_balances_path, match: [ "/admin/leave_balances" ], if: MANAGE }
+      ] },
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
-      { label: "Approvals",  path: :approvals_path,      match: [ "/approvals" ], group: "Company",
-        if: -> { HrLite::ApprovalFlow.where(active: true).exists? } }
-    ].freeze
-
-    ADMIN_NAV_ITEMS = [
-      { label: "Overview",        path: :admin_overview_path,        match: [ "/admin/overview" ] },
-      { label: "Team attendance", path: :admin_attendances_path,     match: [ "/admin/attendances" ] },
-      { label: "Work modes",      path: :admin_work_modes_path,      match: [ "/admin/work_modes" ],
-        if: -> { HrLite.config.office_geofence } },
-      { label: "Work time",       path: :admin_work_time_path,       match: [ "/admin/work_time" ],
-        if: -> { HrLite.config.office_geofence && hr_can?("work_analytics.view", scope: :team) } },
-      { label: "Approvals",       path: :admin_leave_requests_path,  match: [ "/admin/leave_requests", "/admin/leave_balances", "/admin/comp_off_requests", "/admin/regularization_requests", "/admin/wfh_requests", "/admin/work_locations" ] },
-      { label: "Reports",         path: :admin_reports_path,         match: [ "/admin/reports" ] },
-      { label: "Claims",          path: :admin_expenses_path,        match: [ "/admin/expenses" ],
-        if: -> { hr_can?("expense.approve", scope: :team) } },
-      { label: "Help desk",       path: :admin_hr_requests_path,     match: [ "/admin/hr_requests" ] },
-      { label: "Assets",          path: :admin_assets_path,          match: [ "/admin/assets" ] },
-      { label: "Benefits",        path: :admin_benefits_path,        match: [ "/admin/benefits" ] },
-      # HR approves payroll without running it; Super Admin reaches it under Organisation.
-      { label: "Payroll approval", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs" ],
-        if: -> { hr_can?("payroll.approve", scope: :all) && !hr_superadmin? } },
-      { label: "Tax checks", path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ],
-        if: -> { hr_can?("tax.view", scope: :all) && !hr_superadmin? } },
-      { label: "Joining & exits", path: :admin_checklists_path,      match: [ "/admin/checklists" ] }
-    ].freeze
-
-    LEADERSHIP_NAV_ITEMS = [
-      { label: "Employees", path: :admin_employees_path,        match: [ "/admin/employees" ] },
-      { label: "Awards",    path: :admin_awards_path,           match: [ "/admin/awards" ] },
-      { label: "Settings",  path: :admin_leave_types_path,      match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ] },
-      { label: "Audit",     path: :admin_audit_logs_path,       match: [ "/admin/audit_logs" ] },
-      { label: "Policies",  path: :admin_policies_path,         match: [ "/admin/policies" ] },
-      { label: "Documents", path: :admin_documents_path,        match: [ "/admin/documents" ] }
-    ].freeze
-
-    # Money screens, plus role management: granting somebody payroll is the
-    # same act as holding it, so it sits with the pay rather than with the
-    # other governing screens.
-    SUPERADMIN_NAV_ITEMS = [
-      { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips" ] },
-      { label: "Roles",   path: :admin_roles_path,        match: [ "/admin/roles" ] },
-      { label: "Rates",   path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ] },
-      { label: "Tax",     path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ] },
-      { label: "Loans",   path: :admin_loans_path,        match: [ "/admin/loans" ] },
-      { label: "PIPs",    path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ] }
+      { label: "Inbox", tabs: [
+        { label: "Waiting on me", path: :approvals_path, match: [ "/approvals" ], if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
+        { label: "Leave requests", path: :admin_leave_requests_path, match: [ "/admin/leave_requests" ], if: MANAGE },
+        { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: MANAGE,
+          badge: -> { HrLite::CompOffRequest.pending.count } },
+        { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: MANAGE,
+          badge: -> { HrLite::RegularizationRequest.pending.count } },
+        { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: MANAGE,
+          badge: -> { HrLite::WfhRequest.pending.count } },
+        { label: "Home locations", path: :admin_work_locations_path, match: [ "/admin/work_locations" ], if: MANAGE,
+          badge: -> { HrLite::WorkLocation.pending.count } },
+        { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) } },
+        { label: "Documents to verify", path: :admin_documents_path, match: [ "/admin/documents" ], if: LEAD },
+        { label: "CA review", path: :admin_ca_reviews_path, match: [ "/admin/ca_reviews" ],
+          if: -> { hr_can?("payroll.verify", scope: :all) || hr_can?("payroll.approve", scope: :all) } }
+      ] },
+      { label: "Pay", tabs: [
+        { label: "Slips", path: :salary_slips_path, match: [ "/salary_slips" ] },
+        { label: "Expenses", path: :expenses_path, match: [ "/expenses" ], if: -> { hr_can?("expense.claim") } },
+        { label: "Tax", path: :tax_declaration_path, match: [ "/tax_declaration" ] },
+        { label: "Loans", path: :loans_path, match: [ "/loans" ] },
+        { label: "Benefits", path: :benefits_path, match: [ "/benefits" ], if: -> { hr_can?("benefit.view") } },
+        # HR approves payroll without running it; Super Admin runs it. One page.
+        { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips", "/admin/payroll_line_items" ],
+          if: -> { hr_superadmin? || (hr_can?("payroll.approve", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
+        { label: "Tax checks", path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ],
+          if: -> { hr_superadmin? || (hr_can?("tax.view", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
+        { label: "Team loans", path: :admin_loans_path, match: [ "/admin/loans" ], if: SUPER },
+        { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE }
+      ] },
+      { label: "People", match: [ "/people" ], tabs: [
+        { label: "My team", path: :team_path, match: [ "/team" ] },
+        { label: "Org chart", path: :org_path, match: [ "/org" ] },
+        { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] },
+        { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
+        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: MANAGE },
+        { label: "Awards", path: :admin_awards_path, match: [ "/admin/awards" ], if: LEAD },
+        { label: "PIPs", path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ], if: SUPER }
+      ] },
+      { label: "Me", tabs: [
+        { label: "Profile", path: :employee_profile_path, match: [ "/profile", "/resignation" ] },
+        { label: "Documents", path: :documents_path, match: [ "/documents" ] },
+        { label: "ID card", path: :id_card_path, match: [ "/id_card" ] },
+        { label: "Career", path: :career_path, match: [ "/career", "/appraisals" ] },
+        { label: "Timeline", path: :timeline_path, match: [ "/timeline" ] }
+      ] },
+      { label: "Help", tabs: [
+        { label: "Policies", path: :policies_path, match: [ "/policies" ], if: -> { hr_can?("policy.view", scope: :all) } },
+        { label: "Ask HR", path: :hr_requests_path, match: [ "/hr_requests" ], if: -> { hr_can?("hr_request.raise") } },
+        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: MANAGE },
+        { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
+      ] },
+      { label: "Admin", divider: true, tabs: [
+        { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ], if: LEAD },
+        { label: "Roles", path: :admin_roles_path, match: [ "/admin/roles" ], if: -> { hr_can?("role.manage", scope: :all) } },
+        { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
+        { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: MANAGE },
+        { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: MANAGE },
+        { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD }
+      ] }
     ].freeze
 
     # DayStatus kind => [code, word, month-grid cell modifier]: the code keeps a state readable without its colour.
@@ -107,9 +127,22 @@ module HrLite
 
     def hrl_nav_link(item)
       active = hrl_nav_active?(item)
-      link_to item[:label], hr_lite.public_send(item[:path]),
-              class: "hrl-nav__link #{'hrl-nav__link--active' if active}", aria: { current: ("page" if active) }
+      count = item[:badge] && instance_exec(&item[:badge])
+      link_to hr_lite.public_send(item[:path]), class: "hrl-nav__link #{'hrl-nav__link--active' if active}", aria: { current: (item.fetch(:current, "page") if active) } do
+        safe_join([ item[:label], (tag.span(count, class: "hrl-badge hrl-badge--warn") if count&.positive?) ].compact, " ")
+      end
     end
+
+    # Visible places, each with its visible tabs; a place links to its first
+    # tab and lights for any tab's paths (plus its own, e.g. a colleague's timeline).
+    def hrl_sections
+      @hrl_sections ||= SECTIONS.filter_map do |section|
+        tabs = hrl_nav_items(section[:tabs])
+        section.merge(tabs: tabs, path: tabs.first[:path], current: "true", match: tabs.flat_map { |t| t[:match] } + section.fetch(:match, [])) if tabs.any?
+      end
+    end
+
+    def hrl_current_section = hrl_sections.find { |section| hrl_nav_active?(section) }
 
     # Mention-marker-aware, XSS-safe kudos message rendering. Every literal
     # chunk is escaped; only markers whose id has a mention row become

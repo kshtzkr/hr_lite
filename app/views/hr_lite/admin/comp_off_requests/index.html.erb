@@ -3,8 +3,6 @@
   <h1 class="hrl-page__title">Comp-off approvals</h1>
 </div>
 
-<%= render "hr_lite/admin/shared/approvals_tabs", active: :comp_off %>
-
 <div class="hrl-row hrl-row--mb">
   <span class="hrl-small hrl-muted">Status</span>
   <% HrLite::CompOffRequest::STATUSES.each do |status| %>

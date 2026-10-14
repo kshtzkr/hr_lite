@@ -117,6 +117,10 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   display: inline-flex; align-items: center;
 }
 .hrl-nav__link--active { color: var(--hrl-accent); background: var(--hrl-info-bg); font-weight: 600; }
+/* Tab row: the current place's tabs on one line; it scrolls sideways, never the page. */
+.hrl-tabrow { display: flex; gap: var(--hrl-gap-target); overflow-x: auto; margin: 0 0 var(--hrl-s-4); padding-bottom: var(--hrl-s-2); border-bottom: 1px solid var(--hrl-line); }
+.hrl-tabrow .hrl-nav__link { flex: 0 0 auto; white-space: nowrap; }
+.hrl-side__divider { height: 1px; background: var(--hrl-line); margin: var(--hrl-s-2) var(--hrl-s-1); }
 
 /* Mobile app bar */
 .hrl-appbar--mobile {
@@ -151,7 +155,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   position: fixed; left: 0; right: 0;
   bottom: calc(3.3rem + env(safe-area-inset-bottom));
   max-height: calc(100vh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 2px var(--hrl-gap-target);
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--hrl-gap-target);
   background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
   border-radius: var(--hrl-radius-lg) var(--hrl-radius-lg) 0 0;
   padding: .6rem .85rem;
@@ -504,7 +508,6 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-right { margin-left: auto; }
 .hrl-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .hrl-row--mb { margin-bottom: var(--hrl-s-3); }
-.hrl-row--tabs > .hrl-btn { padding-inline: var(--hrl-s-2); } /* four approvals tabs fit one row beside the rail at 768px */
 
 /* Long-form policy text. Constrained measure — a policy read across the
    full width of a laptop is a policy nobody finishes. */

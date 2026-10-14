@@ -44,8 +44,8 @@ RSpec.describe "Superadmin tier", type: :request do
       expect(response.body).not_to include("New appraisal")
     end
 
-    it "has no Payroll item in the rail" do
-      get "/hr/admin/employees"
+    it "has no Payroll tab" do
+      get "/hr/salary_slips"
       expect(response.body).not_to include("/admin/payroll_runs")
     end
   end
@@ -60,6 +60,7 @@ RSpec.describe "Superadmin tier", type: :request do
       create(:salary_structure, user: profile.user)
       get "/hr/admin/employees/#{profile.id}"
       expect(response.body).to include("Salary structures").and include("New structure")
+      get "/hr/salary_slips"
       expect(response.body).to include("/admin/payroll_runs")
     end
 
