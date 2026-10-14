@@ -15,11 +15,7 @@ module HrLite
       private
 
       def require_operations_access!
-        return if hr_can?("leave.approve", scope: :team) ||
-                  hr_can?("attendance.manage", scope: :team) ||
-                  hr_can?("leave.view", scope: :team)
-
-        hr_access_denied
+        hr_access_denied unless hr_operations?
       end
     end
   end

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-10-15
+
+- Managers see their team's tabs. A Manager (leave and attendance at team scope) now gets Home › Company overview, Attendance › Team and Work modes, Leave › Team balances, Inbox (All, Leave requests, Comp-off, Attendance fixes, WFH, Home locations) and Admin › Reports. Those pages already let a manager in and show only their team's rows. The menu hid them unless you had the permission across the whole company or were leadership.
+- These tabs now use the same check as their page (`hr_operations?`, which `Admin::BaseController` also uses), so they can't drift apart. Attendance › Team work time drops the expense-approver rule, because its page never admitted expense approvers. Admin › Reports shows for anyone who can open at least one report, which includes Finance.
+- A manager's Inbox count and All list hold only their team's requests: each queue is scoped by the viewer's reach (0.40.0).
+- The person tab row (0.39.0) reads `hr_operations?` too, instead of repeating its three permission checks.
+
 ## [0.40.0] - 2026-10-15
 
 - Inbox › All lists everything waiting on you in one place: approval-flow steps, plus every leave request, comp-off, attendance fix, WFH request, home location, claim and document waiting in the queues you can decide. Rows run oldest first. Each row has an Open button that goes to that queue's own page, where you decide as before. Inline Approve/Reject is not built yet.

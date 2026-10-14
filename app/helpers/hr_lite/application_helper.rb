@@ -1,8 +1,9 @@
 module HrLite
   module ApplicationHelper
-    # Who may see a tab: each rule is the one its old menu item had, so a tab
-    # never leads to a page that would refuse.
+    # Who may see a tab. OPS is the operations pages' own check; the rest are the
+    # rules the old menu items had. Either way a tab never leads to a refusal.
     MANAGE = -> { hr_admin? || hr_leadership? }
+    OPS = -> { hr_operations? }
     MANAGE_OR_CLAIMS = -> { hr_admin? || hr_leadership? || hr_can?("expense.approve", scope: :team) }
     LEAD = -> { hr_leadership? }
     SUPER = -> { hr_superadmin? }
@@ -14,20 +15,20 @@ module HrLite
     SECTIONS = [
       { label: "Home", tabs: [
         { label: "Today", path: :root_path, match: [ "/" ] },
-        { label: "Company overview", path: :admin_overview_path, match: [ "/admin/overview" ], if: MANAGE }
+        { label: "Company overview", path: :admin_overview_path, match: [ "/admin/overview" ], if: OPS }
       ] },
       { label: "Attendance", tabs: [
         { label: "My attendance", path: :attendance_path, match: [ "/attendance", "/regularization_requests", "/wfh_requests", "/work_locations" ] },
         { label: "My work time", path: :work_time_path, match: [ "/work_time" ], if: GEO },
-        { label: "Team", path: :admin_attendances_path, match: [ "/admin/attendances" ], if: MANAGE },
-        { label: "Work modes", path: :admin_work_modes_path, match: [ "/admin/work_modes" ], if: -> { instance_exec(&GEO) && instance_exec(&MANAGE) } },
+        { label: "Team", path: :admin_attendances_path, match: [ "/admin/attendances" ], if: OPS },
+        { label: "Work modes", path: :admin_work_modes_path, match: [ "/admin/work_modes" ], if: -> { instance_exec(&GEO) && hr_operations? } },
         { label: "Team work time", path: :admin_work_time_path, match: [ "/admin/work_time" ],
-          if: -> { instance_exec(&GEO) && hr_can?("work_analytics.view", scope: :team) && instance_exec(&MANAGE_OR_CLAIMS) } }
+          if: -> { instance_exec(&GEO) && hr_can?("work_analytics.view", scope: :team) && hr_operations? } }
       ] },
       { label: "Leave", tabs: [
         { label: "My leave", path: :leave_requests_path, match: [ "/leave_requests", "/leave_balances", "/comp_off_requests" ] },
         { label: "Calendar", path: :calendar_path, match: [ "/calendar", "/holidays" ] },
-        { label: "Team balances", path: :admin_leave_balances_path, match: [ "/admin/leave_balances" ], if: MANAGE }
+        { label: "Team balances", path: :admin_leave_balances_path, match: [ "/admin/leave_balances" ], if: OPS }
       ] },
       # Employee tier all the same — holding an approval IS the authorisation,
       # so a manager and a stand-in covering for one reach the same screen.
@@ -36,15 +37,15 @@ module HrLite
       # whenever any queue tab shows.
       { label: "Inbox", tabs: [
         { label: "All", lead: true, path: :approvals_path, match: [ "/approvals" ], if: -> { HrLite::ApprovalFlow.where(active: true).exists? } },
-        { label: "Leave requests", path: :admin_leave_requests_path, match: [ "/admin/leave_requests" ], if: MANAGE,
+        { label: "Leave requests", path: :admin_leave_requests_path, match: [ "/admin/leave_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::LeaveRequest.where(status: "pending"), "leave.approve") } },
-        { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: MANAGE,
+        { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::CompOffRequest.pending, "leave.approve") } },
-        { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: MANAGE,
+        { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::RegularizationRequest.pending, "attendance.manage") } },
-        { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: MANAGE,
+        { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::WfhRequest.pending, "attendance.manage") } },
-        { label: "Home locations", path: :admin_work_locations_path, match: [ "/admin/work_locations" ], if: MANAGE,
+        { label: "Home locations", path: :admin_work_locations_path, match: [ "/admin/work_locations" ], if: OPS,
           queue: -> { hrl_queue(HrLite::WorkLocation.pending, "attendance.manage") } },
         { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) },
           queue: -> { hrl_queue(HrLite::Expense.where(status: "submitted"), "expense.approve") } },
@@ -93,7 +94,7 @@ module HrLite
         { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ], if: LEAD },
         { label: "Roles", path: :admin_roles_path, match: [ "/admin/roles" ], if: -> { hr_can?("role.manage", scope: :all) } },
         { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
-        { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: MANAGE },
+        { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
         { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: MANAGE },
         { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD }
       ] }

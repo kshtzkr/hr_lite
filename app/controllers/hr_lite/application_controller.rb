@@ -10,7 +10,7 @@ module HrLite
     before_action :hr_set_current_actor
     around_action :hr_use_time_zone
 
-    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_display_name,
+    helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_operations?, :hr_display_name,
                   :hr_can?, :hr_reaches?, :hr_access
 
     private
@@ -70,6 +70,12 @@ module HrLite
 
     def hr_leadership?
       HrLite.leadership?(hr_current_user)
+    end
+
+    # Admin::BaseController's gate, and the menu's for its tabs: team scope is
+    # enough to reach the screen; each row is still checked by hr_require_reach!.
+    def hr_operations?
+      hr_can?("leave.approve", scope: :team) || hr_can?("attendance.manage", scope: :team) || hr_can?("leave.view", scope: :team)
     end
 
     def hr_display_name(user)
