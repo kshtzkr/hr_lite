@@ -1,4 +1,5 @@
 <% content_for(:page_title) { "Tax — #{hr_display_name(@person)}" } %>
+<% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @person } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Tax — <%= hr_display_name(@person) %></h1>
   <div class="hrl-page__actions">

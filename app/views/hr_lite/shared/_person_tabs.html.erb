@@ -1,0 +1,21 @@
+<%# locals: user — one person's records as tabs. Each shows only when its page would open for this viewer. %>
+<% ops = hr_can?("leave.approve", scope: :team) || hr_can?("attendance.manage", scope: :team) || hr_can?("leave.view", scope: :team)
+   profile = HrLite::EmployeeProfile.find_by(user_id: user.id)
+   tabs = [
+     [ "Overview", (hr_lite.admin_employee_path(profile) if profile && hr_leadership?) ],
+     [ "Attendance", (hr_lite.admin_attendance_path(user.id) if ops && hr_reaches?("attendance.view", user)) ],
+     [ "Work time", (hr_lite.admin_work_time_path(user_id: user.id) if HrLite.config.office_geofence && ops && hr_can?("work_analytics.view", scope: :team) && hr_reaches?("work_analytics.view", user)) ],
+     [ "Documents", (hr_lite.admin_employee_documents_path(user.id) if hr_can?("document.view", scope: :team) && hr_reaches?("document.view", user)) ],
+     [ "Tax", (hr_lite.person_admin_tax_declarations_path(user.id) if hr_can?("tax.view", scope: :all) && hr_reaches?("tax.view", user)) ],
+     [ "Timeline", hr_lite.person_timeline_path(user.id) ],
+     [ "ID card", (hr_lite.id_card_path(user_id: user.id) if user == hr_current_user || hr_reaches?("profile.view", user)) ]
+   ].select(&:last) %>
+<%# One tab is no choice: render nothing and the layout keeps the place's own tab row. %>
+<% if tabs.many? %>
+  <nav class="hrl-tabrow" aria-label="<%= hr_display_name(user) %>'s records">
+    <% tabs.each do |label, url| %>
+      <% on = request.path == url.split("?").first %>
+      <%= link_to label, url, class: [ "hrl-nav__link", ("hrl-nav__link--active" if on) ], aria: { current: ("page" if on) } %>
+    <% end %>
+  </nav>
+<% end %>

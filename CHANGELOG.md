@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-10-15
+
+- One person's records are tabs: Overview, Attendance, Work time, Documents, Tax, Timeline, ID card. The row replaces the page's usual tab row on the seven per-person pages (the employee page, their attendance month, work time, documents, tax, timeline and ID card), so HR steps through someone's records without picking them again.
+- Each tab shows only when its page would open for the viewer, using the same check that page makes. A manager sees their own report's Attendance, Timeline and ID card. A colleague sees no record tabs, and the timeline keeps the People tabs. A row with a single tab is not drawn.
+- Employee page: the Edit button stays. New appraisal, Role change, Start PIP and New structure fold into one "Manage" button. The ID card, Timeline, Work time, Attendance and Documents buttons are now tabs.
+- Layout: a page can fill the tab row slot itself with `content_for(:tabrow)`.
+
 ## [0.38.1] - 2026-10-15
 
 - Each of the nine places has a stroke icon in the rail, the phone bar and the More sheet. Icons are `aria-hidden`, and the label always shows beside the icon (in the phone bar, under it). Tabs carry no icons.
