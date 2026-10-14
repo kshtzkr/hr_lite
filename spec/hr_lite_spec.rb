@@ -200,6 +200,12 @@ RSpec.describe HrLite do
       expect(css[/:root \{.*?\}/m].scan(/(--hrl-[a-z0-9-]+):/).flatten - documented).to be_empty
       expect(documented - css.scan(/--hrl-[a-z0-9-]+/)).to be_empty
     end
+
+    # The work-time day strip once reused .hrl-timeline and squashed the employee timeline to 2rem.
+    it "gives the employee timeline its block class to itself" do
+      css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
+      expect(css.scan(/^\.hrl-timeline \{/).size).to eq 1
+    end
   end
 
   describe ".default_mentionable_users" do

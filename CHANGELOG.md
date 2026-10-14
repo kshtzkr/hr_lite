@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.2] - 2026-10-14
+
+- Employee timeline no longer overlaps itself: the work-time day strip reused the `.hrl-timeline` class and squashed the timeline list to 2rem, so each month's events ran into the next month's heading. The day strip is now `.hrl-daystrip`.
+
 ## [0.37.1] - 2026-10-14
 
 - A WFH request still waiting for HR now lets the person check in away from the office on that day (HR has 24 hours to decide). The day is flagged "WFH request pending HR approval: <reason>", and HR gets the flagged-punch alert with that reason. HR was already told when the request was raised. Rejected requests and requests for other dates are still refused.
