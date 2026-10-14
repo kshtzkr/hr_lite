@@ -6,7 +6,7 @@
   <h2 class="hrl-card__title">The day, hour by hour</h2>
   <% rows.each do |user_id, segs| %>
     <% if names %><p class="hrl-small"><strong><%= names[user_id] %></strong></p><% end %>
-    <svg class="hrl-timeline" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="Work modes through the day; details in the list below">
+    <svg class="hrl-daystrip" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="Work modes through the day; details in the list below">
       <% segs.each do |seg| %>
         <rect x="<%= pct.(seg.from).round(3) %>" y="1" width="<%= [ pct.(seg.to) - pct.(seg.from), 0.15 ].max.round(3) %>" height="8"
               class="<%= class_names("hrl-fill--#{seg.mode}", "hrl-timeline__auto": seg.source == "system") %>" data-hrl-tip tabindex="0">

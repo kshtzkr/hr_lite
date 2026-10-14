@@ -616,7 +616,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-chart-scroll { overflow-x: auto; }
 .hrl-bars { width: 100%; min-width: 16rem; height: 10rem; }
 .hrl-bars__label { font-size: 5px; fill: var(--hrl-muted); }
-.hrl-timeline { width: 100%; height: 2rem; background: var(--hrl-bg); border-radius: var(--hrl-radius-sm); }
+.hrl-daystrip { width: 100%; height: 2rem; background: var(--hrl-bg); border-radius: var(--hrl-radius-sm); }
 .hrl-timeline__auto { stroke: var(--hrl-card); stroke-width: .3; stroke-dasharray: .6 .4; }
 .hrl-timeline__axis { display: flex; justify-content: space-between; }
 .hrl-timeline__list { margin: .5rem 0 0; padding-left: 1.2rem; display: grid; gap: .25rem; }
