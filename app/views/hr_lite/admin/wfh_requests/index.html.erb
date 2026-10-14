@@ -3,8 +3,6 @@
   <h1 class="hrl-page__title">Work from home</h1>
 </div>
 
-<%= render "hr_lite/admin/shared/approvals_tabs", active: :wfh %>
-
 <section class="hrl-card">
   <%= form_with url: hr_lite.admin_wfh_requests_path, method: :get, local: true do %>
     <div class="hrl-field"><label for="wfh-from">From</label><%= date_field_tag :from, @from, id: "wfh-from" %></div>

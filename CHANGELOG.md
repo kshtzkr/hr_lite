@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-10-15
+
+- The menu has nine places instead of about 40 links in eight groups: Home, Attendance, Leave, Inbox, Pay, People, Me, Help, Admin. Each place has a row of tabs at the top of its pages. Your own tabs and your team's sit side by side, so "My attendance", "My work time", "Team" and "Team work time" are neighbours. Each place opens on its first tab, and a place shows only when at least one of its tabs does.
+- No URL changes: every page keeps its address, so bookmarks and host links still work.
+- One name, one meaning. The two "Approvals", "Documents", "Policies", "Benefits", "Tax" and "Loans" items are gone. HR's approval queues are tabs in Inbox (Leave requests, Comp-off, Attendance fixes, WFH, Home locations, Claims, Documents to verify, CA review), with their pending counts. Payroll and Payroll approval are one Pay › Payroll tab. "My work time", which had no menu link, is an Attendance tab.
+- Phone: the bar holds the first four places; More lists the rest, 44 px tall with 8 px between rows (it was 2 px). The tab row scrolls sideways inside itself, never the page, and centres the current tab.
+- Every tab is gated by the check its own page makes, so no menu link ends on "access denied". This fixes links the old menu showed to people who could not open them: Expenses, Benefits, Policies and Ask HR for someone without that permission (for example a CA), Organisation › Policies for leadership without `policy.manage`, and Roles for a superadmin without `role.manage`.
+- `ApplicationHelper::NAV_ITEMS`, `ADMIN_NAV_ITEMS`, `LEADERSHIP_NAV_ITEMS` and `SUPERADMIN_NAV_ITEMS` are replaced by `SECTIONS`. The `admin/shared/_approvals_tabs` partial is removed; the layout's tab row replaces it.
+
 ## [0.37.3] - 2026-10-14
 
 - Admin → Employees → a person now links to their Work time, Attendance and Documents next to Timeline and ID card. Each button shows only when the viewer can open that screen for that person.

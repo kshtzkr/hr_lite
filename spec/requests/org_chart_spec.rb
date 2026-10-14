@@ -119,9 +119,9 @@ RSpec.describe "Org chart", type: :request do
     expect(ghost.errors[:manager_id].join).to include("not a staff account")
   end
 
-  it "keeps Calendar in the phone tab bar (Org lives after it)" do
-    first_five = HrLite::ApplicationHelper::NAV_ITEMS.first(5).map { |item| item[:label] }
-    expect(first_five).to include("Calendar")
-    expect(first_five).not_to include("Org")
+  it "keeps Org out of the phone tab bar (it is a People tab)" do
+    bar = HrLite::ApplicationHelper::SECTIONS.first(4).map { |section| section[:label] }
+    expect(bar).to eq([ "Home", "Attendance", "Leave", "Inbox" ])
+    expect(HrLite::ApplicationHelper::SECTIONS.find { |s| s[:label] == "People" }[:tabs].map { |t| t[:label] }).to include("Org chart")
   end
 end

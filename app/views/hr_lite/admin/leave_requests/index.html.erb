@@ -6,8 +6,6 @@
   </div>
 </div>
 
-<%= render "hr_lite/admin/shared/approvals_tabs", active: :leaves %>
-
 <div class="hrl-row hrl-row--mb">
   <% HrLite::LeaveRequest::STATUSES.each do |status| %>
     <a class="hrl-btn <%= 'hrl-btn--primary' if @status == status %>"

@@ -61,11 +61,11 @@ RSpec.describe "Access tiers", type: :request do
     it "hides governing links from employees, shows them to leadership" do
       sign_in employee
       get "/hr/"
-      expect(response.body).not_to include("Audit")
+      expect(response.body).not_to include("/hr/admin/")
 
       sign_in leader
-      get "/hr/"
-      expect(response.body).to include("Audit")
+      get "/hr/admin/leave_types"
+      expect(response.body).to include('href="/hr/admin/audit_logs"')
     end
   end
 

@@ -12,6 +12,11 @@
 
   centre(document.querySelector(".hrl-side"));
 
+  // The tab row scrolls sideways on a phone; bring the current tab into it.
+  var row = document.querySelector(".hrl-tabrow");
+  var tab = row && row.querySelector(".hrl-nav__link--active");
+  if (tab) row.scrollLeft += tab.getBoundingClientRect().left - row.getBoundingClientRect().left - (row.clientWidth - tab.offsetWidth) / 2;
+
   // Chrome scrolls a focused field's caret into view, not the whole field, so a
   // textarea near the bottom can sit half under the fixed tab bar. Nudge it out.
   var tabbar = document.querySelector(".hrl-tabbar");
