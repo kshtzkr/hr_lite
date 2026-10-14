@@ -52,11 +52,13 @@ module HrLite
 
     def punch(kind)
       field = params.fetch(:field, {}).permit(:mode, :purpose, :place).to_h
-      result = AttendancePuncher.call(user: hr_current_user, kind: kind, field: field, **punch_params.to_h.symbolize_keys)
+      result = AttendancePuncher.call(user: hr_current_user, kind: kind, field: field, travel: params[:place] == "travel",
+                                      save_home: params[:save_home] == "1", **punch_params.to_h.symbolize_keys)
       if result.ok?
         time = Time.current.strftime("%H:%M")
         redirect_to attendance_path, notice: "#{kind == :check_in ? 'Checked in' : 'Checked out'} at #{time}."
       else
+        flash[:punch_offer] = result.offer.to_s if result.offer
         redirect_to attendance_path, alert: result.error
       end
     end
