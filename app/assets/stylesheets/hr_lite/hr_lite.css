@@ -114,9 +114,14 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-nav__link {
   color: var(--hrl-muted); font-size: var(--hrl-t-small); padding: .5rem .6rem;
   border-radius: var(--hrl-radius-sm); min-height: var(--hrl-target);
-  display: inline-flex; align-items: center;
+  display: inline-flex; align-items: center; gap: .6rem;
 }
 .hrl-nav__link--active { color: var(--hrl-accent); background: var(--hrl-info-bg); font-weight: 600; }
+/* Place icons: stroke-only, decoration beside a label that always shows. */
+.hrl-icon { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.hrl-nav__text { display: flex; flex-direction: column; min-width: 0; }
+.hrl-nav__hint { font-size: var(--hrl-t-small); font-weight: 400; color: var(--hrl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hrl-nav__link--active .hrl-nav__hint { color: inherit; }
 /* Tab row: the current place's tabs on one line; it scrolls sideways, never the page. */
 .hrl-tabrow { display: flex; gap: var(--hrl-gap-target); overflow-x: auto; margin: 0 0 var(--hrl-s-4); padding-bottom: var(--hrl-s-2); border-bottom: 1px solid var(--hrl-line); }
 .hrl-tabrow .hrl-nav__link { flex: 0 0 auto; white-space: nowrap; }
@@ -142,6 +147,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   padding: .25rem .25rem calc(.25rem + env(safe-area-inset-bottom));
 }
 .hrl-tabbar .hrl-nav__link { flex: 1 1 auto; min-width: var(--hrl-target); padding-inline: var(--hrl-s-1); justify-content: center; font-size: var(--hrl-t-micro); font-weight: 600; }
+/* Bar items stack the icon over the label; the sheet's links stay in a row. */
+.hrl-tabbar > .hrl-nav__link, .hrl-tabbar__more > summary { flex-direction: column; gap: 2px; padding-block: 2px; line-height: var(--hrl-lh-tight); }
+.hrl-tabbar > .hrl-nav__link .hrl-icon, .hrl-tabbar__more > summary .hrl-icon { width: 22px; height: 22px; }
 /* "More" sheet — everything five tabs cannot hold. Pure <details>: the
    engine ships no Turbo or Stimulus and this must not need any. */
 .hrl-tabbar__more { flex: 1 1 auto; display: flex; }
@@ -155,7 +163,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   position: fixed; left: 0; right: 0;
   bottom: calc(3.3rem + env(safe-area-inset-bottom));
   max-height: calc(100vh - 8rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); overflow-y: auto;
-  display: grid; grid-template-columns: 1fr 1fr; gap: var(--hrl-gap-target);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--hrl-gap-target);
   background: var(--hrl-card); border-top: 1px solid var(--hrl-line);
   border-radius: var(--hrl-radius-lg) var(--hrl-radius-lg) 0 0;
   padding: .6rem .85rem;
@@ -165,15 +173,8 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
    links and would otherwise apply here too. */
 .hrl-sheet .hrl-nav__link {
   display: flex; justify-content: flex-start;
-  min-height: var(--hrl-target); font-size: var(--hrl-t-body); padding: .5rem .6rem;
+  min-height: var(--hrl-target); min-width: 0; font-size: var(--hrl-t-body); padding: .5rem .6rem;
 }
-.hrl-sheet .hrl-side__group {
-  color: var(--hrl-muted); font-size: var(--hrl-t-micro); font-weight: 700;
-  text-transform: uppercase; letter-spacing: .06em;
-  margin: .7rem 0 .15rem; padding: 0 .6rem;
-}
-.hrl-sheet .hrl-side__group, .hrl-sheet .hrl-side__back { grid-column: 1 / -1; }
-@media (min-width: 481px) { .hrl-sheet { grid-template-columns: 1fr; } }
 /* Scrim over the page while the sheet is open; tapping it closes the sheet (nav.js). */
 .hrl-tabbar__more[open]::before {
   content: ""; position: fixed; inset: 0 0 calc(3.3rem + env(safe-area-inset-bottom));
@@ -195,7 +196,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
   .hrl-side__brand { display: flex; align-items: center; min-height: var(--hrl-target); padding: .25rem .5rem 1rem; }
   .hrl-side__logo { max-height: 40px; max-width: 100%; display: block; }
   .hrl-side__brandname { font-family: var(--hrl-font-head); font-weight: 700; font-size: var(--hrl-t-lead); color: var(--hrl-ink); }
-  .hrl-side__nav { display: flex; flex-direction: column; gap: 2px; }
+  .hrl-side__nav { display: flex; flex-direction: column; gap: var(--hrl-gap-target); }
   .hrl-side__nav .hrl-nav__link { display: flex; padding: .45rem .6rem; }
   .hrl-side__group {
     margin: .9rem .5rem .25rem; font-size: var(--hrl-t-micro); font-weight: 700;
