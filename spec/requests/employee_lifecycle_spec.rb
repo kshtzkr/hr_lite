@@ -77,6 +77,19 @@ RSpec.describe "Employee lifecycle", type: :request do
     end
   end
 
+  describe "the shorter-day allowance" do
+    let!(:profile) { create(:employee_profile) }
+
+    it "saves 30, 60 or 90 minutes only with a reason, and keeps the reason out of the audit trail" do
+      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { hours_allowance_minutes: 90 } }
+      expect(response).to have_http_status(:unprocessable_content)
+
+      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way" } }
+      expect(profile.reload).to have_attributes(hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way")
+      expect(HrLite::AuditLog.order(:id).last.audited_changes.to_s).not_to include("Commutes")
+    end
+  end
+
   describe "offboarding" do
     let(:profile) { create(:employee_profile, date_of_exit: Date.current + 30) }
 

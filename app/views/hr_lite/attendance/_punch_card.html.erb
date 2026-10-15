@@ -23,6 +23,9 @@
     <% if record&.work_mode_label %>
       <span class="hrl-badge hrl-badge--ok"><%= record.work_mode_label %></span>
     <% end %>
+    <% if HrLite::EmployeeProfile.where(user_id: hr_current_user.id).pick(:hours_allowance_minutes) %>
+      <span class="hrl-badge hrl-badge--muted">Your day <%= hrl_duration(HrLite::EmployeeProfile.day_minutes_for(hr_current_user.id) * 60) %></span>
+    <% end %>
     <% if record&.check_in_place == "home" && record.work_location %>
       <span class="hrl-badge hrl-badge--muted"><%= record.work_location.name %> · <%= HrLite::WorkLocation::FENCE_M %> m</span>
     <% end %>
