@@ -21,6 +21,25 @@
       <%= f.number_field :short_break_minutes, min: 1, max: 60 %>
     </div>
     <div class="hrl-field">
+      <%= f.label :day_minutes, "Working day (minutes, break included)" %>
+      <%= f.number_field :day_minutes, min: 240, max: 720, step: 15 %>
+      <p class="hrl-hint">Check-in to check-out. 510 = 8h 30m (8h work + 30m break). Leaving earlier adds 30 min to the next working day.</p>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :half_day_below_minutes, "Half day below (minutes worked)" %>
+      <%= f.number_field :half_day_below_minutes, min: 15, step: 15 %>
+      <p class="hrl-hint">Working fewer minutes than this marks the day a half day and tells the person. 255 = 4h 15m.</p>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :recheck_in_from, "Check in again: from" %>
+      <%= f.time_field :recheck_in_from %>
+    </div>
+    <div class="hrl-field">
+      <%= f.label :recheck_in_until, "Check in again: until" %>
+      <%= f.time_field :recheck_in_until %>
+      <p class="hrl-hint">After checking out, a person can check in again once a day inside these hours.</p>
+    </div>
+    <div class="hrl-field">
       <%= f.label :employee_code_prefix, "Employee code prefix" %>
       <%= f.text_field :employee_code_prefix %>
       <p class="hrl-hint">Codes are assigned automatically as

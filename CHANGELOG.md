@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-10-15
+
+- HR sets the working day in Admin › Settings. The working day is check-in to check-out with the break included (default 510 min = 8h 30m). Settings also hold the half-day line (default 255 min = 4h 15m) and the hours when "Check in again" is open (default 09:00–20:00). Changes are audited.
+- A short day is measured in hours worked, not by the clock. The checkout due time is the first check-in + the working day + that day's penalties, so someone who comes at 9:00 and leaves at 17:30 has done 8h30 and gets no "+30 min". Before, the due time was the slot start + 8h30, so an early start still counted as short.
+- A day becomes a half day, with the notice, only when the hours worked are under the half-day line ("You worked 4.0h on 06 Jul, under 4h15 — marked half day"). Short of the working day but above the line: only the +30 min on the next working day. Before, anything under 8h was a half day.
+- One working day for everyone: probation staff no longer need 9h.
+- `config.work_hours` still turns the hours rules on (nil = off), and `week` is still read. `day` and `probation_day` are no longer read. `AttendanceSlot::DAY_MINUTES` is removed. The slot picker shows each check-out time from the Settings day.
+- Migration: four columns on `hr_lite_settings`.
+
 ## [0.41.0] - 2026-10-15
 
 - Check out asks first: "Check out now? Your check-out is saved as soon as you press OK." The check-out is recorded only on OK; Cancel leaves you checked in. This covers both the day's Check out and "Check out yesterday's shift".

@@ -32,9 +32,10 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
     check_in(at(friday, 9, 36))
 
     expect(penalties).to eq([ [ friday, 60, "late" ] ])
-    expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).required_check_out_at).to eq(at(friday, 18, 30))
+    # Hours worked: 09:36 + 8h30 + the 60-minute penalty.
+    expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).required_check_out_at).to eq(at(friday, 19, 6))
     get "/hr/attendance"
-    expect(response.body).to include("checkout at <strong>18:30</strong>").and include("+60 min")
+    expect(response.body).to include("checkout at <strong>19:06</strong>").and include("+60 min")
   end
 
   it "uses the 10:00 slot when none is saved" do
@@ -95,7 +96,7 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
 
     post "/hr/admin/attendances/#{employee.id}/remove_penalty", params: { penalty_id: penalty.id, removal_reason: "Told HR" }
     expect(penalty.reload.removal_reason).to eq("Told HR")
-    expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).required_check_out_at).to eq(at(friday, 17, 30))
+    expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).required_check_out_at).to eq(at(friday, 17, 40))
   end
 
   it "puts +30 min on the next working day when the close job finds a short day" do
