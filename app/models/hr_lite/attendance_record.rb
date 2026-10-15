@@ -51,10 +51,10 @@ module HrLite
       check_out_at - check_in_at
     end
 
-    # The working day HR sets in Settings, the same for everyone. Nil when the
-    # host turns hours rules off (config.work_hours), and on Saturdays.
+    # The working day HR sets in Settings, less the person's allowance. Nil when
+    # the host turns hours rules off (config.work_hours), and on Saturdays.
     def required_minutes
-      Setting.instance.day_minutes unless HrLite.config.work_hours.nil? || date.saturday?
+      EmployeeProfile.day_minutes_for(user_id) unless HrLite.config.work_hours.nil? || date.saturday?
     end
 
     # Hours worked, not the clock: an early start counts.
@@ -71,7 +71,7 @@ module HrLite
       return unless HrLite.config.attendance_slots && check_in_at
 
       extra = AttendancePenalty.active.where(user_id: user_id, date: date).sum(:minutes)
-      check_in_at + (Setting.instance.day_minutes + extra).minutes
+      check_in_at + (EmployeeProfile.day_minutes_for(user_id) + extra).minutes
     end
 
     def worked_under?(minutes) = !!(minutes && worked_duration && worked_duration < minutes.minutes)

@@ -33,6 +33,17 @@ module HrLite
     validates :buffer_reason, inclusion: { in: BUFFER_REASONS.keys }, if: :buffer_minutes
     validates :buffer_note, presence: true, if: -> { buffer_minutes && buffer_reason == "other" }
 
+    # HR-granted shorter day (e.g. a long commute): minutes off the Settings
+    # day, so 90 off 8h30 is 7h. Only HR sees the reason (encrypted).
+    HOURS_ALLOWANCE_MINUTES = [ 30, 60, 90 ].freeze
+    encrypts :hours_allowance_reason
+    normalizes :hours_allowance_minutes, with: ->(v) { v.presence }
+    validates :hours_allowance_minutes, inclusion: { in: HOURS_ALLOWANCE_MINUTES }, allow_nil: true
+    validates :hours_allowance_reason, presence: true, if: :hours_allowance_minutes
+
+    # One person's working day: HR's day in Settings less their allowance.
+    def self.day_minutes_for(user_id) = Setting.instance.day_minutes - where(user_id: user_id).pick(:hours_allowance_minutes).to_i
+
     TAX_REGIMES = %w[new old].freeze
     BLOOD_GROUPS = %w[A+ A- B+ B- AB+ AB- O+ O-].freeze
     normalizes :blood_group, with: ->(v) { v.presence } # the "Not set" chip posts ""

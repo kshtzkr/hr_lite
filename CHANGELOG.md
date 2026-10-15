@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-10-15
+
+- Shorter day: HR can give one employee 30, 60 or 90 minutes off the working day, for example for a long commute. It's set on their profile, with a required reason. The reason is encrypted, kept out of the audit trail, and seen only by HR. Their day becomes the Settings day minus the allowance (8h30 − 90 min = 7h). That drives their "+30 min", "Short by", checkout due time, half-day line check and slot picker. They see "Your day 7h 00m" on their attendance card. This is separate from the late buffer, which still only delays the late clock.
+- `EmployeeProfile.day_minutes_for(user_id)` is the one place that works out a person's day.
+- Migration: `hours_allowance_minutes` and `hours_allowance_reason` on `hr_lite_employee_profiles`.
+
 ## [0.42.1] - 2026-10-15
 
 - "Check in again" works once a day, and only inside the hours HR sets in Settings (default 09:00–20:00). Once it has been used, or outside those hours, the card shows "Check in again is open once a day, 09:00–20:00." with no button, and the server refuses the punch with the same message. This replaces 0.41.0's "as many times as needed".
