@@ -56,7 +56,7 @@
       </button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
-  <% elsif record&.check_in_at.blank? || record.check_out_at %>
+  <% elsif record&.check_in_at.blank? || record.recheck_in_open? %>
     <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
                   html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
@@ -87,7 +87,7 @@
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block"><%= record&.check_out_at ? "Check in again" : "Check in" %></button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
-  <% else %>
+  <% elsif record.check_out_at.nil? %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
                   html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence, "turbo-confirm": checkout_confirm } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
@@ -100,6 +100,8 @@
       </button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
+  <% else %>
+    <p class="hrl-small hrl-muted">Check in again is open once a day, <%= HrLite::Setting.instance.recheck_in_from %>–<%= HrLite::Setting.instance.recheck_in_until %>.</p>
   <% end %>
 
   <% if local_assigns[:attention].present? %><p class="hrl-small hrl-muted hrl-mt">Needs a fix</p><% end %>

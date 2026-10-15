@@ -76,6 +76,13 @@ module HrLite
 
     def worked_under?(minutes) = !!(minutes && worked_duration && worked_duration < minutes.minutes)
 
+    # Check in again after checking out: once a day, inside the hours HR sets in Settings.
+    def recheck_in_open?(at = Time.current)
+      s = Setting.instance
+      now = at.in_time_zone(HrLite.config.time_zone).strftime("%H:%M")
+      check_out_at.present? && rechecked_in_at.nil? && now >= s.recheck_in_from && now < s.recheck_in_until
+    end
+
     # Metres between where the day was checked in and checked out.
     def punch_gap_m
       return unless check_in_lat && check_in_lng && check_out_lat && check_out_lng
