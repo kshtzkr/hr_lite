@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-10-15
+
+- HR can change a WFH request after deciding it. On an approved or rejected request, the "Change this WFH" card lets HR set new dates and switch between Approved and Rejected, with a required reason. For example, a request rejected for 19–23 Oct can be approved for 20–21 Oct only. Past dates are allowed so a request can match the days actually worked from home, up to 60 days long. It can't clash with that person's other pending or approved WFH. The audit log records the old and new dates and decision ("wfh.changed"), and the employee gets the approved/rejected notice with the reason. Attendance days already punched are not rewritten.
+
 ## [0.44.0] - 2026-10-15
 
 - HR can reset today's punch when someone taps by mistake again (after their one "Check in again" is used). On the employee's attendance page, tap today, give the reason, then pick a reset. Each one asks OK/Cancel first. **Reset check-out** puts them back in: the first check-in stands, their work mode reopens, and they check out later. **Reset check-in** clears the whole day so they check in fresh. Both are audited and the employee is notified.

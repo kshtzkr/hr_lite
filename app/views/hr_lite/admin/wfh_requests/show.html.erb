@@ -38,3 +38,20 @@
     <% end %>
   </section>
 <% end %>
+
+<% if @decidable && (@request.approved? || @request.rejected?) %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Change this WFH</h2>
+    <%= form_with url: hr_lite.admin_wfh_request_path(@request), method: :patch, local: true do |f| %>
+      <div class="hrl-field"><%= f.label :start_date, "From" %><%= f.date_field :start_date, value: @request.start_date, required: true %></div>
+      <div class="hrl-field"><%= f.label :end_date, "To" %><%= f.date_field :end_date, value: @request.end_date, required: true %></div>
+      <fieldset class="hrl-field">
+        <legend class="hrl-small">Decision</legend>
+        <label class="hrl-field--check"><%= f.radio_button :status, "approved", checked: @request.approved? %> Approved</label>
+        <label class="hrl-field--check"><%= f.radio_button :status, "rejected", checked: @request.rejected? %> Rejected</label>
+      </fieldset>
+      <div class="hrl-field"><%= f.label :decision_note, "Reason for the change (required)", for: "change_note" %><%= f.text_area :decision_note, id: "change_note", required: true %></div>
+      <div class="hrl-form-actions"><%= f.button "Save change", type: :submit, class: "hrl-btn hrl-btn--primary" %></div>
+    <% end %>
+  </section>
+<% end %>
