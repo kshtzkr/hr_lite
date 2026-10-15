@@ -26,6 +26,31 @@ RSpec.describe HrLite::AttendancePuncher do
       expect(result).not_to be_ok
       expect(result.error).to include("Already checked in at 09:02")
     end
+
+    it "reopens the day on a check-in after check-out; the first check-in stands" do
+      travel_to(Time.zone.parse("#{Date.current} 09:02")) { punch(:check_in) }
+      travel_to(Time.zone.parse("#{Date.current} 13:00")) { punch(:check_out, lat: "28.6", lng: "77.2") }
+      result = travel_to(Time.zone.parse("#{Date.current} 14:00")) { punch(:check_in) }
+
+      expect(result).to be_ok
+      expect(result.record.reload).to have_attributes(check_out_at: nil, check_out_lat: nil)
+      expect(result.record.check_in_at.strftime("%H:%M")).to eq("09:02")
+    end
+
+    it "lets a person check in again once a day, and only inside the Settings hours" do
+      local = ->(hhmm) { Time.find_zone(HrLite.config.time_zone).parse("#{Date.current} #{hhmm}") }
+      travel_to(local.("09:02")) { punch(:check_in) }
+      travel_to(local.("13:00")) { punch(:check_out) }
+      travel_to(local.("14:00")) { punch(:check_in) }
+      travel_to(local.("15:00")) { punch(:check_out) }
+
+      second = travel_to(local.("16:00")) { punch(:check_in) }
+      expect(second.error).to eq("Check in again is open once a day, 09:00–20:00.")
+
+      HrLite::AttendanceRecord.last.update!(rechecked_in_at: nil)
+      late = travel_to(local.("20:01")) { punch(:check_in) }
+      expect(late.error).to include("09:00–20:00")
+    end
   end
 
   describe "check-out" do

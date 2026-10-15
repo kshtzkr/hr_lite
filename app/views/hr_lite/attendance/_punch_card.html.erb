@@ -1,4 +1,6 @@
 <% record = HrLite::AttendanceRecord.find_by(user_id: hr_current_user.id, date: Date.current) %>
+<%# Checking out by mistake was common; the OK is the deliberate step. Checking in again reopens the day. %>
+<% checkout_confirm = "Check out now? Your check-out is saved as soon as you press OK." %>
 <%# A shift that runs past midnight leaves yesterday's record open.
     AttendancePuncher already closes it, but this card looked only at today,
     so after midnight it offered "Check in" and the night's punch never
@@ -20,6 +22,9 @@
     <% end %>
     <% if record&.work_mode_label %>
       <span class="hrl-badge hrl-badge--ok"><%= record.work_mode_label %></span>
+    <% end %>
+    <% if HrLite::EmployeeProfile.where(user_id: hr_current_user.id).pick(:hours_allowance_minutes) %>
+      <span class="hrl-badge hrl-badge--muted">Your day <%= hrl_duration(HrLite::EmployeeProfile.day_minutes_for(hr_current_user.id) * 60) %></span>
     <% end %>
     <% if record&.check_in_place == "home" && record.work_location %>
       <span class="hrl-badge hrl-badge--muted"><%= record.work_location.name %> · <%= HrLite::WorkLocation::FENCE_M %> m</span>
@@ -46,7 +51,7 @@
 
   <% if open_yesterday %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
-                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence, "turbo-confirm": checkout_confirm } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
@@ -54,7 +59,7 @@
       </button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
-  <% elsif record&.check_in_at.blank? %>
+  <% elsif record&.check_in_at.blank? || record.recheck_in_open? %>
     <%= form_with url: hr_lite.check_in_attendance_path, method: :post, local: true,
                   html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
@@ -82,22 +87,24 @@
           <label class="hrl-field--check"><input type="radio" name="place" value="travel" required> No, I am travelling</label>
         </fieldset>
       <% end %>
-      <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block">Check in</button>
+      <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block"><%= record&.check_out_at ? "Check in again" : "Check in" %></button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
-  <% else %>
+  <% elsif record.check_out_at.nil? %>
     <%= form_with url: hr_lite.check_out_attendance_path, method: :post, local: true,
-                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence } } do %>
+                  html: { data: { "hrl-geo-punch": true, "hrl-geo-required": HrLite.config.require_punch_location.presence, "turbo-confirm": checkout_confirm } } do %>
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <% if flash[:punch_offer] == "travel" %>
         <div class="hrl-field"><label class="hrl-field--check"><input type="checkbox" name="place" value="travel" required> I am travelling — check out here</label></div>
       <% end %>
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
-        <%= record.check_out_at ? "Update check-out" : "Check out" %>
+        Check out
       </button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
+  <% else %>
+    <p class="hrl-small hrl-muted">Check in again is open once a day, <%= HrLite::Setting.instance.recheck_in_from %>–<%= HrLite::Setting.instance.recheck_in_until %>.</p>
   <% end %>
 
   <% if local_assigns[:attention].present? %><p class="hrl-small hrl-muted hrl-mt">Needs a fix</p><% end %>

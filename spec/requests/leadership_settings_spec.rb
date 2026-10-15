@@ -144,4 +144,15 @@ RSpec.describe "Leadership settings", type: :request do
     patch "/hr/admin/setting", params: { setting: { weekend_policy: "sun_only", employee_code_prefix: "ESC" } }
     expect(HrLite::Setting.instance.reload.employee_code_prefix).to eq("ESC")
   end
+
+  it "lets leadership set the working day, the half-day line and the check-in-again hours, audited" do
+    sign_in leader
+    patch "/hr/admin/setting", params: { setting: { day_minutes: 540, half_day_below_minutes: 270, recheck_in_from: "08:30", recheck_in_until: "21:00" } }
+    expect(HrLite::Setting.instance.reload).to have_attributes(day_minutes: 540, half_day_below_minutes: 270, recheck_in_from: "08:30", recheck_in_until: "21:00")
+    expect(HrLite::AuditLog.order(:id).last.audited_changes).to include("day_minutes")
+
+    patch "/hr/admin/setting", params: { setting: { half_day_below_minutes: 600, recheck_in_from: "20:00", recheck_in_until: "09:00" } }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(HrLite::Setting.instance.reload).to have_attributes(half_day_below_minutes: 270, recheck_in_from: "08:30")
+  end
 end

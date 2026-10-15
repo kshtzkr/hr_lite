@@ -51,27 +51,36 @@ module HrLite
       check_out_at - check_in_at
     end
 
-    # config.work_hours: probation days need more hours. Nil when the rule is
-    # off, and on Saturdays (a working Saturday has no hours rule).
-    def required_hours
-      rule = HrLite.config.work_hours
-      return if rule.nil? || date.saturday?
-
-      EmployeeProfile.find_by(user_id: user_id)&.on_probation?(date) ? rule[:probation_day] : rule[:day]
+    # The working day HR sets in Settings, less the person's allowance. Nil when
+    # the host turns hours rules off (config.work_hours), and on Saturdays.
+    def required_minutes
+      EmployeeProfile.day_minutes_for(user_id) unless HrLite.config.work_hours.nil? || date.saturday?
     end
 
+    # Hours worked, not the clock: an early start counts.
     def short?
-      hours = required_hours
-      !!(hours && worked_duration && worked_duration < hours.hours)
+      worked_under?(required_minutes)
     end
 
-    # config.attendance_slots: slot start + 8h30 + the day's active penalties.
+    def below_half_day?
+      worked_under?(required_minutes && Setting.instance.half_day_below_minutes)
+    end
+
+    # config.attendance_slots: first check-in + the working day + the day's active penalties.
     def required_check_out_at
       return unless HrLite.config.attendance_slots && check_in_at
 
       extra = AttendancePenalty.active.where(user_id: user_id, date: date).sum(:minutes)
-      date.in_time_zone(HrLite.config.time_zone) +
-        (AttendanceSlot.start_minute_for(user_id, date) + AttendanceSlot::DAY_MINUTES + extra).minutes
+      check_in_at + (EmployeeProfile.day_minutes_for(user_id) + extra).minutes
+    end
+
+    def worked_under?(minutes) = !!(minutes && worked_duration && worked_duration < minutes.minutes)
+
+    # Check in again after checking out: once a day, inside the hours HR sets in Settings.
+    def recheck_in_open?(at = Time.current)
+      s = Setting.instance
+      now = at.in_time_zone(HrLite.config.time_zone).strftime("%H:%M")
+      check_out_at.present? && rechecked_in_at.nil? && now >= s.recheck_in_from && now < s.recheck_in_until
     end
 
     # Metres between where the day was checked in and checked out.

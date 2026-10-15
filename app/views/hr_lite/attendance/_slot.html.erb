@@ -21,7 +21,7 @@
   <%= form_with url: hr_lite.slot_attendance_path, method: :post, local: true, class: "hrl-mt" do %>
     <div class="hrl-field">
       <label for="hrl-slot-start">Check-in slot</label>
-      <%= select_tag :start_minute, options_for_select(HrLite::AttendanceSlot::START_MINUTES.map { |m| [ "#{HrLite::AttendanceSlot.label(m)} – out #{HrLite::AttendanceSlot.label(m + HrLite::AttendanceSlot::DAY_MINUTES)}", m ] }, start), id: "hrl-slot-start" %>
+      <%= select_tag :start_minute, options_for_select(HrLite::AttendanceSlot::START_MINUTES.map { |m| [ "#{HrLite::AttendanceSlot.label(m)} – out #{HrLite::AttendanceSlot.label(m + HrLite::EmployeeProfile.day_minutes_for(hr_current_user.id))}", m ] }, start), id: "hrl-slot-start" %>
     </div>
     <div class="hrl-field">
       <label for="hrl-slot-period">For</label>

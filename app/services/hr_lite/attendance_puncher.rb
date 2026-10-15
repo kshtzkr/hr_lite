@@ -61,13 +61,25 @@ module HrLite
       record.with_lock do
         case @kind
         when :check_in
-          return Result.new(record: record, error: already_in_message(record)) if record.check_in_at.present?
+          if (reopen = record.check_out_at.present?)
+            # Checking in again reopens the day: the first check-in stands, the
+            # gap stays Offline on the work-mode timeline.
+            unless record.recheck_in_open?
+              s = Setting.instance
+              return Result.new(record: record, error: "Check in again is open once a day, #{s.recheck_in_from}–#{s.recheck_in_until}.")
+            end
 
-          stamp(record, :check_in)
-          record.work_mode = @mode
-          record.work_location_id = @location&.id
-          record.wfh_request_id = @wfh&.id if @mode == "wfh"
-          record.add_flag!("WFH request pending HR approval: #{@wfh.reason}") if @wfh&.pending?
+            record.assign_attributes(check_out_at: nil, check_out_lat: nil, check_out_lng: nil, check_out_accuracy_m: nil,
+                                     check_out_place: nil, check_out_home_m: nil, check_out_work_location_id: nil, rechecked_in_at: Time.current)
+          else
+            return Result.new(record: record, error: already_in_message(record)) if record.check_in_at.present?
+
+            stamp(record, :check_in)
+            record.work_mode = @mode
+            record.work_location_id = @location&.id
+            record.wfh_request_id = @wfh&.id if @mode == "wfh"
+            record.add_flag!("WFH request pending HR approval: #{@wfh.reason}") if @wfh&.pending?
+          end
         when :check_out
           return Result.new(record: record, error: "Check in first.") if record.check_in_at.blank?
 
@@ -79,7 +91,7 @@ module HrLite
 
         apply_geo_flags(record)
         record.save!
-        apply_slot_rules(record) if @kind == :check_in && HrLite.config.attendance_slots
+        apply_slot_rules(record) if @kind == :check_in && !reopen && HrLite.config.attendance_slots
         track_work_mode(record) if HrLite.config.office_geofence
       end
       notify_if_flagged(record)
@@ -193,7 +205,7 @@ module HrLite
     # opens Offline. The timeline keeps every earlier row.
     def track_work_mode(record)
       if @kind == :check_in
-        WorkModeEvent.start!(user_id: @user.id, mode: record.work_mode || "office", source: "system",
+        WorkModeEvent.start!(user_id: @user.id, mode: @mode || record.work_mode || "office", source: "system",
                              attendance_record: record, wfh_request_id: record.wfh_request_id,
                              work_location_id: record.work_location_id, title: @field[:purpose], destination: @field[:place])
       else

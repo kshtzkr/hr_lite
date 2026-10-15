@@ -7,7 +7,6 @@ module HrLite
     START_MINUTES = [ 540, 570, 600, 630 ].freeze # 09:00 09:30 10:00 10:30
     DEFAULT_START_MINUTE = 600
     PERIODS = { "day" => "Today", "week" => "This week", "month" => "This month" }.freeze
-    DAY_MINUTES = 510 # 8h30m from slot to checkout
     GRACE_MINUTES = 5
     STEP_MINUTES = 30
     CARRY_AFTER_MINUTE = 660 # 11:00 — +1h on the next 2 working days

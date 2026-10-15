@@ -64,18 +64,26 @@ RSpec.describe HrLite::AttendanceRecord do
     end
 
     it "is off by default" do
-      expect(day(2).required_hours).to be_nil
+      expect(day(2).required_minutes).to be_nil
       expect(day(2)).not_to be_short
     end
 
-    it "needs 8h, 9h on probation, and nothing on a Saturday" do
-      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
-      expect([ day(7.9).short?, day(8).short? ]).to eq([ true, false ])
+    it "needs the Settings day for everyone, halves below the line, and nothing on a Saturday" do
+      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 } # on; day and probation_day are no longer read
+      expect([ day(8.4).short?, day(8.5).short? ]).to eq([ true, false ])
 
       probationer = day(8.5, user: create(:user))
       create(:employee_profile, user: probationer.user, probation_until: tuesday)
-      expect([ probationer.required_hours, probationer.short? ]).to eq([ 9, true ])
-      expect(day(1, date: tuesday + 4).required_hours).to be_nil
+      expect(probationer).not_to be_short
+      expect([ day(4.2).below_half_day?, day(4.25).below_half_day? ]).to eq([ true, false ])
+      expect(day(1, date: tuesday + 4).required_minutes).to be_nil
+    end
+
+    it "takes the person's shorter-day allowance off the day" do
+      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
+      commuter = day(7, user: create(:user))
+      create(:employee_profile, user: commuter.user, hours_allowance_minutes: 90, hours_allowance_reason: "Long commute")
+      expect([ commuter.short?, day(6.98, user: commuter.user).short? ]).to eq([ false, true ])
     end
 
     it "measures the metres between check-in and check-out" do

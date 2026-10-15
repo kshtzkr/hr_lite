@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-10-15
+
+- Shorter day: HR can give one employee 30, 60 or 90 minutes off the working day, for example for a long commute. It's set on their profile, with a required reason. The reason is encrypted, kept out of the audit trail, and seen only by HR. Their day becomes the Settings day minus the allowance (8h30 − 90 min = 7h). That drives their "+30 min", "Short by", checkout due time, half-day line check and slot picker. They see "Your day 7h 00m" on their attendance card. This is separate from the late buffer, which still only delays the late clock.
+- `EmployeeProfile.day_minutes_for(user_id)` is the one place that works out a person's day.
+- Migration: `hours_allowance_minutes` and `hours_allowance_reason` on `hr_lite_employee_profiles`.
+
+## [0.42.1] - 2026-10-15
+
+- "Check in again" works once a day, and only inside the hours HR sets in Settings (default 09:00–20:00). Once it has been used, or outside those hours, the card shows "Check in again is open once a day, 09:00–20:00." with no button, and the server refuses the punch with the same message. This replaces 0.41.0's "as many times as needed".
+- Migration: `hr_lite_attendance_records.rechecked_in_at`, stamped on the re-check-in.
+
+## [0.42.0] - 2026-10-15
+
+- HR sets the working day in Admin › Settings. The working day is check-in to check-out with the break included (default 510 min = 8h 30m). Settings also hold the half-day line (default 255 min = 4h 15m) and the hours when "Check in again" is open (default 09:00–20:00). Changes are audited.
+- A short day is measured in hours worked, not by the clock. The checkout due time is the first check-in + the working day + that day's penalties, so someone who comes at 9:00 and leaves at 17:30 has done 8h30 and gets no "+30 min". Before, the due time was the slot start + 8h30, so an early start still counted as short.
+- A day becomes a half day, with the notice, only when the hours worked are under the half-day line ("You worked 4.0h on 06 Jul, under 4h15 — marked half day"). Short of the working day but above the line: only the +30 min on the next working day. Before, anything under 8h was a half day.
+- One working day for everyone: probation staff no longer need 9h.
+- `config.work_hours` still turns the hours rules on (nil = off), and `week` is still read. `day` and `probation_day` are no longer read. `AttendanceSlot::DAY_MINUTES` is removed. The slot picker shows each check-out time from the Settings day.
+- Migration: four columns on `hr_lite_settings`.
+
+## [0.41.0] - 2026-10-15
+
+- Check out asks first: "Check out now? Your check-out is saved as soon as you press OK." The check-out is recorded only on OK; Cancel leaves you checked in. This covers both the day's Check out and "Check out yesterday's shift".
+- Check in again: after checking out, the card offers "Check in again", as many times as needed in a day. It reopens the day. The first check-in time stands and the check-out is cleared until the next one. The gap shows as Offline on the work-mode timeline, so working time excludes it, and the new session takes this punch's work mode. Re-checking in does not apply the late-arrival rules again. "Update check-out" is gone: check in again, then check out.
+
 ## [0.40.2] - 2026-10-15
 
 - ID card: a long name no longer runs off the card. When someone has no name and their email stands in for it ("sageashish2714@gmail.com"), it breaks before the "@" onto a second line. Any other unbroken word breaks wherever it has to.
