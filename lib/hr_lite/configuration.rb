@@ -65,9 +65,9 @@ module HrLite
       @self_regularization = value
     end
 
-    # nil = no hours rule. { day: 8, probation_day: 9, week: 40 } = a closed
-    # Mon–Fri punch short of its day's hours is closed as a half day, and a
-    # week under `week` hours (pro rata for holidays and leave) is flagged.
+    # nil = no hours rule. Set = the day rules run on the working day and the
+    # half-day line HR sets in Settings (`day` and `probation_day` here are no
+    # longer read), and a week under `week` hours (pro rata) is flagged.
     def work_hours=(value)
       ok = value.nil? || (value.is_a?(Hash) && %i[day probation_day week].all? { |k| value[k].is_a?(Numeric) && value[k].positive? })
       raise ArgumentError, "work_hours must be nil or { day:, probation_day:, week: } (positive numbers), got #{value.inspect}" unless ok

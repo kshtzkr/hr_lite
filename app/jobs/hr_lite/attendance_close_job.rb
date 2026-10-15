@@ -2,7 +2,7 @@ module HrLite
   # Closes the working day that ended last: a run at 23:55 closes today, and a
   # retry or late run after midnight (or a morning schedule) closes yesterday.
   # A punch left open is checked out at the day's end and paid as a half day,
-  # and so is a closed punch short of config.work_hours.
+  # and so is a closed punch under the half-day line HR sets in Settings.
   # Nobody punched in already reads as absent (DayStatus), so they are only
   # told. Leave days, and each person's weekends and office holidays, are left alone.
   class AttendanceCloseJob < ApplicationJob
@@ -22,10 +22,11 @@ module HrLite
           record.update!(check_out_at: date.end_of_day, status: "half_day",
                          regularization_note: AttendanceRecord::AUTO_CHECKOUT_NOTE)
           tell(user, date, "attendance.missed_check_out", "You didn't check out on #{day} — marked half day")
-        elsif !record.regularized? && record.status == "present" && record.short?
+        elsif !record.regularized? && record.status == "present" && record.below_half_day?
           record.update!(status: "half_day", regularization_note: AttendanceRecord::SHORT_DAY_NOTE)
+          line = Setting.instance.half_day_below_minutes
           tell(user, date, "attendance.short_day",
-               "You worked #{(record.worked_duration / 3600.0).round(1)} of #{record.required_hours}h on #{day} — marked half day")
+               "You worked #{(record.worked_duration / 3600.0).round(1)}h on #{day}, under #{line / 60}h#{format('%02d', line % 60)} — marked half day")
         end
         penalize_short_day(record) if record&.check_out_at
       end
