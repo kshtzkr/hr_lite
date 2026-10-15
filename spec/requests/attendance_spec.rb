@@ -195,6 +195,18 @@ RSpec.describe "Attendance", type: :request do
       post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
       expect(flash[:alert]).to include("Already checked in")
     end
+
+    it "asks before checking out, and offers Check in again once out" do
+      post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
+      get "/hr/attendance"
+      out = Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_out"]')
+      expect(out["data-turbo-confirm"]).to include("Check out now?")
+
+      post "/hr/attendance/check_out", params: { geo_status: "ok", lat: "1", lng: "1" }
+      get "/hr/attendance"
+      again = Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_in"] button[type=submit]')
+      expect(again.text.strip).to eq("Check in again")
+    end
   end
 
   describe "POST /hr/attendance/check_out" do

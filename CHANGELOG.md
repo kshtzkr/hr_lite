@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-10-15
+
+- Check out asks first: "Check out now? Your check-out is saved as soon as you press OK." The check-out is recorded only on OK; Cancel leaves you checked in. This covers both the day's Check out and "Check out yesterday's shift".
+- Check in again: after checking out, the card offers "Check in again", as many times as needed in a day. It reopens the day. The first check-in time stands and the check-out is cleared until the next one. The gap shows as Offline on the work-mode timeline, so working time excludes it, and the new session takes this punch's work mode. Re-checking in does not apply the late-arrival rules again. "Update check-out" is gone: check in again, then check out.
+
 ## [0.40.2] - 2026-10-15
 
 - ID card: a long name no longer runs off the card. When someone has no name and their email stands in for it ("sageashish2714@gmail.com"), it breaks before the "@" onto a second line. Any other unbroken word breaks wherever it has to.
