@@ -118,6 +118,40 @@ RSpec.describe "Admin attendances", type: :request do
       expect(flash[:notice]).to eq("Punch removed.")
     end
 
+    describe "reset today" do
+      let(:record) do
+        create(:attendance_record, user: employee, date: Date.current, work_mode: "wfh", check_in_at: 3.hours.ago,
+                                   check_out_at: 1.hour.ago, check_out_lat: 12.9, check_out_lng: 77.6)
+      end
+      let(:form) do
+        { check_in_at: record.check_in_at.strftime("%Y-%m-%dT%H:%M"), check_out_at: record.check_out_at.strftime("%Y-%m-%dT%H:%M"),
+          regularization_note: "Checked out by mistake" }
+      end
+
+      it "offers both resets on today's fix form" do
+        get "/hr/admin/attendances/#{record.user_id}", params: { date: Date.current.to_s }
+        expect(response.body).to include(%(value="check_out"), %(value="check_in"))
+      end
+
+      it "reset check-out puts them back in, with their work mode" do
+        patch "/hr/admin/attendances/#{employee.id}", params: { date: Date.current.to_s, reset: "check_out", attendance_record: form }
+
+        record.reload
+        expect([ record.check_in_at, record.check_out_at, record.check_out_lat ]).to match([ be_present, nil, nil ])
+        expect(HrLite::WorkModeEvent.open.find_by(user_id: employee.id)).to have_attributes(mode: "wfh", source: "hr")
+      end
+
+      it "reset check-in clears the day and lifts its penalties" do
+        penalty = HrLite::AttendancePenalty.create!(user_id: employee.id, date: Date.current, minutes: 30, reason: "late",
+                                                    attendance_record: record)
+
+        patch "/hr/admin/attendances/#{employee.id}", params: { date: Date.current.to_s, reset: "check_in", attendance_record: form }
+
+        expect(HrLite::AttendanceRecord.exists?(record.id)).to be(false)
+        expect(penalty.reload).to have_attributes(removed_by_id: admin.id, removal_reason: "Checked out by mistake")
+      end
+    end
+
     it "surfaces validation errors" do
       patch "/hr/admin/attendances/#{employee.id}", params: {
         date: date.to_s,
