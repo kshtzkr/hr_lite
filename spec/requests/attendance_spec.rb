@@ -214,6 +214,20 @@ RSpec.describe "Attendance", type: :request do
       expect(Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_in"]')).to be_nil
       expect(response.body).to include("Check in again is open once a day")
     end
+
+    it "keeps every punch when checking in again, and shows them all" do
+      zone = Time.find_zone(HrLite.config.time_zone)
+      [ %w[09:30 check_in], %w[11:45 check_out], %w[12:10 check_in], %w[18:05 check_out] ].each do |time, kind|
+        travel_to(zone.parse("#{Date.current} #{time}"))
+        post "/hr/attendance/#{kind}", params: { geo_status: "ok", lat: "1", lng: "1" }
+      end
+      all = "In 09:30 · Out 11:45 · In 12:10 · Out 18:05"
+      expect(HrLite::AttendanceRecord.last.punches.join(" · ")).to eq(all)
+      expect { HrLite::AttendancePunch.first.update!(at: Time.current) }.to raise_error(ActiveRecord::ReadOnlyRecord)
+
+      get "/hr/attendance", params: { day: Date.current.iso8601 }
+      expect(CGI.unescapeHTML(response.body)).to include(all)
+    end
   end
 
   describe "POST /hr/attendance/check_out" do

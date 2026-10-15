@@ -90,6 +90,9 @@ module HrLite
 
         apply_geo_flags(record)
         record.save!
+        AttendancePunch.create!(user_id: record.user_id, date: record.date, attendance_record_id: record.id,
+                                kind: @kind == :check_in ? "in" : "out", at: reopen ? record.rechecked_in_at : record.public_send("#{@kind}_at"),
+                                lat: @lat, lng: @lng, accuracy_m: @accuracy_m, place: punch_place, home_m: home_m, work_location_id: @location&.id)
         apply_slot_rules(record) if @kind == :check_in && !reopen && HrLite.config.attendance_slots
         track_work_mode(record) if HrLite.config.office_geofence
       end
@@ -231,9 +234,11 @@ module HrLite
       record.public_send("#{side}_lat=", @lat)
       record.public_send("#{side}_lng=", @lng)
       record.public_send("#{side}_accuracy_m=", @accuracy_m)
-      record.public_send("#{side}_place=", @place || ("office" if @lat && @lng && in_office?))
+      record.public_send("#{side}_place=", punch_place)
       record.public_send("#{side}_home_m=", home_m)
     end
+
+    def punch_place = @place || ("office" if @lat && @lng && in_office?)
 
     def already_in_message(record)
       "Already checked in at #{record.check_in_at.in_time_zone(HrLite.config.time_zone).strftime('%H:%M')}."
