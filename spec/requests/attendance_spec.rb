@@ -197,6 +197,7 @@ RSpec.describe "Attendance", type: :request do
     end
 
     it "asks before checking out, and offers Check in again once out" do
+      travel_to(Time.find_zone(HrLite.config.time_zone).parse("#{Date.current} 11:00")) # inside the 09:00–20:00 window
       post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
       get "/hr/attendance"
       out = Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_out"]')
@@ -206,6 +207,12 @@ RSpec.describe "Attendance", type: :request do
       get "/hr/attendance"
       again = Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_in"] button[type=submit]')
       expect(again.text.strip).to eq("Check in again")
+
+      post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
+      post "/hr/attendance/check_out", params: { geo_status: "ok", lat: "1", lng: "1" }
+      get "/hr/attendance"
+      expect(Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_in"]')).to be_nil
+      expect(response.body).to include("Check in again is open once a day")
     end
   end
 

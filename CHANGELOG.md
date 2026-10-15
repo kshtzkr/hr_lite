@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.1] - 2026-10-15
+
+- "Check in again" works once a day, and only inside the hours HR sets in Settings (default 09:00–20:00). Once it has been used, or outside those hours, the card shows "Check in again is open once a day, 09:00–20:00." with no button, and the server refuses the punch with the same message. This replaces 0.41.0's "as many times as needed".
+- Migration: `hr_lite_attendance_records.rechecked_in_at`, stamped on the re-check-in.
+
 ## [0.42.0] - 2026-10-15
 
 - HR sets the working day in Admin › Settings. The working day is check-in to check-out with the break included (default 510 min = 8h 30m). Settings also hold the half-day line (default 255 min = 4h 15m) and the hours when "Check in again" is open (default 09:00–20:00). Changes are audited.
