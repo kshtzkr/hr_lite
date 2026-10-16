@@ -1,6 +1,6 @@
 <% content_for(:page_title) { "Tax" } %>
 <% submittable = @declaration.persisted? && (@declaration.draft? || @declaration.rejected?) %>
-<% locked = @declaration.verified? %>
+<% locked = @declaration.verified? || @declaration.submitted? %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Tax — <%= @declaration.label %></h1>
 </div>
@@ -69,7 +69,7 @@
       <% if submittable %><button type="submit" name="submit_to_hr" value="1" class="hrl-btn hrl-btn--primary">Submit to HR</button><% end %>
     </div>
   <% else %>
-    <p class="hrl-small hrl-muted">HR has verified this year's declaration. To change anything, ask HR through Help › Ask HR.</p>
+    <p class="hrl-small hrl-muted"><%= @declaration.verified? ? "HR has verified this year's declaration." : "Sent to HR to check the proof." %> To change anything, ask HR through Help › Ask HR.</p>
   <% end %>
 <% end %>
 <% content_for(:scripts) { javascript_include_tag "hr_lite/tax_preview", defer: true } %>

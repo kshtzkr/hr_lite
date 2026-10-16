@@ -45,6 +45,13 @@ RSpec.describe "Pay and tax screens read right", type: :request do
     expect(body).to include(">Verified</span>").and include("Help › Ask HR")
   end
 
+  it "shows a submitted declaration read-only, saying it is with HR (FB-21)" do
+    declaration("submitted")
+    sign_in employee
+    get "/hr/tax_declaration"
+    expect(response.body).to include("Sent to HR to check the proof.").and include("<fieldset class=\"hrl-field\" disabled>")
+  end
+
   it "picks the reimbursement month from a month field (EX-7)" do
     category = HrLite::ExpenseCategory.create!(name: "Travel", receipt_required: false)
     claim = HrLite::Expense.create!(user_id: employee.id, category: category, amount: 900,
