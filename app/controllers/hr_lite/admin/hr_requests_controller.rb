@@ -20,6 +20,8 @@ module HrLite
         assignee = HrLite.user_klass.find(params[:assignee_id])
         request.assign!(actor: hr_current_user, assignee: assignee)
         redirect_to admin_hr_request_path(request), notice: "Assigned to #{HrLite.display_name(assignee)}."
+      rescue ActiveRecord::RecordInvalid
+        redirect_to admin_hr_request_path(request), alert: "This request is already settled."
       end
 
       def resolve
@@ -28,6 +30,8 @@ module HrLite
         redirect_to admin_hr_requests_path, notice: "Answered."
       rescue ArgumentError
         redirect_to admin_hr_request_path(request), alert: "Write an answer before resolving."
+      rescue ActiveRecord::RecordInvalid
+        redirect_to admin_hr_request_path(request), alert: "This request is already settled."
       end
 
       private

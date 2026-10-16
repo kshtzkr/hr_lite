@@ -39,6 +39,7 @@ module HrLite
     end
 
     def approve!(actor:, note: nil)
+      raise ActiveRecord::RecordInvalid.new(self), "not submitted" unless submitted?
       return record_routed!(actor, note, :approved) if awaiting?(actor)
 
       settle!("approved", actor, note)
@@ -46,6 +47,7 @@ module HrLite
 
     def reject!(actor:, note:)
       raise ArgumentError, "a rejection needs a reason" if note.blank?
+      raise ActiveRecord::RecordInvalid.new(self), "not submitted" unless submitted?
       return record_routed!(actor, note, :rejected) if awaiting?(actor)
 
       settle!("rejected", actor, note)
