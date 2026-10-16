@@ -215,6 +215,20 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).to include("Check in again is open once a day")
     end
 
+    it "offers no Check in again once the day is worked in full" do
+      zone = Time.find_zone(HrLite.config.time_zone)
+      HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 } # on; the day is HR's 8h 30m in Settings
+      travel_to(zone.parse("#{Date.current.beginning_of_week} 09:30")) { post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" } }
+      travel_to(zone.parse("#{Date.current.beginning_of_week} 18:00"))
+      post "/hr/attendance/check_out", params: { geo_status: "ok", lat: "1", lng: "1" }
+      get "/hr/attendance"
+      expect(Nokogiri::HTML(response.body).at_css('form[action="/hr/attendance/check_in"]')).to be_nil
+      expect(response.body).to include("Your day is done: 8h 30m worked.")
+
+      post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
+      expect(HrLite::AttendanceRecord.last.check_out_at).to be_present # the server refuses it too
+    end
+
     it "keeps every punch when checking in again, and shows them all" do
       zone = Time.find_zone(HrLite.config.time_zone)
       [ %w[09:30 check_in], %w[11:45 check_out], %w[12:10 check_in], %w[18:05 check_out] ].each do |time, kind|

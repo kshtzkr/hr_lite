@@ -108,6 +108,8 @@
       </button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
+  <% elsif record.required_minutes && !record.short? %>
+    <p class="hrl-small hrl-muted">Your day is done: <%= hrl_duration(record.worked_duration) %> worked.</p>
   <% else %>
     <p class="hrl-small hrl-muted">Check in again is open once a day, <%= HrLite::Setting.instance.recheck_in_from %>–<%= HrLite::Setting.instance.recheck_in_until %>.</p>
   <% end %>
