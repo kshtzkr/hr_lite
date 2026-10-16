@@ -56,6 +56,15 @@ RSpec.describe "One-off payroll items over HTTP", type: :request do
       expect(response.body).to include("must be more than zero")
     end
 
+    it "reads a typed thousands separator, and refuses a non-number without a 500" do
+      add("bonus", "₹ 1,50,000")
+      expect(HrLite::PayrollLineItem.last.amount).to eq(150_000)
+
+      expect { add("bonus", "12abc") }.not_to change(HrLite::PayrollLineItem, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.body).to include("is not a number")
+    end
+
     it "flags a run already in review as stale, and a stale run waits for a person" do
       run = create(:payroll_run, period_month: month, status: "review", warnings: [])
       add("bonus", "5000")
