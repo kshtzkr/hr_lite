@@ -33,6 +33,7 @@
 <% if @punches.any? %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Where they punched</h2>
+    <% all_punches = HrLite::AttendancePunch.where(user_id: @employee.id, date: @punches.map(&:date)).order(:at, :id).group_by(&:date) # one query, not one a day %>
     <% @punches.each do |record| %>
       <div class="hrl-feed__item hrl-small">
         <div class="hrl-feed__body">
@@ -47,7 +48,7 @@
               <% end %>
             </div>
           <% end %>
-          <% if record.check_in_place %><%= render "hr_lite/attendance/trail", record: record %><% end %>
+          <% if record.check_in_place %><%= render "hr_lite/attendance/trail", record: record, punches: all_punches.fetch(record.date, []) %><% end %>
           <% if (gap = record.punch_gap_m) %>
             <div class="<%= gap > HrLite::AttendanceRecord::PUNCH_GAP_ALERT_M ? "hrl-badge hrl-badge--warn" : "hrl-muted" %>"><%= (gap / 1000.0).round(1) %> km apart</div>
           <% end %>

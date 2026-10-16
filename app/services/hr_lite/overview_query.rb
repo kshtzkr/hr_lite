@@ -17,17 +17,6 @@ module HrLite
       reach(LeaveRequest.active_on(@date).includes(:leave_type, :user).order(:start_date))
     end
 
-    # Comp-off and regularization are approvals too. Counting leave alone made
-    # the board announce "All present and accounted for" while both queues
-    # still had work in them.
-    def pending_comp_offs
-      reach(CompOffRequest.pending.includes(:user).recent_first)
-    end
-
-    def pending_regularizations
-      reach(RegularizationRequest.pending.includes(:user).recent_first)
-    end
-
     def flagged_today
       reach(AttendanceRecord.for_date(@date).flagged.includes(:user))
     end
@@ -41,7 +30,6 @@ module HrLite
 
     def kpis
       {
-        pending: pending_requests.count + pending_comp_offs.count + pending_regularizations.count,
         on_leave: on_leave_today.count,
         flagged: flagged_today.count,
         missing_checkout: missing_checkout_yesterday.count
