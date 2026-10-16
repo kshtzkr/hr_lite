@@ -29,7 +29,7 @@
     <% manager = hr_can?("payroll.manage", scope: :all) %>
     <% if manager && (@run.draft? || @run.review? || @run.processing?) %>
       <%= button_to @run.draft? ? "Compute" : "Recompute", hr_lite.compute_admin_payroll_run_path(@run),
-                    method: :post, class: "hrl-btn",
+                    method: :post, class: @run.draft? ? "hrl-btn hrl-btn--primary" : "hrl-btn",
                     form: { data: { turbo_confirm: ("Recompute #{@run.label}? This clears #{hr_display_name(@run.first_approved_by)}'s approval." if @run.first_approved_by) } } %>
     <% end %>
     <% if @run.review? && hr_can?("payroll.approve", scope: :all) && @run.first_approved_by_id != hr_current_user.id %>
@@ -66,14 +66,14 @@
   <% if @slips.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Employee</th><th>Days</th><th>LOP</th><th>Gross</th><th>Deductions</th><th>Net</th><th></th></tr></thead>
+        <thead><tr><th>Employee</th><th>Paid days</th><th><abbr title="Loss of pay: unpaid days">LOP</abbr></th><th>Gross</th><th>Deductions</th><th>Net</th><th></th></tr></thead>
         <tbody>
           <% @slips.each do |slip| %>
             <tr>
               <td data-label="Employee"><%= hr_display_name(slip.user) %></td>
-              <td data-label="Days" class="hrl-num"><%= slip.payable_days %></td>
-              <td data-label="LOP" class="hrl-num">
-                <%= slip.effective_lop_days %>
+              <td data-label="Paid days" class="hrl-num"><%= hrl_days(slip.payable_days) %></td>
+              <td data-label="Unpaid (LOP)" class="hrl-num">
+                <%= hrl_days(slip.effective_lop_days) %>
                 <% if slip.lop_override %><span class="hrl-badge hrl-badge--warn">override</span><% end %>
               </td>
               <td data-label="Gross" class="hrl-num"><%= hrl_money(slip.gross_earnings) %></td>

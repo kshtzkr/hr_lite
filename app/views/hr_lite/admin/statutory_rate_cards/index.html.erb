@@ -16,10 +16,12 @@
     <table class="hrl-table hrl-table--stack">
       <thead><tr><th>Year</th><th>PF ceiling</th><th>ESI ceiling</th><th>Verified</th><th></th></tr></thead>
       <tbody>
+        <% live = HrLite::StatutoryRateCardRecord.effective_for(Date.current.beginning_of_month) %>
         <% @cards.each do |card| %>
           <tr>
             <td data-label="Year">
               <strong>FY <%= card.financial_year %></strong>
+              <% if card == live %><span class="hrl-badge hrl-badge--ok">In force</span><% end %>
               <div class="hrl-small hrl-muted">from <%= card.effective_from.strftime("%d %b %Y") %></div>
             </td>
             <td data-label="PF ceiling" class="hrl-num"><%= HrLite::Money.format(card.to_card[:pf][:wage_ceiling]) %></td>

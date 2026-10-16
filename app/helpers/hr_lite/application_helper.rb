@@ -75,7 +75,7 @@ module HrLite
         { label: "Org chart", path: :org_path, match: [ "/org" ] },
         { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] },
         { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
-        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: MANAGE },
+        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: -> { hr_can?("checklist.manage", scope: :all) } },
         { label: "Awards", path: :admin_awards_path, match: [ "/admin/awards" ], if: LEAD },
         { label: "PIPs", path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ], if: SUPER }
       ] },
@@ -89,7 +89,7 @@ module HrLite
       { label: "Help", tabs: [
         { label: "Policies", path: :policies_path, match: [ "/policies" ], if: -> { hr_can?("policy.view", scope: :all) } },
         { label: "Ask HR", path: :hr_requests_path, match: [ "/hr_requests" ], if: -> { hr_can?("hr_request.raise") } },
-        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: MANAGE },
+        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: -> { hr_can?("hr_request.manage", scope: :all) } },
         { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
       ] },
       { label: "Admin", divider: true, tabs: [
@@ -98,7 +98,7 @@ module HrLite
         { label: "Roles", path: :admin_roles_path, match: [ "/admin/roles" ], if: -> { hr_can?("role.manage", scope: :all) } },
         { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
         { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
-        { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: MANAGE },
+        { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: -> { hr_can?("asset.manage", scope: :all) } },
         { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD }
       ] }
     ].freeze
@@ -306,8 +306,8 @@ module HrLite
     # Status pill for a request lifecycle string — one colour map for every
     # list and show screen.
     def hrl_request_status_badge(status)
-      css = { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad",
-              "cancelled" => "hrl-badge--muted" }[status]
+      css = { "approved" => "hrl-badge--ok", "reimbursed" => "hrl-badge--ok", "verified" => "hrl-badge--ok",
+              "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted", "draft" => "hrl-badge--muted" }[status]
       content_tag(:span, status.humanize, class: "hrl-badge #{css}")
     end
 
