@@ -5,7 +5,7 @@
 (function () {
   var dialog = document.querySelector("[data-hrl-search]");
   if (!dialog || !dialog.showModal) return;
-  var form = dialog.querySelector("form");
+  var form = dialog.querySelector("form[role=search]");
   var input = form.querySelector("input");
   var out = dialog.querySelector("[data-hrl-search-results]");
   var timer;
