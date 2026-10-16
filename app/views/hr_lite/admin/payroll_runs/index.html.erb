@@ -2,7 +2,7 @@
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Payroll runs</h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_payroll_run_path %>">New run</a>
+    <% if hr_can?("payroll.manage", scope: :all) %><a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_payroll_run_path %>">New run</a><% end %>
   </div>
 </div>
 

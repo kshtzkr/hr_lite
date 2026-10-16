@@ -35,6 +35,18 @@ module HrLite
         redirect_to admin_expenses_path, alert: "Only an approved claim can be reimbursed."
       end
 
+      # The receipt the employee had to upload, for the person deciding; same rules as a document download.
+      def receipt
+        expense = decidable.find(params[:id])
+        raise ActiveRecord::RecordNotFound unless expense.receipt.attached?
+
+        AuditLog.record!(action: "expense.receipt_viewed", subject: expense, actor: hr_current_user,
+                         changes: { "owner" => HrLite.display_name(expense.user) })
+        redirect_to Rails.application.routes.url_helpers.rails_blob_path(
+          expense.receipt, disposition: "inline", only_path: true, expires_in: 5.minutes
+        ), allow_other_host: false
+      end
+
       private
 
       def require_deciding! = hr_require_permission!("expense.approve", scope: :team)

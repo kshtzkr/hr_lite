@@ -26,6 +26,7 @@
                 <div class="hrl-small hrl-muted">
                   <%= expense.description %> · <%= expense.spent_on.strftime("%d %b %Y") %>
                 </div>
+                <% if expense.receipt.attached? %><a class="hrl-card__link" href="<%= hr_lite.receipt_admin_expense_path(expense) %>">Open receipt</a><% end %>
               </td>
               <td data-label="Amount" class="hrl-num"><%= hrl_money(expense.amount) %></td>
               <td data-label="">
