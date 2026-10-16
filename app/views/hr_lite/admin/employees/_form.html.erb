@@ -90,11 +90,7 @@
       </div>
       <div class="hrl-field"><%= f.label :buffer_note, "Buffer note (HR only; required for Other)" %><%= f.text_area :buffer_note, rows: 2 %></div>
     <% end %>
-    <div class="hrl-field">
-      <%= f.label :hours_allowance_minutes, "Shorter day (e.g. a long commute; lowers the hours they must work)" %>
-      <%= f.select :hours_allowance_minutes, HrLite::EmployeeProfile::HOURS_ALLOWANCE_MINUTES.map { |m| [ "#{m} min less", m ] }, include_blank: "None" %>
-    </div>
-    <div class="hrl-field"><%= f.label :hours_allowance_reason, "Shorter day reason (HR only; required)" %><%= f.text_area :hours_allowance_reason, rows: 2 %></div>
+    <%= render "hr_lite/admin/employees/shorter_day_fields", f: f, profile: f.object %>
     <% if HrLite.config.office_geofence %>
       <div class="hrl-field hrl-field--check"><%= f.check_box :permanent_wfh %><%= f.label :permanent_wfh, "Permanent work from home (every working day counts as approved WFH; check-in still within 500 m of their approved home location)" %></div>
       <div class="hrl-field hrl-field--check"><%= f.check_box :field_staff %><%= f.label :field_staff, "Field staff (e.g. sales: may check in from anywhere as Travelling or Client meeting, with purpose and place)" %></div>

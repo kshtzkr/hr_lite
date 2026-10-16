@@ -288,5 +288,39 @@ RSpec.describe "Admin attendances", type: :request do
       get "/hr/admin/attendances/#{admin.id}/summary"
       expect(response).not_to have_http_status(:ok)
     end
+
+    it "lets HR set a shorter day on a repeat here, and marks the days it covers" do
+      profile = create(:employee_profile, user: employee)
+      hr = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::HR)
+      sign_in hr
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      expect(response.body).to include("Set a shorter day")
+
+      patch "/hr/admin/attendances/#{employee.id}/shorter_day",
+            params: { employee_profile: { hours_allowance_minutes: 90, hours_allowance_reason: "Long commute" },
+                      repeat: { freq: "WEEKLY", interval: "1", days: %w[MO WE FR], from: monday.iso8601, ends: "after", count: "6" } }
+      expect(response).to redirect_to("/hr/admin/attendances/#{employee.id}/summary#shorter-day")
+      expect(profile.reload.hours_allowance_repeat).to eq("FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,WE,FR;DTSTART=2026-10-12;COUNT=6")
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      body = CGI.unescapeHTML(response.body)
+      expect(body).to include("90 min less</strong> · Every week on Mon, Wed, Fri from 12 Oct 2026, 6 times", "Reason: Long commute")
+      expect(body.scan("Day 7h 00m").size).to eq(3)
+
+      patch "/hr/admin/attendances/#{hr.id}/shorter_day", params: { employee_profile: { hours_allowance_minutes: 30 } }
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "shows a manager the shorter day without the reason or the form, and refuses their change" do
+      profile = create(:employee_profile, user: employee, hours_allowance_minutes: 60, hours_allowance_reason: "Long commute")
+      manager = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::MANAGER)
+      profile.update!(manager_id: manager.id)
+      sign_in manager
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      expect(response.body).to include("60 min less</strong> · Every day")
+      expect(response.body).not_to include("Long commute", "Set a shorter day", "Change shorter day")
+
+      patch "/hr/admin/attendances/#{employee.id}/shorter_day", params: { employee_profile: { hours_allowance_minutes: "" } }
+      expect(profile.reload.hours_allowance_minutes).to eq(60)
+    end
   end
 end
