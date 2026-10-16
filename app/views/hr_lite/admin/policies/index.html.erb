@@ -17,7 +17,7 @@
               <td data-label="Title"><a class="hrl-card__link" href="<%= hr_lite.policy_path(policy) %>"><%= policy.title %></a> <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span></td>
               <td data-label="Kind"><%= policy.announcement? ? "Announcement" : "Policy" %></td>
               <td data-label="In force"><%= policy.effective_from.strftime("%d %b %Y") %></td>
-              <td data-label="Still to acknowledge"><% if policy.announcement? %>—<% else %><% waiting = policy.outstanding_for.to_a %><details><summary><%= waiting.size %></summary><%= waiting.map { |u| hr_display_name(u) }.to_sentence %></details><% end %></td>
+              <td data-label="Still to acknowledge"><% if policy.announcement? %>—<% else %><% waiting = policy.outstanding_for.to_a %><details><summary class="hrl-btn"><%= pluralize(waiting.size, "person") %></summary><%= waiting.map { |u| hr_display_name(u) }.to_sentence %></details><% end %></td>
             </tr>
           <% end %>
         </tbody>

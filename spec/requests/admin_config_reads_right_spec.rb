@@ -42,7 +42,7 @@ RSpec.describe "Admin configuration screens read right", type: :request do
     HrLite::Policy.create!(title: "Leave policy", version: 1, body: "Read me", effective_from: Date.current,
                            acknowledgement_required: true, published: true)
     get "/hr/admin/policies"
-    expect(response.body).to include("<summary>").and include("Meera")
+    expect(response.body).to match(%r{<summary class="hrl-btn">\d+ (person|people)</summary>}).and include("Meera")
   end
 
   it "says when nothing is on file and labels every note and picker (VS-18, AD-7)" do
