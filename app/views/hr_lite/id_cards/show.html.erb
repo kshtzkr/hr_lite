@@ -1,5 +1,6 @@
 <% content_for(:page_title) { "ID card" } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @user } if params[:user_id] %>
+<% content_for(:back, "Employees") if params[:user_id] %>
 <% company = HrLite.config.company.call %>
 <% brand = company[:brand].presence || company[:name].presence || "HR" %>
 <% own = @user == hr_current_user %>

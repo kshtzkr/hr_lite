@@ -1,5 +1,6 @@
 <% content_for(:page_title) { @profile.employee_code } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @profile.user } %>
+<% content_for(:back, "Employees") %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">

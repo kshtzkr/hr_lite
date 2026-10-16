@@ -1,5 +1,6 @@
 <% content_for(:page_title) { "Timeline — #{hr_display_name(@person)}" } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @person } if params[:user_id] %>
+<% content_for(:back, "Org chart") if params[:user_id] %>
 <% year_path = ->(y) { @person.id == hr_current_user.id ? hr_lite.timeline_path(year: y) : hr_lite.person_timeline_path(@person.id, year: y) } %>
 <% name = hr_display_name(@person) %>
 <div class="hrl-page__head">

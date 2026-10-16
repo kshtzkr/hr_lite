@@ -583,7 +583,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 /* Print: one CR80 face per page, nothing else. */
 @media print {
   @page { size: 54mm 85.6mm; margin: 0; }
-  .hrl-side, .hrl-appbar, .hrl-tabbar, .hrl-flash, .hrl-page__head, .hrl-idcard__label, .hrl-idcard-actions { display: none !important; }
+  .hrl-side, .hrl-appbar, .hrl-tabbar, .hrl-flash, .hrl-page__head, .hrl-backlink, .hrl-idcard__label, .hrl-idcard-actions { display: none !important; }
   .hrl-body { background: #fff; }
   .hrl-main { padding: 0; margin: 0; }
   .hrl-idcard-faces { display: block; }
