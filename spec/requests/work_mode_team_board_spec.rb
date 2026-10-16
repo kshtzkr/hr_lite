@@ -25,6 +25,8 @@ RSpec.describe "Team board work modes", type: :request do
     get "/hr/team"
     expect(response.body).to include("hrl-mode--wfh").and include("hrl-mode--busy").and include("hrl-mode--travelling")
     expect(response.body).to include("Home · Busy").and include("until 12:00")
+    # Ravi is offline and Not in yet: the phone card skips the Now row that only repeats it.
+    expect(Nokogiri::HTML(response.body).css('td[data-label="Now"]').map { |td| td["class"] }.count("hrl-cell--void")).to eq(1)
     expect(response.body).not_to include("Sector 18")
     expect(response.body).not_to include("28.5355")
     expect(response.body).not_to include("Acme Gurgaon")

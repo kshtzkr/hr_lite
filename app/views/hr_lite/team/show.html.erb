@@ -2,12 +2,12 @@
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Team — <%= @date == Date.current ? "today" : @date.strftime("%A, %d %B") %></h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn" aria-label="Previous day" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>">&larr;</a>
+    <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>"><span aria-hidden="true">&lsaquo;</span> <%= @date == Date.current ? "Yesterday" : "Previous day" %></a>
     <% unless @date == Date.current %>
       <a class="hrl-btn" href="<%= hr_lite.team_path %>">Today</a>
     <% end %>
     <% if @date < Date.current %>
-      <a class="hrl-btn" aria-label="Next day" href="<%= hr_lite.team_path(date: (@date + 1).strftime("%Y-%m-%d")) %>">&rarr;</a>
+      <a class="hrl-btn" href="<%= hr_lite.team_path(date: (@date + 1).strftime("%Y-%m-%d")) %>">Next day <span aria-hidden="true">&rsaquo;</span></a>
     <% end %>
   </div>
 </div>
@@ -48,7 +48,8 @@
                   <span class="hrl-badge hrl-badge--muted">+<%= row.profile.buffer_minutes / 60 %>h buffer · <%= HrLite::EmployeeProfile::BUFFER_REASONS[row.profile.buffer_reason] %></span><% end %></span>
               </td>
               <% if (st = @statuses&.dig(row.user.id)) %>
-                <td data-label="Now"><span class="hrl-modes"><%= hrl_status_icons(st) %></span>
+                <%# A derived status (offline, leave, holiday) repeats the Status cell; phone cards skip it. %>
+                <td data-label="Now" class="<%= 'hrl-cell--void' unless st.primary.event || st.custom %>"><span class="hrl-modes"><%= hrl_status_icons(st) %></span>
                   <span class="hrl-small"><%= st.primary.place || st.primary.label %><% if st.overlay %> · <%= st.overlay.label %><% end %>
                     <% if (till = st.overlay&.until || (st.primary.until if st.primary.until.respond_to?(:hour))) %> · until <%= till.strftime("%H:%M") %><% end %></span>
                   <% if st.updated_at %><span class="hrl-small hrl-muted"> · since <%= st.updated_at.strftime("%H:%M") %></span><% end %>
