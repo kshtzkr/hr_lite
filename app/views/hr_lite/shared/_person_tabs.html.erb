@@ -2,6 +2,7 @@
 <% ops = hr_operations?
    profile = HrLite::EmployeeProfile.find_by(user_id: user.id)
    tabs = [
+     [ "This week", (hr_lite.summary_admin_attendance_path(user.id) if ops && hr_reaches?("attendance.view", user)) ],
      [ "Overview", (hr_lite.admin_employee_path(profile) if profile && hr_leadership?) ],
      [ "Attendance", (hr_lite.admin_attendance_path(user.id) if ops && hr_reaches?("attendance.view", user)) ],
      [ "Work time", (hr_lite.admin_work_time_path(user_id: user.id) if HrLite.config.office_geofence && ops && hr_can?("work_analytics.view", scope: :team) && hr_reaches?("work_analytics.view", user)) ],

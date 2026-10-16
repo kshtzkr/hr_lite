@@ -1,0 +1,73 @@
+<% content_for(:page_title) { "#{hr_display_name(@employee)} — #{@period.label}" } %>
+<% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @employee } %>
+<% at = ->(args) { hr_lite.summary_admin_attendance_path(@employee.id, args) }
+   fix = @employee.id != hr_current_user.id && hr_reaches?("attendance.manage", @employee)
+   tones = { present: "hrl-badge--ok", half_day: "hrl-badge--warn", absent: "hrl-badge--bad" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= hr_display_name(@employee) %></h1>
+</div>
+
+<section class="hrl-card">
+  <div class="hrl-row hrl-row--tabs hrl-row--mb">
+    <% %w[day week month].each do |kind| %>
+      <a class="hrl-btn <%= 'hrl-btn--primary' if @period.kind == kind %>" <%= 'aria-current="page"'.html_safe if @period.kind == kind %> href="<%= at.(period: kind, date: @period.from) %>"><%= kind.capitalize %></a>
+    <% end %>
+  </div>
+  <div class="hrl-row">
+    <a class="hrl-btn" href="<%= at.(period: @period.kind, date: @period.shift(-1)) %>" aria-label="Previous <%= @period.kind %>">&lsaquo;</a>
+    <strong><%= @period.label %></strong>
+    <a class="hrl-btn" href="<%= at.(period: @period.kind, date: @period.shift(1)) %>" aria-label="Next <%= @period.kind %>">&rsaquo;</a>
+  </div>
+  <%= form_with url: hr_lite.summary_admin_attendance_path(@employee.id), method: :get, local: true, class: "hrl-row hrl-mt" do %>
+    <input type="hidden" name="period" value="<%= @period.kind %>">
+    <div class="hrl-field"><label for="pw-date">Go to date</label><%= date_field_tag :date, @period.from, id: "pw-date" %></div>
+    <div class="hrl-form-actions"><button type="submit" class="hrl-btn">Show</button></div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Days</h2>
+  <% (@period.from..@period.to).each do |date| %>
+    <% day = @days.for(date); rec = day.record; punches = @punches[date].to_a %>
+    <div class="hrl-feed__item hrl-row">
+      <div class="hrl-feed__body hrl-small">
+        <strong><%= date.strftime("%a %-d %b") %></strong>
+        <span class="hrl-badge <%= tones[day.kind] %>"><%= HrLite::ApplicationHelper::DAY_STATES[day.kind][1] %></span>
+        <% if rec&.check_in_at %>
+          <div>In <%= rec.check_in_at.strftime("%H:%M") %><% if rec.check_out_at %> · Out <%= rec.check_out_at.strftime("%H:%M") %> · <%= hrl_duration(rec.worked_duration) %> worked<% end %></div>
+        <% end %>
+        <% if punches.size > 2 %><div>All punches: <%= punches.join(" · ") %></div><% end %>
+        <% if (minutes = @penalties[date]) %><div><span class="hrl-badge hrl-badge--warn">+<%= minutes %> min</span> penalty</div><% end %>
+        <% if rec&.flagged? %><div>Flagged: <%= rec.flag_note %></div><% end %>
+      </div>
+      <% if fix && date <= Date.current %>
+        <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, date: date, month: date.strftime("%Y-%m"), anchor: "regularize") %>">Fix<span class="hrl-sr-only"> <%= date.strftime("%-d %b") %></span></a>
+      <% end %>
+    </div>
+  <% end %>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Requests</h2>
+  <% if @requests.empty? %><p class="hrl-card--empty">No requests in this <%= @period.kind %>.</p><% end %>
+  <% @requests.each do |what, dates, status, url| %>
+    <div class="hrl-feed__item hrl-row">
+      <div class="hrl-feed__body hrl-small"><strong><%= what %></strong> · <%= dates %> <%= hrl_request_status_badge(status) %></div>
+      <a class="hrl-btn" href="<%= url %>">Open<span class="hrl-sr-only"> <%= what %>, <%= dates %></span></a>
+    </div>
+  <% end %>
+</section>
+
+<% if hr_reaches?("leave.view", @employee) %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Leave balance</h2>
+    <% @balances.each do |balance| %>
+      <div class="hrl-feed__item hrl-small"><strong><%= balance.leave_type.name %></strong> · <%= hrl_days(balance.available) %> left
+        <% if (held = balance.penalty_days).positive? %> · <%= hrl_days(held) %> held for penalties · can apply <%= hrl_days(balance.applicable) %><% end %></div>
+    <% end %>
+  </section>
+<% end %>
+
+<% if HrLite.config.attendance_slots %>
+  <%= render "hr_lite/attendance/penalties", user: @employee, month: @period.from, removable: fix %>
+<% end %>

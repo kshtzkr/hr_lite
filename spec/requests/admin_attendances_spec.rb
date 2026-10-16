@@ -244,4 +244,49 @@ RSpec.describe "Admin attendances", type: :request do
         .and include("https://www.google.com/maps?q=28.6315,77.2373").and include("2.0 km apart")
     end
   end
+
+  describe "GET /hr/admin/attendances/:user_id/summary (one screen per person)" do
+    around { |example| travel_to(Time.zone.local(2026, 10, 14, 12)) { example.run } }
+    let(:monday) { Date.new(2026, 10, 12) }
+    let!(:wfh) do
+      HrLite::WfhRequest.new(user_id: employee.id, start_date: monday + 1, end_date: monday + 1, reason: "Plumber", status: "pending")
+                        .tap { |r| r.save!(validate: false) }
+    end
+
+    before do
+      HrLite.config.attendance_slots = true
+      record = create(:attendance_record, user: employee, date: monday, check_in_at: Time.zone.local(2026, 10, 12, 9, 30),
+                                          check_out_at: Time.zone.local(2026, 10, 12, 18))
+      HrLite::AttendancePenalty.create!(user_id: employee.id, date: monday, minutes: 30, reason: "late", attendance_record: record)
+      HrLite::Expense.new(user_id: employee.id, category: HrLite::ExpenseCategory.create!(name: "Travel"), amount: 500,
+                          spent_on: monday, description: "Cab", status: "submitted").save!(validate: false)
+      build(:leave_request, user: employee, leave_type: create(:leave_type, name: "Casual"), start_date: monday + 2, end_date: monday + 2, days_count: 1).save!(validate: false)
+      build(:comp_off_request, user: employee, date_worked: monday + 6).save!(validate: false)
+      build(:regularization_request, user: employee, date: monday + 1).save!(validate: false)
+      HrLite::Document.new(user_id: employee.id, title: "Passport", category: "identity", visibility: "hr").save!(validate: false)
+    end
+
+    it "shows the week by default — days, penalties and requests, each linking to where it is decided" do
+      sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::LEADERSHIP) # holds expense.approve
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      body = CGI.unescapeHTML(response.body)
+      expect(body).to include("12 Oct 2026 – 18 Oct 2026", "Mon 12 Oct", "In 09:30 · Out 18:00 · 8h 30m worked", "+30 min",
+                              "/hr/admin/wfh_requests/#{wfh.id}", "Claim · Travel", ">This week<",
+                              "Casual", "Comp-off", "Attendance fix", "Document · Passport")
+      get "/hr/admin/attendances/#{employee.id}/summary", params: { period: "day", date: monday.iso8601 }
+      expect(response.body).to include("Monday 12 October 2026")
+      expect(response.body).not_to include("Tue 13 Oct")
+    end
+
+    it "lists only the request types this viewer may open, and nobody outside their reach" do
+      sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::HR)
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      expect(response.body).to include("/hr/admin/wfh_requests/#{wfh.id}")
+      expect(CGI.unescapeHTML(response.body)).not_to include("Claim · Travel") # HR holds no expense.approve
+
+      sign_in employee
+      get "/hr/admin/attendances/#{admin.id}/summary"
+      expect(response).not_to have_http_status(:ok)
+    end
+  end
 end

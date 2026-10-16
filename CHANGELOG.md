@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.49.0] - 2026-10-16
+
+- "This week": one screen per employee for HR, admin and managers. It's the first tab in the person's tabs, at `/admin/attendances/:user_id/summary`. Day, Week (the default) or Month, with ‹ › and a "Go to date" calendar. It shows:
+  - every day's status, check-in and check-out (all punches when there was more than one pair), hours worked, penalty minutes and flags
+  - every request in the period: leave, comp-off, WFH, attendance fixes, expense claims and uploaded documents, each with its status and an "Open" link to where it's decided
+  - leave balances, with any days held for penalties
+  - the penalty-hours section, with Remove hours for those who may manage the person
+- Each past or current day has a "Fix" button that goes straight to that day's Fix card, including reset and penalties.
+- Access is unchanged. The screen needs attendance.view for the person; a manager sees only their team. Each request type shows only if the viewer may open that type's own page for this person: leave and comp-off need leave.view, WFH and fixes need attendance.view, claims need expense.approve, documents need document.view. So HR, which can't approve claims, sees no claims here. Fix and Remove hours need attendance.manage, and never for your own record.
+
 ## [0.48.2] - 2026-10-16
 
 - Breaks count as working time. The standard day is 8h 30m including its break, but My work time (and HR's work time report) showed "Working time 8h 00m" for a full 8h 30m shift, because lunch and short breaks were left out. The KPI now reads "Working time (breaks included)" (8h 30m for that shift), and breaks show as "Of which breaks". The daily table's columns are "Working (breaks incl.)" and "Of which breaks". Only the display changed: attendance, penalties, half day and pay already used check-in to check-out.
