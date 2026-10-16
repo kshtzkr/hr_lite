@@ -150,6 +150,18 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(response.body).to include("FY #{HrLite::FinancialYear.label(Date.current)}")
     end
 
+    it "opens this year or last, never any other year" do
+      current = HrLite::FinancialYear.start_for(Date.current)
+      get "/hr/tax_declaration?financial_year=#{current.prev_year}"
+      expect(response.body).to include("FY #{HrLite::FinancialYear.label(current.prev_year)}")
+
+      [ current.years_ago(2), current.next_year ].each do |year|
+        get "/hr/tax_declaration?financial_year=#{year}"
+        expect(response.body).to include("FY #{HrLite::FinancialYear.label(current)}")
+        expect(response.body).not_to include("FY #{HrLite::FinancialYear.label(year)}")
+      end
+    end
+
     it "says so when there is nothing to submit" do
       post "/hr/tax_declaration/submit"
       expect(flash[:alert]).to include("Nothing to submit")

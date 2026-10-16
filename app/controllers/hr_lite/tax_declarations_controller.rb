@@ -60,10 +60,13 @@ module HrLite
 
     private
 
+    # This year or last (late proof); any other year falls back to this one.
     def financial_year
-      FinancialYear.start_for(params[:financial_year].present? ? Date.parse(params[:financial_year]) : Date.current)
+      current = FinancialYear.start_for(Date.current)
+      asked = FinancialYear.start_for(Date.parse(params[:financial_year].to_s))
+      asked.between?(current.prev_year, current) ? asked : current
     rescue Date::Error
-      FinancialYear.start_for(Date.current)
+      current
     end
 
     def current_declaration
