@@ -62,7 +62,8 @@ module HrLite
 
       # Regularization: fix punches with a mandatory note, fully audited.
       # Clearing both punch times deletes the record (that is how an
-      # erroneous punch is removed).
+      # erroneous punch is removed). Reset check-in does the same; reset
+      # check-out leaves them checked in, so they can check in or out again.
       def update
         @employee = find_manageable_employee
         date = parse_date_param(params[:date])
@@ -75,7 +76,7 @@ module HrLite
         end
 
         attrs = params.require(:attendance_record).permit(:check_in_at, :check_out_at, :status, :half_day_part)
-        if attrs[:check_in_at].blank? && attrs[:check_out_at].blank?
+        if params[:reset] == "check_in" || (attrs[:check_in_at].blank? && attrs[:check_out_at].blank?)
           # Nothing to remove used to still write a `destroy` audit row with
           # subject_id 0 and email the employee that a punch was removed.
           unless record.persisted?
@@ -84,6 +85,9 @@ module HrLite
           end
 
           record.destroy
+          # Its late penalties go too, so checking in again is not charged twice.
+          AttendancePenalty.active.where(attendance_record_id: record.id)
+                           .find_each { |p| p.update!(removed_at: Time.current, removed_by_id: hr_current_user.id, removal_reason: note) }
           log_regularization(record, note, removed: true)
           return redirect_to admin_attendance_path(@employee.id, month: date.strftime("%Y-%m")),
                              notice: "Punch removed."
@@ -98,6 +102,7 @@ module HrLite
         end
 
         record.assign_attributes(attrs)
+        record.clear_check_out if params[:reset] == "check_out"
         record.half_day_part = attrs[:half_day_part].presence if attrs.key?(:half_day_part)
         record.status = record.half_day_part ? "half_day" : "present" if attrs.key?(:half_day_part)
         record.status = "present" if record.status.blank?
@@ -107,6 +112,10 @@ module HrLite
 
         if record.save
           log_regularization(record, note, removed: false)
+          if params[:reset] == "check_out" && date == Date.current
+            WorkModeEvent.start!(user_id: @employee.id, mode: record.work_mode || "office", source: "hr",
+                                 actor: hr_current_user, attendance_record: record)
+          end
           redirect_to admin_attendance_path(@employee.id, month: date.strftime("%Y-%m")),
                       notice: "Attendance updated."
         else

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-10-15
+
+- HR can reset today's punch when someone taps by mistake again (after their one "Check in again" is used). On the employee's attendance page, tap today, give the reason, then pick a reset. Each one asks OK/Cancel first. **Reset check-out** puts them back in: the first check-in stands, their work mode reopens, and they check out later. **Reset check-in** clears the whole day so they check in fresh. Both are audited and the employee is notified.
+- Removing a day's punch now also lifts that check-in's late penalties, recorded as removed by HR with the reason. Before, checking in again was charged twice.
+- `data-turbo-confirm` can sit on a button as well as a form, so one form can hold several confirmed actions.
+
 ## [0.43.0] - 2026-10-15
 
 - Shorter day: HR can give one employee 30, 60 or 90 minutes off the working day, for example for a long commute. It's set on their profile, with a required reason. The reason is encrypted, kept out of the audit trail, and seen only by HR. Their day becomes the Settings day minus the allowance (8h30 − 90 min = 7h). That drives their "+30 min", "Short by", checkout due time, half-day line check and slot picker. They see "Your day 7h 00m" on their attendance card. This is separate from the late buffer, which still only delays the late clock.

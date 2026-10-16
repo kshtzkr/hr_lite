@@ -86,6 +86,15 @@
         <%= f.submit "Save fix", class: "hrl-btn hrl-btn--primary" %>
         <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@employee.id, month: @month.strftime("%Y-%m")) %>">Cancel</a>
       </div>
+      <%# A mistaken punch today: put them back in, or clear the day so they check in again. %>
+      <% if @edit_date == Date.current && @edit_record.check_in_at %>
+        <div class="hrl-form-actions">
+          <% if @edit_record.check_out_at %>
+            <button type="submit" name="reset" value="check_out" class="hrl-btn" data-turbo-confirm="Reset today's check-out? They are checked in again and can check out later.">Reset check&#8209;out</button>
+          <% end %>
+          <button type="submit" name="reset" value="check_in" class="hrl-btn hrl-btn--danger" data-turbo-confirm="Reset today's check-in? The whole day is cleared and they check in again.">Reset check&#8209;in</button>
+        </div>
+      <% end %>
     <% end %>
   </section>
 <% end %>

@@ -83,6 +83,12 @@ module HrLite
       check_out_at.present? && rechecked_in_at.nil? && now >= s.recheck_in_from && now < s.recheck_in_until
     end
 
+    # Drops the check-out so the person is in again (check in again, HR reset).
+    def clear_check_out(**attrs)
+      assign_attributes(check_out_at: nil, check_out_lat: nil, check_out_lng: nil, check_out_accuracy_m: nil,
+                        check_out_place: nil, check_out_home_m: nil, check_out_work_location_id: nil, **attrs)
+    end
+
     # Metres between where the day was checked in and checked out.
     def punch_gap_m
       return unless check_in_lat && check_in_lng && check_out_lat && check_out_lng

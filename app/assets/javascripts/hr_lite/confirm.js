@@ -18,7 +18,8 @@
       var form = event.target;
       if (!form || form.nodeName !== "FORM") return;
 
-      var message = form.getAttribute("data-turbo-confirm");
+      // A button can carry its own prompt (one form, several actions).
+      var message = (event.submitter && event.submitter.getAttribute("data-turbo-confirm")) || form.getAttribute("data-turbo-confirm");
       if (message && !window.confirm(message)) {
         event.preventDefault();
         event.stopPropagation();

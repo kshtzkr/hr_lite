@@ -69,8 +69,7 @@ module HrLite
               return Result.new(record: record, error: "Check in again is open once a day, #{s.recheck_in_from}–#{s.recheck_in_until}.")
             end
 
-            record.assign_attributes(check_out_at: nil, check_out_lat: nil, check_out_lng: nil, check_out_accuracy_m: nil,
-                                     check_out_place: nil, check_out_home_m: nil, check_out_work_location_id: nil, rechecked_in_at: Time.current)
+            record.clear_check_out(rechecked_in_at: Time.current)
           else
             return Result.new(record: record, error: already_in_message(record)) if record.check_in_at.present?
 
