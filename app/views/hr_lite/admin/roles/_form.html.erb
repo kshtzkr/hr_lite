@@ -22,7 +22,7 @@
     <% HrLite::Permissions.grouped.each do |group, keys| %>
       <% granted = keys.count { |k| (role.grant_map[k] || "none") != "none" } %>
       <details class="hrl-card" <%= "open" if granted.positive? %>>
-        <summary class="hrl-card__title"><%= group %> · <%= granted %> of <%= keys.size %> granted</summary>
+        <summary class="hrl-btn hrl-btn--block"><%= group %> · <%= granted %> of <%= keys.size %> granted</summary>
         <% keys.each do |key| %>
           <% held = role.grant_map[key] || "none" %>
           <div class="hrl-field">

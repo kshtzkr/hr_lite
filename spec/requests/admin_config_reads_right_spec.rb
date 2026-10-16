@@ -34,7 +34,7 @@ RSpec.describe "Admin configuration screens read right", type: :request do
     role = HrLite::Role.create!(name: "Desk")
     role.role_grants.create!(permission_key: "leave.approve", scope: "team")
     get "/hr/admin/roles/#{role.id}/edit"
-    expect(response.body).to match(%r{<details class="hrl-card" open>\s*<summary class="hrl-card__title">[^<]+ · 1 of \d+ granted</summary>})
+    expect(response.body).to match(%r{<details class="hrl-card" open>\s*<summary class="hrl-btn hrl-btn--block">[^<]+ · 1 of \d+ granted</summary>})
   end
 
   it "names who still has to acknowledge a policy (VS-12)" do
