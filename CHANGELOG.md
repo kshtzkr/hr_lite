@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-10-16
+
+- Attendance penalties now come off leave. In Settings, HR picks "Penalties come off" a leave type (for example Earned leave); with no type picked, penalties stay as time only. Every active penalty this leave year is added up and divided by the person's working day (8h30, less any shorter-day allowance), rounded down to half days. That many days are held off that type's balance. For example, 10h of penalties holds 1 day: a balance of 5 becomes 4 you can apply for. When HR removes a penalty, the leave comes back.
+- On that leave type, leave past what is left is refused while days are held: "You can apply for 4 days of Earned leave — 1 held for penalties". Other types keep today's rule, where days past the balance are unpaid.
+- The held days show on the employee's balances page, the leave chips on home and My leave, the apply form (with its hint), and HR's team balances grid.
+- Migration: `hr_lite_settings.penalty_leave_type_id`.
+
 ## [0.46.0] - 2026-10-15
 
 - Every check-in and check-out is kept. Checking in again, a repeat check-out and an HR reset used to overwrite the day's check-out, including its time and GPS. Now each punch is saved as its own row: time, GPS, accuracy, place and distance from home. Those rows are never edited or deleted, and saving a change to one raises an error. When a day has more than one in/out pair, "All punches: In 09:30 Office · Out 11:45 Office · In 12:10 Office · Out 18:05 Office" shows on the employee's Today card, their day detail and My work time, and on HR's "Where they punched". A day HR reset with Reset check-in keeps its old punches on show.

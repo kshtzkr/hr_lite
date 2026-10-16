@@ -12,10 +12,10 @@
       <% left = @balances.index_by(&:leave_type_id) %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-leave-type">
         <% HrLite::LeaveType.active.each_with_index do |type, i| %>
-          <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name.sub(/ leave\z/i, "") %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><%= " · Unpaid" unless type.paid %></span></label>
+          <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name.sub(/ leave\z/i, "") %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><% if left[type.id] && (held = left[type.id].penalty_days).positive? %> · <%= hrl_days(held) %> held for penalties<% end %><%= " · Unpaid" unless type.paid %></span></label>
         <% end %>
       </div>
-      <p class="hrl-hint">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.</p>
+      <p class="hrl-hint">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.<% if @balances.any? { |b| b.penalty_days.positive? } %> Where days are held for penalties, leave past what is left is refused.<% end %></p>
     </div>
     <div class="hrl-field">
       <%= f.label :start_date, "From" %>

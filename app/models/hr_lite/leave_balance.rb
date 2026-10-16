@@ -68,7 +68,16 @@ module HrLite
     end
 
     def available(as_of: Date.current)
-      entitled(as_of: as_of) - used
+      entitled(as_of: as_of) - used - penalty_days
+    end
+
+    # On the leave type HR picks in Settings: this leave year's active penalties
+    # over the person's working day, rounded down to half days (10h of 8h30 = 1).
+    def penalty_days
+      return 0 unless leave_type_id && leave_type_id == Setting.instance.penalty_leave_type_id
+
+      minutes = AttendancePenalty.active.where(user_id: user_id, date: LeaveYear.range(year)).sum(:minutes)
+      (minutes * 2 / EmployeeProfile.day_minutes_for(user_id)) / 2.0
     end
 
     private

@@ -5,6 +5,9 @@ module HrLite
 
     WEEKEND_POLICIES = %w[sun_only sat_sun second_fourth_sat_sun].freeze
 
+    # Attendance penalties come off this leave type's balance (none: they stay as time).
+    belongs_to :penalty_leave_type, class_name: "HrLite::LeaveType", optional: true
+
     validates :weekend_policy, inclusion: { in: WEEKEND_POLICIES }
     validates :lunch_break_minutes, numericality: { only_integer: true, in: 5..120 }
     validates :short_break_minutes, numericality: { only_integer: true, in: 1..60 }

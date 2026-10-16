@@ -72,6 +72,27 @@ RSpec.describe HrLite::LeaveRequest do
       lwp = create(:leave_type, :unpaid_unlimited)
       expect(build_request(leave_type: lwp, start_date: monday + 1, end_date: monday + 1)).to be_valid
     end
+
+    it "holds penalty time off the leave type HR picks, in half days, and refuses leave past it" do
+      earned = create(:leave_type, name: "Earned", annual_quota: 5)
+      HrLite::Setting.instance.update!(penalty_leave_type: earned)
+      record = create(:attendance_record, :checked_in, user: user, date: monday - 7)
+      late = HrLite::AttendancePenalty.create!(user_id: user.id, date: monday - 7, minutes: 600, reason: "late", attendance_record: record)
+      balance = HrLite::LeaveBalance.for(user, earned, HrLite::LeaveYear.key_for(monday))
+      expect([ balance.penalty_days, balance.available, HrLite::LeaveBalance.for(user, type, monday.year).penalty_days ]).to eq([ 1, 4, 0 ])
+
+      week = build_request(leave_type: earned, end_date: monday + 4)
+      expect(week).not_to be_valid
+      expect(week.errors[:base]).to eq([ "You can apply for 4 days of Earned — 1 held for penalties" ])
+      expect(build_request(leave_type: earned, end_date: monday + 3)).to be_valid
+
+      HrLite::AttendancePenalty.create!(user_id: user.id, date: monday - 6, minutes: 180, reason: "late", attendance_record: record)
+      expect(balance.penalty_days).to eq(1.5) # 13h of 8h30 days
+
+      HrLite::AttendancePenalty.update_all(removed_at: Time.current, removal_reason: "Traffic", removed_by_id: user.id)
+      expect(build_request(leave_type: earned, end_date: monday + 4)).to be_valid
+      expect(late.reload.removed_at).to be_present
+    end
   end
 
   describe "notifications on create" do
