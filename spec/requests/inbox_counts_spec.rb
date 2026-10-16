@@ -55,4 +55,11 @@ RSpec.describe "Inbox counts and own rows", type: :request do
     get "/hr/admin/wfh_requests"
     expect(Nokogiri::HTML(response.body).at_css('a[href="/hr/admin/wfh_requests"] .hrl-badge')).to be_nil
   end
+
+  it "makes the reject reason required in the form" do
+    request = create(:leave_request, user: meera, leave_type: leave_type)
+    sign_in hr
+    get "/hr/admin/leave_requests/#{request.id}"
+    expect(Nokogiri::HTML(response.body).at_css("#reject_note")["required"]).not_to be_nil
+  end
 end

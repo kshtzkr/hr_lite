@@ -21,7 +21,7 @@
     <%= form_with url: hr_lite.resolve_admin_hr_request_path(@request), method: :post do %>
       <div class="hrl-field">
         <%= label_tag :resolution, "What you did" %>
-        <%= text_area_tag :resolution, nil, rows: 4 %>
+        <%= text_area_tag :resolution, nil, rows: 4, required: true %>
       </div>
       <div class="hrl-form-actions">
         <%= submit_tag "Send answer", class: "hrl-btn hrl-btn--primary" %>

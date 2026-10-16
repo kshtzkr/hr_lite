@@ -51,7 +51,7 @@
     <%= form_with url: hr_lite.reject_admin_comp_off_request_path(@request), method: :post, local: true do |f| %>
       <div class="hrl-field">
         <%= f.label :decision_note, "Reason (required)", for: "reject_note" %>
-        <%= f.text_area :decision_note, id: "reject_note" %>
+        <%= f.text_area :decision_note, id: "reject_note", required: true %>
       </div>
       <div class="hrl-form-actions">
         <%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger" %>

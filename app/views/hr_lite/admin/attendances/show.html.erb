@@ -80,7 +80,7 @@
       </div>
       <div class="hrl-field">
         <%= f.label :regularization_note, "Why is this being fixed? (required)" %>
-        <%= f.text_area :regularization_note %>
+        <%= f.text_area :regularization_note, required: true %>
       </div>
       <div class="hrl-form-actions">
         <%= f.submit "Save fix", class: "hrl-btn hrl-btn--primary" %>
