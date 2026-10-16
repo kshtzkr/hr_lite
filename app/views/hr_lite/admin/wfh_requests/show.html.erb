@@ -1,10 +1,7 @@
 <% content_for(:page_title) { "WFH — #{hr_display_name(@request.user)}" } %>
+<a class="hrl-backlink" href="<%= hr_lite.admin_wfh_requests_path %>"><span aria-hidden="true">‹</span> Approvals</a>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">WFH — <%= hr_display_name(@request.user) %></h1>
-  <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.admin_wfh_requests_path %>">All WFH</a>
-    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@request.user_id, month: @request.start_date.strftime("%Y-%m")) %>">Their month</a>
-  </div>
 </div>
 
 <section class="hrl-card">
@@ -19,6 +16,7 @@
         <% if @request.decision_note.present? %> · <%= @request.decision_note %><% end %></dd>
     <% end %>
   </dl>
+  <a class="hrl-card__link" href="<%= hr_lite.admin_attendance_path(@request.user_id, month: @request.start_date.strftime("%Y-%m")) %>">Their month</a>
 </section>
 
 <% if @request.pending? && @decidable %>

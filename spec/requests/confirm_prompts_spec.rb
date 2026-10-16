@@ -60,6 +60,21 @@ RSpec.describe "Confirm before irreversible actions", type: :request do
                                 "Approve #{run.label}? This finalizes the run and publishes the slips.\n\nBlocking warnings: No salary structure for Meera")
   end
 
+  it "asks before a leave, comp-off or fix decision, under one text link back to the list" do
+    leave = create(:leave_request, user: meera)
+    comp_off = create(:comp_off_request, user: meera)
+    fix = create(:regularization_request, user: meera)
+    sign_in hr
+    get "/hr/admin/leave_requests/#{leave.id}"
+    expect(confirms).to eq([ "Approve Meera's leave, #{leave.date_range_label}?", "Reject Meera's leave, #{leave.date_range_label}?" ])
+    get "/hr/admin/comp_off_requests/#{comp_off.id}"
+    expect(confirms).to eq([ "Credit 1 day of comp-off to Meera?", "Reject Meera's comp-off for #{comp_off.date_worked.strftime('%d %b %Y')}?" ])
+    expect(Nokogiri::HTML(response.body).at_css("a.hrl-backlink")["href"]).to eq("/hr/admin/comp_off_requests")
+    get "/hr/admin/regularization_requests/#{fix.id}"
+    expect(confirms).to eq([ "Write the proposed times onto Meera's attendance for #{fix.date.strftime('%d %b %Y')}?" ])
+    expect(Nokogiri::HTML(response.body).at_css("a.hrl-backlink")["href"]).to eq("/hr/admin/regularization_requests")
+  end
+
   it "asks before ending cover and shows the end date afterwards" do
     benefit = HrLite::Benefit.create!(name: "Group health", kind: "health", coverage: 500_000)
     enrolment = HrLite::BenefitEnrolment.create!(benefit: benefit, user_id: meera.id, enrolled_on: Date.current - 30)

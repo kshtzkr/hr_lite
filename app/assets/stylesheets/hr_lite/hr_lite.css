@@ -286,7 +286,7 @@ details > form > button[type=submit], details > form > .hrl-btn { margin-top: .2
   max-width: 100%; overflow-wrap: anywhere; text-align: center;
 }
 .hrl-btn--primary { background: var(--hrl-accent); border-color: var(--hrl-accent); color: var(--hrl-accent-ink); }
-.hrl-btn--danger { color: var(--hrl-bad); border-color: var(--hrl-bad-bg); }
+.hrl-btn--danger { color: var(--hrl-bad); border-color: var(--hrl-bad); }
 .hrl-btn--block { width: 100%; }
 .hrl-btn--big { min-height: 58px; font-size: var(--hrl-t-lead); }
 .hrl-btn[disabled] { opacity: .55; cursor: default; }
