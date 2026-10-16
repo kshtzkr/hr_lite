@@ -36,6 +36,20 @@ RSpec.describe "The approval inbox", type: :request, no_legacy_bridge: true do
     expect(response.body).to include("Nothing is waiting on you")
   end
 
+  it "lists a leave in the flow once, not again as a queue row" do
+    HrLite::Approval.create!(subject: leave!, step: HrLite::ApprovalStep.last, approver: hr, position: 1)
+    sign_in hr
+    get "/hr/approvals"
+    expect(Nokogiri::HTML(response.body).css("tbody tr").size).to eq(1)
+  end
+
+  it "stands the flow down when somebody outside it decides the leave" do
+    leave = leave!
+    leave.approve!(actor: hr)
+    expect(leave.reload).to be_approved
+    expect(leave.pending_approvals).to be_empty
+  end
+
   it "is reachable by an employee — holding an approval is the authorisation" do
     sign_in employee
     get "/hr/approvals"
