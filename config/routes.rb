@@ -58,6 +58,7 @@ HrLite::Engine.routes.draw do
   get "people/:user_id/timeline", to: "timelines#show", as: :person_timeline
   resources :holidays, only: :index
   get "calendar", to: "calendar#show"
+  get "search", to: "search#show", as: :search
   resources :salary_slips, only: %i[index show]
   resource :employee_profile, only: :show, path: "profile"
   patch "id_card/photo", to: "id_cards#photo", as: :id_card_photo

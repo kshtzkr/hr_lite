@@ -1,0 +1,9 @@
+<% content_for(:page_title) { "Search" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Search</h1></div>
+<section class="hrl-card">
+  <form action="<%= hr_lite.search_path %>" method="get" role="search" class="hrl-field">
+    <label for="search-page-q">Search screens and people</label>
+    <input id="search-page-q" class="hrl-input" type="search" name="q" value="<%= @q %>" autocomplete="off" autofocus>
+  </form>
+  <%= render "results" %>
+</section>
