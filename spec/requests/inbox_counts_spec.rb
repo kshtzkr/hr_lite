@@ -56,6 +56,15 @@ RSpec.describe "Inbox counts and own rows", type: :request do
     expect(Nokogiri::HTML(response.body).at_css('a[href="/hr/admin/wfh_requests"] .hrl-badge')).to be_nil
   end
 
+  it "names WFH by its dates and sends a home location to its list" do
+    wfh = HrLite::WfhRequest.new(user_id: meera.id, start_date: Date.current + 1, end_date: Date.current + 1, reason: "Plumber", status: "pending")
+    wfh.save!(validate: false)
+    HrLite::WorkLocation.create!(user_id: meera.id, name: "Parents", lat: 1, lng: 1, accuracy_m: 10)
+    sign_in hr
+    get "/hr/approvals"
+    expect(response.body).to include("WFH, #{wfh.dates_label}", %(href="/hr/admin/wfh_requests/#{wfh.id}"), %(href="/hr/admin/work_locations">Open))
+  end
+
   it "makes the reject reason required in the form" do
     request = create(:leave_request, user: meera, leave_type: leave_type)
     sign_in hr
