@@ -125,6 +125,19 @@ module HrLite
         end
       end
 
+      # One screen per person for a day, week (default) or month: each day, leave,
+      # penalties and every request, each linking to where it is fixed or decided.
+      def summary
+        @employee = find_visible_employee
+        @period = WorkModeDurations::Period.build(params[:period].presence_in(%w[day week month]) || "week", parse_date_param(params[:date]))
+        range = @period.from..@period.to
+        @days = DayStatus.new(user: @employee, range: range)
+        @punches = AttendancePunch.where(user_id: @employee.id, date: range).order(:at, :id).group_by(&:date)
+        @penalties = AttendancePenalty.active.where(user_id: @employee.id, date: range).group(:date).sum(:minutes)
+        @balances = LeaveType.active.where(paid: true).map { |type| LeaveBalance.for(@employee, type, LeaveYear.current_key) }
+        @requests = summary_requests(@employee, range)
+      end
+
       # HR sets a locked slot from today for the period.
       def slot
         @employee = find_manageable_employee
@@ -174,6 +187,32 @@ module HrLite
       end
 
       private
+
+      # [what, when, status, link] per request in the range, only for the types
+      # whose own page this viewer may open for this person.
+      def summary_requests(user, range)
+        id, from, to = user.id, range.first, range.last
+        day = ->(d) { d.strftime("%a %-d %b") }
+        {
+          "leave.view" => -> {
+            LeaveRequest.where(user_id: id).overlapping_range(from, to).includes(:leave_type)
+                        .map { |r| [ r.leave_type.name, r.date_range_label, r.status, admin_leave_request_path(r) ] } +
+              CompOffRequest.where(user_id: id, date_worked: range).map { |r| [ "Comp-off", day.(r.date_worked), r.status, admin_comp_off_request_path(r) ] }
+          },
+          "attendance.view" => -> {
+            WfhRequest.where(user_id: id).overlapping(from, to).map { |r| [ "WFH", r.dates_label, r.status, admin_wfh_request_path(r) ] } +
+              RegularizationRequest.where(user_id: id, date: range).map { |r| [ "Attendance fix", day.(r.date), r.status, admin_regularization_request_path(r) ] }
+          },
+          "expense.approve" => -> {
+            Expense.where(user_id: id, spent_on: range).includes(:category)
+                   .map { |r| [ "Claim · #{r.category.name}", day.(r.spent_on), r.status, admin_expenses_path ] }
+          },
+          "document.view" => -> {
+            Document.where(user_id: id, created_at: from.beginning_of_day..to.end_of_day)
+                    .map { |r| [ "Document · #{r.title}", day.(r.created_at.to_date), r.verification, admin_employee_documents_path(id) ] }
+          }
+        }.select { |perm, _| hr_reaches?(perm, user) }.flat_map { |_, rows| rows.call }
+      end
 
       # Viewing somebody's month and rewriting their punches are different
       # authorities, so they resolve through different permissions — a role

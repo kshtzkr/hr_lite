@@ -73,7 +73,7 @@ HrLite::Engine.routes.draw do
     get "overview", to: "overview#index"
     resources :attendances, only: %i[index show update], param: :user_id do
       collection { get :week }
-      member { post :slot; post :unlock_slot; post :remove_penalty; post :remove_penalty_hours }
+      member { get :summary; post :slot; post :unlock_slot; post :remove_penalty; post :remove_penalty_hours }
     end
     resources :leave_requests, only: %i[index show new create edit update] do
       member { post :approve; post :reject; post :cancel }
