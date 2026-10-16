@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.53.0] - 2026-10-16
+
+- HR runs inside the host's iOS and Android staff apps: pages opened by a Hotwire Native shell load Turbo (vendored 8.0.23) with `turbo-visit-control: reload`, so every visit is a full page load and the engine's plain scripts run exactly as in a browser. Browsers still get no Turbo.
+
 ## [0.52.0] - 2026-10-16
 
 - HR uploads documents for an employee: the person's Documents page (HR → People → a person → Documents) now has "Upload a document", the same form as My documents. Only company-wide profile managers (HR, admin) see it, and never on their own record. The document belongs to the employee, records who uploaded it, and its visibility still follows its category (an Aadhaar, PAN, passport or bank document stays with the money tier).
