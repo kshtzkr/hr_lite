@@ -4,8 +4,7 @@
 <section class="hrl-card">
   <div class="hrl-row">
     <% HrLite::ChecklistTemplate::KINDS.each do |kind| %>
-      <a class="hrl-btn <%= "hrl-btn--primary" if kind == @kind %>"
-         href="<%= hr_lite.admin_checklists_path(kind: kind) %>"><%= kind.humanize %></a>
+      <%= link_to kind.humanize, hr_lite.admin_checklists_path(kind: kind), class: "hrl-btn", aria: { current: ("true" if kind == @kind) } %>
     <% end %>
   </div>
 </section>

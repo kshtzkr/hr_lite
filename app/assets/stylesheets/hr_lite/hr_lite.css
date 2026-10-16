@@ -381,7 +381,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
   min-width: var(--hrl-target); justify-content: center;
 }
 .hrl-chiprow input { position: absolute; opacity: 0; pointer-events: none; }
-.hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked) { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }
+.hrl-chiprow input:checked + span, .hrl-chiprow label:has(input:checked), .hrl-btn[aria-current="true"] { background: var(--hrl-info-bg); border-color: var(--hrl-accent); color: var(--hrl-accent); }
 /* The radio is invisible, so its focus ring goes on the chip. */
 .hrl-chiprow label:has(input:focus-visible) { outline: var(--hrl-focus-w) solid var(--hrl-focus); outline-offset: var(--hrl-focus-offset); }
 
