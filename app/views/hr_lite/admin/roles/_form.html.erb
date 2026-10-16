@@ -7,8 +7,8 @@
       <% if role.system? %>
         <%= f.text_field :name, disabled: true %>
         <span class="hrl-small hrl-muted">
-          Built-in roles keep their name — the upgrade path and the seed both
-          identify them by it. The permissions below are yours to change.
+          Built-in roles keep their name, because the system finds them by it.
+          The permissions below are yours to change.
         </span>
       <% else %>
         <%= f.text_field :name %>
@@ -20,8 +20,9 @@
     </div>
 
     <% HrLite::Permissions.grouped.each do |group, keys| %>
-      <fieldset>
-        <legend><%= group %></legend>
+      <% granted = keys.count { |k| (role.grant_map[k] || "none") != "none" } %>
+      <details class="hrl-card" <%= "open" if granted.positive? %>>
+        <summary class="hrl-card__title"><%= group %> · <%= granted %> of <%= keys.size %> granted</summary>
         <% keys.each do |key| %>
           <% held = role.grant_map[key] || "none" %>
           <div class="hrl-field">
@@ -36,7 +37,7 @@
                   id: "grants_#{key.tr('.', '_')}" %>
           </div>
         <% end %>
-      </fieldset>
+      </details>
     <% end %>
 
     <div class="hrl-form-actions">

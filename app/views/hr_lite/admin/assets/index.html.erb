@@ -22,6 +22,9 @@
 <% end %>
 
 <section class="hrl-card">
+  <% if @assets.empty? %>
+    <p class="hrl-muted">No assets recorded yet. Add the first one above.</p>
+  <% else %>
   <div class="hrl-table-wrap">
     <table class="hrl-table hrl-table--stack">
       <thead><tr><th>Asset</th><th>Status</th><th>With</th><th></th></tr></thead>
@@ -39,13 +42,16 @@
             <td data-label="">
               <% if asset.assigned? %>
                 <%= form_with url: hr_lite.take_back_admin_asset_path(asset), method: :post do %>
-                  <%= text_field_tag :condition_note, nil, placeholder: "Condition", class: "hrl-input" %>
+                  <%= label_tag "asset-condition-#{asset.id}", "Condition on return", class: "hrl-sr-only" %>
+                  <%= text_field_tag :condition_note, nil, id: "asset-condition-#{asset.id}", placeholder: "Condition on return", class: "hrl-input" %>
                   <%= submit_tag "Take back", class: "hrl-btn" %>
                 <% end %>
               <% elsif asset.available? %>
                 <%= form_with url: hr_lite.assign_admin_asset_path(asset), method: :post do %>
+                  <%= label_tag "asset-holder-#{asset.id}", "Hand over to", class: "hrl-sr-only" %>
                   <%= select_tag :user_id,
-                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }), class: "hrl-input",
+                        options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] }), id: "asset-holder-#{asset.id}",
+                        include_blank: "Choose…", required: true, class: "hrl-input",
                         data: { hrl_filter: "Type a name to filter" } %>
                   <%= submit_tag "Hand over", class: "hrl-btn" %>
                 <% end %>
@@ -56,5 +62,6 @@
       </tbody>
     </table>
   </div>
+  <% end %>
   <%= hrl_pagination %>
 </section>

@@ -2,8 +2,9 @@
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Holidays <%= @year %></h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year - 1) %>"><%= @year - 1 %></a>
-    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year + 1) %>"><%= @year + 1 %></a>
+    <a class="hrl-btn hrl-btn--primary" href="#add-holiday">Add a holiday</a>
+    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year - 1) %>">‹ <%= @year - 1 %></a>
+    <a class="hrl-btn" href="<%= hr_lite.admin_holidays_path(year: @year + 1) %>"><%= @year + 1 %> ›</a>
   </div>
 </div>
 
@@ -35,7 +36,7 @@
 </section>
 
 <div class="hrl-grid hrl-grid--2">
-  <section class="hrl-card">
+  <section class="hrl-card" id="add-holiday">
     <h2 class="hrl-card__title">Add one</h2>
     <%= form_with model: @holiday, url: hr_lite.admin_holidays_path, local: true do |f| %>
       <div class="hrl-field"><%= f.label :date %><%= f.date_field :date %></div>
@@ -62,7 +63,7 @@
         <textarea name="lines" id="bulk-lines" class="hrl-input" rows="6" placeholder="2026-11-09, Diwali&#10;2026-03-04, Holi"></textarea>
       </div>
       <div class="hrl-form-actions">
-        <button type="submit" class="hrl-btn hrl-btn--primary">Add all</button>
+        <button type="submit" class="hrl-btn">Add all</button>
       </div>
     <% end %>
   </section>

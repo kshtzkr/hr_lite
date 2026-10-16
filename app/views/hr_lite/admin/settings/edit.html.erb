@@ -6,11 +6,13 @@
 <section class="hrl-card">
   <%= form_with model: @setting, url: hr_lite.admin_setting_path, method: :patch, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @setting %>
+    <h2 class="hrl-card__title">Working week</h2>
     <div class="hrl-field">
       <%= f.label :weekend_policy, "Weekly off policy" %>
-      <%= f.select :weekend_policy, HrLite::Setting::WEEKEND_POLICIES.map { |p| [ p.humanize, p ] } %>
+      <%= f.select :weekend_policy, { "Sunday only" => "sun_only", "Saturday and Sunday" => "sat_sun", "Sunday, 2nd and 4th Saturday" => "second_fourth_sat_sun" }.select { |_, v| v.in?(HrLite::Setting::WEEKEND_POLICIES) } %>
       <p class="hrl-hint">Drives working-day math everywhere: leave counting, attendance, payroll.</p>
     </div>
+    <h2 class="hrl-card__title hrl-mt">Breaks</h2>
     <div class="hrl-field">
       <%= f.label :lunch_break_minutes, "Lunch break limit (minutes)" %>
       <%= f.number_field :lunch_break_minutes, min: 5, max: 120 %>
@@ -20,6 +22,7 @@
       <%= f.label :short_break_minutes, "Short break limit (minutes)" %>
       <%= f.number_field :short_break_minutes, min: 1, max: 60 %>
     </div>
+    <h2 class="hrl-card__title hrl-mt">Working day</h2>
     <div class="hrl-field">
       <%= f.label :day_minutes, "Working day (minutes, break included)" %>
       <%= f.number_field :day_minutes, min: 240, max: 720, step: 15 %>
@@ -39,6 +42,7 @@
       <%= f.time_field :recheck_in_until %>
       <p class="hrl-hint">After checking out, a person can check in again once a day inside these hours.</p>
     </div>
+    <h2 class="hrl-card__title hrl-mt">Penalties and codes</h2>
     <div class="hrl-field">
       <%= f.label :penalty_leave_type_id, "Penalties come off" %>
       <%= f.collection_select :penalty_leave_type_id, HrLite::LeaveType.active, :id, :name, { include_blank: "No leave (penalties stay as time)" }, data: { hrl_filter: "Type a leave type to filter" } %>

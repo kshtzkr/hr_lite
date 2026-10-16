@@ -8,12 +8,12 @@
   <%= form_with model: @policy, url: hr_lite.admin_policies_path, method: :post, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @policy %>
     <div class="hrl-field"><%= f.label :title %><%= f.text_field :title, required: true %></div>
-    <div class="hrl-field"><%= f.label :body, "Text" %><%= f.text_area :body, rows: 10, required: true %></div>
-    <div class="hrl-field"><%= f.label :effective_from, "In force from" %><%= f.date_field :effective_from %></div>
     <div class="hrl-field hrl-field--check">
       <%= f.check_box :acknowledgement_required %>
       <%= f.label :acknowledgement_required, "Policy — everyone must acknowledge it (untick for an announcement)" %>
     </div>
+    <div class="hrl-field"><%= f.label :body, "Text" %><%= f.text_area :body, rows: 10, required: true %></div>
+    <div class="hrl-field"><%= f.label :effective_from, "In force from" %><%= f.date_field :effective_from %></div>
     <div class="hrl-form-actions">
       <%= f.submit "Publish", class: "hrl-btn hrl-btn--primary",
                    data: { turbo_confirm: "Publish and notify #{pluralize(HrLite.active_employees.size, 'person')} by email?" } %>

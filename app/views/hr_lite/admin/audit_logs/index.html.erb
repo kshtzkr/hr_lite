@@ -1,6 +1,8 @@
+<% content_for(:page_title) { "Audit trail" } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Audit trail</h1>
-  <p class="hrl-page__sub">Every policy, settings and payroll change — append-only.</p>
+  <p class="hrl-page__sub">Every policy, settings and payroll change — append-only.
+    <% if params[:views] %><a href="<%= hr_lite.admin_audit_logs_path %>">Hide page views</a><% else %><a href="<%= hr_lite.admin_audit_logs_path(views: 1) %>">Show page views too</a><% end %></p>
 </div>
 
 <% if @audit_logs.any? %>
@@ -13,15 +15,15 @@
         <% @audit_logs.each do |log| %>
           <tr>
             <td data-label="When"><%= log.created_at.strftime("%d %b %Y, %H:%M") %></td>
-            <td data-label="Who"><%= hr_display_name(log.actor) %></td>
-            <td data-label="Action"><span class="hrl-badge hrl-badge--muted"><%= log.action %></span></td>
+            <td data-label="Who"><%= log.actor ? hr_display_name(log.actor) : "System" %></td>
+            <td data-label="Action"><span class="hrl-badge hrl-badge--muted"><%= log.action.tr("._", "  ").humanize %></span></td>
             <td data-label="Subject"><%= log.subject_type.demodulize.underscore.humanize %> #<%= log.subject_id %></td>
             <td data-label="Changes">
               <% log.audited_changes.each do |attr, change| %>
                 <div class="hrl-small">
                   <span class="hrl-muted"><%= attr.humanize %>:</span>
                   <% if change.is_a?(Array) %>
-                    <%= change[0].inspect %> → <%= change[1].inspect %>
+                    <%= change[0].to_s.presence || "blank" %> → <%= change[1].to_s.presence || "blank" %>
                   <% else %>
                     <%= change %>
                   <% end %>

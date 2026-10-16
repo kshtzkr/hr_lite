@@ -90,7 +90,7 @@
       <details>
         <summary class="hrl-btn">Set their mode</summary>
         <%= form_with url: hr_lite.admin_work_mode_override_path(@person.id), method: :post, local: true do %>
-          <div class="hrl-field"><label for="ov-mode">Mode</label><%= select_tag :mode, options_for_select(HrLite::WorkModeSwitch::SELECTABLE.map { |m| [ HrLite::WorkModeEvent.label(m), m ] }), id: "ov-mode" %></div>
+          <div class="hrl-field"><label for="ov-mode">Mode</label><%= select_tag :mode, options_for_select(HrLite::WorkModeSwitch::SELECTABLE.map { |m| [ HrLite::WorkModeEvent.label(m), m ] }), id: "ov-mode", data: { hrl_filter: "Type a mode" } %></div>
           <div class="hrl-field"><label for="ov-title">Title / purpose (meeting, travel, client meeting)</label><input class="hrl-input" id="ov-title" name="title" maxlength="120"></div>
           <div class="hrl-field"><label for="ov-client">Client</label><input class="hrl-input" id="ov-client" name="client" maxlength="120"></div>
           <div class="hrl-field"><label for="ov-dest">Destination</label><input class="hrl-input" id="ov-dest" name="destination" maxlength="120"></div>
