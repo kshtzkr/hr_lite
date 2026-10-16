@@ -35,7 +35,7 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration).to be_draft
     end
 
-    it "submits, and cannot be edited once verified" do
+    it "submits, and cannot be edited once submitted or verified" do
       patch "/hr/tax_declaration", params: {
         tax_declaration: { regime: "old", tax_declaration_items_attributes: {
           "0" => { section: "80c", declared_amount: "100000" }
@@ -44,6 +44,10 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       post "/hr/tax_declaration/submit"
       declaration = HrLite::TaxDeclaration.find_by!(user_id: employee.id)
       expect(declaration).to be_submitted
+
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "new", tax_declaration_items_attributes: {} } }
+      expect(flash[:alert]).to include("is submitted")
+      expect(declaration.reload.regime).to eq("old")
 
       declaration.tax_declaration_items.first.update!(verified_amount: 100_000)
       declaration.verify!(actor: finance)

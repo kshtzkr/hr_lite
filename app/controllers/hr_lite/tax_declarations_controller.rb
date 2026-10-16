@@ -28,10 +28,11 @@ module HrLite
                      TaxDeclaration.new(user_id: hr_current_user.id,
                                         financial_year: financial_year, regime: employee_regime)
       # A verified declaration is what payroll is deducting against; changing
-      # it would silently re-open a decision HR has already made.
-      if @declaration.verified?
+      # it would silently re-open a decision HR has already made. A submitted
+      # one is what HR is checking, so it cannot shift under them either.
+      if @declaration.verified? || @declaration.submitted?
         return redirect_to tax_declaration_path,
-                           alert: "This year's declaration is verified. Ask HR to reopen it."
+                           alert: "This year's declaration is #{@declaration.status}. Ask HR to reopen it."
       end
 
       if @declaration.update(declaration_params)
