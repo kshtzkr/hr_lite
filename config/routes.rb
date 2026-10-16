@@ -115,7 +115,7 @@ HrLite::Engine.routes.draw do
     end
     resources :reports, only: %i[index show]
     resources :expenses, only: :index do
-      member { post :approve; post :reject; post :reimburse }
+      member { post :approve; post :reject; post :reimburse; get :receipt }
     end
     resources :hr_requests, only: %i[index show] do
       member { post :assign; post :resolve }

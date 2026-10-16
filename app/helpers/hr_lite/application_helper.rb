@@ -91,7 +91,8 @@ module HrLite
         { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
       ] },
       { label: "Admin", divider: true, tabs: [
-        { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/setting", "/admin/expense_categories" ], if: LEAD },
+        { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/expense_categories" ], if: LEAD },
+        { label: "HR settings", path: :edit_admin_setting_path, match: [ "/admin/setting" ], if: LEAD },
         { label: "Roles", path: :admin_roles_path, match: [ "/admin/roles" ], if: -> { hr_can?("role.manage", scope: :all) } },
         { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
         { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
