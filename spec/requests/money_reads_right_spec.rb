@@ -43,7 +43,7 @@ RSpec.describe "Money that reads right", type: :request do
 
   it "shows pending days on the balance chip" do
     type = create(:leave_type, name: "Casual", code: "CL", annual_quota: 12)
-    create(:leave_request, user: meera, leave_type: type, start_date: Date.current + 7, end_date: Date.current + 7)
+    create(:leave_request, user: meera, leave_type: type, start_date: Date.current.next_occurring(:wednesday), end_date: Date.current.next_occurring(:wednesday))
     sign_in meera
     get "/hr/leave_requests"
     expect(response.body).to match(/Casual · [\d.]+ of [\d.]+ left · 1 pending/)

@@ -10,7 +10,7 @@ RSpec.describe "Inbox counts and own rows", type: :request do
   def badge = Nokogiri::HTML(response.body).at_css('.hrl-tabbar a[href="/hr/approvals"] .hrl-badge')&.text
 
   it "counts the same on overview, Home and the badge, lists no own request, and opens the item" do
-    leave = create(:leave_request, user: meera, leave_type: leave_type, start_date: Date.current + 3, end_date: Date.current + 3)
+    leave = create(:leave_request, user: meera, leave_type: leave_type, start_date: Date.current.next_occurring(:wednesday), end_date: Date.current.next_occurring(:wednesday))
     create(:regularization_request, user: meera)
     own = create(:comp_off_request, user: hr)
     sign_in hr
