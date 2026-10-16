@@ -14,7 +14,7 @@
     <div class="hrl-row hrl-right">
       <% { present: "ok", half_day: "ok", leave: nil, absent: "bad" }.each do |kind, tone| %>
         <% code, word = HrLite::ApplicationHelper::DAY_STATES[kind] %>
-        <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>" role="img" aria-label="<%= word %> <%= pluralize(@counts[kind], "day") %>"><%= code %> <%= @counts[kind] %></span>
+        <span class="<%= class_names("hrl-badge", "hrl-badge--#{tone}": tone) %>" role="img" aria-label="<%= word %> <%= pluralize(@counts[kind], "day") %>"><%= word %> <%= @counts[kind] %></span>
       <% end %>
     </div>
   </div>

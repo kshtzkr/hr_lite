@@ -505,6 +505,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-mgrid__flag { position: absolute; top: 3px; right: 4px; width: 7px; height: 7px; border-radius: var(--hrl-radius-pill); background: var(--hrl-bad); }
 .hrl-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
 .hrl-legend .hrl-mgrid__flag { position: static; display: inline-block; }
+.hrl-legend + .hrl-mgrid { margin-top: .6rem; } /* the month key sits above its grid */
 @media (min-width: 768px) { .hrl-mgrid--cal .hrl-mgrid__day { min-height: 88px; } }
 
 /* Utility */

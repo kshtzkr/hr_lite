@@ -17,6 +17,20 @@ RSpec.describe "Attendance", type: :request do
       expect(response.body).to include("Check in").and include(Date.current.strftime("%B %Y"))
     end
 
+    it "puts the month key above the grid" do
+      get "/hr/attendance"
+      expect(response.body.index('class="hrl-legend')).to be < response.body.index('class="hrl-mgrid"')
+    end
+
+    it "says 1 day, and promises held leave only when HR picked a penalty leave type" do
+      HrLite.config.attendance_slots = true
+      record = create(:attendance_record, user: user, date: Date.current - 1)
+      HrLite::AttendancePenalty.create!(user_id: user.id, attendance_record: record, date: record.date, minutes: 600, reason: "late")
+      get "/hr/attendance"
+      expect(response.body).to include("held · 1 day</p>")
+      expect(response.body).not_to include("Every 5 hours")
+    end
+
     it "marks the punch form so the browser holds a punch with no GPS when location is required" do
       get "/hr/attendance"
       expect(response.body).not_to include("data-hrl-geo-required")
@@ -62,7 +76,7 @@ RSpec.describe "Attendance", type: :request do
         cell = Nokogiri::HTML(response.body).at_css('[aria-label="8 Oct, Today, not checked in yet"]')
         expect(cell["class"].split).to include("hrl-mgrid__day--today")
         expect(cell["class"].split).not_to include("hrl-mgrid__day--absent")
-        expect(response.body).to include('aria-label="Absent 5 days">A 5</span>')
+        expect(response.body).to include('aria-label="Absent 5 days">Absent 5</span>')
       end
 
       it "keeps yesterday absent and payroll still counts today as loss of pay" do

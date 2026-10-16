@@ -3,8 +3,8 @@
    leave_type = HrLite::Setting.instance.penalty_leave_type %>
 <section class="hrl-card" id="penalties">
   <h2 class="hrl-card__title">Penalty hours</h2>
-  <p><strong><%= hrl_duration(held * 60) %></strong> held · <%= hrl_days(HrLite::AttendancePenalty.days_for(held)) %> days<%= " of #{leave_type.name}" if leave_type %></p>
-  <p class="hrl-hint">Penalties add up until HR removes them. Every 5 hours holds half a day of leave, which can't be applied for.</p>
+  <p><strong><%= hrl_duration(held * 60) %></strong> held · <%= pluralize(hrl_days(HrLite::AttendancePenalty.days_for(held)), "day") %><%= " of #{leave_type.name}" if leave_type %></p>
+  <p class="hrl-hint">Penalties add up until HR removes them.<% if leave_type %> Every 5 hours holds half a day of leave, which can't be applied for.<% end %></p>
   <% HrLite::PenaltyRemoval.where(user_id: user.id).includes(:removed_by).order(created_at: :desc).each do |removal| %>
     <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">Removed <%= hrl_duration(removal.minutes * 60) %> on <%= removal.created_at.strftime("%-d %b %Y") %> by <%= hr_display_name(removal.removed_by) %>: <%= removal.reason %></div></div>
   <% end %>

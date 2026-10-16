@@ -4,6 +4,15 @@
    link_builder = local_assigns[:link_builder]
    pending_dates = local_assigns[:pending_dates]
    states = HrLite::ApplicationHelper::DAY_STATES %>
+<div class="hrl-legend hrl-small">
+  <% states.except(:upcoming).each_value do |code, word, mod| %>
+    <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--<%= mod %>"><%= code %> <%= word %></span>
+  <% end %>
+  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--today">Today</span>
+  <span class="hrl-badge hrl-mgrid__key"><span class="hrl-mgrid__flag" aria-hidden="true"></span> Flagged</span>
+  <% if pending_dates %><span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--pending">Fix pending</span><% end %>
+  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--muted">Upcoming</span>
+</div>
 <div class="hrl-mgrid" role="group" aria-label="Attendance for <%= month.strftime('%B %Y') %>">
   <% %w[Mo Tu We Th Fr Sa Su].each do |d| %>
     <div class="hrl-mgrid__head"><%= d %></div>
@@ -24,13 +33,4 @@
       <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
     </div>
   <% end %>
-</div>
-<div class="hrl-legend hrl-small">
-  <% states.except(:upcoming).each_value do |code, word, mod| %>
-    <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--<%= mod %>"><%= code %> <%= word %></span>
-  <% end %>
-  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--today">Today</span>
-  <span class="hrl-badge hrl-mgrid__key"><span class="hrl-mgrid__flag" aria-hidden="true"></span> Flagged</span>
-  <% if pending_dates %><span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--pending">Fix pending</span><% end %>
-  <span class="hrl-badge hrl-mgrid__key hrl-mgrid__day--muted">Upcoming</span>
 </div>
