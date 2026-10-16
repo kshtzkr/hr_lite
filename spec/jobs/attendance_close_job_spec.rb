@@ -34,7 +34,7 @@ RSpec.describe HrLite::AttendanceCloseJob do
       [ open.user, "attendance.missed_check_out", "You didn't check out on 06 Jul — marked half day" ],
       [ absent, "attendance.missed_check_in", "You didn't check in on 06 Jul — marked absent" ]
     )
-    expect(bells.first).to include(body: "Raise a regularization ticket to get it fixed.",
+    expect(bells.first).to include(body: "Use Fix a day to get it fixed.",
                                    path: "/regularization_requests/new?date=2027-07-06")
     # The next morning's board still counts the day it closed.
     expect(HrLite::OverviewQuery.new(date: tuesday + 1).kpis[:missing_checkout]).to eq(1)

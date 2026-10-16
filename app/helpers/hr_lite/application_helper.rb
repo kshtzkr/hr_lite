@@ -41,7 +41,7 @@ module HrLite
           queue: -> { hrl_queue(HrLite::LeaveRequest.where(status: "pending"), "leave.approve") } },
         { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::CompOffRequest.pending, "leave.approve") } },
-        { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
+        { label: "Day fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::RegularizationRequest.pending, "attendance.manage") } },
         { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::WfhRequest.pending.overlapping(Date.current, Date.current + HrLite::WfhRequest::MAX_DAYS_AHEAD), "attendance.manage") } },
@@ -166,7 +166,7 @@ module HrLite
       when HrLite::LeaveRequest
         [ "#{record.leave_type.name}, #{record.date_range_label} · #{pluralize(hrl_days(record.days_count), 'day')}", hr_lite.admin_leave_request_path(record) ]
       when HrLite::CompOffRequest then [ "Comp-off for #{record.date_worked.strftime('%a %-d %b')}", hr_lite.admin_comp_off_request_path(record) ]
-      when HrLite::RegularizationRequest then [ "Attendance fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
+      when HrLite::RegularizationRequest then [ "Day fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
       when HrLite::WfhRequest then [ "WFH, #{record.dates_label}", hr_lite.admin_wfh_request_path(record) ]
       when HrLite::Expense then [ "Claim: #{record.category.name}, #{hrl_money(record.amount)}, #{record.spent_on.strftime('%a %-d %b')}", hr_lite.admin_expenses_path ]
       when HrLite::Resignation

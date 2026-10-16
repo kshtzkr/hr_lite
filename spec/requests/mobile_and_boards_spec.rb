@@ -43,7 +43,7 @@ RSpec.describe "Phone navigation and the boards", type: :request do
       get "/hr/admin/overview"
 
       expect(response.body).not_to include("All present and accounted for")
-      expect(response.body).to include("Comp-off for").and include("Attendance fix, ")
+      expect(response.body).to include("Comp-off for").and include("Day fix, ")
     end
   end
 
