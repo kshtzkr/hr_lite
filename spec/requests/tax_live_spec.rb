@@ -23,7 +23,8 @@ RSpec.describe "Tax, worked out live", type: :request, no_legacy_bridge: true do
   it "shows the employee both regimes and re-works the tax on what is typed, saving nothing" do
     sign_in employee
     get "/hr/tax_declaration"
-    expect(response.body).to include("New regime", "Old regime", "TDS a month", "How the new regime tax is worked out")
+    expect(response.body).to include("New regime", "Old regime", "TDS a month", "How the new regime tax is worked out",
+                                     "Expected for the rest of the year, before unpaid days")
 
     post "/hr/tax_declaration/preview", params: { tax_declaration: { regime: "old", tax_declaration_items_attributes: {
       "0" => { section: "80c", declared_amount: "999999" }
