@@ -23,6 +23,30 @@ RSpec.describe "Security audit 2", type: :request do
     expect(own.reload).to have_attributes(permanent_wfh: false, date_of_exit: nil)
   end
 
+  it "hands HR a tax-proof link that dies after five minutes (SE-5)" do
+    declaration = HrLite::TaxDeclaration.create!(user_id: employee.id, regime: "old",
+                                                 financial_year: HrLite::FinancialYear.start_for(Date.current))
+    item = declaration.tax_declaration_items.create!(section: "80c", declared_amount: BigDecimal("150000"))
+    item.proofs.attach(pdf)
+    sign_in hr
+
+    get "/hr/admin/tax_declarations/#{declaration.id}/proofs/#{item.proofs.sole.id}"
+    link = response.location
+    travel(6.minutes) { get link }
+    expect(response).to have_http_status(:not_found)
+  end
+
+  it "serves the ID-card photo on a link that expires (SE-6)" do
+    profile = create(:employee_profile, user: employee)
+    profile.photo.attach(io: StringIO.new("\x89PNG\r\n\x1A\n".b), filename: "me.png", content_type: "image/png")
+    sign_in employee
+
+    get "/hr/id_card"
+    src = response.body[%r{/rails/active_storage/blobs/proxy/[^"]+}]
+    travel(2.hours) { get src }
+    expect(response).to have_http_status(:not_found)
+  end
+
   it "takes away everything but the Employee role on offboarding (SE-15)" do
     leaver = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::FINANCE, name: "Leaver")
     profile = create(:employee_profile, user: leaver)
