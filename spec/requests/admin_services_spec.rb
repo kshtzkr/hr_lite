@@ -245,7 +245,7 @@ RSpec.describe "Admin index screens", type: :request, no_legacy_bridge: true do
     expect(response.body).to include("A question", "Meera")
 
     get "/hr/admin/hr_requests/#{request.id}"
-    expect(response.body).to include("Answer", "What you did")
+    expect(response.body).to include("Answer", "Answer to ")
   end
 
   it "opens the add-asset form" do
