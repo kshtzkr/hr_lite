@@ -79,7 +79,7 @@
               <td data-label="Gross" class="hrl-num"><%= hrl_money(slip.gross_earnings) %></td>
               <td data-label="Deductions" class="hrl-num"><%= hrl_money(slip.total_deductions) %></td>
               <td data-label="Net" class="hrl-num"><strong><%= hrl_money(slip.net_pay) %></strong></td>
-              <td data-label=""><a class="hrl-small" href="<%= hr_lite.admin_salary_slip_path(slip) %>">Detail</a></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.admin_salary_slip_path(slip) %>">Detail</a></td>
             </tr>
           <% end %>
         </tbody>

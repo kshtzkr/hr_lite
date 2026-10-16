@@ -26,7 +26,7 @@
               <td data-label="Regime"><%= declaration.regime.humanize %></td>
               <td data-label="Claimed" class="hrl-num"><%= hrl_money(declaration.declared_total) %></td>
               <td data-label="">
-                <a class="hrl-small" href="<%= hr_lite.admin_tax_declaration_path(declaration) %>">Check</a>
+                <a class="hrl-btn" href="<%= hr_lite.admin_tax_declaration_path(declaration) %>">Check</a>
               </td>
             </tr>
           <% end %>

@@ -2,7 +2,7 @@
 <% buckets = result.by_bucket
    totals = buckets.transform_values { |m| m.except("offline").values.sum }
    max = [ totals.values.max.to_f, 1 ].max
-   w = 12; gap = 4; h = 100
+   w = 12; gap = 8; h = 100 # gap 8 units: bars ~11px apart on screen
    fmt = { day: "%-d", week: "%-d %b", month: "%b" }[period.bucket] %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">By <%= period.bucket %></h2>
