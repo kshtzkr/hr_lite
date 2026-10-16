@@ -23,6 +23,16 @@ RSpec.describe "Security audit 2", type: :request do
     expect(own.reload).to have_attributes(permanent_wfh: false, date_of_exit: nil)
   end
 
+  it "audits a change to a role's grants, and only a change (SE-4)" do
+    role = HrLite::Role.create!(name: "Auditors")
+    role.replace_grants!("audit.view" => "all")
+    role.replace_grants!("audit.view" => "team", "leave.view" => "self")
+    expect(HrLite::AuditLog.where(action: "role.grants_changed").last.audited_changes)
+      .to eq("audit.view" => %w[all team], "leave.view" => [ nil, "self" ])
+
+    expect { role.replace_grants!("audit.view" => "team", "leave.view" => "self") }.not_to change(HrLite::AuditLog, :count)
+  end
+
   it "hands HR a tax-proof link that dies after five minutes (SE-5)" do
     declaration = HrLite::TaxDeclaration.create!(user_id: employee.id, regime: "old",
                                                  financial_year: HrLite::FinancialYear.start_for(Date.current))
@@ -76,5 +86,20 @@ RSpec.describe "Security audit 2", type: :request do
 
     post "/hr/admin/employees/#{profile.id}/offboard"
     expect(HrLite::RoleAssignment.for_user(leaver).map { |a| a.role.name }).to eq([ HrLite::Role::EMPLOYEE ])
+  end
+
+  it "audits comp-off credits, resignations and payroll runs being created or deleted (SE-18)" do
+    create(:leave_type, :comp_off, code: "CO", name: "Comp off")
+    create(:comp_off_request, user: employee).approve!(actor: hr)
+
+    HrLite::Resignation.create!(user: employee, proposed_last_day: Date.current + 30).withdraw!(actor: employee)
+    HrLite::Resignation.create!(user: employee, proposed_last_day: Date.current + 30).accept!(actor: hr)
+
+    sign_in boss
+    post "/hr/admin/payroll_runs", params: { payroll_run: { period_month: Date.current.prev_month.strftime("%Y-%m") } }
+    delete "/hr/admin/payroll_runs/#{HrLite::PayrollRun.last.id}"
+
+    expect(actions).to include("comp_off.approved", "resignation.submitted", "resignation.withdrawn",
+                               "resignation.accepted", "payroll.created", "payroll.deleted")
   end
 end
