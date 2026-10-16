@@ -81,15 +81,16 @@
         </details>
       <% end %>
       <% if flash[:punch_offer] == "home" %>
-        <fieldset class="hrl-field">
-          <legend class="hrl-small">Is this your home location?</legend>
+        <%# A choice the punch needs: red, and geo_punch.js scrolls it into view on a phone. %>
+        <div class="hrl-errors" data-hrl-must-choose><fieldset class="hrl-field">
+          <legend class="hrl-small">Is this your home location? Choose one to check in.</legend>
           <% if HrLite::WorkLocation.live.where(user_id: hr_current_user.id).count < HrLite::WorkLocation::MAX_LIVE %>
             <label class="hrl-field--check"><input type="radio" name="place" value="home" required> Yes, save this place as a home location</label>
           <% else %>
             <p class="hrl-small"><%= HrLite::WorkLocationsController::CAP_MESSAGE %></p>
           <% end %>
           <label class="hrl-field--check"><input type="radio" name="place" value="travel" required> No, I am travelling</label>
-        </fieldset>
+        </fieldset></div>
       <% end %>
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block"><%= record&.check_out_at ? "Check in again" : "Check in" %></button>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
@@ -100,7 +101,7 @@
       <input type="hidden" name="lat"><input type="hidden" name="lng">
       <input type="hidden" name="accuracy_m"><input type="hidden" name="geo_status">
       <% if flash[:punch_offer] == "travel" %>
-        <div class="hrl-field"><label class="hrl-field--check"><input type="checkbox" name="place" value="travel" required> I am travelling — check out here</label></div>
+        <div class="hrl-field hrl-errors" data-hrl-must-choose><label class="hrl-field--check"><input type="checkbox" name="place" value="travel" required> Tick to confirm: I am travelling — check out here</label></div>
       <% end %>
       <button type="submit" class="hrl-btn hrl-btn--big hrl-btn--block">
         Check out

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.1] - 2026-10-16
+
+- A choice the punch needs can't be missed on a phone any more. Examples: "Is this your home location?" (Yes, save it / No, I am travelling) and "I am travelling — check out here". The choice sits in the red box, and the page scrolls it to the middle of the screen when the card loads. If the button is tapped without a choice, the page scrolls back to it (the browser's own "select an option" note still shows). Checked at 360 px: the box comes into view, the check-out is held until it's ticked, then it goes through.
+
 ## [0.48.0] - 2026-10-16
 
 - When location is blocked, the punch card's message ("Location is blocked. To allow it:") and its steps now show in a red box instead of small grey text. The box clears on the next try.

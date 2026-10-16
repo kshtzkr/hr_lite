@@ -73,6 +73,13 @@
     var button = form.querySelector("[type=submit]");
     var label = form.querySelector("[data-hrl-geo-status]");
     var required = form.hasAttribute("data-hrl-geo-required");
+    // A choice the punch needs (home or travelling) sits mid-card on a phone and was
+    // missed: bring it into view now, and again if the button is tapped without it.
+    var choose = form.querySelector("[data-hrl-must-choose]");
+    if (choose) {
+      choose.scrollIntoView({ block: "center" });
+      form.addEventListener("invalid", function () { choose.scrollIntoView({ block: "center" }); }, true);
+    }
     var locating = false;
 
     function send(status) {
