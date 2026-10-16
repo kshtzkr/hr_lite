@@ -38,13 +38,15 @@
     </div>
   <% end %>
 
-  <%= form_with url: hr_lite.admin_role_assignments_path(@role), method: :post, local: true do %>
+  <%= form_with url: hr_lite.admin_role_assignments_path(@role), method: :post, local: true,
+                data: { turbo_confirm: "Give the #{@role.name} role to the person you picked? Their access changes at once." } do %>
     <div class="hrl-field">
       <%= label_tag :user_id, "Add somebody to this role" %>
       <% held = @role.role_assignments.map(&:user_id) %>
       <%= select_tag :user_id,
             options_for_select(HrLite.employees.reject { |u| held.include?(u.id) }
-                                     .map { |u| [ hr_display_name(u), u.id ] }) %>
+                                     .map { |u| [ hr_display_name(u), u.id ] }),
+            include_blank: "Choose…", required: true, data: { hrl_filter: "Type a name to filter" } %>
     </div>
     <div class="hrl-form-actions">
       <%= submit_tag "Add", class: "hrl-btn hrl-btn--primary" %>

@@ -14,7 +14,7 @@
         <tbody>
           <% @policies.each do |policy| %>
             <tr>
-              <td data-label="Title"><%= policy.title %> <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span></td>
+              <td data-label="Title"><a class="hrl-card__link" href="<%= hr_lite.policy_path(policy) %>"><%= policy.title %></a> <span class="hrl-badge hrl-badge--muted">v<%= policy.version %></span></td>
               <td data-label="Kind"><%= policy.announcement? ? "Announcement" : "Policy" %></td>
               <td data-label="In force"><%= policy.effective_from.strftime("%d %b %Y") %></td>
               <td data-label="Still to acknowledge"><%= policy.announcement? ? "—" : policy.outstanding_for.count %></td>

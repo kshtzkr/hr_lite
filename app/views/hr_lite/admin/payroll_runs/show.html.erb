@@ -29,12 +29,14 @@
     <% manager = hr_can?("payroll.manage", scope: :all) %>
     <% if manager && (@run.draft? || @run.review? || @run.processing?) %>
       <%= button_to @run.draft? ? "Compute" : "Recompute", hr_lite.compute_admin_payroll_run_path(@run),
-                    method: :post, class: "hrl-btn" %>
+                    method: :post, class: "hrl-btn",
+                    form: { data: { turbo_confirm: ("Recompute #{@run.label}? This clears #{hr_display_name(@run.first_approved_by)}'s approval." if @run.first_approved_by) } } %>
     <% end %>
     <% if @run.review? && hr_can?("payroll.approve", scope: :all) && @run.first_approved_by_id != hr_current_user.id %>
       <%= button_to @run.first_approved_by_id ? "Approve and publish" : "Approve", hr_lite.approve_admin_payroll_run_path(@run),
                     method: :post, class: "hrl-btn hrl-btn--primary",
-                    form: { data: { turbo_confirm: @run.first_approved_by_id ? "Approve #{@run.label}? This finalizes the run and publishes the slips." : "Approve #{@run.label}?" } } %>
+                    form: { data: { turbo_confirm: [ @run.first_approved_by_id ? "Approve #{@run.label}? This finalizes the run and publishes the slips." : "Approve #{@run.label}?",
+                                                     *("Blocking warnings: #{@run.blocking_warnings.join('; ')}" if @run.blocking_warnings.any?) ].join("\n\n") } } %>
     <% end %>
     <% if manager && @run.finalized? %>
       <%= button_to "Unlock", hr_lite.unlock_admin_payroll_run_path(@run), method: :post, class: "hrl-btn" %>
