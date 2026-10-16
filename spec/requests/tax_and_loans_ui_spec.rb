@@ -274,6 +274,24 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration.reload).to be_submitted
     end
 
+    it "audits recorded amounts and an accept-all, and records nothing on a draft" do
+      sign_in finance
+      item = declaration.tax_declaration_items.first
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "90000" } } }
+      }
+      post "/hr/admin/tax_declarations/#{declaration.id}/accept_all"
+      expect(HrLite::AuditLog.where(subject_type: "HrLite::TaxDeclaration", subject_id: declaration.id).pluck(:action))
+        .to include("tax_declaration.amounts_recorded", "tax_declaration.accepted_all")
+
+      declaration.update!(status: "draft")
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "1" } } }
+      }
+      expect(flash[:alert]).to include("Only a submitted")
+      expect(item.reload.verified_amount).to eq(90_000)
+    end
+
     it "will not send one back without a reason" do
       sign_in finance
       post "/hr/admin/tax_declarations/#{declaration.id}/reject", params: { note: "" }
