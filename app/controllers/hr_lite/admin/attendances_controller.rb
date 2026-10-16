@@ -136,6 +136,21 @@ module HrLite
         @penalties = AttendancePenalty.active.where(user_id: @employee.id, date: range).group(:date).sum(:minutes)
         @balances = LeaveType.active.where(paid: true).map { |type| LeaveBalance.for(@employee, type, LeaveYear.current_key) }
         @requests = summary_requests(@employee, range)
+        @profile = EmployeeProfile.find_by(user_id: @employee.id)
+      end
+
+      # The shorter day and its repeat, from This week: the employee form's own
+      # gate (profile.manage, company-wide) and never your own record.
+      def shorter_day
+        return hr_access_denied unless hr_can?("profile.manage", scope: :all)
+        @employee = find_visible_employee
+        raise ActiveRecord::RecordNotFound if @employee.id == hr_current_user.id
+
+        profile = EmployeeProfile.find_by!(user_id: @employee.id)
+        saved = profile.update(params.require(:employee_profile).permit(:hours_allowance_minutes, :hours_allowance_reason)
+                                     .merge(hours_allowance_repeat: RepeatRule.from_params(params.fetch(:repeat, {}))&.to_s))
+        redirect_to summary_admin_attendance_path(@employee.id, anchor: "shorter-day"),
+                    saved ? { notice: "Shorter day saved." } : { alert: profile.errors.full_messages.to_sentence }
       end
 
       # HR sets a locked slot from today for the period.

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-10-16
+
+- Shorter day on a repeat: HR or admin give a person 30, 60 or 90 minutes off the working day (so 7h at the least) on a pattern set like a calendar's custom repeat: every N days, every N weeks on chosen weekdays, or every N months on the start's date, from a start date, ending never, on a date, or after N times. No repeat means every day, as before.
+- Set it on the person's This week screen (Shorter day card) or on their employee profile; both edit the same fields. The card shows the pattern to anyone who can open the screen. The form and the reason show only to those who manage profiles company-wide, and never on your own record.
+- The day's required hours, the short-day check and the "Your day" badge follow the pattern, and This week marks each day it covers with "Day 7h 00m".
+- Migration: `hr_lite_employee_profiles.hours_allowance_repeat` (string). Hosts rebuild their schema on the bump.
+
 ## [0.50.0] - 2026-10-16
 
 - Global search: one box for screens and people. It opens with ⌘K or Ctrl+K anywhere, from **Search** at the top of the sidebar, or from **Search** in the phone's More sheet. Typing (2 letters or more) lists matching screens and people; arrows move, Enter opens, and Escape closes. With JavaScript off, Search opens the `/search` page.

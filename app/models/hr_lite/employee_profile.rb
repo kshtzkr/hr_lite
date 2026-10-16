@@ -41,8 +41,13 @@ module HrLite
     validates :hours_allowance_minutes, inclusion: { in: HOURS_ALLOWANCE_MINUTES }, allow_nil: true
     validates :hours_allowance_reason, presence: true, if: :hours_allowance_minutes
 
-    # One person's working day: HR's day in Settings less their allowance.
-    def self.day_minutes_for(user_id) = Setting.instance.day_minutes - where(user_id: user_id).pick(:hours_allowance_minutes).to_i
+    # One person's working day on a date: HR's day in Settings less their
+    # allowance, on the days its repeat covers (no repeat = every day).
+    def self.day_minutes_for(user_id, on: Date.current)
+      minutes, repeat = where(user_id: user_id).pick(:hours_allowance_minutes, :hours_allowance_repeat)
+      applies = minutes && (repeat.blank? || RepeatRule.parse(repeat).occurs_on?(on))
+      Setting.instance.day_minutes - (applies ? minutes : 0)
+    end
 
     TAX_REGIMES = %w[new old].freeze
     BLOOD_GROUPS = %w[A+ A- B+ B- AB+ AB- O+ O-].freeze

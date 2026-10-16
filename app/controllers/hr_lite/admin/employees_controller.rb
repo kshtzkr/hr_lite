@@ -125,8 +125,11 @@ module HrLite
       # hands one person's PAN, bank details and pay history to another, so it
       # is a create-time field only.
       def update_profile_params
-        profile_params.except(:user_id)
+        profile_params.except(:user_id).merge(repeat_param)
       end
+
+      # The shorter day's repeat (RepeatRule); absent when the form has no repeat fields.
+      def repeat_param = params.key?(:repeat) ? { hours_allowance_repeat: RepeatRule.from_params(params[:repeat])&.to_s } : {}
     end
   end
 end

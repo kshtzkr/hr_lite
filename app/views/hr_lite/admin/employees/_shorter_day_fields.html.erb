@@ -1,0 +1,30 @@
+<%# locals: f (employee_profile form), profile — the shorter day and the days it repeats on (repeat[...] → RepeatRule). %>
+<% rule = HrLite::RepeatRule.parse(profile.hours_allowance_repeat)
+   ends = rule&.until_date ? "on" : (rule&.count ? "after" : "never") %>
+<div class="hrl-field">
+  <%= f.label :hours_allowance_minutes, "Shorter day (e.g. a long commute; lowers the hours they must work)" %>
+  <%= f.select :hours_allowance_minutes, HrLite::EmployeeProfile::HOURS_ALLOWANCE_MINUTES.map { |m| [ "#{m} min less", m ] }, include_blank: "None" %>
+</div>
+<div class="hrl-field">
+  <label for="repeat-freq">Repeats</label>
+  <%= select_tag "repeat[freq]", options_for_select([ [ "Every day", "" ], [ "Every N days", "DAILY" ], [ "Every N weeks, on the days below", "WEEKLY" ], [ "Every N months, on the start's date", "MONTHLY" ] ], rule&.freq), id: "repeat-freq" %>
+</div>
+<div class="hrl-field"><label for="repeat-interval">N (every how many)</label><%= number_field_tag "repeat[interval]", rule&.interval || 1, min: 1, max: 12, id: "repeat-interval", class: "hrl-input" %></div>
+<fieldset class="hrl-field">
+  <legend>Days (weekly)</legend>
+  <div class="hrl-row">
+    <% HrLite::RepeatRule::DAYS.rotate(1).each do |day| %>
+      <label class="hrl-field--check"><%= check_box_tag "repeat[days][]", day, rule&.days&.include?(day), id: "repeat-#{day}" %> <%= Date::ABBR_DAYNAMES[HrLite::RepeatRule::DAYS.index(day)] %></label>
+    <% end %>
+  </div>
+</fieldset>
+<div class="hrl-field"><label for="repeat-from">Starts</label><%= date_field_tag "repeat[from]", rule&.from || Date.current, id: "repeat-from" %></div>
+<fieldset class="hrl-field">
+  <legend>Ends</legend>
+  <label class="hrl-field--check"><%= radio_button_tag "repeat[ends]", "never", ends == "never", id: "repeat-ends-never" %> Never</label>
+  <label class="hrl-field--check"><%= radio_button_tag "repeat[ends]", "on", ends == "on", id: "repeat-ends-on" %> On a date</label>
+  <label class="hrl-field--check"><%= radio_button_tag "repeat[ends]", "after", ends == "after", id: "repeat-ends-after" %> After a number of times</label>
+</fieldset>
+<div class="hrl-field"><label for="repeat-until">End date (for "On a date")</label><%= date_field_tag "repeat[until]", rule&.until_date, id: "repeat-until" %></div>
+<div class="hrl-field"><label for="repeat-count">Times (for "After a number of times")</label><%= number_field_tag "repeat[count]", rule&.count, min: 1, id: "repeat-count", class: "hrl-input" %></div>
+<div class="hrl-field"><%= f.label :hours_allowance_reason, "Shorter day reason (HR only; required)" %><%= f.text_area :hours_allowance_reason, rows: 2 %></div>

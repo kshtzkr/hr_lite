@@ -82,8 +82,11 @@ RSpec.describe HrLite::AttendanceRecord do
     it "takes the person's shorter-day allowance off the day" do
       HrLite.config.work_hours = { day: 8, probation_day: 9, week: 40 }
       commuter = day(7, user: create(:user))
-      create(:employee_profile, user: commuter.user, hours_allowance_minutes: 90, hours_allowance_reason: "Long commute")
+      profile = create(:employee_profile, user: commuter.user, hours_allowance_minutes: 90, hours_allowance_reason: "Long commute")
       expect([ commuter.short?, day(6.98, user: commuter.user).short? ]).to eq([ false, true ])
+
+      profile.update!(hours_allowance_repeat: "FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;DTSTART=2027-07-01") # Tuesdays only
+      expect([ day(7, user: commuter.user).short?, day(7, user: commuter.user, date: tuesday + 1).short? ]).to eq([ false, true ])
     end
 
     it "measures the metres between check-in and check-out" do

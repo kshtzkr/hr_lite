@@ -33,6 +33,9 @@
       <div class="hrl-feed__body hrl-small">
         <strong><%= date.strftime("%a %-d %b") %></strong>
         <span class="hrl-badge <%= tones[day.kind] %>"><%= HrLite::ApplicationHelper::DAY_STATES[day.kind][1] %></span>
+        <% if @profile&.hours_allowance_minutes && (length = HrLite::EmployeeProfile.day_minutes_for(@employee.id, on: date)) < HrLite::Setting.instance.day_minutes %>
+          <span class="hrl-badge hrl-badge--muted">Day <%= hrl_duration(length * 60) %></span>
+        <% end %>
         <% if rec&.check_in_at %>
           <div>In <%= rec.check_in_at.strftime("%H:%M") %><% if rec.check_out_at %> · Out <%= rec.check_out_at.strftime("%H:%M") %> · <%= hrl_duration(rec.worked_duration) %> worked<% end %></div>
         <% end %>
@@ -46,6 +49,23 @@
     </div>
   <% end %>
 </section>
+
+<% if @profile %>
+  <section class="hrl-card" id="shorter-day">
+    <h2 class="hrl-card__title">Shorter day</h2>
+    <p class="hrl-small"><% if @profile.hours_allowance_minutes %><strong><%= @profile.hours_allowance_minutes %> min less</strong> · <%= HrLite::RepeatRule.parse(@profile.hours_allowance_repeat)&.describe || "Every day" %><% else %>None<% end %></p>
+    <% if @employee.id != hr_current_user.id && hr_can?("profile.manage", scope: :all) %>
+      <% if @profile.hours_allowance_reason.present? %><p class="hrl-small hrl-muted">Reason: <%= @profile.hours_allowance_reason %></p><% end %>
+      <details>
+        <summary class="hrl-btn hrl-btn--block"><%= @profile.hours_allowance_minutes ? "Change shorter day" : "Set a shorter day" %></summary>
+        <%= form_with model: @profile, scope: :employee_profile, url: hr_lite.shorter_day_admin_attendance_path(@employee.id), method: :patch, local: true do |f| %>
+          <%= render "hr_lite/admin/employees/shorter_day_fields", f: f, profile: @profile %>
+          <button type="submit" class="hrl-btn hrl-btn--primary">Save shorter day</button>
+        <% end %>
+      </details>
+    <% end %>
+  </section>
+<% end %>
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Requests</h2>

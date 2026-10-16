@@ -84,8 +84,10 @@ RSpec.describe "Employee lifecycle", type: :request do
       patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { hours_allowance_minutes: 90 } }
       expect(response).to have_http_status(:unprocessable_content)
 
-      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way" } }
-      expect(profile.reload).to have_attributes(hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way")
+      patch "/hr/admin/employees/#{profile.id}", params: { employee_profile: { hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way" },
+                                                           repeat: { freq: "DAILY", interval: "2", from: "2026-10-19", ends: "never" } }
+      expect(profile.reload).to have_attributes(hours_allowance_minutes: 90, hours_allowance_reason: "Commutes 2h each way",
+                                                hours_allowance_repeat: "FREQ=DAILY;INTERVAL=2;DTSTART=2026-10-19")
       expect(HrLite::AuditLog.order(:id).last.audited_changes.to_s).not_to include("Commutes")
     end
   end
