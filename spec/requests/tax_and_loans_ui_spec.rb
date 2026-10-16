@@ -270,7 +270,7 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
         verify: "Record and verify",
         tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "" } } }
       }
-      expect(flash[:alert]).to be_present
+      expect(flash[:alert]).to eq("Every line needs a verified amount — enter 0 where the proof supports nothing")
       expect(declaration.reload).to be_submitted
     end
 

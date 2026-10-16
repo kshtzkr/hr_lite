@@ -91,7 +91,8 @@ module HrLite
         declaration.verify!(actor: hr_current_user, note: params[:note])
         redirect_to admin_tax_declarations_path, notice: "Verified — payroll will use the checked amounts."
       rescue ActiveRecord::RecordInvalid
-        redirect_to admin_tax_declaration_path(declaration), alert: "Only a submitted declaration can be verified."
+        redirect_to admin_tax_declaration_path(declaration),
+                    alert: declaration.errors.full_messages.first || "Only a submitted declaration can be verified."
       end
 
       def reject
