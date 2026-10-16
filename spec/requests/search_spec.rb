@@ -6,7 +6,7 @@ RSpec.describe "Global search", type: :request do
   let(:stranger) { create(:user, name: "Meera Shah") }
 
   before do
-    create(:employee_profile, user: report, manager_id: manager.id, employee_code: "EMP042")
+    create(:employee_profile, user: report, manager_id: manager.id, employee_code: "XQ042")
     create(:employee_profile, user: stranger)
   end
 
@@ -28,7 +28,7 @@ RSpec.describe "Global search", type: :request do
     body = results("meera")
     expect(body).to include("Meera Rao", "/hr/admin/attendances/#{report.id}/summary")
     expect(body).not_to include("Meera Shah")
-    expect(results("emp042")).to include("Meera Rao")
+    expect(results("xq042")).to include("Meera Rao")
   end
 
   it "lets HR find anyone and the Settings screen, and needs two letters" do
