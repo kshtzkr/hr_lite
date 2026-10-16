@@ -12,8 +12,9 @@ module HrLite
     belongs_to :first_approved_by, class_name: HrLite.config.user_class, optional: true
 
     # A run with one of these is not paid on the 3rd without a person looking:
-    # someone missing, a state levying ₹0, or last year's / unverified rates.
-    BLOCKING_WARNING = /\ANo (salary structure|professional-tax slabs)|statutory card/
+    # someone missing, a state levying ₹0, last year's / unverified rates, or
+    # a change after compute ("… after compute — recompute") the slips lack.
+    BLOCKING_WARNING = /\ANo (salary structure|professional-tax slabs)|statutory card|after compute/
 
     validates :period_month, presence: true, uniqueness: true
     validates :status, inclusion: { in: STATUSES }

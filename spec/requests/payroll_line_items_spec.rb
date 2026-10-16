@@ -56,6 +56,16 @@ RSpec.describe "One-off payroll items over HTTP", type: :request do
       expect(response.body).to include("must be more than zero")
     end
 
+    it "flags a run already in review as stale, and a stale run waits for a person" do
+      run = create(:payroll_run, period_month: month, status: "review", warnings: [])
+      add("bonus", "5000")
+      delete "/hr/admin/payroll_line_items/#{HrLite::PayrollLineItem.last.id}"
+
+      expect(run.reload.warnings).to eq([ "Meera's Bonus was added after compute — recompute",
+                                          "Meera's Bonus was removed after compute — recompute" ])
+      expect(run.auto_approve!).to be(false)
+    end
+
     it "refuses a month that has already been paid, with the model's reason" do
       run = create(:payroll_run, period_month: month)
       run.compute!(actor: owner)

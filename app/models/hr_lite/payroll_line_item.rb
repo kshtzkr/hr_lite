@@ -20,6 +20,9 @@ module HrLite
     validate :period_is_not_already_paid, on: :create
     # Removing a line from a paid month rewrites a settled payslip just the same.
     before_destroy { throw :abort if paid_month? }
+    # A run already computed for the month still shows the old pay.
+    after_create { flag_stale_run("added") }
+    after_destroy { flag_stale_run("removed") }
 
     scope :for_month, ->(month) { where(period_month: month) }
 
@@ -55,5 +58,10 @@ module HrLite
     end
 
     def paid_month? = SalarySlip.settled.exists?(user_id: user_id, period_month: period_month)
+
+    def flag_stale_run(verb)
+      run = PayrollRun.find_by(period_month: period_month, status: "review")
+      run&.update!(warnings: run.warnings + [ "#{HrLite.display_name(user)}'s #{component.label} was #{verb} after compute — recompute" ])
+    end
   end
 end
