@@ -181,9 +181,18 @@ RSpec.describe HrLite::TaxDeclaration, no_legacy_bridge: true do
 
     it "is zero when verification supported nothing" do
       d = declaration(status: "submitted", "80c": 150_000)
+      d.tax_declaration_items.first.update!(verified_amount: 0)
       d.verify!(actor: finance)
 
       expect(d.reload.allowable_total).to eq(0)
+    end
+
+    # A blank is not a ₹0 decision: verifying it would quietly allow nothing.
+    it "refuses to verify while a line has no verified amount" do
+      d = declaration(status: "submitted", "80c": 150_000)
+
+      expect { d.verify!(actor: finance) }.to raise_error(ActiveRecord::RecordInvalid, /needs a verified amount/)
+      expect(d.reload).to be_submitted
     end
   end
 
@@ -197,6 +206,7 @@ RSpec.describe HrLite::TaxDeclaration, no_legacy_bridge: true do
       expect(d.reload).to be_submitted
       expect(bells.map { |b| b[:user] }).to include(finance)
 
+      d.tax_declaration_items.first.update!(verified_amount: 100_000)
       d.verify!(actor: finance)
       expect(d.reload).to be_verified
     end

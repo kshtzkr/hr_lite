@@ -86,6 +86,11 @@ module HrLite
 
     def verify!(actor:, note: nil)
       raise ActiveRecord::RecordInvalid.new(self), "not submitted" unless submitted?
+      # A blank verified amount would count as ₹0 allowed once verified.
+      if tax_declaration_items.any? { |item| item.verified_amount.nil? }
+        errors.add(:base, "Every line needs a verified amount — enter 0 where the proof supports nothing")
+        raise ActiveRecord::RecordInvalid, self
+      end
 
       update!(status: "verified", verified_by_id: actor.id, verified_at: Time.current,
               note: note.presence)

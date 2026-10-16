@@ -45,6 +45,7 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       declaration = HrLite::TaxDeclaration.find_by!(user_id: employee.id)
       expect(declaration).to be_submitted
 
+      declaration.tax_declaration_items.first.update!(verified_amount: 100_000)
       declaration.verify!(actor: finance)
       patch "/hr/tax_declaration", params: {
         tax_declaration: { regime: "new", tax_declaration_items_attributes: {} }
@@ -243,6 +244,18 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       }
       expect(declaration.reload).to be_verified
       expect(declaration.allowable_total).to eq(90_000)
+    end
+
+    it "will not verify a blank verified amount as ₹0 allowed" do
+      sign_in finance
+      item = declaration.tax_declaration_items.first
+
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        verify: "Record and verify",
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "" } } }
+      }
+      expect(flash[:alert]).to be_present
+      expect(declaration.reload).to be_submitted
     end
 
     it "will not send one back without a reason" do
