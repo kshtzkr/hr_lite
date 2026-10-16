@@ -6,13 +6,14 @@ RSpec.describe "Inbox", type: :request do
   let(:meera) { user_with_roles(HrLite::Role::EMPLOYEE, name: "Meera") }
 
   it "lists what HR can decide, never HR's own, and counts it on the menu" do
-    create(:comp_off_request, user: meera)
+    request = create(:comp_off_request, user: meera)
     create(:comp_off_request, user: hr)
     sign_in hr
     get "/hr/approvals"
     page = Nokogiri::HTML(response.body)
-    expect(page.css("tbody tr").map { |tr| tr.css("td").first(2).map { |td| td.text.strip } }).to eq([ [ "Comp-off", "Meera" ] ])
-    expect(page.at_css('tbody a.hrl-btn')["href"]).to eq("/hr/admin/comp_off_requests")
+    expect(page.css("tbody tr").map { |tr| tr.css("td").first(2).map { |td| td.text.strip } })
+      .to eq([ [ "Comp-off for #{request.date_worked.strftime('%a %-d %b')}", "Meera" ] ])
+    expect(page.at_css('tbody a.hrl-btn')["href"]).to eq("/hr/admin/comp_off_requests/#{request.id}")
     expect(page.at_css('.hrl-tabbar a[href="/hr/approvals"] .hrl-badge').text).to eq("1")
   end
 

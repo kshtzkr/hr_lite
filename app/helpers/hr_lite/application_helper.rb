@@ -44,7 +44,7 @@ module HrLite
         { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::RegularizationRequest.pending, "attendance.manage") } },
         { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: OPS,
-          queue: -> { hrl_queue(HrLite::WfhRequest.pending, "attendance.manage") } },
+          queue: -> { hrl_queue(HrLite::WfhRequest.pending.overlapping(Date.current, Date.current + HrLite::WfhRequest::MAX_DAYS_AHEAD), "attendance.manage") } },
         { label: "Home locations", path: :admin_work_locations_path, match: [ "/admin/work_locations" ], if: OPS,
           queue: -> { hrl_queue(HrLite::WorkLocation.pending, "attendance.manage") } },
         { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) },
@@ -150,6 +150,24 @@ module HrLite
 
     # What a queue page lets this viewer decide: their reach, never their own requests.
     def hrl_queue(relation, key) = hr_access.scope_relation(relation, key).where.not(user_id: hr_current_user.id)
+
+    # The Inbox badge's number; Home and the overview board show the same one.
+    def hrl_inbox_count
+      inbox = hrl_sections.find { |s| s[:label] == "Inbox" }
+      inbox ? hrl_waiting(inbox).to_i : 0
+    end
+
+    # One queued request in words, and where it is decided.
+    def hrl_inbox_item(tab, record)
+      case record
+      when HrLite::LeaveRequest
+        [ "#{record.leave_type.name}, #{record.date_range_label} · #{pluralize(hrl_days(record.days_count), 'day')}", hr_lite.admin_leave_request_path(record) ]
+      when HrLite::CompOffRequest then [ "Comp-off for #{record.date_worked.strftime('%a %-d %b')}", hr_lite.admin_comp_off_request_path(record) ]
+      when HrLite::RegularizationRequest then [ "Attendance fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
+      when HrLite::WfhRequest then [ "WFH, #{record.dates_label}", hr_lite.admin_wfh_request_path(record) ]
+      else [ tab[:label], hr_lite.public_send(tab[:path]) ]
+      end
+    end
 
     # Everything waiting in this viewer's queues, oldest first, as [tab, record].
     def hrl_inbox_rows(limit = 50)

@@ -11,7 +11,7 @@ module HrLite
         @category = params[:category].presence
         scope = hr_scope(Document.includes(:user).recent_first, "document.view")
         scope = scope.where(category: @category) if @category
-        @pending = scope.where(verification: "pending").limit(50).to_a
+        @pending = scope.where(verification: "pending").where.not(user_id: hr_current_user.id).limit(50).to_a
         @documents = paginate(scope)
         @categories = Document.distinct.order(:category).pluck(:category)
       end

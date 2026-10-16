@@ -8,7 +8,7 @@ module HrLite
       def index
         @status = params[:status].presence_in(Expense::STATUSES) || "submitted"
         scope = Expense.where(status: @status).includes(:user, :category).recent_first
-        @expenses = paginate(hr_scope(scope, "expense.approve"))
+        @expenses = paginate(hr_scope(scope, "expense.approve").where.not(user_id: hr_current_user.id))
       end
 
       def approve

@@ -45,13 +45,14 @@
               </td>
             </tr>
           <% end %>
-          <%# The HR queues this viewer decides; Open lands on that queue's own page. %>
+          <%# The HR queues this viewer decides; Open lands on the request itself where it has a page. %>
           <% rows.each do |tab, record| %>
+            <% what, href = hrl_inbox_item(tab, record) %>
             <tr>
-              <td data-label="Request"><strong><%= tab[:label] %></strong></td>
+              <td data-label="Request"><strong><%= what %></strong></td>
               <td data-label="From"><%= hr_display_name(record.user) %></td>
               <td data-label="Waiting"><%= time_ago_in_words(record.created_at) %></td>
-              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.public_send(tab[:path]) %>">Open</a></td>
+              <td data-label=""><a class="hrl-btn" href="<%= href %>">Open</a></td>
             </tr>
           <% end %>
         </tbody>

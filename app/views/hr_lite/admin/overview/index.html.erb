@@ -3,50 +3,29 @@
   <h1 class="hrl-page__title">HR overview</h1>
 </div>
 
+<%# The Inbox badge's count and rows, so the board never counts what the Inbox hides. %>
+<% pending = hrl_inbox_count %>
 <div class="hrl-kpis">
-  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:pending] %></div><div class="hrl-kpi__label">Pending approvals</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= pending %></div><div class="hrl-kpi__label">Pending approvals</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:on_leave] %></div><div class="hrl-kpi__label">On leave today</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:flagged] %></div><div class="hrl-kpi__label">Flagged punches</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:missing_checkout] %></div><div class="hrl-kpi__label">Missing checkouts</div></div>
 </div>
 
-<% if @query.empty? %>
+<% if pending.zero? && @kpis.except(:pending).values.all?(&:zero?) %>
   <p class="hrl-card hrl-card--empty">All present and accounted for.</p>
 <% else %>
-  <% if @kpis[:pending].positive? %>
+  <% if pending.positive? %>
     <section class="hrl-card">
       <h2 class="hrl-card__title">Pending approvals</h2>
-      <% @query.pending_requests.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
+      <% hrl_inbox_rows(HrLite::Admin::OverviewController::SECTION_CAP).each do |tab, request| %>
+        <% what, href = hrl_inbox_item(tab, request) %>
         <div class="hrl-feed__item">
-          <div class="hrl-feed__body">
-            <strong><%= hr_display_name(request.user) %></strong>
-            — <%= request.leave_type.name %>, <%= request.date_range_label %> (<%= hrl_days(request.days_count) %> d)
-          </div>
-          <a class="hrl-btn" href="<%= hr_lite.admin_leave_request_path(request) %>">Decide</a>
+          <div class="hrl-feed__body"><strong><%= hr_display_name(request.user) %></strong> — <%= what %></div>
+          <a class="hrl-btn" href="<%= href %>">Decide</a>
         </div>
       <% end %>
-      <%# Comp-off and regularization are approvals too. Listing leave alone
-          left both queues invisible on the board that exists to surface work. %>
-      <% @query.pending_comp_offs.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
-        <div class="hrl-feed__item">
-          <div class="hrl-feed__body">
-            <strong><%= hr_display_name(request.user) %></strong>
-            — comp-off for <%= request.date_worked.strftime("%d %b") %>
-            (<%= hrl_days(request.credit_days) %> d)
-          </div>
-          <a class="hrl-btn" href="<%= hr_lite.admin_comp_off_request_path(request) %>">Decide</a>
-        </div>
-      <% end %>
-      <% @query.pending_regularizations.limit(HrLite::Admin::OverviewController::SECTION_CAP).each do |request| %>
-        <div class="hrl-feed__item">
-          <div class="hrl-feed__body">
-            <strong><%= hr_display_name(request.user) %></strong>
-            — attendance fix for <%= request.date.strftime("%d %b") %>
-          </div>
-          <a class="hrl-btn" href="<%= hr_lite.admin_regularization_request_path(request) %>">Decide</a>
-        </div>
-      <% end %>
-      <a class="hrl-card__link" href="<%= hr_lite.admin_leave_requests_path %>">All requests</a>
+      <a class="hrl-card__link" href="<%= hr_lite.approvals_path %>">All requests</a>
     </section>
   <% end %>
 

@@ -8,7 +8,7 @@ module HrLite
         # the LIST as well as the decision matters: an index that shows a row
         # the member action then refuses is a worse screen than one that never
         # showed it.
-        @requests = paginate(hr_scope(scope.where(status: @status), "leave.view"))
+        @requests = paginate(hr_scope(scope.where(status: @status), "leave.view").where.not(user_id: hr_current_user.id))
       end
 
       def show

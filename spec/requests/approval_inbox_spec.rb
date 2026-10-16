@@ -107,7 +107,7 @@ RSpec.describe "The approval inbox", type: :request, no_legacy_bridge: true do
 
     sign_in manager
     get "/hr/"
-    expect(response.body).to include("1 request waiting on you", %(href="/hr/admin/leave_requests"))
+    expect(response.body).to include("1 request waiting on you", %(href="/hr/approvals">Review requests))
 
     sign_in employee
     get "/hr/"
