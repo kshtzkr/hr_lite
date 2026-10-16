@@ -93,6 +93,14 @@
         </fieldset></div>
       <% end %>
       <button type="submit" class="hrl-btn hrl-btn--primary hrl-btn--big hrl-btn--block"><%= record&.check_out_at ? "Check in again" : "Check in" %></button>
+      <% if HrLite.config.attendance_slots && !record&.check_out_at %>
+        <%# The late rules AttendancePuncher#apply_slot_rules applies, shifted by the person's buffer like there. %>
+        <% shift = HrLite::EmployeeProfile.where(user_id: hr_current_user.id).pick(:buffer_minutes).to_i
+           by = HrLite::AttendanceSlot.start_minute_for(hr_current_user.id, Date.current) + HrLite::AttendanceSlot::GRACE_MINUTES + shift
+           at = ->(minute) { HrLite::AttendanceSlot.label(minute + shift) } %>
+        <p class="hrl-small hrl-mt">Check in by <strong><%= HrLite::AttendanceSlot.label(by) %></strong>. Later adds 30 min to your day for every half hour;
+          after <%= at.(HrLite::AttendanceSlot::CARRY_AFTER_MINUTE) %> also 1 hour on each of the next 2 working days; after <%= at.(HrLite::AttendanceSlot::HALF_DAY_AFTER_MINUTE) %> the day is a half day.</p>
+      <% end %>
       <p class="hrl-small hrl-muted" data-hrl-geo-status role="status" aria-live="polite"></p>
     <% end %>
   <% elsif record.check_out_at.nil? %>

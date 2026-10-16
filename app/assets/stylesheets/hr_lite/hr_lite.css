@@ -633,8 +633,6 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-chart-tip { position: absolute; z-index: 30; max-width: 16rem; padding: .4rem .6rem; border-radius: var(--hrl-radius-sm); background: var(--hrl-ink); color: var(--hrl-card); font-size: var(--hrl-t-small); pointer-events: none; }
 [data-hrl-tip]:focus { outline: 2px solid var(--hrl-accent); outline-offset: 1px; }
 .hrl-custom-status { display: inline-flex; gap: .3rem; align-items: center; overflow-wrap: anywhere; }
-.hrl-emoji-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr)); gap: var(--hrl-gap-target); margin-top: var(--hrl-gap-target); }
-.hrl-emoji { min-height: var(--hrl-target); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-card); font-size: 1.25rem; cursor: pointer; }
 /* Today's check-ins: one initials badge per person; hover/tap shows times. */
 .hrl-checkins + .hrl-checkins { margin-top: .6rem; }
 .hrl-checkins__people { display: flex; flex-wrap: wrap; gap: var(--hrl-gap-target); margin: .4rem 0 0; padding: 0; list-style: none; }

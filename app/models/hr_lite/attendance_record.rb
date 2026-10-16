@@ -57,9 +57,11 @@ module HrLite
       EmployeeProfile.day_minutes_for(user_id, on: date) unless HrLite.config.work_hours.nil? || date.saturday?
     end
 
-    # Hours worked, not the clock: an early start counts.
+    # Hours worked, not the clock: an early start counts. The day's penalty
+    # minutes count too, the same rule as required_check_out_at, so the card
+    # never says "day done" above "short by 20m".
     def short?
-      worked_under?(required_minutes)
+      worked_under?(required_minutes && required_minutes + penalty_minutes)
     end
 
     def below_half_day?
@@ -70,9 +72,10 @@ module HrLite
     def required_check_out_at
       return unless HrLite.config.attendance_slots && check_in_at
 
-      extra = AttendancePenalty.active.where(user_id: user_id, date: date).sum(:minutes)
-      check_in_at + (EmployeeProfile.day_minutes_for(user_id, on: date) + extra).minutes
+      check_in_at + (EmployeeProfile.day_minutes_for(user_id, on: date) + penalty_minutes).minutes
     end
+
+    def penalty_minutes = AttendancePenalty.active.where(user_id: user_id, date: date).sum(:minutes)
 
     def worked_under?(minutes) = !!(minutes && worked_duration && worked_duration < minutes.minutes)
 

@@ -15,10 +15,8 @@
 
 <div class="hrl-kpis">
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at } %></div><div class="hrl-kpi__label">Checked in</div></div>
-  <%# Derived from the same predicate as "Checked in". Counting rows instead
-      dropped a record with no check-in out of BOTH tiles, so the numbers
-      quietly stopped adding up to the headcount. %>
-  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @employees.size - @records.values.count { |r| r.check_in_at } %></div><div class="hrl-kpi__label">No punch</div></div>
+  <%# Expected in and not checked in: people on leave, a holiday or a weekly off are not counted. %>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @employees.count { |u| @days[u.id]&.kind == :absent } %></div><div class="hrl-kpi__label">No punch</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @flagged_count %></div><div class="hrl-kpi__label">Flagged</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @records.values.count { |r| r.check_in_at && r.check_out_at.nil? } %></div><div class="hrl-kpi__label">Still in</div></div>
 </div>
@@ -71,6 +69,8 @@
               <span class="hrl-badge hrl-badge--bad">Flagged</span> <span class="hrl-small"><%= record.flag_note %></span>
             <% elsif record&.check_in_at %>
               <span class="hrl-badge hrl-badge--ok"><%= record.status.humanize %><%= " (#{record.half_day_part} half)" if record.half_day_part %></span>
+            <% elsif @days[employee.id] %>
+              <%= hrl_team_status(@days[employee.id]) %>
             <% else %>
               <span class="hrl-badge hrl-badge--muted">No punch</span>
             <% end %>

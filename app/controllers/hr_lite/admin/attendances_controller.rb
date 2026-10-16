@@ -11,6 +11,8 @@ module HrLite
         @employees = @employees.select { |user| visible.include?(user.id) } if visible
         @records = AttendanceRecord.for_date(@date).where(user_id: @employees.map(&:id)).index_by(&:user_id)
         @flagged_count = @records.values.count(&:flagged?)
+        # Leave, holidays and weekly offs are not "No punch": the team board's day status says which.
+        @days = TeamDay.new(date: @date).rows.index_by { |row| row.user.id }
         @penalty_minutes = AttendancePenalty.held_minutes(@employees.map(&:id))
         # "How many people punched where": off-site punches count as one place.
         @offices = OfficeLocation.active.to_a
