@@ -13,6 +13,9 @@ module HrLite
                   # ->(user) { { url:, unread: } } — shows a notifications link in
                   # the HR shell; nil (default) shows nothing.
                   :notifications,
+                  # ->(request) { bool } — is this request from the host's native app?
+                  # Native pages load Turbo (see the layout); browsers never do.
+                  :native_app,
                   # e.g. 6 — default probation for new hires (admin edits per employee)
                   :probation_months,
                   # true = a punch without GPS is refused (default: recorded and flagged)
@@ -114,6 +117,7 @@ module HrLite
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
       @back_link             = nil # optional {label:, url:} for the shell nav
+      @native_app            = ->(request) { request.user_agent.to_s.match?(/Hotwire Native|Turbo Native/) }
       @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
       @slip_release_day       = nil # e.g. 10 = slips open on the 10th of the next month
       @self_regularization    = nil # e.g. { within_days: 2, per_week: 2 } — employees fix their own missed punch

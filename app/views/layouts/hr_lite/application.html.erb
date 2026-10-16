@@ -7,6 +7,13 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= yield :head %>
+  <% if HrLite.config.native_app.call(request) %>
+    <%# The host's iOS/Android shells drive pages through Turbo. "reload" makes
+        every visit a full page load, so the plain scripts below run exactly
+        as they do in a browser. Browsers never load Turbo here. %>
+    <meta name="turbo-visit-control" content="reload">
+    <%= javascript_include_tag "hr_lite/vendor/turbo.min", type: "module" %>
+  <% end %>
   <%= stylesheet_link_tag "hr_lite/hr_lite", media: "all" %>
   <% HrLite.config.extra_stylesheets.each do |sheet| %>
     <%= stylesheet_link_tag sheet, media: "all" %>
