@@ -13,7 +13,7 @@
 
   <section class="hrl-card">
     <p>
-      Declaration: <%= hrl_request_status_badge(@declaration.status == "verified" ? "approved" : @declaration.status) %>
+      Declaration: <% if @declaration.verified? %><span class="hrl-badge hrl-badge--ok">Verified</span><% elsif @declaration.rejected? %><span class="hrl-badge hrl-badge--bad">Sent back</span><% else %><%= hrl_request_status_badge(@declaration.status) %><% end %>
       <% if @declaration.note.present? %><span class="hrl-small hrl-muted">— <%= @declaration.note %></span><% end %>
     </p>
     <fieldset class="hrl-field" <%= "disabled" if locked %>>
@@ -26,7 +26,7 @@
         </div>
       <% end %>
     </fieldset>
-  </details>
+  </section>
 
   <details class="hrl-card" <%= "open" if @declaration.regime != "new" || @declaration.errors.any? %>>
     <summary class="hrl-btn">Investments and rent (old regime only)</summary>
@@ -69,7 +69,7 @@
       <% if submittable %><button type="submit" name="submit_to_hr" value="1" class="hrl-btn hrl-btn--primary">Submit to HR</button><% end %>
     </div>
   <% else %>
-    <p class="hrl-small hrl-muted">HR has verified this year's declaration. Ask HR to reopen it to change anything.</p>
+    <p class="hrl-small hrl-muted">HR has verified this year's declaration. To change anything, ask HR through Help › Ask HR.</p>
   <% end %>
 <% end %>
 <% content_for(:scripts) { javascript_include_tag "hr_lite/tax_preview", defer: true } %>

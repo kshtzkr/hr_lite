@@ -18,8 +18,8 @@
 
     <fieldset>
       <legend>Provident fund</legend>
-      <% { employee_rate: "Employee rate (0.12 = 12%)", employer_rate: "Employer rate",
-           eps_rate: "EPS rate", wage_ceiling: "PF wage ceiling (₹)",
+      <% { employee_rate: "Employee rate (0.12 = 12%)", employer_rate: "Employer rate (0.12 = 12%)",
+           eps_rate: "EPS rate (0.0833 = 8.33%)", wage_ceiling: "PF wage ceiling (₹)",
            eps_wage_ceiling: "EPS wage ceiling (₹)", edli_rate: "EDLI rate",
            edli_ceiling: "EDLI ceiling (₹)", admin_rate: "PF admin rate" }.each do |key, label| %>
         <div class="hrl-field">
@@ -32,7 +32,7 @@
 
     <fieldset>
       <legend>ESI</legend>
-      <% { employee_rate: "Employee rate", employer_rate: "Employer rate",
+      <% { employee_rate: "Employee rate (0.0075 = 0.75%)", employer_rate: "Employer rate (0.0325 = 3.25%)",
            gross_ceiling: "Gross ceiling (₹)" }.each do |key, label| %>
         <div class="hrl-field">
           <%= label_tag "statutory_rate_card_esi_#{key}", label %>

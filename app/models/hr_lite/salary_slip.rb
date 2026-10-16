@@ -63,7 +63,7 @@ module HrLite
 
     # Bump the version when the PDF template changes, or the old layout serves until the cache expires.
     def pdf_cache_key
-      [ "hr_lite_slip_v2", id, updated_at.to_i, payroll_run.status,
+      [ "hr_lite_slip_v3", id, updated_at.to_i, payroll_run.status,
         user_profile&.updated_at.to_i ].join("/")
     end
 

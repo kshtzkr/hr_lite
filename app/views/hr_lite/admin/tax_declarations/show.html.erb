@@ -53,6 +53,7 @@
   </section>
 <% end %>
 
+<% if @declaration.submitted? %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Decide</h2>
   <div class="hrl-row">
@@ -71,3 +72,4 @@
     <%= submit_tag "Send back", class: "hrl-btn" %>
   <% end %>
 </section>
+<% end %>

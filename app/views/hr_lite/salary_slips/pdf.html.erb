@@ -33,7 +33,7 @@
         </td>
       </tr>
       <tr>
-        <td>Payable days: <%= @slip.payable_days %> / <%= @slip.days_in_month %> (LOP <%= @slip.effective_lop_days %>)</td>
+        <td>Payable days: <%= @slip.payable_days.to_s.delete_suffix(".0") %> / <%= @slip.days_in_month %> (unpaid <%= @slip.effective_lop_days.to_s.delete_suffix(".0") %>)</td>
         <td class="num"><% if @profile&.masked_account %>Bank: <%= @profile.bank_name %> <%= @profile.masked_account %><% end %></td>
       </tr>
     </tbody>

@@ -11,8 +11,9 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Tax working</h2>
   <dl class="hrl-deflist">
-    <% @slip.tax_details_hash.each do |key, value| %>
-      <dt><%= key.humanize %></dt><dd><%= value %></dd>
+    <% @slip.tax_details_hash.except("high_income_review").each do |key, value| %>
+      <dt><%= key == "fy_tds_already_deducted" ? "TDS already deducted this year" : key.humanize %></dt>
+      <dd><%= key.in?(%w[regime months_remaining]) ? value.to_s.humanize : hrl_money(value) %></dd>
     <% end %>
   </dl>
   <% if @slip.tax_details_hash["high_income_review"] == "true" %>

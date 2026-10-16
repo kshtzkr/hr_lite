@@ -4,18 +4,14 @@
 </div>
 
 <section class="hrl-card">
-  <div class="hrl-table-wrap">
-    <table class="hrl-table hrl-table--stack">
-      <tbody>
-        <tr><td data-label="Status"><%= @loan.status.humanize %></td></tr>
-        <tr><td data-label="Monthly instalment"><%= hrl_money(@loan.monthly_instalment) %></td></tr>
-        <tr><td data-label="Starts"><%= @loan.starts_on.strftime("%b %Y") %></td></tr>
-        <tr><td data-label="Repaid"><%= hrl_money(@loan.repaid) %></td></tr>
-        <tr><td data-label="Outstanding"><strong><%= hrl_money(@loan.outstanding) %></strong></td></tr>
-        <% if @loan.reason.present? %><tr><td data-label="Reason"><%= @loan.reason %></td></tr><% end %>
-      </tbody>
-    </table>
-  </div>
+  <dl class="hrl-deflist">
+    <dt>Status</dt><dd><%= @loan.status.humanize %></dd>
+    <dt>Monthly instalment</dt><dd><%= hrl_money(@loan.monthly_instalment) %></dd>
+    <dt>Starts</dt><dd><%= @loan.starts_on.strftime("%b %Y") %></dd>
+    <dt>Repaid</dt><dd><%= hrl_money(@loan.repaid) %></dd>
+    <dt>Outstanding</dt><dd><strong><%= hrl_money(@loan.outstanding) %></strong></dd>
+    <% if @loan.reason.present? %><dt>Reason</dt><dd><%= @loan.reason %></dd><% end %>
+  </dl>
 
   <% if @loan.active? %>
     <div class="hrl-row">
