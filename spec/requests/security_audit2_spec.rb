@@ -47,6 +47,28 @@ RSpec.describe "Security audit 2", type: :request do
     expect(response).to have_http_status(:not_found)
   end
 
+  it "keeps a date of birth and help-desk text out of the audit trail (SE-10)" do
+    profile = create(:employee_profile, user: employee)
+    profile.update!(date_of_birth: Date.new(1990, 4, 12))
+    request = HrLite::HrRequest.create!(user: employee, category: "bank_change", subject: "New account at HDFC", body: "Account 99887766")
+
+    trail = HrLite::AuditLog.where(subject_id: [ profile.id, request.id ]).pluck(:audited_changes)
+    expect(trail.to_s).not_to include("1990", "HDFC", "99887766")
+    expect(trail.to_s).to include("[changed]")
+  end
+
+  it "files an 'Aadhaar' or ' PAN ' upload in the money tier, whatever the case (SE-13)" do
+    docs = [ "Aadhaar", " PAN " ].map { |category| HrLite::Document.create!(user_id: employee.id, category: category, title: "ID", file: pdf) }
+    expect(docs.map(&:visibility)).to eq(%w[money money])
+  end
+
+  it "mentions employees in kudos, never an outside login (SE-14)" do
+    ca = user_with_roles(HrLite::Role::CA, name: "Outside CA")
+    kudo = create(:kudo, giver: hr, message: "Thanks @[Meera](#{employee.id}) @[CA](#{ca.id})")
+
+    expect(kudo.register_mentions!).to eq([ employee ])
+  end
+
   it "takes away everything but the Employee role on offboarding (SE-15)" do
     leaver = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::FINANCE, name: "Leaver")
     profile = create(:employee_profile, user: leaver)
