@@ -20,7 +20,7 @@
     <% (first.cwday - 1).times do %><div></div><% end %>
     <% (first..@month.end_of_month).each do |date| %>
       <% cell_class, code =
-           if @holidays[date] then [ "hrl-mgrid__day--holiday", "H" ]
+           if @calendar.holiday?(date) then [ "hrl-mgrid__day--holiday", "H" ]
            elsif @calendar.weekend?(date) then "hrl-mgrid__day--weekend"
            elsif @leaves[date].any? then [ "hrl-mgrid__day--leave", "#{@leaves[date].size} off" ]
            end %>
@@ -40,7 +40,7 @@
 
   <%# Names only — the leave type is the employee's own business. Leave keeps its label's "(first half)" note. %>
   <% day = ->(d) { d.strftime("%a %-d %b") }
-     agenda = @holidays.values.flatten.map { |h| [ h.date, "#{day.(h.date)}: #{h.name} (holiday)" ] } +
+     agenda = @holidays.values.flatten.map { |h| [ h.date, "#{day.(h.date)}: #{h.name} (#{h.optional ? 'optional holiday' : 'holiday'})" ] } +
               @leaves.values.flatten.uniq.map { |r| [ [ r.start_date, first ].max, "#{[ r.start_date, r.end_date ].uniq.map(&day).join(' – ')}#{r.date_range_label[/ \(.+\)/]}: #{hr_display_name(r.user)}, on leave" ] } %>
   <% if agenda.any? %>
     <ul class="hrl-feed hrl-small hrl-mt">
