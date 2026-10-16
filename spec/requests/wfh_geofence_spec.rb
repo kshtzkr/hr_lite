@@ -27,9 +27,9 @@ RSpec.describe "Office geofence and WFH", type: :request do
   end
 
   describe "check-in" do
-    it "offers Request WFH on the home page" do
+    it "offers Work from home on the home page, once" do
       get "/hr"
-      expect(response.body).to include(%(href="/hr/wfh_requests">Request WFH</a>))
+      expect(response.body.scan(%(href="/hr/wfh_requests")).size).to eq(1)
     end
 
     it "allows a check-in inside the 500 m radius" do

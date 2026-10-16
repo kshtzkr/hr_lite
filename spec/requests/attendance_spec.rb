@@ -88,7 +88,7 @@ RSpec.describe "Attendance", type: :request do
       it "shows how long an open day has run" do
         create(:attendance_record, user: user, date: Date.current, check_in_at: Time.zone.local(2026, 10, 8, 9))
         get "/hr/attendance"
-        expect(response.body).to include("In since 09:00 · 3h 15m so far")
+        expect(response.body).to include(%(In since 09:00 · <span data-hrl-since="#{Time.zone.local(2026, 10, 8, 9).iso8601}">3h 15m so far</span>))
         expect(response.body).to include('data-hrl-geo-status role="status" aria-live="polite"></p>')
       end
 

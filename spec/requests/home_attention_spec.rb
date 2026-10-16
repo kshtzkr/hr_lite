@@ -19,7 +19,8 @@ RSpec.describe "Home needs attention", type: :request do
     expect(response.body).to include("Mon 5 Jul · Absent").and include(fix_href(today - 3))
     expect(response.body).to include("Needs a fix")
     expect(response.body).to include("Thu 1 Jul · No check-out").and include("Fri 2 Jul · Flagged")
-    expect(response.body).to include("Apply leave").and include("Fix a day").and include("Payslip")
+    expect(response.body).to include("Fix a day").and include("Payslip")
+    expect(response.body).not_to include(">Apply leave</a>") # the leave balance card carries Apply for leave
   end
 
   it "skips weekends, worked holidays, today, last night's open shift, days with a pending ticket and days over a week ago" do

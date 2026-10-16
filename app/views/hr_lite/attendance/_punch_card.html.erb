@@ -13,7 +13,7 @@
 
   <div class="hrl-row hrl-row--mb hrl-small">
     <% if record&.check_in_at && !record.check_out_at %>
-      <span class="hrl-badge hrl-badge--ok">In since <%= record.check_in_at.strftime("%H:%M") %> · <%= hrl_duration(Time.current - record.check_in_at) %> so far</span>
+      <span class="hrl-badge hrl-badge--ok">In since <%= record.check_in_at.strftime("%H:%M") %> · <span data-hrl-since="<%= record.check_in_at.iso8601 %>"><%= hrl_duration(Time.current - record.check_in_at) %> so far</span></span>
     <% elsif record&.check_in_at %>
       <span class="hrl-badge hrl-badge--ok">In <%= record.check_in_at.strftime("%H:%M") %></span>
     <% end %>
@@ -142,8 +142,6 @@
 
   <% if local_assigns.key?(:attention) %>
     <div class="hrl-row">
-      <a class="hrl-btn" href="<%= hr_lite.new_leave_request_path %>">Apply leave</a>
-      <% if HrLite.config.office_geofence %><a class="hrl-btn" href="<%= hr_lite.wfh_requests_path %>">Request WFH</a><% end %>
       <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path %>">Fix a day</a>
       <a class="hrl-btn" href="<%= hr_lite.new_comp_off_request_path %>">Comp-off</a>
       <% if hr_lite_route?(:salary_slips_path) %><a class="hrl-btn" href="<%= hr_lite.salary_slips_path %>">Payslip</a><% end %>

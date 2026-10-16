@@ -12,7 +12,7 @@
 <% elsif due %>
   <% left = due - Time.current %>
   <p class="hrl-small">Checked in <%= record.check_in_at.strftime("%H:%M") %> · checkout at <strong><%= due.strftime("%H:%M") %></strong> ·
-    <%= left.positive? ? "#{hrl_duration(left)} left" : "you can check out" %></p>
+    <span data-hrl-countdown="<%= due.iso8601 %>" data-hrl-done="you can check out"><%= left.positive? ? "#{hrl_duration(left)} left" : "you can check out" %></span></p>
 <% end %>
 <% HrLite::AttendancePenalty.active.where(user_id: hr_current_user.id, date: Date.current).each do |penalty| %>
   <p class="hrl-small"><span class="hrl-badge hrl-badge--warn">+<%= penalty.minutes %> min</span> <%= penalty.label %></p>
@@ -23,11 +23,14 @@
       <label for="hrl-slot-start">Check-in slot</label>
       <%= select_tag :start_minute, options_for_select(HrLite::AttendanceSlot::START_MINUTES.map { |m| [ "#{HrLite::AttendanceSlot.label(m)} – out #{HrLite::AttendanceSlot.label(m + HrLite::EmployeeProfile.day_minutes_for(hr_current_user.id))}", m ] }, start), id: "hrl-slot-start" %>
     </div>
-    <div class="hrl-field">
-      <label for="hrl-slot-period">For</label>
-      <%= select_tag :period, options_for_select(HrLite::AttendanceSlot::PERIODS.invert), id: "hrl-slot-period" %>
-    </div>
-    <button type="submit" class="hrl-btn hrl-btn--block">Save and lock slot</button>
+    <fieldset class="hrl-field">
+      <legend>Lock this slot for</legend>
+      <div class="hrl-mode-switch">
+        <% HrLite::AttendanceSlot::PERIODS.each do |period, word| %>
+          <button type="submit" name="period" value="<%= period %>" class="hrl-btn" data-turbo-confirm="Lock this slot for <%= word.downcase %>? After that only HR can change it."><%= word %></button>
+        <% end %>
+      </div>
+    </fieldset>
     <p class="hrl-small hrl-muted">Once saved, only HR can change it for that period.</p>
   <% end %>
 <% end %>
