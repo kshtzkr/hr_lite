@@ -124,7 +124,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-nav__link--active .hrl-nav__hint { color: inherit; }
 /* Tab row: the current place's tabs on one line; it scrolls sideways, never the page. */
 .hrl-tabrow { display: flex; gap: var(--hrl-gap-target); overflow-x: auto; margin: 0 0 var(--hrl-s-4); padding-bottom: var(--hrl-s-2); border-bottom: 1px solid var(--hrl-line); }
-.hrl-tabrow .hrl-nav__link { flex: 0 0 auto; white-space: nowrap; }
+.hrl-tabrow .hrl-nav__link { flex: 0 0 auto; white-space: nowrap; min-width: var(--hrl-target); justify-content: center; }
 .hrl-side__divider { height: 1px; background: var(--hrl-line); margin: var(--hrl-s-2) var(--hrl-s-1); }
 
 /* Mobile app bar */
@@ -415,6 +415,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-card--private .hrl-badge--muted { background: var(--hrl-card); }
 
 /* Tax: the two regimes side by side, then the working as a plain table. */
+.hrl-slabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--hrl-gap-target); align-items: end; }
 .hrl-tax-compare { display: grid; grid-template-columns: 1fr 1fr; gap: var(--hrl-s-3); margin: var(--hrl-s-4) 0 var(--hrl-s-2); }
 .hrl-tax-compare__col { border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); padding: var(--hrl-s-3); min-width: 0; }
 .hrl-tax-compare__col--chosen { border: 2px solid var(--hrl-accent); }
@@ -622,8 +623,9 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-donut__track { stroke: var(--hrl-bg); }
 .hrl-swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: var(--hrl-radius-pill); vertical-align: middle; }
 .hrl-chart-scroll { overflow-x: auto; }
-.hrl-bars { width: 100%; min-width: 16rem; height: 10rem; }
-.hrl-bars__label { font-size: 5px; fill: var(--hrl-muted); }
+/* Wide enough per bar that the height (10rem) sets the scale, so labels render ~12.6px and long ranges scroll. */
+.hrl-bars { width: 100%; min-width: max(16rem, calc(var(--hrl-bars-n, 0) * 1.4rem)); height: 10rem; }
+.hrl-bars__label { font-size: 9px; fill: var(--hrl-muted); }
 .hrl-daystrip { width: 100%; height: 2rem; background: var(--hrl-bg); border-radius: var(--hrl-radius-sm); }
 .hrl-timeline__auto { stroke: var(--hrl-card); stroke-width: .3; stroke-dasharray: .6 .4; }
 .hrl-timeline__axis { display: flex; justify-content: space-between; }

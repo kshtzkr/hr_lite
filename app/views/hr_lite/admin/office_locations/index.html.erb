@@ -18,7 +18,7 @@
               <td data-label="Coordinates"><%= office.lat %>, <%= office.lng %></td>
               <td data-label="Radius" class="hrl-num"><%= office.radius_m %> m</td>
               <td data-label="Active"><%= office.active ? "Yes" : "No" %></td>
-              <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_office_location_path(office) %>">Edit</a></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.edit_admin_office_location_path(office) %>">Edit</a></td>
             </tr>
           <% end %>
         </tbody>

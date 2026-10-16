@@ -21,7 +21,7 @@
           <% @requests.each do |request| %>
             <tr>
               <td data-label="Request">
-                <a href="<%= hr_lite.admin_hr_request_path(request) %>"><%= request.subject %></a>
+                <a class="hrl-card__link" href="<%= hr_lite.admin_hr_request_path(request) %>"><%= request.subject %></a>
                 <div class="hrl-small hrl-muted"><%= request.category_label %></div>
               </td>
               <td data-label="Who"><%= hr_display_name(request.user) %></td>
@@ -29,7 +29,7 @@
                 <%= request.assigned_to ? hr_display_name(request.assigned_to) : "—" %>
               </td>
               <td data-label="">
-                <a class="hrl-small" href="<%= hr_lite.admin_hr_request_path(request) %>">Open</a>
+                <a class="hrl-btn" href="<%= hr_lite.admin_hr_request_path(request) %>">Open</a>
               </td>
             </tr>
           <% end %>

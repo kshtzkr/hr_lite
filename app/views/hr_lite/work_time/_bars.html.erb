@@ -7,11 +7,12 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">By <%= period.bucket %></h2>
   <div class="hrl-chart-scroll">
-    <svg class="hrl-bars" viewBox="0 0 <%= buckets.size * (w + gap) %> <%= h + 14 %>" role="img"
+    <svg class="hrl-bars" style="--hrl-bars-n: <%= buckets.size %>" viewBox="0 0 <%= buckets.size * (w + gap) %> <%= h + 14 %>" role="img"
          aria-label="Time per <%= period.bucket %> stacked by work mode; tallest bar <%= hrl_duration(max) %>; details in the table">
       <% buckets.each_with_index do |(key, modes), i| %>
         <% x = i * (w + gap); y = h %>
-        <a href="<%= path.(period: period.bucket == :day ? "day" : (period.bucket == :week ? "week" : "month"), date: key) %>">
+        <a href="<%= path.(period: period.bucket == :day ? "day" : (period.bucket == :week ? "week" : "month"), date: key) %>"
+           aria-label="<%= key.strftime(period.bucket == :day ? "%a %-d %b" : fmt) %>: <%= hrl_duration(totals[key]) %>">
           <% modes.except("offline").sort.each do |mode, secs| %>
             <% next unless secs.positive? %>
             <% bh = secs / max * h; y -= bh %>
@@ -28,7 +29,7 @@
     </svg>
   </div>
   <details class="hrl-small">
-    <summary>Show as a table</summary>
+    <summary class="hrl-card__link">Show as a table</summary>
     <table class="hrl-table">
       <thead><tr><th><%= period.bucket.to_s.capitalize %></th><th class="hrl-num">Working (breaks incl.)</th><th class="hrl-num">Of which breaks</th><th class="hrl-num">Total</th></tr></thead>
       <tbody>

@@ -58,7 +58,8 @@
           <%= select_tag :office_location_id, options_for_select(@offices), include_blank: "All offices", id: "bulk-office", data: { hrl_filter: ("Type an office" if @offices.size > 5) } %></div>
       <% end %>
       <div class="hrl-field">
-        <textarea name="lines" class="hrl-input" rows="6" placeholder="2026-11-09, Diwali&#10;2026-03-04, Holi"></textarea>
+        <label for="bulk-lines">One holiday a line: date, name</label>
+        <textarea name="lines" id="bulk-lines" class="hrl-input" rows="6" placeholder="2026-11-09, Diwali&#10;2026-03-04, Holi"></textarea>
       </div>
       <div class="hrl-form-actions">
         <button type="submit" class="hrl-btn hrl-btn--primary">Add all</button>

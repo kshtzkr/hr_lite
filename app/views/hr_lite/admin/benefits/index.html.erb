@@ -20,7 +20,8 @@
     <%= form_with url: hr_lite.enrol_admin_benefit_path(benefit), method: :post, local: true do %>
       <div class="hrl-field">
         <%= label_tag "enrol_user_#{benefit.id}", "Employee" %>
-        <%= select_tag :user_id, options_for_select(people), id: "enrol_user_#{benefit.id}" %>
+        <%= select_tag :user_id, options_for_select(people), id: "enrol_user_#{benefit.id}", include_blank: "Choose…", required: true,
+                       data: { hrl_filter: "Type a name to filter" } %>
       </div>
       <div class="hrl-field">
         <%= label_tag "enrol_on_#{benefit.id}", "Covered from" %>

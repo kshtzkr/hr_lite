@@ -13,7 +13,8 @@
     <div class="hrl-field">
       <%= f.label :user_id, "Employee" %>
       <%= f.select :user_id, options_for_select(HrLite.employees.map { |u| [ hr_display_name(u), u.id ] },
-                                                @item.user_id) %>
+                                                @item.user_id),
+                   { include_blank: "Choose…" }, required: true, data: { hrl_filter: "Type a name to filter" } %>
     </div>
     <div class="hrl-field">
       <%= f.label :component_id, "Item" %>
