@@ -97,6 +97,15 @@ RSpec.describe "Documents over HTTP", type: :request do
       expect(response).to have_http_status(:redirect)
     end
 
+    it "hands out a link that stops working after five minutes" do
+      doc = upload(user: employee)
+      sign_in employee
+      get "/hr/documents/#{doc.id}/download"
+      link = response.location
+      travel(6.minutes) { get link }
+      expect(response).to have_http_status(:not_found)
+    end
+
     it "404s a stranger, rather than admitting the document exists" do
       doc = upload(user: employee)
       stranger = user_with_roles(HrLite::Role::EMPLOYEE)
@@ -186,6 +195,29 @@ RSpec.describe "Documents over HTTP", type: :request do
       expect(response.body).to include("PAN card")
       # aadhaar, passport and bank have not been uploaded
       expect(response.body).to include("Aadhaar")
+    end
+
+    it "uploads a document for the person, never for themselves, and only as a company-wide profile manager" do
+      pdf = -> { Rack::Test::UploadedFile.new(StringIO.new("%PDF-1.4\n"), "application/pdf", original_filename: "a.pdf") }
+      get "/hr/admin/documents/for/#{employee.id}"
+      expect(response.body).to include("Upload a document")
+
+      post "/hr/admin/documents/for/#{employee.id}", params: { document: { category: "aadhaar", title: "Aadhaar", file: pdf.call } }
+      expect(response).to redirect_to("/hr/admin/documents/for/#{employee.id}")
+      expect(HrLite::Document.last).to have_attributes(user_id: employee.id, uploaded_by_id: hr.id, visibility: "money")
+
+      post "/hr/admin/documents/for/#{employee.id}", params: { document: { title: "No category", file: pdf.call } }
+      expect(response).to have_http_status(:unprocessable_content)
+      post "/hr/admin/documents/for/#{hr.id}", params: { document: { category: "other", title: "Mine", file: pdf.call } }
+      expect(response).to have_http_status(:not_found)
+
+      viewer = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::MANAGER)
+      HrLite::Role.find_by!(name: HrLite::Role::MANAGER).role_grants.create!(permission_key: "document.view", scope: "all") # sees files, may not file them
+      sign_in viewer
+      get "/hr/admin/documents/for/#{employee.id}"
+      expect(response.body).not_to include("Upload a document")
+      expect { post "/hr/admin/documents/for/#{employee.id}", params: { document: { category: "other", title: "X", file: pdf.call } } }
+        .not_to change(HrLite::Document, :count)
     end
 
     it "turns away an employee entirely" do

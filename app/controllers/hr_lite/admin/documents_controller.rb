@@ -17,10 +17,24 @@ module HrLite
       end
 
       def show
-        @employee = HrLite.user_klass.find(params[:user_id])
-        hr_require_reach!("document.view", @employee)
-        @documents = Document.for_user(@employee).recent_first
-        @missing = Document::SENSITIVE_CATEGORIES - @documents.map(&:category)
+        load_person
+        @document = Document.new
+      end
+
+      # HR files a document for someone, e.g. a scan handed over on paper:
+      # company-wide profile managers only, and never their own (My documents).
+      def create
+        load_person
+        raise ActiveRecord::RecordNotFound if @employee.id == hr_current_user.id
+        return hr_access_denied unless hr_can?("profile.manage", scope: :all)
+
+        @document = Document.new(params.require(:document).permit(:category, :title, :reference_number, :issued_on, :expires_on, :file)
+                                       .merge(user_id: @employee.id, uploaded_by_id: hr_current_user.id))
+        if @document.save
+          redirect_to admin_employee_documents_path(@employee.id), notice: "#{@document.title} uploaded."
+        else
+          render :show, status: :unprocessable_entity
+        end
       end
 
       def verify
@@ -43,6 +57,13 @@ module HrLite
       end
 
       private
+
+      def load_person
+        @employee = HrLite.user_klass.find(params[:user_id])
+        hr_require_reach!("document.view", @employee)
+        @documents = Document.for_user(@employee).recent_first
+        @missing = Document::SENSITIVE_CATEGORIES - @documents.map(&:category)
+      end
 
       def require_document_access!
         hr_require_permission!("document.view", scope: :team)

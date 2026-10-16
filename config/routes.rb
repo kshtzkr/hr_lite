@@ -105,6 +105,7 @@ HrLite::Engine.routes.draw do
       member { post :verify; post :reject }
     end
     get "documents/for/:user_id", to: "documents#show", as: :employee_documents
+    post "documents/for/:user_id", to: "documents#create"
     resources :tax_declarations, only: %i[index show update] do
       member { post :verify; post :reject; post :accept_all; get "proofs/:proof_id", action: :proof, as: :proof }
       collection { get :overview; get "people/:user_id", action: :person, as: :person }
