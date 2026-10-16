@@ -216,6 +216,27 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(own.reload).to be_pending
     end
 
+    it "changes a decided request's dates (past allowed) and decision, with a required reason" do
+      request = wfh("rejected", from: Date.current + 2, to: Date.current + 6)
+      wfh("approved", from: Date.current + 10, to: Date.current + 10)
+      get "/hr/admin/wfh_requests/#{request.id}"
+      expect(response.body).to include("Change this WFH")
+
+      change = { start_date: Date.current - 3, end_date: Date.current - 2, status: "approved" }
+      patch "/hr/admin/wfh_requests/#{request.id}", params: change
+      expect(flash[:alert]).to include("reason is required")
+      patch "/hr/admin/wfh_requests/#{request.id}", params: change.merge(end_date: Date.current + 10, decision_note: "x")
+      expect(flash[:alert]).to include("already have")
+
+      patch "/hr/admin/wfh_requests/#{request.id}", params: change.merge(decision_note: "Worked from home after all")
+      expect(request.reload).to have_attributes(start_date: Date.current - 3, end_date: Date.current - 2, status: "approved",
+                                                decided_by_id: admin.id, decision_note: "Worked from home after all")
+      expect(HrLite::AuditLog.where(action: "wfh.changed").count).to eq(1)
+
+      patch "/hr/admin/wfh_requests/#{wfh('pending', from: Date.current + 20, to: Date.current + 20).id}", params: change
+      expect(response).to have_http_status(:not_found)
+    end
+
     it "counts each employee once and filters the board" do
       create(:employee_profile, user: employee, department: "Sales")
       create(:employee_profile, user: colleague, department: "Ops")

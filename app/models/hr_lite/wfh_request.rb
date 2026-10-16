@@ -12,7 +12,9 @@ module HrLite
 
     validates :start_date, :end_date, :reason, presence: true
     validates :status, inclusion: { in: STATUSES }
-    validate :dates_in_window, :no_overlap, on: :create
+    validate :dates_in_window, on: :create
+    validate :no_overlap
+    validate :changed_dates, on: :update, if: -> { start_date_changed? || end_date_changed? }
 
     scope :pending, -> { where(status: "pending") }
     scope :approved, -> { where(status: "approved") }
@@ -59,6 +61,16 @@ module HrLite
                "/admin/wfh_requests/#{id}", HrLite.admin_users)
     end
 
+    # HR changes a decided request after the fact: dates, decision or both, with a reason.
+    def change!(actor:, start_date:, end_date:, status:, note:)
+      was = "#{dates_label}, #{self.status}"
+      update!(start_date: start_date, end_date: end_date, status: status, decided_by_id: actor.id,
+              decided_at: Time.current, decision_note: note)
+      AuditLog.record!(action: "wfh.changed", subject: self, actor: actor,
+                       changes: { "was" => was, "now" => "#{dates_label}, #{status}", "note" => note })
+      announce("wfh.#{status}", "HR changed your WFH — #{dates_label}, #{status}", note, "/wfh_requests", [ user ])
+    end
+
     def notify_requested
       AuditLog.record!(action: "wfh.requested", subject: self, actor: user,
                        changes: { "dates" => dates_label, "reason" => reason })
@@ -100,10 +112,18 @@ module HrLite
     end
 
     def no_overlap
-      return unless start_date && end_date && user_id
+      return unless start_date && end_date && user_id && %w[pending approved].include?(status)
 
-      clash = self.class.live.where(user_id: user_id).overlapping(start_date, end_date).exists?
+      clash = self.class.live.where(user_id: user_id).where.not(id: id).overlapping(start_date, end_date).exists?
       errors.add(:base, "You already have a pending or approved WFH request on some of these dates") if clash
+    end
+
+    # HR may move a request into the past to match the days actually worked.
+    def changed_dates
+      return unless start_date && end_date
+
+      errors.add(:end_date, "must be on or after the start date") if end_date < start_date
+      errors.add(:end_date, "HR can set at most #{HR_MAX_DAYS} days at a time") if days > HR_MAX_DAYS
     end
   end
 end

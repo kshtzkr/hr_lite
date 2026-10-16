@@ -1,7 +1,7 @@
 module HrLite
   module Admin
     # WFH board (counts, who is home on a date, every schedule) and the
-    # decision screen. Viewing is attendance.view, deciding attendance.manage.
+    # decision screen. Viewing is attendance.view, deciding and changing attendance.manage.
     class WfhRequestsController < BaseController
       def index
         @from = params[:from].present? ? parse_date_param(params[:from]) : Date.current
@@ -62,6 +62,19 @@ module HrLite
         redirect_to admin_wfh_requests_path, notice: "WFH rejected."
       rescue ActiveRecord::RecordInvalid
         redirect_to admin_wfh_request_path(request), alert: "Only pending requests can be decided."
+      end
+
+      # HR changes an approved or rejected request: dates (past allowed) and/or decision, with a reason.
+      def update
+        request = decidable.where(status: %w[approved rejected]).find(params[:id])
+        note = params[:decision_note].to_s.strip
+        return redirect_to admin_wfh_request_path(request), alert: "A reason is required to change WFH." if note.blank?
+
+        request.change!(actor: hr_current_user, start_date: params[:start_date], end_date: params[:end_date],
+                        status: params[:status].presence_in(%w[approved rejected]) || request.status, note: note)
+        redirect_to admin_wfh_request_path(request), notice: "WFH changed for #{hr_display_name(request.user)}."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_wfh_request_path(request), alert: "Could not change WFH: #{e.record.errors.full_messages.to_sentence}"
       end
 
       private
