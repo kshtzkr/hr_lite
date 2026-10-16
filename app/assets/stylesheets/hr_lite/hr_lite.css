@@ -420,7 +420,8 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-tax-compare__col--chosen { border: 2px solid var(--hrl-accent); }
 .hrl-tax-compare__amount { font-size: var(--hrl-t-title); font-weight: 700; margin-top: var(--hrl-s-1); overflow-wrap: anywhere; }
 .hrl-tax-working { margin-top: var(--hrl-s-3); }
-.hrl-tax-working__table td { vertical-align: top; overflow-wrap: anywhere; }
+.hrl-tax-working__table td { vertical-align: top; overflow-wrap: break-word; } /* anywhere let the table squeeze amounts mid-number */
+.hrl-tax-working__table td.hrl-num { white-space: nowrap; }
 .hrl-tax-working__total td { font-weight: 700; border-top: 1px solid var(--hrl-line); }
 .hrl-tax-cap { display: block; width: 100%; height: 8px; margin-top: var(--hrl-s-1); accent-color: var(--hrl-accent); }
 

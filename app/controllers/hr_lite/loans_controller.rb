@@ -4,7 +4,7 @@ module HrLite
   class LoansController < ApplicationController
     def index
       @loans = Loan.where(user_id: hr_current_user.id).order(starts_on: :desc)
-      @outstanding = @loans.sum(BigDecimal(0), &:outstanding)
+      @outstanding = @loans.active.sum(BigDecimal(0), &:outstanding)
       @next_month = Date.current.next_month.beginning_of_month
     end
   end
