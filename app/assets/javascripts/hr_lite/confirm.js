@@ -26,11 +26,15 @@
         return;
       }
 
-      // Double-submit guard (data-disable-with is inert without Turbo/ujs). The
-      // timeout lets the submitter's value post first; geo punch runs its own.
-      if (!form.hasAttribute("data-hrl-geo-punch") && event.submitter) {
-        var b = event.submitter;
-        setTimeout(function () { b.disabled = true; b.setAttribute("aria-busy", "true"); }, 0);
+      // Double-submit guard (data-disable-with is inert without Turbo/ujs): every
+      // submit button of the form, Enter included. The timeout lets the
+      // submitter's value post first; geo punch runs its own.
+      if (!form.hasAttribute("data-hrl-geo-punch")) {
+        setTimeout(function () {
+          Array.prototype.forEach.call(form.elements, function (b) {
+            if (b.type === "submit") { b.disabled = true; b.setAttribute("aria-busy", "true"); }
+          });
+        }, 0);
       }
     },
     true // capture, so the check runs before any other submit handler
