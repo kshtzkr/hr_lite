@@ -10,15 +10,17 @@ module HrLite
 
     module_function
 
+    # Paise are spelled too: a slip showing ₹99,612.91 must not say "six hundred thirteen".
     def words(amount)
-      rupees = Money.round_rupee(amount).to_i
-      return "Zero rupees" if rupees.zero?
+      paise = (Money.d(amount) * 100).round(0, BigDecimal::ROUND_HALF_UP).to_i
+      return "Zero rupees" if paise.zero?
 
+      rupees, cents = paise.abs.divmod(100)
       # A negative amount rendered as bare " rupees": no group was >= its
       # divisor, so nothing was ever appended.
-      sentence = groups(rupees.abs).join(" ")
-      sentence = "minus #{sentence}" if rupees.negative?
-      "#{sentence.capitalize} rupees"
+      sentence = rupees.zero? ? "zero" : groups(rupees).join(" ")
+      sentence = "minus #{sentence}" if paise.negative?
+      "#{sentence.capitalize} rupees#{" and #{two_digit(cents)} paise" if cents.positive?}"
     end
 
     def groups(rupees)

@@ -22,6 +22,13 @@ RSpec.describe "Money presentation" do
       expect(described_class.words(BigDecimal("-1500"))).to eq("Minus one thousand five hundred rupees")
     end
 
+    # The slip showed ₹99,612.91 and spelled "six hundred thirteen rupees".
+    it "spells the paise the figure shows, never a rounded rupee" do
+      expect(described_class.words(BigDecimal("99612.91"))).to eq("Ninety-nine thousand six hundred twelve rupees and ninety-one paise")
+      expect(described_class.words(BigDecimal("0.5"))).to eq("Zero rupees and fifty paise")
+      expect(described_class.words(BigDecimal("-12.05"))).to eq("Minus twelve rupees and five paise")
+    end
+
     # Every other group is reduced below 100 by the preceding modulo, but the
     # crore group is unbounded and two_digit only knows 0..99.
     it "spells past a hundred crore" do
