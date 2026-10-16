@@ -37,6 +37,12 @@ RSpec.describe "Leave requests", type: :request do
       expect(form.css("label[for]").map { |l| l["for"] }).to all(satisfy { |id| form.at_css("##{id}") })
     end
 
+    it "does not offer comp-off with nothing credited" do
+      comp = create(:leave_type, name: "Comp off", comp_off: true, annual_quota: 0)
+      get "/hr/leave_requests/new"
+      expect(Nokogiri::HTML(response.body).at_css("input[name='leave_request[leave_type_id]'][value='#{comp.id}']")).to be_nil
+    end
+
     it "still rejects a half day that spans two dates" do
       post "/hr/leave_requests", params: {
         leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1, half_day_part: "first" }
@@ -50,6 +56,8 @@ RSpec.describe "Leave requests", type: :request do
       post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 1 } }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("During probation only 1 day of leave a month is allowed")
+      get "/hr/leave_requests/new"
+      expect(response.body).to include("On probation until 30 Nov 2027: at most 1 day of leave a month")
     end
 
     it "re-renders with errors on invalid input" do
@@ -58,6 +66,13 @@ RSpec.describe "Leave requests", type: :request do
       }
       expect(response).to have_http_status(:unprocessable_entity)
       expect(response.body).to include("prevented saving")
+      form = Nokogiri::HTML(response.body)
+      expect(form.at_css("#leave_request_end_date")["aria-describedby"]).to eq("hrl-end_date-error")
+      expect(form.at_css("#hrl-end_date-error").text).to eq("End date must be on or after the start date")
+
+      post "/hr/leave_requests", params: { leave_request: { start_date: "" } }
+      expect(Nokogiri::HTML(response.body).css(".hrl-errors li").map(&:text))
+        .to eq([ "Leave type is missing — pick one", "Start date is missing — pick the first day" ])
     end
 
     it "shows own request but 404s a foreign one" do
@@ -84,6 +99,8 @@ RSpec.describe "Leave requests", type: :request do
       post "/hr/leave_requests/#{request.id}/cancel"
       expect(flash[:alert]).to include("no longer")
       expect(request.reload).to be_approved
+      get "/hr/leave_requests/#{request.id}"
+      expect(response.body).to include("This leave has started").and include("Ask HR")
     end
 
     it "lists each request as one row linking to it, with the status badge" do
@@ -122,7 +139,7 @@ RSpec.describe "Leave requests", type: :request do
       expect(card).not_to include("Asha")
       expect(card).not_to include("Later")
       expect(card).not_to include("Sick leave")
-      expect(response.body.index("Out in the next 2 weeks")).to be > response.body.index("Submit request")
+      expect(response.body.index("Out in the next 2 weeks")).to be > response.body.index("Send for approval")
     end
   end
 

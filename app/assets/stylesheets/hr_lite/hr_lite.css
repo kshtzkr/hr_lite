@@ -366,7 +366,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-field--check label .hrl-hint { display: block; margin-top: 0; font-weight: 400; }
 /* Rails wraps an invalid label/field in this div; contents keeps the stack, the re-pointed token reddens the border. */
 .field_with_errors { display: contents; --hrl-field: var(--hrl-bad); }
-.field_with_errors label { color: var(--hrl-bad); }
+.field_with_errors label, .hrl-hint--bad { color: var(--hrl-bad); }
 .hrl-errors { background: var(--hrl-bad-bg); color: var(--hrl-bad); border-radius: var(--hrl-radius-sm); padding: .7rem .9rem; margin-bottom: .85rem; font-size: var(--hrl-t-body); }
 .hrl-errors ul { margin: .3rem 0 0; padding-left: 1.1rem; }
 .hrl-form-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
@@ -460,7 +460,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-tree__role { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
 .hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 .hrl-chainrow__step { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }
-.hrl-chainrow .hrl-badge { white-space: normal; overflow-wrap: anywhere; }
+.hrl-chainrow .hrl-badge, .hrl-badge--type { white-space: normal; overflow-wrap: anywhere; } /* long leave-balance chips wrap, not cut */
 .hrl-chainrow__arrow { color: var(--hrl-muted); }
 
 /* Definition list */
