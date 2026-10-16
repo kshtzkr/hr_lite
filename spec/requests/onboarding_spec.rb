@@ -11,6 +11,15 @@ RSpec.describe "Onboarding and offboarding", type: :request do
   end
 
   describe "onboarding a brand-new person" do
+    it "masks the starting password, marks the joining date required and hints PAN, UAN and IFSC" do
+      get "/hr/admin/employees/new"
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("#employee_profile_new_user_password")["type"]).to eq("password")
+      expect(page.at_css("#employee_profile_date_of_joining")["required"]).not_to be_nil
+      expect(page.css("h2.hrl-card__title").map(&:text)).to eq([ "Identity", "Work", "Attendance rules", "Pay & statutory" ])
+      expect(response.body).to include("like ABCDE1234F", "12 digits.", "like HDFC0001234")
+    end
+
     it "creates the login via the hook plus the profile, and welcomes them" do
       expect {
         post "/hr/admin/employees", params: { employee_profile: {

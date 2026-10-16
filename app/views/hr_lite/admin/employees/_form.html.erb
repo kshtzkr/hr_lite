@@ -1,6 +1,7 @@
 <section class="hrl-card">
   <%= form_with model: profile, url: url, method: method, scope: :employee_profile, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: profile %>
+    <h2 class="hrl-card__title">Identity</h2>
     <% if profile.new_record? && profile.user_id.blank? %>
       <div class="hrl-field">
         <%= f.label :user_id, "Existing staff member" %>
@@ -22,7 +23,7 @@
         </div>
         <div class="hrl-field">
           <%= f.label :new_user_password, "Starting password (optional)" %>
-          <%= f.text_field :new_user_password %>
+          <%= f.password_field :new_user_password, autocomplete: "new-password" %>
           <p class="hrl-hint">Leave blank (recommended): they get an email invite and set their own
             password. Fill it only if you want to hand a password over yourself.</p>
         </div>
@@ -40,6 +41,7 @@
       <p class="hrl-hint">The employee code is assigned automatically
         (<%= HrLite::Setting.instance.employee_code_prefix %> + next number).</p>
     <% end %>
+    <h2 class="hrl-card__title hrl-mt">Work</h2>
     <div class="hrl-field"><%= f.label :designation %><%= f.text_field :designation %></div>
     <div class="hrl-field">
       <%= f.label :manager_id, "Reports to (their L1)" %>
@@ -64,7 +66,7 @@
         <%= f.select :office_location_id, offices, { include_blank: "None — only all-office holidays" }, data: { hrl_filter: ("Type an office" if offices.size > 5) } %></div>
     <% end %>
     <div class="hrl-field"><%= f.label :date_of_birth %><%= f.date_field :date_of_birth %></div>
-    <div class="hrl-field"><%= f.label :date_of_joining %><%= f.date_field :date_of_joining %></div>
+    <div class="hrl-field"><%= f.label :date_of_joining %><%= f.date_field :date_of_joining, required: true %></div>
     <div class="hrl-field">
       <%= f.label :blood_group, id: "hrl-blood-group", for: nil %>
       <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-blood-group">
@@ -79,6 +81,7 @@
       <%= f.label :probation_until, "On probation until (blank = not on probation)" %>
       <%= f.date_field :probation_until %>
     </div>
+    <h2 class="hrl-card__title hrl-mt">Attendance rules</h2>
     <% if HrLite.config.attendance_slots %>
       <div class="hrl-field">
         <%= f.label :buffer_minutes, "Late buffer (delays late penalties; colleagues see the reason category)" %>
@@ -99,12 +102,16 @@
       <%= f.label :date_of_exit, "Date of exit (leave blank while employed)" %>
       <%= f.date_field :date_of_exit %>
     </div>
-    <div class="hrl-field"><%= f.label :pan_number, "PAN" %><%= f.text_field :pan_number %></div>
-    <div class="hrl-field"><%= f.label :pf_uan, "PF UAN" %><%= f.text_field :pf_uan %></div>
+    <h2 class="hrl-card__title hrl-mt">Pay &amp; statutory</h2>
+    <div class="hrl-field"><%= f.label :pan_number, "PAN" %><%= f.text_field :pan_number %>
+      <p class="hrl-hint">10 characters in capitals, like ABCDE1234F.</p></div>
+    <div class="hrl-field"><%= f.label :pf_uan, "PF UAN" %><%= f.text_field :pf_uan %>
+      <p class="hrl-hint">12 digits.</p></div>
     <div class="hrl-field"><%= f.label :esi_number, "ESI number" %><%= f.text_field :esi_number %></div>
     <div class="hrl-field"><%= f.label :bank_name %><%= f.text_field :bank_name %></div>
     <div class="hrl-field"><%= f.label :bank_account_number %><%= f.text_field :bank_account_number %></div>
-    <div class="hrl-field"><%= f.label :bank_ifsc, "IFSC" %><%= f.text_field :bank_ifsc %></div>
+    <div class="hrl-field"><%= f.label :bank_ifsc, "IFSC" %><%= f.text_field :bank_ifsc %>
+      <p class="hrl-hint">11 characters in capitals, fifth is a zero, like HDFC0001234.</p></div>
     <div class="hrl-field">
       <%= f.label :tax_regime %>
       <%= f.select :tax_regime, HrLite::EmployeeProfile::TAX_REGIMES.map { |r| [ "#{r.humanize} regime", r ] } %>
