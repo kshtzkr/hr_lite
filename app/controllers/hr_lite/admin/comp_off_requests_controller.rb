@@ -4,7 +4,7 @@ module HrLite
       def index
         @status = params[:status].presence_in(CompOffRequest::STATUSES) || "pending"
         @requests = paginate(hr_scope(CompOffRequest.includes(:user).where(status: @status).recent_first,
-                                      "leave.view"))
+                                      "leave.view").where.not(user_id: hr_current_user.id))
       end
 
       def show

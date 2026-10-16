@@ -33,7 +33,7 @@
   <section class="hrl-card">
     <h2 class="hrl-card__title">Reject</h2>
     <%= form_with url: hr_lite.reject_admin_wfh_request_path(@request), method: :post, local: true do |f| %>
-      <div class="hrl-field"><%= f.label :decision_note, "Remark (required)", for: "reject_note" %><%= f.text_area :decision_note, id: "reject_note" %></div>
+      <div class="hrl-field"><%= f.label :decision_note, "Remark (required)", for: "reject_note" %><%= f.text_area :decision_note, id: "reject_note", required: true %></div>
       <div class="hrl-form-actions"><%= f.button "Reject", type: :submit, class: "hrl-btn hrl-btn--danger" %></div>
     <% end %>
   </section>

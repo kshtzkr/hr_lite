@@ -39,7 +39,7 @@ RSpec.describe "Admin overview", type: :request do
     sign_in admin
     get "/hr/admin/overview"
     page = Nokogiri::HTML(response.body)
-    expect(page.at_css('a.hrl-card__link[href="/hr/admin/leave_requests"]').text).to eq("All requests")
+    expect(page.at_css('a.hrl-card__link[href="/hr/approvals"]').text).to eq("All requests")
     expect(page.css("a.hrl-small")).to be_empty
     expect(page.css(".hrl-kpi__label").map(&:text))
       .to eq([ "Pending approvals", "On leave today", "Flagged punches", "Missing checkouts" ])

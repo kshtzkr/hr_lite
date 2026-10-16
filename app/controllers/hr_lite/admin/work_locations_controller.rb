@@ -5,7 +5,7 @@ module HrLite
     # Coordinates are only shown here, inside attendance.view reach.
     class WorkLocationsController < BaseController
       def index
-        @status = params[:status].presence_in(WorkLocation::STATUSES) || "approved"
+        @status = params[:status].presence_in(WorkLocation::STATUSES) || "pending"
         @locations = paginate(hr_scope(WorkLocation.where(status: @status), "attendance.view")
                                 .includes(:user).order(created_at: :desc))
       end

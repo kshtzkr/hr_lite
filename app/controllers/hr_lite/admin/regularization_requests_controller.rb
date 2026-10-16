@@ -4,7 +4,7 @@ module HrLite
       def index
         @status = params[:status].presence_in(RegularizationRequest::STATUSES) || "pending"
         @requests = paginate(hr_scope(RegularizationRequest.includes(:user).where(status: @status).recent_first,
-                                      "attendance.view"))
+                                      "attendance.view").where.not(user_id: hr_current_user.id))
       end
 
       def show

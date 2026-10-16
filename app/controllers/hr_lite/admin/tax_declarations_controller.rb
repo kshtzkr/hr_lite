@@ -11,7 +11,7 @@ module HrLite
         @status = params[:status].presence_in(TaxDeclaration::STATUSES) || "submitted"
         @declarations = paginate(
           hr_scope(TaxDeclaration.includes(:user, :tax_declaration_items), "tax.view")
-            .where(status: @status).order(created_at: :desc)
+            .where(status: @status).where.not(user_id: hr_current_user.id).order(created_at: :desc)
         )
       end
 

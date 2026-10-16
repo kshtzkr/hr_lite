@@ -76,7 +76,7 @@
     <%= form_with url: hr_lite.reject_admin_leave_request_path(@request), method: :post, local: true do %>
       <div class="hrl-field">
         <label for="reject_note">Reason (required)</label>
-        <textarea name="decision_note" id="reject_note" class="hrl-input"></textarea>
+        <textarea name="decision_note" id="reject_note" class="hrl-input" required></textarea>
       </div>
       <div class="hrl-form-actions">
         <button class="hrl-btn hrl-btn--danger" type="submit">Reject</button>

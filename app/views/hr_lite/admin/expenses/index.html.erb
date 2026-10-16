@@ -33,8 +33,9 @@
                   <%= form_with url: hr_lite.approve_admin_expense_path(expense), method: :post do %>
                     <%= submit_tag "Approve", class: "hrl-btn hrl-btn--primary" %>
                   <% end %>
-                  <%= form_with url: hr_lite.reject_admin_expense_path(expense), method: :post do %>
-                    <%= text_field_tag :decision_note, nil, placeholder: "Why not", class: "hrl-input" %>
+                  <%= form_with url: hr_lite.reject_admin_expense_path(expense), method: :post, class: "hrl-row hrl-mt" do %>
+                    <%= label_tag "reject-expense-#{expense.id}", "Reason to reject", class: "hrl-sr-only" %>
+                    <%= text_field_tag :decision_note, nil, id: "reject-expense-#{expense.id}", placeholder: "Reason to reject", required: true, class: "hrl-input" %>
                     <%= submit_tag "Reject", class: "hrl-btn" %>
                   <% end %>
                 <% elsif expense.approved? %>
