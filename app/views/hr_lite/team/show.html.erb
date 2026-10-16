@@ -1,6 +1,6 @@
-<% content_for(:page_title) { "Everyone" } %>
+<% content_for(:page_title) { "Team board" } %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">Everyone — <%= @date == Date.current ? "today" : @date.strftime("%A, %d %B") %></h1>
+  <h1 class="hrl-page__title">Team board — <%= @date == Date.current ? "today" : @date.strftime("%A, %d %B") %></h1>
   <div class="hrl-page__actions">
     <a class="hrl-btn" aria-label="Previous day" href="<%= hr_lite.team_path(date: (@date - 1).strftime("%Y-%m-%d")) %>">&larr;</a>
     <% unless @date == Date.current %>

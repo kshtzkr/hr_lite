@@ -77,6 +77,6 @@ RSpec.describe "Team board", type: :request do
 
   it "falls back to today on garbage dates" do
     get "/hr/team", params: { date: "not-a-date" }
-    expect(response.body).to include("Everyone — today")
+    expect(response.body).to include("Team board — today")
   end
 end

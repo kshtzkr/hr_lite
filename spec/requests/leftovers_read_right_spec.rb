@@ -5,9 +5,9 @@ RSpec.describe "Leftover screens read right", type: :request do
 
   before { sign_in admin }
 
-  it "names the company board Everyone, on the tab and the page" do
+  it "names the company board Team board, on the tab and the page" do
     get "/hr/team"
-    expect(response.body).to include(">Everyone</a>", "Everyone — today", ">People</div>")
+    expect(response.body).to include(">Team board</a>", "Team board — today", ">People</div>")
     expect(response.body).not_to include("My team", "Team size")
   end
 

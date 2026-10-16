@@ -69,7 +69,7 @@ module HrLite
         { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE }
       ] },
       { label: "People", match: [ "/people" ], tabs: [
-        { label: "Everyone", path: :team_path, match: [ "/team" ] },
+        { label: "Team board", path: :team_path, match: [ "/team" ] },
         { label: "Org chart", path: :org_path, match: [ "/org" ] },
         { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] },
         { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
