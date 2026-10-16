@@ -133,6 +133,15 @@ RSpec.describe HrLite::Expense, no_legacy_bridge: true do
       expense.approve!(actor: finance)
       expect(expense.reload).to be_approved
     end
+
+    it "stands the flow down when the claim is decided outside it" do
+      expense = claim
+      expense.submit!(actor: employee)
+
+      expense.approve!(actor: finance) # finance is not on the open rung
+      expect(expense.reload).to be_approved
+      expect(expense.approvals.pending).to be_empty
+    end
   end
 end
 

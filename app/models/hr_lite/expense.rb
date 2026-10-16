@@ -92,6 +92,7 @@ module HrLite
 
     def settle!(new_status, actor, note)
       update!(status: new_status, decision_note: note.presence)
+      approval_route.cancel_all! # decided outside the flow: nobody is left waiting to be asked
       Notifications.publish(
         new_status == "approved" ? "expense.approved" : "expense.rejected",
         title: "Your #{category.name} claim was #{new_status}",
