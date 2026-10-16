@@ -40,6 +40,11 @@
       <p class="hrl-hint">After checking out, a person can check in again once a day inside these hours.</p>
     </div>
     <div class="hrl-field">
+      <%= f.label :penalty_leave_type_id, "Penalties come off" %>
+      <%= f.collection_select :penalty_leave_type_id, HrLite::LeaveType.active, :id, :name, { include_blank: "No leave (penalties stay as time)" }, data: { hrl_filter: "Type a leave type to filter" } %>
+      <p class="hrl-hint">Every working day of penalty time this leave year holds one day of this leave, in half days, and leave past it is refused. Removing a penalty gives the day back.</p>
+    </div>
+    <div class="hrl-field">
       <%= f.label :employee_code_prefix, "Employee code prefix" %>
       <%= f.text_field :employee_code_prefix %>
       <p class="hrl-hint">Codes are assigned automatically as

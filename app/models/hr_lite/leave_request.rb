@@ -362,15 +362,22 @@ module HrLite
       errors.add(:base, "During probation only 1 day of leave a month is allowed") if taken + days_count > 1
     end
 
-    # Only comp-off is refused past its balance: it is earned credit, never
-    # borrowed. Any other type's excess becomes loss of pay at approval.
+    # Refused past the balance: comp-off (earned credit, never borrowed) and a
+    # balance with days held for penalties. Any other excess becomes loss of pay at approval.
     def sufficient_balance
       return unless start_date && end_date && leave_type
-      return if leave_type.unlimited? || !leave_type.comp_off || errors.any?
+      return if leave_type.unlimited? || errors.any?
 
-      if LeaveDayCounter.count(self) > balance.available(as_of: start_date)
-        errors.add(:base, "Not enough #{leave_type.name} balance")
-      end
+      held = balance.penalty_days
+      return unless leave_type.comp_off || held.positive?
+
+      left = balance.applicable(as_of: start_date)
+      return if LeaveDayCounter.count(self) <= left
+
+      return errors.add(:base, "Not enough #{leave_type.name} balance") unless held.positive?
+
+      days = ->(n) { ActiveSupport::NumberHelper.number_to_rounded(n, precision: 1, strip_insignificant_zeros: true) }
+      errors.add(:base, "For these dates you can apply for at most #{days.(left)} days of #{leave_type.name} — #{days.(held)} #{held == 1 ? 'day' : 'days'} held for penalties")
     end
   end
 end

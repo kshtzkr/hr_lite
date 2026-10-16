@@ -41,7 +41,10 @@
       <% @employees.each do |employee| %>
         <% record = @records[employee.id] %>
         <tr>
-          <td data-label="Employee"><%= hr_display_name(employee) %></td>
+          <td data-label="Employee"><%= hr_display_name(employee) %>
+            <% if (held = @penalty_minutes[employee.id].to_i).positive? %>
+              <br><a class="hrl-card__link hrl-small" href="<%= hr_lite.admin_attendance_path(employee.id, anchor: "penalties") %>">Penalties <%= hrl_duration(held * 60) %> · <%= hrl_days(HrLite::AttendancePenalty.days_for(held)) %> days</a>
+            <% end %></td>
           <td data-label="In"><%= record&.check_in_at&.strftime("%H:%M") || "—" %></td>
           <td data-label="Out"><%= record&.check_out_at&.strftime("%H:%M") || "—" %></td>
           <td data-label="Location" class="hrl-small">

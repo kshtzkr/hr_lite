@@ -72,6 +72,32 @@ RSpec.describe HrLite::LeaveRequest do
       lwp = create(:leave_type, :unpaid_unlimited)
       expect(build_request(leave_type: lwp, start_date: monday + 1, end_date: monday + 1)).to be_valid
     end
+
+    it "holds every 5h of penalties, from any year, as half a day of the type HR picks until HR removes hours" do
+      earned = create(:leave_type, name: "Earned", annual_quota: 12)
+      HrLite::Setting.instance.update!(penalty_leave_type: earned)
+      record = create(:attendance_record, :checked_in, user: user, date: monday - 7)
+      [ Date.new(2026, 3, 2), monday - 7 ].each do |date| # last leave year still counts
+        HrLite::AttendancePenalty.create!(user_id: user.id, date: date, minutes: 3000, reason: "late", attendance_record: record)
+      end
+      balance = HrLite::LeaveBalance.for(user, earned, HrLite::LeaveYear.key_for(monday))
+      # 100h = 10 days held; the balance itself is not cut.
+      expect([ balance.penalty_days, balance.available, HrLite::LeaveBalance.for(user, type, monday.year).penalty_days ]).to eq([ 10, 12, 0 ])
+      expect([ 420, 240, 600 ].map { |m| HrLite::AttendancePenalty.days_for(m) }).to eq([ 0.5, 0, 1 ])
+      HrLite::LeaveBalance.adjust!(user, earned, balance.year, delta: 0.25, note: "accrual")
+      expect(HrLite::LeaveBalance.for(user, earned, balance.year).applicable).to eq(2) # 2.25 rounds down to a half day
+
+      three = build_request(leave_type: earned, end_date: monday + 2)
+      expect(three).not_to be_valid
+      expect(three.errors[:base]).to eq([ "For these dates you can apply for at most 2 days of Earned — 10 days held for penalties" ])
+      expect(build_request(leave_type: earned, end_date: monday + 1)).to be_valid
+
+      removal = HrLite::PenaltyRemoval.create!(user_id: user.id, minutes: 3000, reason: "Metro strike", removed_by_id: user.id)
+      expect(balance.penalty_days).to eq(5)
+      expect { removal.update!(minutes: 1) }.to raise_error(ActiveRecord::ReadOnlyRecord)
+      HrLite::PenaltyRemoval.create!(user_id: user.id, minutes: 9000, reason: "Settled", removed_by_id: user.id)
+      expect(balance.penalty_days).to eq(0) # never below 0
+    end
   end
 
   describe "notifications on create" do

@@ -21,6 +21,7 @@ module HrLite
       "attendance.missed_check_in"  => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "attendance.missed_check_out" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "attendance.short_day" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
+      "attendance.penalty_removed" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "payroll.finalized"     => { bell: false, email: false, leadership_email: true,  leadership_bell: true  },
       "ca.flagged" => { bell: true, email: true, leadership_email: false, leadership_bell: false },
       "ca.reminder" => { bell: true, email: true, leadership_email: false, leadership_bell: false },

@@ -11,6 +11,7 @@ module HrLite
         @employees = @employees.select { |user| visible.include?(user.id) } if visible
         @records = AttendanceRecord.for_date(@date).where(user_id: @employees.map(&:id)).index_by(&:user_id)
         @flagged_count = @records.values.count(&:flagged?)
+        @penalty_minutes = AttendancePenalty.held_minutes(@employees.map(&:id))
         # "How many people punched where": off-site punches count as one place.
         @offices = OfficeLocation.active.to_a
         @places = %i[check_in check_out].index_with do |side|
@@ -151,6 +152,25 @@ module HrLite
 
         penalty.update!(removed_at: Time.current, removed_by_id: hr_current_user.id, removal_reason: reason)
         redirect_to admin_attendance_path(@employee.id, month: month), notice: "Penalty removed."
+      end
+
+      # HR settles part or all of a person's penalty hours with a reason; the rest stays.
+      def remove_penalty_hours
+        @employee = find_manageable_employee
+        minutes = (params[:hours].to_f * 60).round
+        reason = params[:reason].to_s.strip
+        held = AttendancePenalty.held_minutes(@employee.id)[@employee.id].to_i
+        back = admin_attendance_path(@employee.id, anchor: "penalties")
+        return redirect_to back, alert: "A reason is required." if reason.blank?
+        return redirect_to back, alert: "Remove between 0.5h and #{helpers.hrl_days(held / 60.0)}h." unless minutes.positive? && minutes <= held
+
+        removal = PenaltyRemoval.create!(user_id: @employee.id, minutes: minutes, reason: reason, removed_by_id: hr_current_user.id)
+        hours = helpers.hrl_days(minutes / 60.0)
+        AuditLog.record!(action: "attendance.penalty_hours_removed", subject: removal, actor: hr_current_user,
+                         changes: { "minutes" => minutes, "reason" => reason })
+        Notifications.publish("attendance.penalty_removed", title: "HR removed #{hours}h of your penalties", body: reason,
+                                                            path: "/attendance#penalties", bell_to: [ @employee ], email_to: [ @employee ])
+        redirect_to back, notice: "Removed #{hours}h of penalties."
       end
 
       private

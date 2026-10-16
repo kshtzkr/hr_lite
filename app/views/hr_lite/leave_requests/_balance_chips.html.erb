@@ -8,7 +8,7 @@
       <% types.each do |type| %>
         <% balance = HrLite::LeaveBalance.for(user, type, HrLite::LeaveYear.current_key) %>
         <span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= type.color %>">
-          <%= type.name %> · <%= hrl_days(balance.available) %> of <%= hrl_days(balance.entitled) %> left
+          <%= type.name %> · <%= hrl_days(balance.available) %> of <%= hrl_days(balance.entitled) %> left<% if (held = balance.penalty_days).positive? %> · <%= hrl_days(held) %> held for penalties<% end %>
         </span>
       <% end %>
     </div>

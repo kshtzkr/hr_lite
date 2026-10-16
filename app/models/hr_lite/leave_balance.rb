@@ -71,6 +71,17 @@ module HrLite
       entitled(as_of: as_of) - used
     end
 
+    # What can be applied for: available less days held for penalties, in half days.
+    def applicable(as_of: Date.current) = ([ available(as_of: as_of) - penalty_days, 0 ].max * 2).floor / 2.0
+
+    # Days held off the leave type HR picks in Settings. The balance itself is
+    # not cut; leave can be applied for only up to available less these.
+    def penalty_days
+      return 0 unless leave_type_id && leave_type_id == Setting.instance.penalty_leave_type_id
+
+      AttendancePenalty.days_for(AttendancePenalty.held_minutes(user_id)[user_id].to_i)
+    end
+
     private
 
     # Quota earned by as_of, before carry/adjustments. Monthly accrual

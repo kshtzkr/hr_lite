@@ -144,6 +144,23 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).to include("No leave types set up yet. Ask HR.")
       expect(response.body).not_to include("hrl-deflist")
     end
+
+    it "shows a day held for penalties on every balance screen and refuses leave past it" do
+      HrLite::Setting.instance.update!(penalty_leave_type: type)
+      record = create(:attendance_record, :checked_in, user: user, date: monday - 7)
+      HrLite::AttendancePenalty.create!(user_id: user.id, date: monday - 7, minutes: 600, reason: "late", attendance_record: record)
+
+      %w[/hr/leave_balances /hr/leave_requests/new /hr/leave_requests /hr].each do |path|
+        get path
+        expect(response.body).to include(path == "/hr/leave_balances" ? "Held for penalties" : "1 held for penalties")
+      end
+      get "/hr/leave_balances"
+      expect(response.body).to include("You can apply")
+      get "/hr/leave_requests/new"
+      expect(response.body).to include("Today you can apply for at most 11 days of Casual, 1 held for penalties.")
+      post "/hr/leave_requests", params: { leave_request: { leave_type_id: type.id, start_date: monday, end_date: monday + 15 } }
+      expect(CGI.unescapeHTML(response.body)).to include("For these dates you can apply for at most 11 days of Casual — 1 day held for penalties")
+    end
   end
 
   describe "holidays + calendar pages" do

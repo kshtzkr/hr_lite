@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-10-16
+
+- Penalty hours build up and limit leave. A person's attendance penalties (late, after 11:00, short day) add up with no yearly reset until HR removes them. Every 5 hours holds half a day and 10 hours a full day, the same for everyone: 100h = 10 days.
+- In Settings, HR picks "Penalties come off" a leave type (for example Earned leave); with no type picked, penalties limit nothing. The balance itself is not cut: 12 stays 12. You can apply for at most 12 − 10 = 2 days, rounded down to half days. Past that, the request is refused: "For these dates you can apply for at most 2 days of Earned leave — 10 days held for penalties". Other leave types keep today's rule, where days past the balance are unpaid.
+- A "Penalty hours" section on the employee's Attendance page, and on HR's page for that person, shows the hours held, the days they hold, and every HR removal (hours, who, when, reason). HR can remove any number of hours with a required reason: remove 50 of 100 and 50 stay, or remove all of it to settle to 0. The employee gets a bell and an email, and the audit log records it. Removing a single penalty works as before.
+- HR's team attendance view shows "Penalties 100h 00m · 10 days" on each person who has any, linking to their section.
+- "Held for penalties" and "You can apply" show on the employee's balances page, the leave chips, the apply form (with today's limit) and HR's balances grid.
+- Migrations: `hr_lite_settings.penalty_leave_type_id` and `hr_lite_penalty_removals`.
+
 ## [0.46.0] - 2026-10-15
 
 - Every check-in and check-out is kept. Checking in again, a repeat check-out and an HR reset used to overwrite the day's check-out, including its time and GPS. Now each punch is saved as its own row: time, GPS, accuracy, place and distance from home. Those rows are never edited or deleted, and saving a change to one raises an error. When a day has more than one in/out pair, "All punches: In 09:30 Office · Out 11:45 Office · In 12:10 Office · Out 18:05 Office" shows on the employee's Today card, their day detail and My work time, and on HR's "Where they punched". A day HR reset with Reset check-in keeps its old punches on show.

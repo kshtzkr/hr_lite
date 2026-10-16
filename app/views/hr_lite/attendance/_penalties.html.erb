@@ -1,3 +1,21 @@
+<%# The running total: penalties add up until HR removes hours; every 5h holds half a day of leave. %>
+<% held = HrLite::AttendancePenalty.held_minutes(user.id)[user.id].to_i
+   leave_type = HrLite::Setting.instance.penalty_leave_type %>
+<section class="hrl-card" id="penalties">
+  <h2 class="hrl-card__title">Penalty hours</h2>
+  <p><strong><%= hrl_duration(held * 60) %></strong> held · <%= hrl_days(HrLite::AttendancePenalty.days_for(held)) %> days<%= " of #{leave_type.name}" if leave_type %></p>
+  <p class="hrl-hint">Penalties add up until HR removes them. Every 5 hours holds half a day of leave, which can't be applied for.</p>
+  <% HrLite::PenaltyRemoval.where(user_id: user.id).includes(:removed_by).order(created_at: :desc).each do |removal| %>
+    <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">Removed <%= hrl_duration(removal.minutes * 60) %> on <%= removal.created_at.strftime("%-d %b %Y") %> by <%= hr_display_name(removal.removed_by) %>: <%= removal.reason %></div></div>
+  <% end %>
+  <% if local_assigns[:removable] && held.positive? %>
+    <%= form_with url: hr_lite.remove_penalty_hours_admin_attendance_path(user.id), method: :post, local: true, class: "hrl-mt" do %>
+      <div class="hrl-field"><label for="hrl-remove-hours">Hours to remove</label><input type="number" class="hrl-input" id="hrl-remove-hours" name="hours" min="0.5" step="0.5" max="<%= held / 60.0 %>" required></div>
+      <div class="hrl-field"><label for="hrl-remove-hours-reason">Reason (required)</label><input type="text" class="hrl-input" id="hrl-remove-hours-reason" name="reason" required></div>
+      <div class="hrl-form-actions"><button type="submit" class="hrl-btn">Remove hours</button></div>
+    <% end %>
+  <% end %>
+</section>
 <% penalties = HrLite::AttendancePenalty.where(user_id: user.id, date: month.all_month).order(:date, :id) %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Penalties in <%= month.strftime("%B") %></h2>
