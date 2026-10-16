@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.2] - 2026-10-16
+
+- Breaks count as working time. The standard day is 8h 30m including its break, but My work time (and HR's work time report) showed "Working time 8h 00m" for a full 8h 30m shift, because lunch and short breaks were left out. The KPI now reads "Working time (breaks included)" (8h 30m for that shift), and breaks show as "Of which breaks". The daily table's columns are "Working (breaks incl.)" and "Of which breaks". Only the display changed: attendance, penalties, half day and pay already used check-in to check-out.
+
 ## [0.48.1] - 2026-10-16
 
 - A choice the punch needs can't be missed on a phone any more. Examples: "Is this your home location?" (Yes, save it / No, I am travelling) and "I am travelling — check out here". The choice sits in the red box, and the page scrolls it to the middle of the screen when the card loads. If the button is tapped without a choice, the page scrolls back to it (the browser's own "select an option" note still shows). Checked at 360 px: the box comes into view, the check-out is held until it's ticked, then it goes through.

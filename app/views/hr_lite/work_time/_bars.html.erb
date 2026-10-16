@@ -30,11 +30,11 @@
   <details class="hrl-small">
     <summary>Show as a table</summary>
     <table class="hrl-table">
-      <thead><tr><th><%= period.bucket.to_s.capitalize %></th><th class="hrl-num">Working</th><th class="hrl-num">Breaks</th><th class="hrl-num">Total</th></tr></thead>
+      <thead><tr><th><%= period.bucket.to_s.capitalize %></th><th class="hrl-num">Working (breaks incl.)</th><th class="hrl-num">Of which breaks</th><th class="hrl-num">Total</th></tr></thead>
       <tbody>
         <% buckets.each do |key, modes| %>
           <tr><td><%= key.strftime(period.bucket == :day ? "%a %-d %b" : fmt) %></td>
-            <td class="hrl-num"><%= hrl_duration(HrLite::WorkModeDurations::WORKING.sum { |m| modes[m] }) %></td>
+            <td class="hrl-num"><%= hrl_duration((HrLite::WorkModeDurations::WORKING + HrLite::WorkModeDurations::BREAKS).sum { |m| modes[m] }) %></td>
             <td class="hrl-num"><%= hrl_duration(HrLite::WorkModeDurations::BREAKS.sum { |m| modes[m] }) %></td>
             <td class="hrl-num"><%= hrl_duration(totals[key]) %></td></tr>
         <% end %>

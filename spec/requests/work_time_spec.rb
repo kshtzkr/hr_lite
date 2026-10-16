@@ -23,8 +23,11 @@ RSpec.describe "My work time", type: :request do
   it "shows my own totals, matching the service, with the denominator stated" do
     get "/hr/work_time", params: { period: "day", date: day }
     result = HrLite::WorkModeDurations.call([ asha.id ], HrLite::WorkModeDurations::Period.build("day", day))
-    expect(response.body).to include(%(<div class="hrl-kpi__value">#{format('%dh %02dm', result.working / 3600, (result.working % 3600) / 60)}</div>))
-    expect(response.body).to include("8h 30m").and include("0h 30m").and include("9h 00m")
+    kpis = Nokogiri::HTML(response.body).css(".hrl-kpi").to_h { |k| [ k.at_css(".hrl-kpi__label").text, k.at_css(".hrl-kpi__value").text ] }
+    # Breaks count as working: a 9h day with a 30 min lunch is 9h of working time.
+    expect(kpis).to include("Working time (breaks included)" => format("%dh %02dm", (result.working + result.breaks) / 3600, ((result.working + result.breaks) % 3600) / 60),
+                            "Of which breaks" => "0h 30m")
+    expect(kpis["Working time (breaks included)"]).to eq("9h 00m")
     expect(response.body).to include("Shares are of tracked time").and include("<title>Lunch break")
   end
 
