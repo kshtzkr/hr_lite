@@ -33,7 +33,8 @@
         <%= label_tag :assignee_id, "Or hand it to somebody" %>
         <%= select_tag :assignee_id,
               options_for_select(HrLite.users_holding("hr_request.manage")
-                                       .map { |u| [ hr_display_name(u), u.id ] }) %>
+                                       .map { |u| [ hr_display_name(u), u.id ] }),
+              include_blank: "Choose…", required: true, data: { hrl_filter: "Type a name to filter" } %>
       </div>
       <div class="hrl-form-actions">
         <%= submit_tag "Assign", class: "hrl-btn" %>

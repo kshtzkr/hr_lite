@@ -624,7 +624,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: var(--hrl-radius-pill); vertical-align: middle; }
 .hrl-chart-scroll { overflow-x: auto; }
 /* Wide enough per bar that the height (10rem) sets the scale, so labels render ~12.6px and long ranges scroll. */
-.hrl-bars { width: 100%; min-width: max(16rem, calc(var(--hrl-bars-n, 0) * 1.4rem)); height: 10rem; }
+.hrl-bars { width: 100%; min-width: max(16rem, calc(var(--hrl-bars-n, 0) * 1.75rem)); height: 10rem; }
 .hrl-bars__label { font-size: 9px; fill: var(--hrl-muted); }
 .hrl-daystrip { width: 100%; height: 2rem; background: var(--hrl-bg); border-radius: var(--hrl-radius-sm); }
 .hrl-timeline__auto { stroke: var(--hrl-card); stroke-width: .3; stroke-dasharray: .6 .4; }
