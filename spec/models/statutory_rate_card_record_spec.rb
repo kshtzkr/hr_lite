@@ -128,10 +128,22 @@ RSpec.describe "Statutory figures as data" do
       expect(record.errors[:effective_from].join).to include("1st of a month")
     end
 
+    # Production cards seeded before this name the gem as the checker; they read as shipped
+    # defaults and stay verified, so auto-approval is unchanged.
+    it "shows an older shipped sign-off as shipped defaults, still verified" do
+      HrLite::StatutorySeeds.call
+      october = described_class.find_by!(effective_from: Date.new(2026, 10, 1))
+      october.update_columns(verified_by: "hr_lite 0.52.0 (official source in the notes)") # rubocop:disable Rails/SkipsModelValidations
+      october.reload
+      expect(october.verified_by).to eq(described_class::SHIPPED_SIGN_OFF)
+      expect(october).to be_verified
+    end
+
     it "ships the FY 2026-27 cards verified, citing their source" do
       HrLite::StatutorySeeds.call
       october = described_class.find_by!(effective_from: Date.new(2026, 10, 1))
       expect(october).to be_verified
+      expect(october.verified_by).to eq("Shipped defaults, not checked by a person")
       expect(october.notes).to include("S.O. 5109(E)")
       expect(described_class.find_by!(effective_from: Date.new(2025, 4, 1))).not_to be_verified
     end

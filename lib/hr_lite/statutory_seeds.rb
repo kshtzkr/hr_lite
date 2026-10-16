@@ -22,7 +22,7 @@ module HrLite
           income_tax: card[:income_tax].transform_values { |regime| stringify_regime(regime) },
           notes: StatutoryRateCard::SOURCES[effective_from] ||
                  "Shipped with hr_lite #{HrLite::VERSION}. Confirm with your accountant, then record who verified it.",
-          verified_by: (StatutoryRateCard::SOURCES.key?(effective_from) ? "hr_lite #{HrLite::VERSION} (official source in the notes)" : nil),
+          verified_by: (StatutoryRateCardRecord::SHIPPED_SIGN_OFF if StatutoryRateCard::SOURCES.key?(effective_from)),
           verified_on: (Date.current if StatutoryRateCard::SOURCES.key?(effective_from))
         )
         "rate card FY #{FinancialYear.label(effective_from)}"
