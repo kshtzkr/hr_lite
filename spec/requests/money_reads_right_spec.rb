@@ -22,6 +22,7 @@ RSpec.describe "Money that reads right", type: :request do
     get "/hr/salary_slips/#{slip.id}"
     table = Nokogiri::HTML(response.body).at_css(".hrl-card table.hrl-table--stack")
     expect(table.css("tbody tr:first-child td").map { |td| td["data-label"] }).to eq(%w[Component Full Earned])
+    expect(slip.pdf_cache_key).to start_with("hr_lite_slip_v2/") # the PDF's words changed too
   end
 
   it "keeps tax-working amounts on one line" do
