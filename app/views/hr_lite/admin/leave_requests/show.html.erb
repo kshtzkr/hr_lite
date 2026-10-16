@@ -15,7 +15,7 @@
     <% if @request.reason.present? %><dt>Reason</dt><dd><%= @request.reason %></dd><% end %>
     <% unless @request.leave_type.unlimited? %>
       <dt>Balance</dt>
-      <dd><%= hrl_days(@balance.available) %> of <%= hrl_days(@balance.entitled) %> available</dd>
+      <dd><%= hrl_days(@balance.available(as_of: @request.start_date)) %> of <%= hrl_days(@balance.entitled(as_of: @request.start_date)) %> available</dd>
       <% if (@request.pending? || @request.approved?) && (short = @request.days_beyond_balance).positive? %>
         <dt>Loss of pay</dt><dd><%= hrl_days(short) %> day(s) beyond the balance will be unpaid</dd>
       <% end %>

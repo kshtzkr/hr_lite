@@ -29,6 +29,13 @@ RSpec.describe "Leave beyond the balance is loss of pay" do
     expect(request.balance.available(as_of: Date.new(2027, 7, 14))).to eq(0)
   end
 
+  it "warns a later pending request when earlier pending ones already spend the balance" do
+    credit(2)
+    first = create(:leave_request, user: user, leave_type: type, start_date: Date.new(2027, 7, 12), end_date: Date.new(2027, 7, 13))
+    second = create(:leave_request, user: user, leave_type: type, start_date: Date.new(2027, 7, 19), end_date: Date.new(2027, 7, 19))
+    expect([ first.days_beyond_balance, second.days_beyond_balance ]).to eq([ 0, 1 ])
+  end
+
   it "leaves a request the balance fully covers untouched" do
     credit(3)
     request = approve(Date.new(2027, 7, 12), Date.new(2027, 7, 14))
@@ -52,7 +59,7 @@ RSpec.describe "Leave beyond the balance is loss of pay" do
     credit(1.5)
     approve(Date.new(2027, 7, 12), Date.new(2027, 7, 14))
     working = (Date.new(2027, 7, 1)..Date.new(2027, 7, 31)).reject { |d| d.saturday? || d.sunday? || (12..14).cover?(d.day) }
-    working.each { |d| create(:attendance_record, :checked_in, user: user, date: d) }
+    travel_to(Date.new(2027, 8, 1)) { working.each { |d| create(:attendance_record, :checked_in, user: user, date: d) } }
     profile = create(:employee_profile, user: user, date_of_joining: Date.new(2026, 1, 1))
     structure = create(:salary_structure, user: user, basic: 31000, hra: nil, special_allowance: nil)
 
