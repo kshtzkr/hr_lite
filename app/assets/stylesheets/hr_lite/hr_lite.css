@@ -101,8 +101,9 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 }
 .hrl-shell { display: flex; min-height: 100vh; }
 .hrl-content { flex: 1; min-width: 0; }
+/* Landscape notch: never closer to the cutout than the gutter. */
 .hrl-main {
-  padding: .85rem;
+  padding: .85rem max(.85rem, env(safe-area-inset-right)) .85rem max(.85rem, env(safe-area-inset-left));
   padding-bottom: calc(4.4rem + env(safe-area-inset-bottom));
   max-width: 68rem;
   margin: 0 auto;
@@ -281,7 +282,7 @@ details > form > button[type=submit], details > form > .hrl-btn { margin-top: .2
 .hrl-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
   min-height: var(--hrl-target); padding: .55rem 1rem; border-radius: var(--hrl-radius-sm);
-  border: 1px solid var(--hrl-line); background: var(--hrl-card); color: var(--hrl-ink);
+  border: 1px solid var(--hrl-field); background: var(--hrl-card); color: var(--hrl-ink);
   font-size: var(--hrl-t-body); font-weight: 600; cursor: pointer; text-decoration: none;
   max-width: 100%; overflow-wrap: anywhere; text-align: center;
 }
@@ -338,6 +339,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 
 /* Forms */
 .hrl-field { margin-bottom: .8rem; }
+@media (min-width: 1024px) { .hrl-field { max-width: 40rem; } }
 .hrl-field label, .hrl-field legend { display: block; font-size: var(--hrl-t-small); font-weight: 600; margin-bottom: .3rem; }
 fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-hint { color: var(--hrl-muted); font-size: var(--hrl-t-small); margin-top: .25rem; }
@@ -457,7 +459,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-tree__name, .hrl-tree__role { min-width: 0; overflow-wrap: anywhere; }
 .hrl-tree__name { font-weight: 700; font-size: var(--hrl-t-small); }
 a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--hrl-target); }
-.hrl-tree__role { color: var(--hrl-muted); font-size: var(--hrl-t-small); }
+.hrl-tree__role, .hrl-tree__card .hrl-muted { color: var(--hrl-ink-2); font-size: var(--hrl-t-small); }
 .hrl-chainrow { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 .hrl-chainrow__step { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; }
 .hrl-chainrow .hrl-badge { white-space: normal; overflow-wrap: anywhere; }
@@ -642,5 +644,6 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 
 /* Search palette (search.js): one box for screens and people, ⌘K anywhere. */
 .hrl-search { width: min(36rem, calc(100% - 2rem)); margin: 10vh auto auto; padding: var(--hrl-s-4); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius); background: var(--hrl-card); color: var(--hrl-ink); }
+.hrl-search__close { display: flex; justify-content: flex-end; margin: 0 0 var(--hrl-s-2); }
 .hrl-search::backdrop { background: rgb(15 23 42 / .4); }
 .hrl-search__list { list-style: none; margin: var(--hrl-s-1) 0 0; padding: 0; display: grid; gap: var(--hrl-s-2); }

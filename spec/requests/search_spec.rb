@@ -37,4 +37,10 @@ RSpec.describe "Global search", type: :request do
     expect(results("m")).to include("Type at least 2 letters")
     expect(results("work from home", frame: false)).to include("Inbox · WFH", "<h1 class=\"hrl-page__title\">Search</h1>")
   end
+
+  it "gives the search dialog a visible Close button" do
+    sign_in manager
+    get "/hr"
+    expect(response.body).to include('<form method="dialog" class="hrl-search__close"><button class="hrl-btn" type="submit">Close</button></form>')
+  end
 end
