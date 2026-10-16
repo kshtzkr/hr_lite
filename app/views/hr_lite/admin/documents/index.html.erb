@@ -35,7 +35,7 @@
               </td>
               <td data-label="File">
                 <% if doc.readable_by?(hr_current_user) && doc.file.attached? %>
-                  <a class="hrl-small" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
+                  <a class="hrl-btn" href="<%= hr_lite.download_document_path(doc) %>">Open</a>
                 <% else %>
                   <span class="hrl-small hrl-muted">Not yours to open</span>
                 <% end %>

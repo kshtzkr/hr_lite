@@ -18,7 +18,7 @@
               <td data-label="Monthly cap" class="hrl-num"><%= category.uncapped? ? "No cap" : hrl_money(category.monthly_cap) %></td>
               <td data-label="Receipt"><%= category.receipt_required ? "Required" : "Optional" %></td>
               <td data-label="Active"><%= category.active ? "Yes" : "No" %></td>
-              <td data-label=""><a class="hrl-small" href="<%= hr_lite.edit_admin_expense_category_path(category) %>">Edit</a></td>
+              <td data-label=""><a class="hrl-btn" href="<%= hr_lite.edit_admin_expense_category_path(category) %>">Edit</a></td>
             </tr>
           <% end %>
         </tbody>

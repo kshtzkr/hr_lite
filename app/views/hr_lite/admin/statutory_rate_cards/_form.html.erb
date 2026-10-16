@@ -68,16 +68,20 @@
           the open-ended top rate.
         </p>
         <% slabs = Array(table["slabs"]) %>
-        <% (slabs + [ nil, nil ]).each_with_index do |row, index| %>
-          <div class="hrl-row">
+        <% num = ->(v) { v && number_with_precision(v, precision: 4, strip_insignificant_zeros: true) } %>
+        <div class="hrl-slabs">
+          <span class="hrl-small" aria-hidden="true">From ₹</span>
+          <span class="hrl-small" aria-hidden="true">Up to ₹</span>
+          <span class="hrl-small" aria-hidden="true">Rate (0.05 = 5%)</span>
+          <% (slabs + [ nil, nil ]).each_with_index do |row, index| %>
             <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][from]",
-                               row&.first, placeholder: "From ₹", inputmode: "decimal" %>
+                               num.(row&.first), class: "hrl-input", inputmode: "decimal", "aria-label": "Band #{index + 1} from ₹" %>
             <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][to]",
-                               row&.at(1), placeholder: "Up to ₹ (blank = top)", inputmode: "decimal" %>
+                               num.(row&.at(1)), class: "hrl-input", inputmode: "decimal", "aria-label": "Band #{index + 1} up to ₹ (blank = top)" %>
             <%= text_field_tag "statutory_rate_card[income_tax][#{regime}][slabs][#{index}][rate]",
-                               row&.last, placeholder: "Rate (0.05)", inputmode: "decimal" %>
-          </div>
-        <% end %>
+                               num.(row&.last), class: "hrl-input", inputmode: "decimal", "aria-label": "Band #{index + 1} rate" %>
+          <% end %>
+        </div>
       </fieldset>
     <% end %>
 

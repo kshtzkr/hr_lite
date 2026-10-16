@@ -23,7 +23,7 @@
             <td data-label="Carry cap" class="hrl-num"><%= type.carry_forward_cap.to_f %></td>
             <td data-label="Paid"><%= type.paid ? "Yes" : "No" %></td>
             <td data-label="">
-              <a class="hrl-small" href="<%= hr_lite.edit_admin_leave_type_path(type) %>">Edit</a>
+              <a class="hrl-btn" href="<%= hr_lite.edit_admin_leave_type_path(type) %>">Edit</a>
             </td>
           </tr>
         <% end %>
