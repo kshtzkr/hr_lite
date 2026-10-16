@@ -7,11 +7,11 @@
   </div>
 </div>
 
-<div class="hrl-kpis">
+<div class="hrl-kpis hrl-kpis--money">
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @slips.size %></div><div class="hrl-kpi__label">Slips</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_gross) %></div><div class="hrl-kpi__label">Gross</div></div>
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_net) %></div><div class="hrl-kpi__label">Net payout</div></div>
-  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_employer_cost) %></div><div class="hrl-kpi__label">Employer cost</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_money(@run.total_employer_cost) %></div><div class="hrl-kpi__label">Employer contributions</div></div>
 </div>
 
 <% if @run.warnings.any? %>

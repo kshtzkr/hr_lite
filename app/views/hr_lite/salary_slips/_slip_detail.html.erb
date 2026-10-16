@@ -9,17 +9,17 @@
   <section class="hrl-card">
     <h2 class="hrl-card__title">Earnings</h2>
     <div class="hrl-table-wrap">
-      <table class="hrl-table">
+      <table class="hrl-table hrl-table--stack">
         <thead><tr><th>Component</th><th class="hrl-num">Full</th><th class="hrl-num">Earned</th></tr></thead>
         <tbody>
           <% slip.earnings_rows.each do |row| %>
             <tr>
-              <td><%= row["label"] %></td>
-              <td class="hrl-num"><%= hrl_money(row["full_amount"]) %></td>
-              <td class="hrl-num"><%= hrl_money(row["amount"]) %></td>
+              <td data-label="Component"><%= row["label"] %></td>
+              <td data-label="Full" class="hrl-num"><%= hrl_money(row["full_amount"]) %></td>
+              <td data-label="Earned" class="hrl-num"><%= hrl_money(row["amount"]) %></td>
             </tr>
           <% end %>
-          <tr><td><strong>Gross</strong></td><td></td><td class="hrl-num"><strong><%= hrl_money(slip.gross_earnings) %></strong></td></tr>
+          <tr><td data-label="Component"><strong>Gross</strong></td><td class="hrl-cell--void"></td><td data-label="Earned" class="hrl-num"><strong><%= hrl_money(slip.gross_earnings) %></strong></td></tr>
         </tbody>
       </table>
     </div>

@@ -41,7 +41,7 @@ RSpec.describe "Payroll screens and edge branches", type: :request do
     expect(slip.published?).to be(false)
 
     get "/hr/admin/payroll_runs/#{run.id}"
-    expect(response.body).to include("Employer cost")
+    expect(response.body).to include("Employer contributions")
 
     get "/hr/admin/payroll_runs/#{run.id}/register.csv"
     expect(response.body).to include("ESI").and include(profile.employee_code)

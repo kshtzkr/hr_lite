@@ -21,7 +21,7 @@
       <dl class="hrl-deflist">
         <dt>Monthly instalment</dt><dd><%= hrl_money(loan.monthly_instalment) %></dd>
         <dt>Repaid so far</dt><dd><%= hrl_money(loan.repaid) %></dd>
-        <dt>Outstanding</dt><dd><strong><%= hrl_money(loan.outstanding) %></strong></dd>
+        <dt>Outstanding</dt><dd><strong><%= loan.active? ? hrl_money(loan.outstanding) : "—" %></strong></dd>
         <dt>Next deduction</dt>
         <dd>
           <% amount = loan.instalment_for(@next_month) %>
