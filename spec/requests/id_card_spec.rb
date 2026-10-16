@@ -108,4 +108,14 @@ RSpec.describe "Employee ID card", type: :request do
     expect(profile.update(blood_group: "Q+")).to be(false)
     expect(profile.update(blood_group: "")).to be(true)
   end
+
+  it "sends the employee to HR, on screen only, when the card is missing a blood group or emergency contact" do
+    sign_in employee
+    get "/hr/id_card"
+    expect(response.body).not_to include("Missing details? Ask HR")
+
+    profile.update!(emergency_contact: nil)
+    get "/hr/id_card"
+    expect(Nokogiri::HTML(response.body).at_css(".hrl-idcard-actions a.hrl-idcard-help")["href"]).to eq("/hr/hr_requests/new")
+  end
 end

@@ -19,8 +19,10 @@
       <dt>Bank</dt><dd><%= [ @profile.bank_name, @profile.masked_account ].compact.join(" ").presence || "—" %></dd>
     </dl>
     <a class="hrl-btn hrl-mt" href="<%= hr_lite.org_path %>">Org chart</a>
-    <p class="hrl-small hrl-muted hrl-mt">Something wrong? Ask leadership to correct it — changes are audited.</p>
-    <a class="hrl-btn hrl-mt" href="<%= hr_lite.resignation_path %>">Resignation</a>
+    <p class="hrl-small hrl-muted hrl-mt">Something wrong?
+      <%= link_to_if hr_can?("hr_request.raise"), "Ask leadership to correct it", hr_lite.new_hr_request_path, class: "hrl-card__link" %> — changes are audited.</p>
+    <hr>
+    <a class="hrl-btn" href="<%= hr_lite.resignation_path %>">Resignation</a>
   </section>
 <% else %>
   <p class="hrl-card hrl-card--empty">Your HR profile has not been set up yet.</p>

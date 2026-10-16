@@ -1,6 +1,6 @@
 <%# locals: document, url (where it posts), open (start expanded) — one upload form for My documents and HR's view of a person. %>
 <details class="hrl-card" <%= "open" if open || document.errors.any? %>>
-  <summary class="hrl-btn hrl-btn--primary">Upload a document</summary>
+  <summary class="hrl-btn">Upload a document</summary>
   <%= form_with model: document, url: url, method: :post, local: true, class: "hrl-mt" do |f| %>
     <%= render "hr_lite/shared/form_errors", record: document %>
     <div class="hrl-field">

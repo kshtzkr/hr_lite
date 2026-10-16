@@ -242,6 +242,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-card--empty { text-align: center; color: var(--hrl-muted); padding: 1.8rem 1rem; }
 .hrl-card--warn { background: var(--hrl-warn-bg); border-color: transparent; }
 .hrl-card > p:first-child { margin-top: 0; }
+.hrl-card > hr { border: 0; border-top: 1px solid var(--hrl-line); margin: var(--hrl-s-4) 0; }
 /* Vertical rhythm: forms, buttons and disclosures stacked in a card never
    touch (only .hrl-field carried spacing, so a button above a form, or an
    open disclosure above the next control, sat flush). 12px >= the 8px
@@ -579,6 +580,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-idcard__foot b { font: 700 calc(13 * var(--u))/1 var(--hrl-card-display, var(--hrl-font)); color: #fff; }
 .hrl-idcard__foot span { font: 500 calc(10 * var(--u))/1 var(--hrl-card-body, var(--hrl-font)); letter-spacing: .14em; color: rgba(255, 255, 255, .85); }
 .hrl-idcard-actions { display: flex; flex-wrap: wrap; gap: .85rem; align-items: flex-start; justify-content: center; margin-top: 1.5rem; }
+.hrl-idcard-help { flex-basis: 100%; justify-content: center; }
 
 /* Print: one CR80 face per page, nothing else. */
 @media print {
