@@ -19,13 +19,16 @@
     var ua = navigator.userAgent;
     var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
     if (ios) {
+      // Location Services can be on while Safari Websites (or the browser app) is set
+      // to Never, or this site to Deny — the usual iPhone block.
       var app = /CriOS/.test(ua) ? "Chrome" : /FxiOS/.test(ua) ? "Firefox" : /EdgiOS/.test(ua) ? "Edge" : null;
-      return [
+      var steps = [
         "Open Settings → Privacy & Security → Location Services and turn it on.",
-        app ? "In Settings, open Apps → " + app + " → Location and choose While Using the App."
-            : "In Settings, open Apps → Safari → Location and choose Allow (or Ask).",
-        "Come back here, reload the page and tap again."
+        "On that screen, scroll down to " + (app || "Safari Websites") + " and choose While Using the App."
       ];
+      if (!app) steps.push("Then open Settings → Apps → Safari → Location and choose Allow (or Ask).");
+      steps.push(navigator.standalone ? "Close this app fully, open it again and tap again." : "Reload this page and tap again.");
+      return steps;
     }
     if (/Android/.test(ua)) {
       var samsung = /SamsungBrowser/.test(ua);
@@ -49,6 +52,7 @@
   function showHelp(label, headline) {
     if (!label) return;
     label.textContent = headline;
+    label.classList.replace("hrl-muted", "hrl-errors") || label.classList.add("hrl-errors"); // red until the next try
     var list = document.createElement("ol");
     list.className = "hrl-geo-help";
     locationSteps().forEach(function (step) {
@@ -88,7 +92,7 @@
       event.preventDefault();
       locating = true;
       if (button) { button.disabled = true; button.setAttribute("aria-busy", "true"); }
-      if (label) { label.hidden = false; label.textContent = "Getting location…"; }
+      if (label) { label.hidden = false; label.classList.replace("hrl-errors", "hrl-muted"); label.textContent = "Getting location…"; }
 
       if (!navigator.geolocation) {
         if (required) hold("This browser cannot share your location. Open this page in Chrome or Safari.");

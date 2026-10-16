@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-10-16
+
+- When location is blocked, the punch card's message ("Location is blocked. To allow it:") and its steps now show in a red box instead of small grey text. The box clears on the next try.
+- New iPhone steps. Location Services can be on while Safari is still blocked, so the steps now cover all three settings: turn on Location Services; on that screen set Safari Websites (or Chrome, Firefox, Edge) to While Using the App; and for Safari, set Settings → Apps → Safari → Location to Allow (or Ask). Then reload. From the Home Screen app, close and reopen it instead. Checked in the iOS 26 Simulator: tapping Check in and choosing Don't Allow shows these steps in red.
+
 ## [0.47.0] - 2026-10-16
 
 - Penalty hours build up and limit leave. A person's attendance penalties (late, after 11:00, short day) add up with no yearly reset until HR removes them. Every 5 hours holds half a day and 10 hours a full day, the same for everyone: 100h = 10 days.
