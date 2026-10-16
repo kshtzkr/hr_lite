@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.47.0] - 2026-10-16
 
-- Attendance penalties now come off leave. In Settings, HR picks "Penalties come off" a leave type (for example Earned leave); with no type picked, penalties stay as time only. Every active penalty this leave year is added up and divided by the person's working day (8h30, less any shorter-day allowance), rounded down to half days. That many days are held off that type's balance. For example, 10h of penalties holds 1 day: a balance of 5 becomes 4 you can apply for. When HR removes a penalty, the leave comes back.
-- On that leave type, leave past what is left is refused while days are held: "You can apply for 4 days of Earned leave — 1 held for penalties". Other types keep today's rule, where days past the balance are unpaid.
-- The held days show on the employee's balances page, the leave chips on home and My leave, the apply form (with its hint), and HR's team balances grid.
-- Migration: `hr_lite_settings.penalty_leave_type_id`.
+- Penalty hours build up and limit leave. A person's attendance penalties (late, after 11:00, short day) add up with no yearly reset until HR removes them. Every 5 hours holds half a day and 10 hours a full day, the same for everyone: 100h = 10 days.
+- In Settings, HR picks "Penalties come off" a leave type (for example Earned leave); with no type picked, penalties limit nothing. The balance itself is not cut: 12 stays 12. You can apply for at most 12 − 10 = 2 days, rounded down to half days. Past that, the request is refused: "For these dates you can apply for at most 2 days of Earned leave — 10 days held for penalties". Other leave types keep today's rule, where days past the balance are unpaid.
+- A "Penalty hours" section on the employee's Attendance page, and on HR's page for that person, shows the hours held, the days they hold, and every HR removal (hours, who, when, reason). HR can remove any number of hours with a required reason: remove 50 of 100 and 50 stay, or remove all of it to settle to 0. The employee gets a bell and an email, and the audit log records it. Removing a single penalty works as before.
+- HR's team attendance view shows "Penalties 100h 00m · 10 days" on each person who has any, linking to their section.
+- "Held for penalties" and "You can apply" show on the employee's balances page, the leave chips, the apply form (with today's limit) and HR's balances grid.
+- Migrations: `hr_lite_settings.penalty_leave_type_id` and `hr_lite_penalty_removals`.
 
 ## [0.46.0] - 2026-10-15
 

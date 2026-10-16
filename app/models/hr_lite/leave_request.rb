@@ -371,13 +371,13 @@ module HrLite
       held = balance.penalty_days
       return unless leave_type.comp_off || held.positive?
 
-      left = balance.available(as_of: start_date)
+      left = balance.applicable(as_of: start_date)
       return if LeaveDayCounter.count(self) <= left
 
       return errors.add(:base, "Not enough #{leave_type.name} balance") unless held.positive?
 
       days = ->(n) { ActiveSupport::NumberHelper.number_to_rounded(n, precision: 1, strip_insignificant_zeros: true) }
-      errors.add(:base, "You can apply for #{days.([ left, 0 ].max)} days of #{leave_type.name} — #{days.(held)} held for penalties")
+      errors.add(:base, "For these dates you can apply for at most #{days.(left)} days of #{leave_type.name} — #{days.(held)} #{held == 1 ? 'day' : 'days'} held for penalties")
     end
   end
 end

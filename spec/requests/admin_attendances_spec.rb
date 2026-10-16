@@ -23,6 +23,32 @@ RSpec.describe "Admin attendances", type: :request do
     end
   end
 
+  describe "penalty hours" do
+    before do
+      HrLite.config.attendance_slots = true
+      sign_in admin
+    end
+
+    it "totals a person's hours on the team view and their page, and lets HR remove some with a reason" do
+      record = create(:attendance_record, :checked_in, user: employee, date: Date.current - 1)
+      HrLite::AttendancePenalty.create!(user_id: employee.id, date: Date.current - 1, minutes: 6000, reason: "late", attendance_record: record)
+      get "/hr/admin/attendances"
+      expect(response.body).to include("Penalties 100h 00m · 10 days")
+
+      path = "/hr/admin/attendances/#{employee.id}/remove_penalty_hours"
+      post path, params: { hours: "50", reason: " " }
+      expect(flash[:alert]).to eq("A reason is required.")
+      post path, params: { hours: "101", reason: "x" }
+      expect(flash[:alert]).to eq("Remove between 0.5h and 100h.")
+      post path, params: { hours: "50", reason: "Genuine: hospital visits" }
+      expect(flash[:notice]).to eq("Removed 50h of penalties.")
+      expect(HrLite::AuditLog.where(action: "attendance.penalty_hours_removed").count).to eq(1)
+
+      get "/hr/admin/attendances/#{employee.id}"
+      expect(response.body).to include("50h 00m</strong> held · 5 days", "Removed 50h 00m", "Genuine: hospital visits", "Remove hours")
+    end
+  end
+
   describe "GET /hr/admin/attendances (day view)" do
     before { sign_in admin }
 
