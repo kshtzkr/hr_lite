@@ -76,8 +76,11 @@ module HrLite
 
     def worked_under?(minutes) = !!(minutes && worked_duration && worked_duration < minutes.minutes)
 
-    # Check in again after checking out: once a day, inside the hours HR sets in Settings.
+    # Check in again after checking out: once a day, inside the hours HR sets in
+    # Settings, and only while the day is short (a full day has nothing to add).
     def recheck_in_open?(at = Time.current)
+      return false if required_minutes && !short?
+
       s = Setting.instance
       now = at.in_time_zone(HrLite.config.time_zone).strftime("%H:%M")
       check_out_at.present? && rechecked_in_at.nil? && now >= s.recheck_in_from && now < s.recheck_in_until

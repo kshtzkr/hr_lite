@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.1] - 2026-10-16
+
+- No "Check in again" once the day is worked in full: after checking out with the person's day done (HR's 8h 30m, less any shorter day), the button is gone and the card reads "Your day is done: 8h 45m worked." The server refuses a check-in again too. A short day still offers it as before.
+
 ## [0.51.0] - 2026-10-16
 
 - Shorter day on a repeat: HR or admin give a person 30, 60 or 90 minutes off the working day (so 7h at the least) on a pattern set like a calendar's custom repeat: every N days, every N weeks on chosen weekdays, or every N months on the start's date, from a start date, ending never, on a date, or after N times. No repeat means every day, as before.
