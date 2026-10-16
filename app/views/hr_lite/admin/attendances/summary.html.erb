@@ -25,14 +25,17 @@
   <% end %>
 </section>
 
+<% fixes_pending = HrLite::RegularizationRequest.pending.where(user_id: @employee.id, date: @period.from..@period.to).pluck(:date) %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Days</h2>
   <% (@period.from..@period.to).each do |date| %>
-    <% day = @days.for(date); rec = day.record; punches = @punches[date].to_a %>
+    <% day = @days.for(date); rec = day.record; punches = @punches[date].to_a
+       not_in_yet = date == Date.current && day.kind == :absent # the day is not over %>
     <div class="hrl-feed__item hrl-row">
       <div class="hrl-feed__body hrl-small">
         <strong><%= date.strftime("%a %-d %b") %></strong>
-        <span class="hrl-badge <%= tones[day.kind] %>"><%= HrLite::ApplicationHelper::DAY_STATES[day.kind][1] %></span>
+        <span class="hrl-badge <%= not_in_yet ? "hrl-badge--muted" : tones[day.kind] %>"><%= not_in_yet ? "Not in yet" : HrLite::ApplicationHelper::DAY_STATES[day.kind][1] %></span>
+        <% if fixes_pending.include?(date) %><span class="hrl-badge hrl-badge--warn">Fix pending</span><% end %>
         <% if @profile&.hours_allowance_minutes && (length = HrLite::EmployeeProfile.day_minutes_for(@employee.id, on: date)) < HrLite::Setting.instance.day_minutes %>
           <span class="hrl-badge hrl-badge--muted">Day <%= hrl_duration(length * 60) %></span>
         <% end %>

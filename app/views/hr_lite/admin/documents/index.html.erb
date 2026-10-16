@@ -8,10 +8,10 @@
     visibility allows.
   </p>
   <div class="hrl-row">
-    <a class="hrl-btn <%= "hrl-btn--primary" if @category.nil? %>"
+    <a class="hrl-btn" <%= "aria-current=true" if @category.nil? %>
        href="<%= hr_lite.admin_documents_path %>">All</a>
     <% @categories.each do |category| %>
-      <a class="hrl-btn <%= "hrl-btn--primary" if @category == category %>"
+      <a class="hrl-btn" <%= "aria-current=true" if @category == category %>
          href="<%= hr_lite.admin_documents_path(category: category) %>"><%= category.humanize %></a>
     <% end %>
   </div>

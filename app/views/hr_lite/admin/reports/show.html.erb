@@ -1,7 +1,21 @@
 <% content_for(:page_title) { @reports_title = HrLite::Admin::ReportsController::REPORTS[@name] } %>
+<% content_for(:back) { "Reports" } %>
+<%# The screen reads like the rest of the app; the CSV keeps raw values for spreadsheets. %>
+<% heading = ->(h) { h == "LOP" ? "Unpaid days (LOP)" : h }
+   shown = lambda do |header, value|
+     if value.blank? then "—"
+     elsif header == "Amount" then hrl_money(value)
+     elsif header.in?([ "Joined", "Left", "Spent on" ]) then Date.parse(value.to_s).strftime("%d %b %Y")
+     elsif header == "Status" then value.to_s.humanize
+     elsif value.is_a?(Float) then hrl_days(value)
+     else value
+     end
+   end %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= HrLite::Admin::ReportsController::REPORTS[@name] %></h1>
   <div class="hrl-page__actions">
+    <a class="hrl-btn" href="<%= hr_lite.admin_report_path(@name, month: @month.prev_month.strftime("%Y-%m")) %>">‹ <%= @month.prev_month.strftime("%b %Y") %></a>
+    <% if @month.next_month <= Date.current %><a class="hrl-btn" href="<%= hr_lite.admin_report_path(@name, month: @month.next_month.strftime("%Y-%m")) %>"><%= @month.next_month.strftime("%b %Y") %> ›</a><% end %>
     <a class="hrl-btn"
        href="<%= hr_lite.admin_report_path(@name, month: @month.strftime("%Y-%m"), format: :csv) %>">Download CSV</a>
   </div>
@@ -15,13 +29,13 @@
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
         <thead>
-          <tr><% @rows.first.keys.each do |header| %><th><%= header %></th><% end %></tr>
+          <tr><% @rows.first.keys.each do |header| %><th><%= heading.(header) %></th><% end %></tr>
         </thead>
         <tbody>
           <% @rows.each do |row| %>
             <tr>
               <% row.each do |header, value| %>
-                <td data-label="<%= header %>"><%= value %></td>
+                <td data-label="<%= heading.(header) %>"><%= shown.(header, value) %></td>
               <% end %>
             </tr>
           <% end %>
