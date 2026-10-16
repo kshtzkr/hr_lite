@@ -1,14 +1,14 @@
-<% content_for(:page_title) { "Raise a regularization ticket" } %>
+<% content_for(:page_title) { "Fix a day" } %>
 <% content_for(:back, "Attendance") %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">Raise a regularization ticket</h1>
+  <h1 class="hrl-page__title">Fix a day</h1>
 </div>
 
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.regularization_requests_path, scope: :regularization_request, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <% if (rule = HrLite.config.self_regularization) %>
-      <p class="hrl-small hrl-muted">A missed punch or short day on a working day from today back to <%= rule[:within_days] %> days ago is fixed as soon as you submit, up to <%= rule[:per_week] %> times a week. Anything else goes to HR as a ticket.</p>
+      <p class="hrl-small hrl-muted">A missed punch or short day on a working day from today back to <%= rule[:within_days] %> days ago is fixed as soon as you submit, up to <%= rule[:per_week] %> times a week. Anything else goes to your manager or HR for approval.</p>
     <% end %>
     <div class="hrl-field">
       <%= f.label :date, "Which day needs fixing?" %>
@@ -25,11 +25,13 @@
       <p class="hrl-hint">Leave blank if only check-in is missing. Short day? Leave both times blank and give the reason.</p>
     </div>
     <div class="hrl-field">
-      <%= f.label :reason, "Why does this day need fixing? (required)" %>
+      <%= f.label :reason, "Why does this day need fixing?" %>
       <%= f.text_area :reason, required: true %>
     </div>
+    <% fix_now = rule && @request.date && (probe = HrLite::RegularizationRequest.new(date: @request.date, user_id: hr_current_user.id)).self_fixable? %>
+    <% if fix_now %><p class="hrl-hint"><%= @request.date.strftime("%a %-d %b") %> is fixed as soon as you submit. Self-fixes left this week: <%= probe.self_fixes_left %>.</p><% end %>
     <div class="hrl-form-actions">
-      <%= f.submit "Raise ticket", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit fix_now ? "Fix now" : "Send for approval", class: "hrl-btn hrl-btn--primary" %>
       <a class="hrl-btn" href="<%= hr_lite.regularization_requests_path %>">Cancel</a>
     </div>
   <% end %>

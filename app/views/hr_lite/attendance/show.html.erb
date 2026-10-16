@@ -22,8 +22,8 @@
              link_builder: ->(d) { hr_lite.attendance_path(month: @month.strftime("%Y-%m"), day: d.iso8601, anchor: "day") if d <= Date.current } %>
   <p class="hrl-small hrl-muted hrl-mt">Forgot to check in or out on some day?</p>
   <div class="hrl-row">
-    <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path %>">Raise a regularization ticket</a>
-    <a class="hrl-btn" href="<%= hr_lite.regularization_requests_path %>">My tickets</a>
+    <a class="hrl-btn" href="<%= hr_lite.new_regularization_request_path %>">Fix a day</a>
+    <a class="hrl-btn" href="<%= hr_lite.regularization_requests_path %>">Day fixes</a>
   </div>
 </section>
 
@@ -48,7 +48,7 @@
       <% if leave %><dt>Leave</dt><dd><%= leave.leave_type.name %></dd><% end %>
       <% if @day_info.kind == :holiday %><dt>Holiday</dt><dd><%= HrLite::Holiday.company_wide.for_office(HrLite::WorkingCalendar.office_for(hr_current_user.id)).where(date: @day).pick(:name) %></dd><% end %>
       <% if rec&.flagged? %><dt>Flag</dt><dd><%= rec.flag_note %></dd><% end %>
-      <% if @day_ticket %><dt>Ticket</dt><dd><%= hrl_request_status_badge(@day_ticket.status) %> <%= @day_ticket.times_label %></dd><% end %>
+      <% if @day_ticket %><dt>Day fix</dt><dd><%= hrl_request_status_badge(@day_ticket.status) %> <%= @day_ticket.times_label %></dd><% end %>
     </dl>
     <% unless %i[holiday weekend leave].include?(@day_info.kind) || @day_ticket&.pending? %>
       <a class="hrl-btn hrl-btn--primary hrl-btn--block hrl-mt" href="<%= hr_lite.new_regularization_request_path(date: @day) %>">Fix this day</a>

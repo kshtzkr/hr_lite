@@ -21,13 +21,17 @@ RSpec.describe "Regularization tickets", type: :request do
       }.to change(HrLite::RegularizationRequest, :count).by(1)
 
       follow_redirect!
-      expect(response.body).to include("Ticket raised").and include("09:30 – 18:30")
+      expect(response.body).to include("Sent for approval — your manager or HR will review it.").and include("09:30 – 18:30")
     end
 
     it "fixes a recent day at once when self-fix is on, and says what is left" do
       HrLite.config.self_regularization = { within_days: 2, per_week: 2 }
       get "/hr/regularization_requests/new"
       expect(response.body).to include("A missed punch or short day on a working day from today back to 2 days ago is fixed as soon as you submit, up to 2 times a week")
+      get "/hr/regularization_requests/new", params: { date: tuesday }
+      expect(response.body).to include(%(value="Fix now")).and include("Tue 6 Jul is fixed as soon as you submit. Self-fixes left this week: 2.")
+      get "/hr/regularization_requests/new", params: { date: tuesday - 1 }
+      expect(response.body).to include(%(value="Send for approval"))
 
       post "/hr/regularization_requests", params: {
         regularization_request: { date: tuesday, check_in_at: "2027-07-06T09:30", reason: "Forgot" }
@@ -40,7 +44,7 @@ RSpec.describe "Regularization tickets", type: :request do
         regularization_request: { date: tuesday - 1, check_in_at: "2027-07-05T09:30", reason: "Forgot" }
       }
       follow_redirect!
-      expect(response.body).to include("Sent to HR as a ticket — you can fix only a missed punch or short day on a working day in the last 2 days yourself, 2 times a week.")
+      expect(response.body).to include("Sent for approval — you can fix only a missed punch or short day on a working day in the last 2 days yourself, 2 times a week.")
       expect(HrLite::RegularizationRequest.find_by!(date: tuesday - 1)).to be_pending
     end
 
@@ -99,7 +103,7 @@ RSpec.describe "Regularization tickets", type: :request do
       mine.reject!(actor: admin, note: "no")
       post "/hr/regularization_requests/#{mine.id}/cancel"
       follow_redirect!
-      expect(response.body).to include("Only pending tickets")
+      expect(response.body).to include("Only pending day fixes")
     end
   end
 
