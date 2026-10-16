@@ -7,7 +7,7 @@
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= yield :head %>
-  <% if request.user_agent.to_s.match?(/Hotwire Native|Turbo Native/) %>
+  <% if HrLite.config.native_app.call(request) %>
     <%# The host's iOS/Android shells drive pages through Turbo. "reload" makes
         every visit a full page load, so the plain scripts below run exactly
         as they do in a browser. Browsers never load Turbo here. %>

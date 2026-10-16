@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.53.0] - 2026-10-16
 
-- HR runs inside the host's iOS and Android staff apps: pages opened by a Hotwire Native shell load Turbo (vendored 8.0.23) with `turbo-visit-control: reload`, so every visit is a full page load and the engine's plain scripts run exactly as in a browser. Browsers still get no Turbo.
+- HR runs inside the host's iOS and Android staff apps: pages opened by a Hotwire Native shell load Turbo (vendored 8.0.23) with `turbo-visit-control: reload`, so every visit is a full page load and the engine's plain scripts run exactly as in a browser. Browsers still get no Turbo. `config.native_app = ->(request) { … }` lets the host say which requests are its app; the default matches the Hotwire Native user agent.
 
 ## [0.52.0] - 2026-10-16
 

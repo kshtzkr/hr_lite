@@ -15,6 +15,15 @@ RSpec.describe "Native app shell", type: :request do
     expect(tag).to include('type="module"')
   end
 
+  it "asks the host which requests come from its app" do
+    HrLite.config.native_app = ->(request) { request.headers["X-Requested-With"] == "asia.example.staff" }
+    get "/hr/", headers: { "HTTP_X_REQUESTED_WITH" => "asia.example.staff" }
+
+    expect(response.body).to include("turbo-visit-control")
+  ensure
+    HrLite.config.native_app = HrLite::Configuration.new.native_app
+  end
+
   it "leaves browsers without Turbo" do
     get "/hr/", headers: { "HTTP_USER_AGENT" => "Mozilla/5.0 (iPhone) Mobile Safari" }
 
