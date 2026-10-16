@@ -132,9 +132,12 @@ HrLite.configure do |c|
   c.mailer_from     = "hr@example.com"
   c.public_url_base = "https://hr.example.com"  # enables deep links in emails
   # brand + phone are optional; the ID card prints brand, and its QR holds
-  # brand, address and phone as plain text.
+  # brand, address and phone as plain text. Emails print email_logo_url (an
+  # absolute https URL: mail clients drop data: URIs) and, with the slip PDF,
+  # a contact line from phone, email and website.
   c.company         = -> { { name: "Acme", brand: "acme.in", address: "Head office address",
-                            phone: "+91 00000 00000", logo_url: nil } }
+                            phone: "+91 00000 00000", email: "hr@acme.in", website: "acme.in",
+                            logo_url: nil, email_logo_url: "https://acme.in/logo.png" } }
 
   # Salary-slip PDFs: plug your renderer, or add wicked_pdf to the bundle and
   # the built-in renderer takes over. With neither, PDF export is disabled.

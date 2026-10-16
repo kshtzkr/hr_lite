@@ -23,6 +23,15 @@ RSpec.describe HrLite::EventMailer do
       end
     end
 
+    # Document-branding rule: every email that leaves carries the logo image and a way to reach the company.
+    it "carries the logo image and a contact line when the host gives them" do
+      HrLite.config.company = -> { { name: "Acme Escapes", phone: "+91 80 1234 5678", email: "hr@acme.test",
+                                     email_logo_url: "https://acme.test/logo.png" } }
+      html = mail.html_part.body.to_s
+      expect(html).to include(%(<img src="https://acme.test/logo.png" alt="Acme Escapes"), "Questions: +91 80 1234 5678 · hr@acme.test")
+      expect(mail.text_part.body.to_s).to include("Questions: +91 80 1234 5678 · hr@acme.test")
+    end
+
     it "includes a link button only when public_url_base is configured" do
       expect(mail.html_part.body.to_s).not_to include("Open in HR")
 

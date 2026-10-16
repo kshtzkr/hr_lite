@@ -21,9 +21,17 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><%= HrLite.config.company.call[:name].presence || "HR" %></div>
+      <% company = HrLite.config.company.call %>
+      <%# Mail clients strip data: URIs, so this is the host's absolute https logo, not logo_url. %>
+      <% if company[:email_logo_url].present? %>
+        <img src="<%= company[:email_logo_url] %>" alt="<%= company[:name] %>" height="40" style="display:block; height:40px; width:auto; border:0; margin-bottom:12px;">
+      <% end %>
+      <div class="brand"><%= company[:name].presence || "HR" %></div>
       <%= yield %>
-      <p class="foot">Sent by the HR system. Do not reply to this email.</p>
+      <p class="foot">
+        Sent by the HR system of <%= company[:name].presence || "your company" %>. Do not reply to this email.
+        <% if (contact = company.values_at(:phone, :email, :website).compact_blank).any? %><br>Questions: <%= contact.join(" · ") %><% end %>
+      </p>
     </div>
   </div>
 </body>
