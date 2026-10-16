@@ -156,6 +156,14 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(response.body).not_to include("Colleague secret")
     end
 
+    it "names the month on the 1st, lights My attendance and sends for approval" do
+      get "/hr/wfh_requests"
+      first = (Date.current..Date.current + HrLite::WfhRequest::MAX_DAYS_AHEAD).find { |d| d.day == 1 }
+      expect(response.body).to include(%(<span class="hrl-mgrid__num">#{first.strftime('%-d %b')}</span>))
+      expect(Nokogiri::HTML(response.body).at_css(".hrl-tabrow [aria-current=page]").text).to eq("My attendance")
+      expect(response.body).to include(%(value="Send for approval"))
+    end
+
     it "cannot reach the HR decisions" do
       request = wfh("pending")
       post "/hr/admin/wfh_requests/#{request.id}/approve"
