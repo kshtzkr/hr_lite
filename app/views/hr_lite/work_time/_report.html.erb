@@ -34,12 +34,12 @@
 <% else %>
   <% office = result.by_mode["office"]; wfh = result.by_mode["wfh"]; field = result.by_mode["travelling"] + result.by_mode["outside_meeting"] %>
   <div class="hrl-kpis">
-    <% [ [ "Attendance (check-in to check-out)", result.attendance ], [ "Working time", result.working ], [ "Breaks", result.breaks ],
+    <% [ [ "Attendance (check-in to check-out)", result.attendance ], [ "Working time (breaks included)", result.working + result.breaks ], [ "Of which breaks", result.breaks ],
          [ "In office", office ], [ "Work from home", wfh ], [ "Travel and client meetings", field ], [ "Out of office", result.other ] ].each do |kpi_label, secs| %>
       <div class="hrl-kpi"><div class="hrl-kpi__value"><%= hrl_duration(secs) %></div><div class="hrl-kpi__label"><%= kpi_label %></div></div>
     <% end %>
   </div>
-  <p class="hrl-small hrl-muted">Working time = in office, work from home, travelling, client and other meetings, and busy. It is time in those modes, not a measure of output.
+  <p class="hrl-small hrl-muted">Working time = in office, work from home, travelling, client and other meetings, busy, and the breaks taken during the day — an 8h 30m shift includes its break. It is time in those modes, not a measure of output.
     Recorded on <%= pluralize(result.days_with_data.size, "day") %>.</p>
 
   <%= render "hr_lite/work_time/donut", result: result, label: label %>
