@@ -638,3 +638,8 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-person { width: var(--hrl-target); height: var(--hrl-target); border-radius: var(--hrl-radius-pill); border: 2px solid var(--hrl-line); background: var(--hrl-bg); color: var(--hrl-ink); font-size: var(--hrl-t-small); font-weight: 600; cursor: pointer; }
 .hrl-person--ok { border-color: var(--hrl-ok); background: var(--hrl-ok-bg); color: var(--hrl-ok); }
 .hrl-person--warn { border-color: var(--hrl-warn); background: var(--hrl-warn-bg); color: var(--hrl-warn); }
+
+/* Search palette (search.js): one box for screens and people, ⌘K anywhere. */
+.hrl-search { width: min(36rem, calc(100% - 2rem)); margin: 10vh auto auto; padding: var(--hrl-s-4); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius); background: var(--hrl-card); color: var(--hrl-ink); }
+.hrl-search::backdrop { background: rgb(15 23 42 / .4); }
+.hrl-search__list { list-style: none; margin: var(--hrl-s-1) 0 0; padding: 0; display: grid; gap: var(--hrl-s-2); }

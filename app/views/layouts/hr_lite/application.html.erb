@@ -26,6 +26,7 @@
       </a>
 
       <nav class="hrl-side__nav">
+        <a class="hrl-nav__link" href="<%= hr_lite.search_path %>" data-hrl-search-open><%= hrl_icon("Search") %>Search<span class="hrl-sr-only"> (Ctrl K)</span></a>
         <% hrl_sections.each do |section| %>
           <% if section[:divider] %><span class="hrl-side__divider" aria-hidden="true"></span><% end %>
           <%= hrl_nav_link(section) %>
@@ -94,6 +95,7 @@
         <% if HrLite.config.back_link %>
           <a class="hrl-nav__link hrl-side__back" href="<%= HrLite.config.back_link[:url] %>"><%= HrLite.config.back_link[:label] %></a>
         <% end %>
+        <a class="hrl-nav__link" href="<%= hr_lite.search_path %>" data-hrl-search-open><%= hrl_icon("Search") %>Search<span class="hrl-sr-only"> (Ctrl K)</span></a>
         <%# The second line names the place's tabs, so a phone user knows what is inside before opening it. %>
         <% rest.each do |section| %>
           <%= hrl_nav_link(section, hint: section[:tabs].map { |t| t[:label] }.join(", ")) %>
@@ -105,7 +107,15 @@
   <%= javascript_include_tag "hr_lite/confirm", defer: true %>
   <%= javascript_include_tag "hr_lite/mention", defer: true %>
   <%= javascript_include_tag "hr_lite/nav", defer: true %>
-  <%= javascript_include_tag "hr_lite/select_filter", defer: true %>
+<%= javascript_include_tag "hr_lite/select_filter", defer: true %>
+<%= javascript_include_tag "hr_lite/search", defer: true %>
+<dialog class="hrl-search" data-hrl-search aria-label="Search">
+  <form action="<%= hr_lite.search_path %>" method="get" role="search">
+    <label class="hrl-sr-only" for="hrl-search-q">Search screens and people</label>
+    <input id="hrl-search-q" class="hrl-input" type="search" name="q" placeholder="Search screens and people" autocomplete="off">
+  </form>
+  <div data-hrl-search-results aria-live="polite"></div>
+</dialog>
   <%= yield :scripts %>
 </body>
 </html>

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.50.0] - 2026-10-16
+
+- Global search: one box for screens and people. It opens with ⌘K or Ctrl+K anywhere, from **Search** at the top of the sidebar, or from **Search** in the phone's More sheet. Typing (2 letters or more) lists matching screens and people; arrows move, Enter opens, and Escape closes. With JavaScript off, Search opens the `/search` page.
+- Screens come from the menu's own gates, so a person only finds what they can already open. A screen matches on its place, its tab and its paths ("wfh" finds My attendance through `/wfh_requests`), plus a few everyday words such as "payslip" or "penalty".
+- People are listed only for those with a team screen, and only people whose attendance they may open: a manager finds their team, HR finds everyone, and an employee finds no one. Search covers name, email and employee code. A person opens on their This week screen. A page outside someone's reach still answers "not allowed", exactly as before.
+- The endpoint has a named rate limit (60 a minute per person).
+
 ## [0.49.0] - 2026-10-16
 
 - "This week": one screen per employee for HR, admin and managers. It's the first tab in the person's tabs, at `/admin/attendances/:user_id/summary`. Day, Week (the default) or Month, with ‹ › and a "Go to date" calendar. It shows:

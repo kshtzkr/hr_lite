@@ -1,0 +1,14 @@
+<% if @q.length < HrLite::SearchController::MIN_CHARS %>
+  <p class="hrl-small hrl-muted">Type at least <%= HrLite::SearchController::MIN_CHARS %> letters — a screen (payslip, WFH, penalty) or a person.</p>
+<% elsif @features.empty? && @people.empty? %>
+  <p class="hrl-small hrl-muted">Nothing you can open matches “<%= @q %>”.</p>
+<% else %>
+  <% [ [ "Screens", @features.map { |label, url, _| [ label, url ] } ],
+       [ "People", @people.map { |user| [ hr_display_name(user), hr_lite.summary_admin_attendance_path(user.id) ] } ] ].each do |title, rows| %>
+    <% next if rows.empty? %>
+    <h2 class="hrl-small hrl-muted hrl-mt"><%= title %></h2>
+    <ul class="hrl-search__list">
+      <% rows.each do |label, url| %><li><a class="hrl-nav__link" href="<%= url %>"><%= label %></a></li><% end %>
+    </ul>
+  <% end %>
+<% end %>
