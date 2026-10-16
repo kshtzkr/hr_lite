@@ -24,7 +24,10 @@ module HrLite
       end
 
       def create
-        profile = recordable.find_by(employee_code: params[:employee_code].to_s.strip)
+        typed = params[:employee_code].to_s.strip
+        # The code, else a typed name — only when exactly one person has it.
+        profile = recordable.find_by(employee_code: typed) ||
+                  recordable.select { |p| HrLite.display_name(p.user).casecmp?(typed) }.then { |m| m.first if m.one? }
         @request = LeaveRequest.new(params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day, :half_day_part, :reason)
                                           .merge(user_id: profile&.user_id, created_by_id: hr_current_user.id))
         recorded = profile && LeaveRequest.transaction do
