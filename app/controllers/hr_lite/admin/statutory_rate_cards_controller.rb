@@ -52,7 +52,8 @@ module HrLite
       def next_financial_year(newest)
         return FinancialYear.start_for(Date.current) if newest.nil?
 
-        [ newest.effective_from.next_year, FinancialYear.start_for(Date.current) ].max
+        # A mid-year card (1 Oct) must not push the next one to 1 Oct: years start on 1 April.
+        [ FinancialYear.start_for(newest.effective_from.next_year), FinancialYear.start_for(Date.current) ].max
       end
 
       # The figures arrive as flat strings from number fields and are stored

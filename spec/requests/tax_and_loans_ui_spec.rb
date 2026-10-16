@@ -227,6 +227,24 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration.allowable_total).to eq(90_000)
     end
 
+    # The old Verify was a separate form: amounts typed above it were dropped.
+    it "records the amounts on screen and verifies in one submit, and names unproven claims before accepting all" do
+      sign_in finance
+      item = declaration.tax_declaration_items.first
+      get "/hr/admin/tax_declarations/#{declaration.id}"
+      page = Nokogiri::HTML(response.body)
+      expect(page.at_css("input[name=verify]")["value"]).to eq("Record and verify")
+      expect(page.at_css("form[action$='/accept_all']")["data-turbo-confirm"]).to include("No proof attached: #{item.section_label.split(" — ").first}.")
+      expect(page.at_css("input#note")["class"]).to eq("hrl-input")
+
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        verify: "Record and verify",
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "90000" } } }
+      }
+      expect(declaration.reload).to be_verified
+      expect(declaration.allowable_total).to eq(90_000)
+    end
+
     it "will not send one back without a reason" do
       sign_in finance
       post "/hr/admin/tax_declarations/#{declaration.id}/reject", params: { note: "" }

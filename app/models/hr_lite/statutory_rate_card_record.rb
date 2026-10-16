@@ -7,6 +7,9 @@ module HrLite
 
     self.table_name = "hr_lite_statutory_rate_cards"
 
+    # Shipped cards count as verified so payroll can auto-approve, but no person checked them.
+    SHIPPED_SIGN_OFF = "Shipped defaults, not checked by a person".freeze
+
     validates :effective_from, presence: true, uniqueness: true
     validate :effective_from_opens_a_financial_year
     validate :carries_every_figure_payroll_reads
@@ -21,6 +24,9 @@ module HrLite
     def financial_year = FinancialYear.label(effective_from)
 
     def verified? = verified_by.present? && verified_on.present?
+
+    # Cards seeded before this read "hr_lite 0.52.0 (official source …)": a version is not a sign-off.
+    def verified_by = super&.start_with?("hr_lite ") ? SHIPPED_SIGN_OFF : super
 
     # The shape SlipBuilder and the calculators expect: symbol keys and
     # BigDecimal everywhere, because JSON gives back strings and floats and

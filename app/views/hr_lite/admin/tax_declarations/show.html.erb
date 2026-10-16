@@ -48,6 +48,7 @@
     <% end %>
     <div class="hrl-form-actions">
       <%= f.submit "Record amounts", class: "hrl-btn" %>
+      <%= f.submit "Record and verify", name: "verify", class: "hrl-btn" %>
     </div>
   </section>
 <% end %>
@@ -55,16 +56,17 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Decide</h2>
   <div class="hrl-row">
+    <% unproven = @declaration.tax_declaration_items.reject { |item| item.proofs.attached? }.map { |item| item.section_label.split(" — ").first } %>
     <%= button_to "Accept all and verify", hr_lite.accept_all_admin_tax_declaration_path(@declaration),
-          method: :post, class: "hrl-btn hrl-btn--primary" %>
-    <%= button_to "Verify the amounts recorded above", hr_lite.verify_admin_tax_declaration_path(@declaration),
-          method: :post, class: "hrl-btn" %>
+          method: :post, class: "hrl-btn hrl-btn--primary",
+          form: { data: { turbo_confirm: [ "Accept every claimed amount and verify? The employee can no longer edit it.",
+                                           ("No proof attached: #{unproven.to_sentence}." if unproven.any?) ].compact.join(" ") } } %>
   </div>
   <%= form_with url: hr_lite.reject_admin_tax_declaration_path(@declaration),
                 method: :post, local: true do %>
     <div class="hrl-field">
       <%= label_tag :note, "What is missing (required to send back)" %>
-      <%= text_field_tag :note %>
+      <%= text_field_tag :note, nil, class: "hrl-input" %>
     </div>
     <%= submit_tag "Send back", class: "hrl-btn" %>
   <% end %>

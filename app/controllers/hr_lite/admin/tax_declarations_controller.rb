@@ -69,6 +69,7 @@ module HrLite
         # Recording what the proof supported is a separate act from deciding
         # — an amount can be corrected while the decision is still pending.
         if @declaration.update(verification_params)
+          return verify if params[:verify] # "Record and verify": the typed amounts are saved first
           redirect_to admin_tax_declaration_path(@declaration), notice: "Amounts recorded."
         else
           @tax = TaxComputation.new(user: @declaration.user, declaration: @declaration)

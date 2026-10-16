@@ -45,6 +45,8 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
       expect(response.body).to include("Copied from FY 2026-27")
       # PF ceiling carried over rather than left blank to be retyped (₹25,000 since Oct 2026).
       expect(response.body).to include("25000.0")
+      # The newest card takes effect 1 Oct 2026; a year still starts on 1 April, not 1 Oct 2027.
+      expect(Nokogiri::HTML(response.body).at_css("input[name='statutory_rate_card[effective_from]']")["value"]).to end_with("-04-01")
     end
 
     it "saves a year, and payroll computes that year on it" do
@@ -123,6 +125,17 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
 
   describe "signing a card off" do
     before { sign_in owner }
+
+    it "says a shipped card was not checked by a person, on the list and the form, never naming the gem" do
+      card = HrLite::StatutoryRateCardRecord.find_by!(effective_from: Date.new(2026, 10, 1))
+      card.update_columns(verified_by: "hr_lite 0.52.0 (official source in the notes)") # rubocop:disable Rails/SkipsModelValidations
+
+      get "/hr/admin/statutory_rate_cards"
+      expect(response.body).to include("Shipped defaults, not checked by a person")
+      expect(response.body).not_to include("hr_lite 0.52.0")
+      get "/hr/admin/statutory_rate_cards/#{card.id}/edit"
+      expect(Nokogiri::HTML(response.body).at_css("#statutory_rate_card_verified_by")["value"]).to eq("Shipped defaults, not checked by a person")
+    end
 
     it "records who checked it, and the run stops asking" do
       card = HrLite::StatutoryRateCardRecord.first
