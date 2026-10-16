@@ -35,6 +35,7 @@ module HrLite
     validates :status, inclusion: { in: STATUSES }
     validates :half_day_part, inclusion: { in: %w[first second] }, allow_blank: true
     validate :check_out_after_check_in
+    validate :times_on_the_day
 
     scope :for_date, ->(date) { where(date: date) }
     scope :for_month, ->(month) { where(date: month.beginning_of_month..month.end_of_month) }
@@ -117,6 +118,15 @@ module HrLite
       return if check_out_at >= check_in_at
 
       errors.add(:check_out_at, "must be after check-in")
+    end
+
+    # No future days; check-out may run into the next morning (night shift).
+    def times_on_the_day
+      return unless date
+
+      errors.add(:date, "can't be in the future") if date > Date.current
+      errors.add(:check_in_at, "must be on #{date.strftime('%d %b')}") if check_in_at && check_in_at.to_date != date
+      errors.add(:check_out_at, "must be on #{date.strftime('%d %b')} or the next morning") if check_out_at && !(date..date + 1).cover?(check_out_at.to_date)
     end
   end
 end

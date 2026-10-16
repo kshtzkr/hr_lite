@@ -247,6 +247,10 @@ module HrLite
     # Late ladder against slot + buffer; after 11:00 also +1h on the next two
     # working days; after 11:30 the day is a half day. The buffer shifts all three.
     def apply_slot_rules(record)
+      # No slot to be late for on a weekly off, a holiday, or leave that starts the day (full or first half).
+      return unless WorkingCalendar.for_user(@user.id, record.date..record.date).working_day?(record.date)
+      return if LeaveRequest.active_on(record.date).where(user_id: @user.id, half_day_part: [ nil, "", "first" ]).exists?
+
       local = record.check_in_at.in_time_zone(HrLite.config.time_zone)
       arrived = local.hour * 60 + local.min - EmployeeProfile.where(user_id: @user.id).pick(:buffer_minutes).to_i
       late = AttendanceSlot.penalty_minutes(arrived - AttendanceSlot.start_minute_for(@user.id, record.date))

@@ -4,6 +4,9 @@ RSpec.describe HrLite::WorkModeDurations do
   let(:asha) { create(:user, name: "Asha") }
   let(:day) { Date.new(2026, 10, 20) } # a Tuesday
 
+  before { travel_to(day + 1) } # attendance is never on a future day
+  after { travel_back }
+
   def t(hour, min = 0, date: day) = Time.zone.local(date.year, date.month, date.day, hour, min)
 
   def ev(mode, from, to, source: "employee", user: asha, ends_at: nil)
@@ -113,6 +116,7 @@ RSpec.describe HrLite::WorkModeDurations do
       end
       expect(described_class).to have_received(:new).once
 
+      travel 1.minute # the correction is newer than the cached result
       HrLite::WorkModeEvent.find_by(mode: "busy").update!(ended_at: t(11, 30)) # busy cut short
       travel_to(t(10, date: day + 7)) do
         expect(described_class.call([ asha.id ], week).by_mode["busy"]).to eq(30.minutes)

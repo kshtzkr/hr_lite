@@ -23,6 +23,7 @@ RSpec.describe "Full day / first half / second half", type: :request do
   end
 
   it "lets HR mark a punched day as second half, then back to full day" do
+    travel_to(monday.in_time_zone.change(hour: 12)) # no attendance on a future day
     record = HrLite::AttendanceRecord.create!(user: employee, date: monday, status: "present",
                                               check_in_at: monday.in_time_zone.change(hour: 9))
     sign_in leader

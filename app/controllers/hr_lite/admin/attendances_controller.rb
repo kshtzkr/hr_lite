@@ -104,6 +104,12 @@ module HrLite
                              alert: "A check-in time is required when a check-out is set."
         end
 
+        # Full-day leave outranks any punch, so the fix would change nothing anyone reads.
+        if LeaveRequest.active_on(date).where(user_id: @employee.id, half_day: false).exists?
+          return redirect_to admin_attendance_path(@employee.id, date: date, month: date.strftime("%Y-%m")),
+                             alert: "The day is covered by approved leave — cancel the leave first."
+        end
+
         record.assign_attributes(attrs)
         record.clear_check_out if params[:reset] == "check_out"
         record.half_day_part = attrs[:half_day_part].presence if attrs.key?(:half_day_part)

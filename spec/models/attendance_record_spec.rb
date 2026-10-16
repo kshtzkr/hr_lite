@@ -14,6 +14,15 @@ RSpec.describe HrLite::AttendanceRecord do
       expect(build(:attendance_record, status: "on_moon")).not_to be_valid
       expect(build(:attendance_record, check_in_at: Time.current, check_out_at: 1.hour.ago)).not_to be_valid
     end
+
+    it "keeps punches on their own day, a check-out at most the next morning, and no future day" do
+      day = Date.current - 2
+      at = ->(d, hour) { d.in_time_zone.change(hour: hour) }
+      expect(build(:attendance_record, date: day, check_in_at: at.(day, 22), check_out_at: at.(day + 1, 6))).to be_valid
+      expect(build(:attendance_record, date: day, check_in_at: at.(day - 1, 9)).tap(&:valid?).errors[:check_in_at]).to be_present
+      expect(build(:attendance_record, date: day, check_in_at: at.(day, 9), check_out_at: at.(day + 2, 9))).not_to be_valid
+      expect(build(:attendance_record, date: Date.current + 1).tap(&:valid?).errors[:date]).to eq([ "can't be in the future" ])
+    end
   end
 
   describe "scopes" do

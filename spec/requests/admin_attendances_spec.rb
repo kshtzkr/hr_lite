@@ -132,6 +132,15 @@ RSpec.describe "Admin attendances", type: :request do
       expect(bells.find { |b| b[:kind] == "attendance.regularized" }[:user]).to eq(employee)
     end
 
+    it "refuses a fix on a day covered by approved full-day leave" do
+      create(:leave_request, :approved, user: employee, start_date: date, end_date: date)
+      patch "/hr/admin/attendances/#{employee.id}", params: {
+        date: date.to_s, attendance_record: { check_in_at: "#{date}T09:30", regularization_note: "Forgot phone" }
+      }
+      expect(flash[:alert]).to eq("The day is covered by approved leave — cancel the leave first.")
+      expect(HrLite::AttendanceRecord.count).to eq(0)
+    end
+
     it "removes the punch when both times are cleared" do
       create(:attendance_record, :checked_in, user: employee, date: date)
 
@@ -145,6 +154,7 @@ RSpec.describe "Admin attendances", type: :request do
     end
 
     describe "reset today" do
+      around { |example| travel_to(Time.current.change(hour: 15)) { example.run } } # both punches on today
       let(:record) do
         create(:attendance_record, user: employee, date: Date.current, work_mode: "wfh", check_in_at: 3.hours.ago,
                                    check_out_at: 1.hour.ago, check_out_lat: 12.9, check_out_lng: 77.6)

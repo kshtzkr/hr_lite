@@ -84,7 +84,7 @@ RSpec.describe HrLite::AttendancePuncher do
     end
 
     it "prefers today's open record over yesterday's" do
-      create(:attendance_record, user: user, date: Date.current - 1, check_in_at: 30.hours.ago)
+      create(:attendance_record, user: user, date: Date.current - 1, check_in_at: (Date.current - 1).in_time_zone.change(hour: 9))
       punch(:check_in)
 
       result = punch(:check_out)
