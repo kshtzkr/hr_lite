@@ -45,6 +45,8 @@ RSpec.describe "Statutory rate cards over HTTP", type: :request do
       expect(response.body).to include("Copied from FY 2026-27")
       # PF ceiling carried over rather than left blank to be retyped (₹25,000 since Oct 2026).
       expect(response.body).to include("25000.0")
+      # The newest card takes effect 1 Oct 2026; a year still starts on 1 April, not 1 Oct 2027.
+      expect(Nokogiri::HTML(response.body).at_css("input[name='statutory_rate_card[effective_from]']")["value"]).to end_with("-04-01")
     end
 
     it "saves a year, and payroll computes that year on it" do
