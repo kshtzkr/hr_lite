@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.54.0] - 2026-10-17
+
+Fixes from the HRMS UI/UX audit of 0.52.0. No migrations.
+
+- Approvals: Home, the HR overview and the Inbox badge show one count. Decision lists leave out your own requests, which used to open a blank 404. "Review requests" opens Inbox › All, and each row there names the request ("Sick leave, 30 Oct (half day) · 0.5 days") and opens it. Home locations opens on Pending. Every reject reason is required before the form submits.
+- Confirms before one-way actions: resigning, accepting a resignation, saving a PIP, giving someone a role (the picker now starts blank and filters by name), changing a role's permissions, publishing a policy ("Publish and notify 4 people by email?"), recomputing a run that has an approval, approving past blocking warnings, ending health cover, and accepting all tax claims (names the claims without proof).
+- Money: payroll run totals no longer wrap mid-number on a phone. "Employer cost" reads "Employer contributions". The payslip spells the paise its figure shows. The earnings table stacks on phones. Tax-working amounts stay on one line. My loans totals active loans only. Leave chips show days pending.
+- Phones: tab-row links, list Edit/Open links and the fix-a-punch links are 44px targets. Work-time chart labels are readable at any range. The tax-slab editor is a labelled three-column grid. The bulk holiday box has a label. Employee pickers on pay items, loans and benefits start blank, are required and filter by name.
+- Attendance: the check-in card says "Check in by 10:05" and what lateness costs. A day counts its penalty minutes when deciding whether it was short, so the card no longer says "day done" under "short by 20m". The status picker offers word quick picks instead of emoji. Team attendance shows leave, holidays and weekly offs instead of "No punch".
+- Tax and rate cards: "Record and verify" saves the amounts on screen before verifying. A new financial year defaults to 1 April. Shipped rate cards still count as verified, but the sign-off reads "Shipped defaults, not checked by a person".
+- Admin: approvers can open a claim's receipt (permission-checked, audited, 5-minute link). Working-day settings have their own HR settings tab. New run shows only to those who can run payroll.
+- Branding: HR emails show `company[:email_logo_url]` as an image and a "Questions:" line from `phone`, `email` and `website`. The slip PDF prints the same contact line, and its cache key is versioned so cached slips are re-rendered. Hosts pass the new keys in `config.company`; without `email_logo_url` an email has no logo image, as before.
+
 ## [0.53.0] - 2026-10-16
 
 - HR runs inside the host's iOS and Android staff apps: pages opened by a Hotwire Native shell load Turbo (vendored 8.0.23) with `turbo-visit-control: reload`, so every visit is a full page load and the engine's plain scripts run exactly as in a browser. Browsers still get no Turbo. `config.native_app = ->(request) { … }` lets the host say which requests are its app; the default matches the Hotwire Native user agent.
