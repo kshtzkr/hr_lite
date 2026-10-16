@@ -110,18 +110,21 @@ RSpec.describe "Home and travel on screen", type: :request do
     expect(response.body).to include("I am travelling — check out here")
   end
 
+  # Home leaves today's check-ins out on a weekly off, so this failed every Saturday and Sunday (IST).
   it "shows the day's trail to the employee, HR and the home page" do
-    post "/hr/attendance/check_in", params: home.merge(place: "home")
-    post "/hr/attendance/check_out", params: away.merge(place: "travel")
-    route = "https://www.google.com/maps/dir/?api=1&amp;origin=28.5355,77.391&amp;destination=28.5455,77.391"
+    travel_to((Date.current.beginning_of_week + 2).noon) do # a Wednesday
+      post "/hr/attendance/check_in", params: home.merge(place: "home")
+      post "/hr/attendance/check_out", params: away.merge(place: "travel")
+      route = "https://www.google.com/maps/dir/?api=1&amp;origin=28.5355,77.391&amp;destination=28.5455,77.391"
 
-    get "/hr/work_time", params: { period: "day" }
-    expect(response.body).to include("Check-in: Home (Home 1)", "0 m from home", "±20 m", "Check-out: Travel", "1,112 m from home", route)
+      get "/hr/work_time", params: { period: "day" }
+      expect(response.body).to include("Check-in: Home (Home 1)", "0 m from home", "±20 m", "Check-out: Travel", "1,112 m from home", route)
 
-    sign_in admin
-    get "/hr/admin/attendances/#{employee.id}"
-    expect(response.body).to include("Check-in: Home (Home 1)", "Check-out: Travel", "View route on Google Maps")
-    get "/hr"
-    expect(response.body).to include("Check-in: Home → Check-out: Travel")
+      sign_in admin
+      get "/hr/admin/attendances/#{employee.id}"
+      expect(response.body).to include("Check-in: Home (Home 1)", "Check-out: Travel", "View route on Google Maps")
+      get "/hr"
+      expect(response.body).to include("Check-in: Home → Check-out: Travel")
+    end
   end
 end
