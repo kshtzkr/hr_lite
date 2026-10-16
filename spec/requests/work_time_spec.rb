@@ -40,8 +40,20 @@ RSpec.describe "My work time", type: :request do
   it "draws weekly bars that link to each day, and refuses a bad custom range" do
     get "/hr/work_time", params: { period: "week", date: day }
     expect(response.body).to include("hrl-bars").and include("date=2026-10-20&amp;period=day")
+    own_dates = -> { Nokogiri::HTML(response.body).at_css("#wt-from").ancestors("details").first }
+    expect(own_dates.call["open"]).to be_nil # one picker on show: the period tabs
     get "/hr/work_time", params: { period: "custom", from: "2026-10-20", to: "2026-10-01" }
     expect(response.body).to include("The start date is after the end date.")
+    expect(own_dates.call["open"]).to eq("open")
+  end
+
+  it "has tiles that add up to the working time" do
+    ev(asha, "meeting", t(10), t(11))
+    get "/hr/work_time", params: { period: "day", date: day }
+    kpis = Nokogiri::HTML(response.body).css(".hrl-kpi").to_h { |k| [ k.at_css(".hrl-kpi__label").text, k.at_css(".hrl-kpi__value").text ] }
+    minutes = ->(v) { v.scan(/\d+/).map(&:to_i).then { |h, m| (h * 60) + m } }
+    parts = kpis.values_at("Of which breaks", "In office", "Work from home", "Travel and client meetings", "Meetings and busy")
+    expect(parts.sum(&minutes)).to eq(minutes.(kpis["Working time (breaks included)"]))
   end
 
   it "says there is no data rather than showing zeros" do

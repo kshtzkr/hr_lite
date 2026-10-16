@@ -620,6 +620,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-fill--offline { fill: var(--hrl-mode-offline); } .hrl-stroke--offline { stroke: var(--hrl-mode-offline); } .hrl-fill-bg--offline { background: var(--hrl-mode-offline); }
 .hrl-chart-row { display: grid; gap: var(--hrl-gap-target); }
 @media (min-width: 481px) { .hrl-chart-row { grid-template-columns: 10rem 1fr; align-items: center; } }
+.hrl-chart-row .hrl-num { white-space: nowrap; } /* "16h 13m" stays on one line at 360px */
 .hrl-donut { width: 10rem; max-width: 100%; transform: rotate(0deg); }
 .hrl-donut__track { stroke: var(--hrl-bg); }
 .hrl-swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: var(--hrl-radius-pill); vertical-align: middle; }
