@@ -1,6 +1,6 @@
-<% content_for(:page_title) { "Role change" } %>
+<% content_for(:page_title) { "Designation change" } %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">Role change — <%= hr_display_name(@profile.user) %></h1>
+  <h1 class="hrl-page__title">Designation change — <%= hr_display_name(@profile.user) %></h1>
 </div>
 
 <section class="hrl-card">
@@ -12,7 +12,8 @@
     <div class="hrl-field"><%= f.label :effective_date %><%= f.date_field :effective_date %></div>
     <div class="hrl-field"><%= f.label :note, "Note (optional)" %><%= f.text_area :note %></div>
     <div class="hrl-form-actions">
-      <%= f.submit "Record change", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit "Record change", class: "hrl-btn hrl-btn--primary",
+                   data: { turbo_confirm: "Record this designation change? #{hr_display_name(@profile.user)} is told at once." } %>
       <a class="hrl-btn" href="<%= hr_lite.admin_employee_path(@profile) %>">Cancel</a>
     </div>
   <% end %>

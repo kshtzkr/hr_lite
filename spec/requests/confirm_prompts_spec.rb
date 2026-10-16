@@ -72,4 +72,15 @@ RSpec.describe "Confirm before irreversible actions", type: :request do
     get "/hr/admin/benefits"
     expect(response.body).to include("Cover ends #{Date.current.strftime('%d %b %Y')}", %(value="Change end"))
   end
+
+  it "asks before a designation change tells the employee, and keeps Offboard below the records" do
+    profile = create(:employee_profile, user: meera)
+    sign_in owner
+    get "/hr/admin/employees/#{profile.id}/designation_changes/new"
+    expect(confirms).to include("Record this designation change? Meera is told at once.")
+    get "/hr/admin/employees/#{profile.id}"
+    titles = Nokogiri::HTML(response.body).css("h2.hrl-card__title").map(&:text)
+    expect(titles.last).to eq("Offboard")
+    expect(response.body).to include("More actions (appraisal, designation change, PIP, salary)")
+  end
 end
