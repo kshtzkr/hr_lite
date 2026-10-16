@@ -7,6 +7,7 @@
       <% end %>
       <div class="pdf-company"><%= company[:name] %></div>
       <% if company[:address].present? %><div class="pdf-muted"><%= company[:address] %></div><% end %>
+      <% if (contact = company.values_at(:phone, :email, :website).compact_blank).any? %><div class="pdf-muted"><%= contact.join(" · ") %></div><% end %>
     </div>
     <div style="text-align:right;">
       <h1>Salary slip</h1>

@@ -10,6 +10,7 @@ RSpec.describe "salary slip PDF template under a host renderer" do
   # just after the fixed 2027 periods they use.
   around { |example| travel_to(Date.new(2027, 7, 5)) { example.run } }
   it "renders without engine helpers in scope" do
+    HrLite.config.company = -> { { name: "Acme", phone: "+91 80 1234 5678", website: "acme.test" } }
     leader = create(:user, :admin, email: "lead@x.test")
     HrLite.config.leadership_emails = [ "lead@x.test" ]
     profile = create(:employee_profile, pan_number: "ABCDE1234F", bank_name: "HDFC",
@@ -25,6 +26,8 @@ RSpec.describe "salary slip PDF template under a host renderer" do
       assigns: { slip: slip, profile: profile }
     )
 
+    expect(html).to include("+91 80 1234 5678 · acme.test") # who sent it and how to reach them
+    expect(slip.pdf_cache_key).to start_with("hr_lite_slip_v2/")
     expect(html).to include("Salary slip")
       .and include("rupees")           # AmountInWords PORO, not a helper
       .and include("AB••••••4F")       # masked PAN from the model
