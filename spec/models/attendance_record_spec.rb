@@ -23,6 +23,16 @@ RSpec.describe HrLite::AttendanceRecord do
       expect(build(:attendance_record, date: day, check_in_at: at.(day, 9), check_out_at: at.(day + 2, 9))).not_to be_valid
       expect(build(:attendance_record, date: Date.current + 1).tap(&:valid?).errors[:date]).to eq([ "can't be in the future" ])
     end
+
+    it "judges the day in the company's zone and never blocks re-saving an old row" do
+      day = Date.current - 2
+      early = ActiveSupport::TimeZone[HrLite.config.time_zone].local(day.year, day.month, day.day, 0, 30) # 19:00 UTC the day before
+      expect(build(:attendance_record, date: day, check_in_at: early)).to be_valid
+
+      odd = create(:attendance_record, date: day)
+      odd.update_columns(check_in_at: (day - 1).in_time_zone.change(hour: 9)) # rubocop:disable Rails/SkipsModelValidations
+      expect(odd.reload.update(status: "present")).to be(true)
+    end
   end
 
   describe "scopes" do
