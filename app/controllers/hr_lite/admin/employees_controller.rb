@@ -72,11 +72,11 @@ module HrLite
       end
 
       def edit
-        @profile = EmployeeProfile.find(params[:id])
+        @profile = others_profile
       end
 
       def update
-        @profile = EmployeeProfile.find(params[:id])
+        @profile = others_profile
         if @profile.update(update_profile_params)
           redirect_to admin_employee_path(@profile), notice: "Employee profile updated."
         else
@@ -87,12 +87,16 @@ module HrLite
       # Exit: stamps the date (attendance/payroll clip on it) and revokes
       # access via the host hook. Audited via the profile update.
       def offboard
-        @profile = EmployeeProfile.find(params[:id])
+        @profile = others_profile
         # `.to_date` on a raw param raises Date::Error and 500s; the
         # controller's own parser exists for exactly this.
         exit_date = params[:date_of_exit].present? ? parse_date_param(params[:date_of_exit]) : Date.current
 
-        @profile.update!(date_of_exit: exit_date)
+        ActiveRecord::Base.transaction do
+          @profile.update!(date_of_exit: exit_date)
+          # HR, Finance, Leadership go with the job; Employee stays so the person still opens their slips.
+          RoleAssignment.for_user(@profile.user).joins(:role).where.not(hr_lite_roles: { name: Role::EMPLOYEE }).destroy_all
+        end
         # The last day has a list too — and it is the one that matters most,
         # since an unreturned laptop and un-revoked access both outlive the
         # employment.
@@ -109,6 +113,9 @@ module HrLite
       end
 
       private
+
+      # Nobody edits or offboards their own record here (auto-approve would publish it); someone else does.
+      def others_profile = EmployeeProfile.find(params[:id]).tap { |p| raise ActiveRecord::RecordNotFound if p.user_id == hr_current_user.id }
 
       def profile_params
         params.require(:employee_profile).permit(
