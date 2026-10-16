@@ -17,6 +17,16 @@ RSpec.describe "Admin access and receipts", type: :request, no_legacy_bridge: tr
     expect(response.body).to include("/hr/admin/payroll_runs/new")
   end
 
+  it "shows One-off items on a run only to those who can open it" do
+    run = create(:payroll_run)
+    sign_in hr
+    get "/hr/admin/payroll_runs/#{run.id}"
+    expect(response.body).not_to include("One-off items")
+    sign_in owner
+    get "/hr/admin/payroll_runs/#{run.id}"
+    expect(response.body).to include("One-off items")
+  end
+
   it "gives the working-day settings their own HR settings tab" do
     sign_in hr
     get "/hr/admin/setting/edit"
