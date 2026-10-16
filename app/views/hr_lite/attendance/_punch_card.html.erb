@@ -39,6 +39,10 @@
       <span class="hrl-muted">Not checked in yet.</span>
     <% end %>
   </div>
+  <%# Checked in again: every earlier in and out stays on show. %>
+  <% if record && (punches = record.punches).size > 2 %>
+    <p class="hrl-small">All punches: <%= punches.join(" · ") %></p>
+  <% end %>
   <% if HrLite.config.attendance_slots %>
     <%= render "hr_lite/attendance/slot", record: record %>
   <% end %>

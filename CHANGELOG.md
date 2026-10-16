@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-10-15
+
+- Every check-in and check-out is kept. Checking in again, a repeat check-out and an HR reset used to overwrite the day's check-out, including its time and GPS. Now each punch is saved as its own row: time, GPS, accuracy, place and distance from home. Those rows are never edited or deleted, and saving a change to one raises an error. When a day has more than one in/out pair, "All punches: In 09:30 Office · Out 11:45 Office · In 12:10 Office · Out 18:05 Office" shows on the employee's Today card, their day detail and My work time, and on HR's "Where they punched". A day HR reset with Reset check-in keeps its old punches on show.
+- The day record is still the summary: first check-in to latest check-out. Hours, short day, half day and penalties count the same as before, and the gap between two sessions still counts as worked.
+- Migration: `hr_lite_attendance_punches`. Days punched before this release have no punch rows and show as before.
+
 ## [0.45.0] - 2026-10-15
 
 - HR can change a WFH request after deciding it. On an approved or rejected request, the "Change this WFH" card lets HR set new dates and switch between Approved and Rejected, with a required reason. For example, a request rejected for 19–23 Oct can be approved for 20–21 Oct only. Past dates are allowed so a request can match the days actually worked from home, up to 60 days long. It can't clash with that person's other pending or approved WFH. The audit log records the old and new dates and decision ("wfh.changed"), and the employee gets the approved/rejected notice with the reason. Attendance days already punched are not rewritten.

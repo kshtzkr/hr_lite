@@ -83,6 +83,9 @@ module HrLite
       check_out_at.present? && rechecked_in_at.nil? && now >= s.recheck_in_from && now < s.recheck_in_until
     end
 
+    # Every check-in and check-out of the day, oldest first, kept even after an HR reset.
+    def punches = AttendancePunch.where(user_id: user_id, date: date).order(:at, :id).to_a
+
     # Drops the check-out so the person is in again (check in again, HR reset).
     def clear_check_out(**attrs)
       assign_attributes(check_out_at: nil, check_out_lat: nil, check_out_lng: nil, check_out_accuracy_m: nil,

@@ -40,6 +40,7 @@
     <dl class="hrl-deflist">
       <dt>In</dt><dd><%= rec&.check_in_at&.strftime("%H:%M") || "—" %></dd>
       <dt>Out</dt><dd><%= rec&.check_out_at&.strftime("%H:%M") || "—" %></dd>
+      <% if rec && (punches = rec.punches).size > 2 %><dt>All punches</dt><dd><%= punches.join(" · ") %></dd><% end %>
       <dt>Worked</dt><dd><%= hrl_duration(rec&.worked_duration) %></dd>
       <% if part %><dt>Half</dt><dd><%= HrLite::DAY_PARTS.rassoc(part)&.first %></dd><% end %>
       <% if leave %><dt>Leave</dt><dd><%= leave.leave_type.name %></dd><% end %>

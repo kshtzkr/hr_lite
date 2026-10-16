@@ -8,6 +8,9 @@
     <% if home_m %> · <%= number_with_delimiter(home_m) %> m from home<% end %>
     <% if accuracy %> · ±<%= accuracy %> m<% end %></div>
 <% end %>
+<% if (punches = record.punches).size > 2 %>
+  <div class="hrl-punch-line">All punches: <%= punches.join(" · ") %></div>
+<% end %>
 <% if (route = record.route_url) %>
   <div class="hrl-punch-line"><a class="hrl-card__link" href="<%= route %>" target="_blank" rel="noopener noreferrer">View route on Google Maps<span class="hrl-sr-only"> for <%= record.date.strftime("%-d %b") %></span></a></div>
 <% end %>
