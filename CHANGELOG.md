@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.0] - 2026-10-16
+
+- HR uploads documents for an employee: the person's Documents page (HR → People → a person → Documents) now has "Upload a document", the same form as My documents. Only company-wide profile managers (HR, admin) see it, and never on their own record. The document belongs to the employee, records who uploaded it, and its visibility still follows its category (an Aadhaar, PAN, passport or bank document stays with the money tier).
+- Download links now expire after 5 minutes. Before, the file link behind "Open" never expired, so anyone holding a copied link could fetch the scan without signing in. Every download is still permission-checked and audited first.
+
 ## [0.51.1] - 2026-10-16
 
 - No "Check in again" once the day is worked in full: after checking out with the person's day done (HR's 8h 30m, less any shorter day), the button is gone and the card reads "Your day is done: 8h 45m worked." The server refuses a check-in again too. A short day still offers it as before.

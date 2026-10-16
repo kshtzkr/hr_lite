@@ -41,3 +41,7 @@
     </div>
   <% end %>
 </section>
+
+<% if @employee.id != hr_current_user.id && hr_can?("profile.manage", scope: :all) %>
+  <%= render "hr_lite/documents/upload_form", document: @document, url: hr_lite.admin_employee_documents_path(@employee.id), open: @document.errors.any? %>
+<% end %>

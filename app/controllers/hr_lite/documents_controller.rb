@@ -56,7 +56,7 @@ module HrLite
       # rails_blob_path, not url_for: an engine controller has no default
       # host and url_for(attachment) raises without one.
       redirect_to Rails.application.routes.url_helpers.rails_blob_path(
-        document.file, disposition: "attachment", only_path: true
+        document.file, disposition: "attachment", only_path: true, expires_in: 5.minutes # the link dies with the visit
       ), allow_other_host: false
     end
 
