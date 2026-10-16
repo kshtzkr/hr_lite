@@ -15,7 +15,8 @@
       <%= f.label :acknowledgement_required, "Policy — everyone must acknowledge it (untick for an announcement)" %>
     </div>
     <div class="hrl-form-actions">
-      <%= f.submit "Publish", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit "Publish", class: "hrl-btn hrl-btn--primary",
+                   data: { turbo_confirm: "Publish and notify #{pluralize(HrLite.active_employees.size, 'person')} by email?" } %>
       <a class="hrl-btn" href="<%= hr_lite.admin_policies_path %>">Cancel</a>
     </div>
   <% end %>

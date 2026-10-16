@@ -22,7 +22,8 @@
       <div class="hrl-field"><%= f.label :outcome_note, "Outcome note" %><%= f.text_area :outcome_note, rows: 3 %></div>
     <% end %>
     <div class="hrl-form-actions">
-      <%= f.submit plan.persisted? ? "Save" : "Start PIP", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit plan.persisted? ? "Save" : "Start PIP", class: "hrl-btn hrl-btn--primary",
+                   data: { turbo_confirm: ("Save? Passed or failed closes the plan for good and tells the employee." if plan.persisted?) } %>
       <a class="hrl-btn" href="<%= hr_lite.admin_performance_plans_path %>">Cancel</a>
     </div>
   <% end %>

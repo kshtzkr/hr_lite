@@ -30,7 +30,8 @@
       <dt>Proposed last day</dt><dd><%= @pending_resignation.proposed_last_day.strftime("%d %B %Y") %></dd>
       <% if @pending_resignation.reason.present? %><dt>Reason</dt><dd><%= @pending_resignation.reason %></dd><% end %>
     </dl>
-    <%= form_with url: hr_lite.accept_admin_resignation_path(@pending_resignation), method: :post, local: true do %>
+    <%= form_with url: hr_lite.accept_admin_resignation_path(@pending_resignation), method: :post, local: true,
+                  data: { turbo_confirm: "Accept #{hr_display_name(@profile.user)}'s resignation? Payroll and attendance end on the last day you set." } do %>
       <div class="hrl-field">
         <label for="res_last_day">Confirm last working day</label>
         <input type="date" id="res_last_day" name="last_day" class="hrl-input"

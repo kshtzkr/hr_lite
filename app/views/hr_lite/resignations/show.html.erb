@@ -35,7 +35,8 @@
         <%= f.text_area :reason %>
       </div>
       <div class="hrl-form-actions">
-        <%= f.submit "Submit resignation", class: "hrl-btn hrl-btn--primary" %>
+        <%= f.submit "Submit resignation", class: "hrl-btn hrl-btn--primary",
+                     data: { turbo_confirm: "Submit your resignation? Leadership is told straight away." } %>
       </div>
     <% end %>
   </section>

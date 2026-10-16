@@ -40,7 +40,8 @@
     <% end %>
 
     <div class="hrl-form-actions">
-      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit "Save", class: "hrl-btn hrl-btn--primary",
+                   data: { turbo_confirm: ("Save? Everyone holding #{role.name} gets these permissions at once." if role.persisted?) } %>
       <a class="hrl-btn" href="<%= hr_lite.admin_roles_path %>">Cancel</a>
     </div>
   <% end %>

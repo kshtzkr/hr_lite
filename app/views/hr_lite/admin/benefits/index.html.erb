@@ -49,10 +49,15 @@
               <td data-label="Since"><%= enrolment.enrolled_on.strftime("%d %b %Y") %></td>
               <td data-label="Dependants" class="hrl-num"><%= enrolment.dependants %></td>
               <td data-label="">
-                <%= form_with url: hr_lite.unenrol_admin_benefit_path(enrolment.benefit), method: :post do %>
+                <% if enrolment.ended_on %>
+                  <p class="hrl-small">Cover ends <%= enrolment.ended_on.strftime("%d %b %Y") %></p>
+                <% end %>
+                <%= form_with url: hr_lite.unenrol_admin_benefit_path(enrolment.benefit), method: :post, class: "hrl-row",
+                              data: { turbo_confirm: "End #{enrolment.benefit.name} for #{hr_display_name(enrolment.user)} on the date picked?" } do %>
                   <%= hidden_field_tag :user_id, enrolment.user_id %>
-                  <%= date_field_tag :ended_on, Date.current, class: "hrl-input", "aria-label": "Last day of cover" %>
-                  <%= submit_tag "End cover", class: "hrl-btn" %>
+                  <%= label_tag "ended-on-#{enrolment.id}", "Last day of cover", class: "hrl-small" %>
+                  <%= date_field_tag :ended_on, enrolment.ended_on || Date.current, id: "ended-on-#{enrolment.id}", class: "hrl-input" %>
+                  <%= submit_tag enrolment.ended_on ? "Change end" : "End cover", class: "hrl-btn" %>
                 <% end %>
               </td>
             </tr>
