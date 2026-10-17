@@ -117,6 +117,7 @@
 <%= javascript_include_tag "hr_lite/select_filter", defer: true %>
 <%= javascript_include_tag "hr_lite/search", defer: true %>
 <dialog class="hrl-search" data-hrl-search aria-label="Search">
+  <form method="dialog" class="hrl-search__close"><button class="hrl-btn" type="submit">Close</button></form>
   <form action="<%= hr_lite.search_path %>" method="get" role="search">
     <label class="hrl-sr-only" for="hrl-search-q">Search screens and people</label>
     <input id="hrl-search-q" class="hrl-input" type="search" name="q" placeholder="Search screens and people" autocomplete="off">
