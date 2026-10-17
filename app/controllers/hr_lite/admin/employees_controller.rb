@@ -114,8 +114,8 @@ module HrLite
 
       private
 
-      # Nobody edits or offboards their own record here (auto-approve would publish it); someone else does.
-      def others_profile = EmployeeProfile.find(params[:id]).tap { |p| raise ActiveRecord::RecordNotFound if p.user_id == hr_current_user.id }
+      # Nobody but Super Admin edits or offboards their own record here (auto-approve would publish it).
+      def others_profile = EmployeeProfile.find(params[:id]).tap { |p| raise ActiveRecord::RecordNotFound if p.user_id == hr_current_user.id && !hr_superadmin? }
 
       def profile_params
         params.require(:employee_profile).permit(

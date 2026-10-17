@@ -23,6 +23,17 @@ RSpec.describe "Security audit 2", type: :request do
     expect(own.reload).to have_attributes(permanent_wfh: false, date_of_exit: nil)
   end
 
+  it "lets Super Admin edit their own record, and audits it (SE-1, owner decision 2026-10-17)" do
+    own = create(:employee_profile, user: boss, permanent_wfh: false)
+    sign_in boss
+
+    patch "/hr/admin/employees/#{own.id}", params: { employee_profile: { permanent_wfh: "1" } }
+    expect(own.reload.permanent_wfh).to be(true)
+    expect(HrLite::AuditLog.where(subject: own, action: "update", actor: boss)).to exist
+    get "/hr/admin/employees/#{own.id}/salary_structures/new"
+    expect(response).to have_http_status(:ok)
+  end
+
   it "audits a change to a role's grants, and only a change (SE-4)" do
     role = HrLite::Role.create!(name: "Auditors")
     role.replace_grants!("audit.view" => "all")

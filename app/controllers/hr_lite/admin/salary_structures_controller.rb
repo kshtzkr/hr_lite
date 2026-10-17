@@ -38,10 +38,10 @@ module HrLite
 
       private
 
-      # Nobody sets their own pay.
+      # Nobody but Super Admin sets their own pay (the owner has nobody above them).
       def set_profile
         @profile = EmployeeProfile.find(params[:employee_id])
-        raise ActiveRecord::RecordNotFound if @profile.user_id == hr_current_user.id
+        raise ActiveRecord::RecordNotFound if @profile.user_id == hr_current_user.id && !hr_superadmin?
       end
 
       def structure_params
