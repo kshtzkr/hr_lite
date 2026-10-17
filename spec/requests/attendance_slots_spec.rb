@@ -39,6 +39,14 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
     expect(response.body).to include(%(data-hrl-countdown="#{at(friday, 19, 6).iso8601}" data-hrl-done="you can check out">))
   end
 
+  it "charges nothing on a weekly off or on a day that starts on approved leave" do
+    create(:leave_request, :approved, user: employee, start_date: friday, end_date: friday, half_day_part: "first")
+    check_in(at(friday, 14, 0))
+    check_in(at(friday + 1, 13, 0)) # Saturday
+    expect(penalties).to be_empty
+    expect(HrLite::AttendanceRecord.where(user_id: employee.id).pluck(:status)).to eq(%w[present present])
+  end
+
   it "uses the 10:00 slot when none is saved" do
     check_in(at(friday, 10, 5))
     expect(penalties).to be_empty

@@ -127,12 +127,12 @@ FactoryBot.define do
     status { "present" }
 
     trait :checked_in do
-      check_in_at { Time.current.change(hour: 9, min: 30) }
+      check_in_at { date.in_time_zone.change(hour: 9, min: 30) }
     end
 
     trait :checked_out do
-      check_in_at { Time.current.change(hour: 9, min: 30) }
-      check_out_at { Time.current.change(hour: 18) }
+      check_in_at { date.in_time_zone.change(hour: 9, min: 30) }
+      check_out_at { date.in_time_zone.change(hour: 18) }
     end
 
     trait :flagged do

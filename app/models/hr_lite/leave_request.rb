@@ -53,7 +53,10 @@ module HrLite
       return 0 if leave_type.unlimited?
       return paid_days ? LeaveDayCounter.count(self) - paid_days : 0 if approved?
 
-      [ LeaveDayCounter.count(self) - covered_by(balance.available(as_of: start_date)), 0 ].max
+      # Pending requests of this type and leave year filed first draw on the same balance (warning only).
+      queued = self.class.pending.where(user_id: user_id, leave_type_id: leave_type_id, id: ...id,
+                                        start_date: LeaveYear.range(LeaveYear.key_for(start_date))).sum(:days_count)
+      [ LeaveDayCounter.count(self) - covered_by(balance.available(as_of: start_date) - queued), 0 ].max
     end
 
     # Unpaid share (0, 0.5 or 1) of `date`: the balance covered the leave's
@@ -116,6 +119,7 @@ module HrLite
         # And nobody should still be asked to decide a request that has been
         # called off — it would sit in their inbox for ever.
         approval_route.cancel_all!
+        flag_computed_runs! if was_approved
       end
 
       Notifications.publish(
@@ -232,6 +236,15 @@ module HrLite
         self.decision_note = note
         save!
         audit!(new_status, actor, note)
+        approval_route.cancel_all! # decided outside the flow too: nobody else is still asked
+        flag_computed_runs! if approved?
+      end
+    end
+
+    # A slip computed before this still pays the old days; a recompute clears the note.
+    def flag_computed_runs!
+      PayrollRun.where(status: "review", period_month: start_date.beginning_of_month..end_date).find_each do |run|
+        run.update!(warnings: run.warnings + [ "#{HrLite.display_name(user)}'s leave (#{date_range_label}) changed after compute — recompute" ])
       end
     end
 
@@ -273,8 +286,8 @@ module HrLite
 
     # Everyone should know a colleague will be away, the moment they apply —
     # bell + email to the whole team (matrix row "leave.team_notice"; hosts can mute either
-    # channel). Deliberately excludes the reason: dates are team-relevant,
-    # the why is not.
+    # channel). Deliberately excludes the reason and the type: dates are
+    # team-relevant, the why is not.
     def notify_team
       return if end_date < Date.current # nobody needs to hear who was out
 
@@ -283,7 +296,7 @@ module HrLite
 
       Notifications.publish(
         "leave.team_notice",
-        title: "#{HrLite.display_name(user)} is on leave — #{leave_type.name} (#{date_range_label})",
+        title: "#{HrLite.display_name(user)} is on leave (#{date_range_label})",
         path: "/team",
         bell_to: team,
         email_to: team
@@ -339,6 +352,9 @@ module HrLite
       clash = self.class.where(user_id: user_id, status: %w[pending approved])
                   .where.not(id: id)
                   .overlapping_range(start_date, end_date)
+      # A first half and a second half of the same day do not overlap.
+      opposite = { "first" => "second", "second" => "first" }[half_day_part]
+      clash = clash.where.not(half_day_part: opposite).or(clash.where(half_day_part: nil)) if opposite
       errors.add(:base, "Leave already overlaps these dates") if clash.exists?
     end
 

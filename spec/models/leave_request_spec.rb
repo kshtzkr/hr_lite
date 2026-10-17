@@ -45,6 +45,13 @@ RSpec.describe HrLite::LeaveRequest do
       expect(overlap.errors[:base].join).to include("overlaps these dates")
     end
 
+    it "lets a first half and a second half share a day, but not the same half twice" do
+      create(:leave_request, user: user, leave_type: type, start_date: monday, end_date: monday, half_day_part: "first")
+      expect(build_request(half_day_part: "second")).to be_valid
+      expect(build_request(half_day_part: "first")).not_to be_valid
+      expect(build_request).not_to be_valid
+    end
+
     it "allows overlap with rejected/cancelled requests and other users" do
       create(:leave_request, user: user, leave_type: type, status: "rejected",
              start_date: monday, end_date: monday)
@@ -53,7 +60,7 @@ RSpec.describe HrLite::LeaveRequest do
     end
 
     it "rejects full-day leave over punched dates but allows half-day" do
-      create(:attendance_record, :checked_in, user: user, date: monday)
+      travel_to(monday) { create(:attendance_record, :checked_in, user: user, date: monday) }
       expect(build_request).not_to be_valid
       expect(build_request(half_day: true)).to be_valid
     end
@@ -125,6 +132,14 @@ RSpec.describe HrLite::LeaveRequest do
       expect(request.reload).to be_approved
       expect(request.decided_by_id).to eq(admin.id)
       expect(bells.map { |b| b[:kind] }).to include("leave.approved")
+    end
+
+    it "flags that month's computed run for a recompute when approved and when cancelled" do
+      run = create(:payroll_run, period_month: Date.new(2027, 6, 1), status: "review")
+      june = create(:leave_request, user: user, leave_type: type, start_date: Date.new(2027, 6, 14), end_date: Date.new(2027, 6, 14))
+      june.approve!(actor: admin)
+      june.cancel!(actor: admin)
+      expect(run.reload.warnings).to eq([ "Asha's leave (14 Jun) changed after compute — recompute" ] * 2)
     end
 
     it "approves past a drained balance as loss of pay" do

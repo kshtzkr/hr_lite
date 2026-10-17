@@ -13,7 +13,7 @@
   </section>
 <% end %>
 
-<% rows = hrl_inbox_rows %>
+<% rows = hrl_inbox_rows.reject { |_, record| @in_flow.include?([ record.class.polymorphic_name, record.id ]) } %>
 <section class="hrl-card">
   <% if @approvals.empty? && rows.empty? %>
     <p class="hrl-muted">Nothing is waiting on you.</p>

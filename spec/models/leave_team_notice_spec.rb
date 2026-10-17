@@ -32,7 +32,8 @@ RSpec.describe "Leave team notice" do
     notices = bells.select { |b| b[:kind] == "leave.team_notice" }
     expect(notices.map { |b| b[:user] }).to include(colleague)
     expect(notices.map { |b| b[:user] }).not_to include(requester)
-    expect(notices.first[:title]).to include("Meera is on leave").and include("Casual")
+    expect(notices.first[:title]).to include("Meera is on leave")
+    expect(notices.first[:title]).not_to include("Casual") # the type is the employee's own business
     expect(notices.first[:title]).not_to include("medical")
 
     notice_emails = emails.select { |e| e[:subject].to_s.include?("is on leave") }

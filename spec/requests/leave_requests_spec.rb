@@ -210,5 +210,13 @@ RSpec.describe "Leave requests", type: :request do
       expect(response.body).not_to include("SICKQ")
       expect(response.body).not_to include('style="color:')
     end
+
+    it "shades only holidays the office takes, and says an optional one is optional" do
+      create(:holiday, :optional, date: monday, name: "Rath Yatra")
+      get "/hr/calendar", params: { month: "2027-07" }
+      page = Nokogiri::HTML(response.body)
+      expect(page.css(".hrl-mgrid__day--holiday")).to be_empty
+      expect(page.css(".hrl-feed__item").map(&:text)).to eq([ "Mon 5 Jul: Rath Yatra (optional holiday)" ])
+    end
   end
 end

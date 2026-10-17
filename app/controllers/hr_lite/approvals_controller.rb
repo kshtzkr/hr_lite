@@ -9,6 +9,7 @@ module HrLite
   class ApprovalsController < ApplicationController
     def index
       @approvals = paginate(Approval.pending_for(hr_current_user).includes(:step, :subject).order(:created_at))
+      @in_flow = Approval.pending_for(hr_current_user).pluck(:subject_type, :subject_id) # their queue rows would repeat them
       @delegations = ApprovalDelegation.live_on(Date.current)
                                        .where(from_user_id: hr_current_user.id)
                                        .includes(:to_user)

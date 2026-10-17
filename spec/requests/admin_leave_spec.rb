@@ -36,6 +36,14 @@ RSpec.describe "Admin leave management", type: :request do
       expect(Nokogiri::HTML(response.body).css("a.hrl-btn[aria-current]").map(&:text)).to eq([ "Approved" ])
     end
 
+    it "reads the balance as of the leave's first day, like the loss-of-pay line" do
+      create(:employee_profile, user: employee, date_of_joining: Date.new(2025, 1, 1))
+      leave = create(:leave_request, user: employee, leave_type: create(:leave_type, :monthly, annual_quota: 12),
+                                     start_date: Date.new(2027, 9, 6), end_date: Date.new(2027, 9, 6))
+      get "/hr/admin/leave_requests/#{leave.id}"
+      expect(response.body).to include("<dd>9 of 9 available</dd>")
+    end
+
     it "approves from the decision screen" do
       post "/hr/admin/leave_requests/#{request_row.id}/approve"
       expect(request_row.reload).to be_approved

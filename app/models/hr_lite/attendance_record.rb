@@ -35,6 +35,7 @@ module HrLite
     validates :status, inclusion: { in: STATUSES }
     validates :half_day_part, inclusion: { in: %w[first second] }, allow_blank: true
     validate :check_out_after_check_in
+    validate :times_on_the_day, if: -> { will_save_change_to_date? || will_save_change_to_check_in_at? || will_save_change_to_check_out_at? }
 
     scope :for_date, ->(date) { where(date: date) }
     scope :for_month, ->(month) { where(date: month.beginning_of_month..month.end_of_month) }
@@ -117,6 +118,19 @@ module HrLite
       return if check_out_at >= check_in_at
 
       errors.add(:check_out_at, "must be after check-in")
+    end
+
+    # No future days; check-out may run into the next morning (night shift).
+    # Only the fields being changed, in the company's zone, so re-saving an old row never fails.
+    def times_on_the_day
+      return unless date
+
+      day = ->(time) { time.in_time_zone(HrLite.config.time_zone).to_date }
+      errors.add(:date, "can't be in the future") if will_save_change_to_date? && date > day.(Time.current)
+      errors.add(:check_in_at, "must be on #{date.strftime('%d %b')}") if will_save_change_to_check_in_at? && check_in_at && day.(check_in_at) != date
+      if will_save_change_to_check_out_at? && check_out_at && !(date..date + 1).cover?(day.(check_out_at))
+        errors.add(:check_out_at, "must be on #{date.strftime('%d %b')} or the next morning")
+      end
     end
   end
 end
