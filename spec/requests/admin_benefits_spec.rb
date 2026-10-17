@@ -53,6 +53,16 @@ RSpec.describe "Benefits admin", type: :request, no_legacy_bridge: true do
       expect(benefit.benefit_enrolments.count).to eq(1)
     end
 
+    it "re-enrols somebody whose cover ended, and the database still refuses two open at once" do
+      enrol
+      post "/hr/admin/benefits/#{benefit.id}/unenrol", params: { user_id: employee.id, ended_on: Date.current - 1 }
+      enrol(on: Date.current)
+      expect(benefit.benefit_enrolments.pluck(:ended_on)).to contain_exactly(Date.current - 1, nil)
+
+      second_open = benefit.benefit_enrolments.build(user_id: employee.id, enrolled_on: Date.current)
+      expect { second_open.save!(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
+
     it "refuses cover that ends before it started" do
       enrol
       post "/hr/admin/benefits/#{benefit.id}/unenrol", params: { user_id: employee.id, ended_on: Date.current - 31 }
