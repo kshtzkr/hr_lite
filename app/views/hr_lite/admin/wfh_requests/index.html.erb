@@ -3,7 +3,22 @@
   <h1 class="hrl-page__title">Work from home</h1>
 </div>
 
-<section class="hrl-card">
+<% if @grantable.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Give WFH</h2>
+    <p class="hrl-small hrl-muted">Approved straight away, up to <%= HrLite::WfhRequest::HR_MAX_DAYS %> days from today or later.</p>
+    <%= form_with url: hr_lite.admin_wfh_requests_path, method: :post, local: true do %>
+      <div class="hrl-field"><label for="grant-user">Employee</label><%= select_tag :user_id, options_for_select(@grantable.map { |u| [ hr_display_name(u), u.id ] }), include_blank: "Choose one", required: true, id: "grant-user", data: { hrl_filter: ("Type a name to filter" if @grantable.size > 5) } %></div>
+      <div class="hrl-field"><label for="grant-from">From</label><%= date_field_tag :start_date, Date.current, min: Date.current, required: true, id: "grant-from" %></div>
+      <div class="hrl-field"><label for="grant-to">To</label><%= date_field_tag :end_date, Date.current, min: Date.current, required: true, id: "grant-to" %></div>
+      <div class="hrl-field"><label for="grant-reason">Reason</label><%= text_area_tag :reason, nil, rows: 2, required: true, id: "grant-reason" %></div>
+      <div class="hrl-form-actions"><button type="submit" class="hrl-btn hrl-btn--primary">Give WFH</button></div>
+    <% end %>
+  </section>
+<% end %>
+
+<details class="hrl-card"<%= " open" if request.query_string.present? %>>
+  <summary class="hrl-btn hrl-btn--block">Filter</summary>
   <%= form_with url: hr_lite.admin_wfh_requests_path, method: :get, local: true do %>
     <div class="hrl-field"><label for="wfh-from">From</label><%= date_field_tag :from, @from, id: "wfh-from" %></div>
     <div class="hrl-field"><label for="wfh-to">To</label><%= date_field_tag :to, @to, id: "wfh-to" %></div>
@@ -19,7 +34,7 @@
       <a class="hrl-btn" href="<%= hr_lite.admin_wfh_requests_path %>">Reset</a>
     </div>
   <% end %>
-</section>
+</details>
 
 <div class="hrl-kpis">
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:requested] %></div><div class="hrl-kpi__label">Employees requested</div></div>
@@ -47,20 +62,6 @@
     <p class="hrl-card--empty">Nobody is working from home on this date.</p>
   <% end %>
 </section>
-
-<% if @grantable.any? %>
-  <section class="hrl-card">
-    <h2 class="hrl-card__title">Give WFH</h2>
-    <p class="hrl-small hrl-muted">Approved straight away, up to <%= HrLite::WfhRequest::HR_MAX_DAYS %> days from today or later.</p>
-    <%= form_with url: hr_lite.admin_wfh_requests_path, method: :post, local: true do %>
-      <div class="hrl-field"><label for="grant-user">Employee</label><%= select_tag :user_id, options_for_select(@grantable.map { |u| [ hr_display_name(u), u.id ] }), include_blank: "Choose one", required: true, id: "grant-user", data: { hrl_filter: ("Type a name to filter" if @grantable.size > 5) } %></div>
-      <div class="hrl-field"><label for="grant-from">From</label><%= date_field_tag :start_date, Date.current, min: Date.current, required: true, id: "grant-from" %></div>
-      <div class="hrl-field"><label for="grant-to">To</label><%= date_field_tag :end_date, Date.current, min: Date.current, required: true, id: "grant-to" %></div>
-      <div class="hrl-field"><label for="grant-reason">Reason</label><%= text_area_tag :reason, nil, rows: 2, required: true, id: "grant-reason" %></div>
-      <div class="hrl-form-actions"><button type="submit" class="hrl-btn hrl-btn--primary">Give WFH</button></div>
-    <% end %>
-  </section>
-<% end %>
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Schedules <%= @from.strftime("%-d %b") %> – <%= @to.strftime("%-d %b") %></h2>
