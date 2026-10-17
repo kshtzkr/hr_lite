@@ -42,8 +42,8 @@
                 <% elsif expense.approved? %>
                   <%= form_with url: hr_lite.reimburse_admin_expense_path(expense), method: :post do %>
                     <%= label_tag "reimburse-month-#{expense.id}", "Paid with the payroll of", class: "hrl-sr-only" %>
-                    <%= month_field_tag :period_month, Date.current.strftime("%Y-%m"), id: "reimburse-month-#{expense.id}", required: true, class: "hrl-input" %>
-                    <%= submit_tag "Mark reimbursed", class: "hrl-btn" %>
+                    <%= month_field_tag :period_month, (expense.reimbursed_in || Date.current).strftime("%Y-%m"), id: "reimburse-month-#{expense.id}", required: true, class: "hrl-input" %>
+                    <%= submit_tag "Pay with payroll", class: "hrl-btn" %>
                   <% end %>
                 <% end %>
               </td>

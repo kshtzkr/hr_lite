@@ -34,9 +34,9 @@ module HrLite
         expense = decidable.find(params[:id])
         month = parse_month_param(params[:period_month])
         expense.reimburse!(actor: hr_current_user, period_month: month)
-        redirect_to admin_expenses_path, notice: "Marked reimbursed with #{month.strftime('%B %Y')}."
+        redirect_to admin_expenses_path, notice: "Will be paid with #{month.strftime('%B %Y')} payroll."
       rescue ActiveRecord::RecordInvalid
-        redirect_to admin_expenses_path, alert: "Only an approved claim can be reimbursed."
+        redirect_to admin_expenses_path, alert: "Only an approved claim can go on payroll, and only on a month not yet paid."
       end
 
       # The receipt the employee had to upload, for the person deciding; same rules as a document download.

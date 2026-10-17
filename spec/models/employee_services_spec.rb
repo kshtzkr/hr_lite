@@ -78,7 +78,7 @@ RSpec.describe HrLite::Expense, no_legacy_bridge: true do
   end
 
   describe "the lifecycle" do
-    it "submits, approves and then reimburses with a payroll month" do
+    it "submits, approves and then books it onto a payroll month" do
       expense = claim
       expense.submit!(actor: employee)
       expect(expense.reload).to be_submitted
@@ -87,7 +87,7 @@ RSpec.describe HrLite::Expense, no_legacy_bridge: true do
       expect(expense.reload).to be_approved
 
       expense.reimburse!(actor: finance, period_month: Date.new(2027, 6, 1))
-      expect(expense.reload).to be_reimbursed
+      expect(expense.reload).to be_approved # reimbursed when that run is published
       expect(expense.reimbursed_in).to eq(Date.new(2027, 6, 1))
     end
 

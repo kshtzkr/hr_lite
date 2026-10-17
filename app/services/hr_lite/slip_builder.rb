@@ -93,6 +93,11 @@ module HrLite
       deductions << { code: "tds", label: "Income tax (TDS)", amount: tds.monthly } if tds.monthly.positive?
 
       total_deductions = deductions.sum(BigDecimal(0)) { |row| row[:amount] }
+      # Claims booked onto this month: paid back with the salary but not
+      # salary, so outside gross and every PF, ESI, PT and TDS base.
+      claims = Expense.awaiting_reimbursement.where(user_id: @user.id, reimbursed_in: @run.period_month).includes(:category).map do |claim|
+        { code: "reimbursement", label: "#{claim.category.name} claim (reimbursement, outside gross)", amount: claim.amount }
+      end
 
       {
         period_month: @run.period_month,
@@ -104,7 +109,7 @@ module HrLite
         lop_days: Money.d(summary[:lop_days]),
         lop_override: @lop_override,
         tds_override: @tds_override,
-        earnings: serialize_rows(earnings),
+        earnings: serialize_rows(earnings + claims),
         deductions: serialize_rows(deductions),
         employer_costs: employer_costs.transform_values { |v| v.to_s("F") }.to_json,
         tax_details: tds.details.to_json,
@@ -113,7 +118,7 @@ module HrLite
         # A heavy-LOP month can leave TDS (projected from the full structure)
         # larger than what was actually earned. Nobody is paid a negative
         # salary; PayrollRunProcessor warns when this floor bites.
-        net_pay: [ gross_earned - total_deductions, BigDecimal(0) ].max,
+        net_pay: [ gross_earned + claims.sum(BigDecimal(0)) { |row| row[:amount] } - total_deductions, BigDecimal(0) ].max,
         computed_at: Time.current
       }
     end

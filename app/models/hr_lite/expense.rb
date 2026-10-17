@@ -53,21 +53,26 @@ module HrLite
       settle!("rejected", actor, note)
     end
 
-    # Paid out with a payroll month. Kept separate from `approved` because
-    # agreeing to pay somebody and actually paying them are different days,
-    # and the person waiting cares about the second one.
+    # Booked onto a payroll month: that month's slip pays it, and publishing
+    # the run marks it reimbursed. Agreeing to pay somebody and actually
+    # paying them are different days, and the person waiting cares about the second.
     def reimburse!(actor:, period_month:)
+      months = [ reimbursed_in, period_month.beginning_of_month ].compact.uniq # moving it touches both runs
       raise ActiveRecord::RecordInvalid.new(self), "not approved" unless approved?
+      raise ActiveRecord::RecordInvalid.new(self), "month already paid" if PayrollRun.exists?(period_month: months, status: %w[finalized published])
 
       transaction do
-        update!(status: "reimbursed", reimbursed_in: period_month.beginning_of_month)
+        update!(reimbursed_in: months.last)
         AuditLog.record!(action: "expense.reimbursed", subject: self, actor: actor,
                          changes: { "employee" => HrLite.display_name(user),
                                     "period" => period_month.strftime("%B %Y") })
       end
+      PayrollRun.where(period_month: months, status: "review").find_each do |run|
+        run.update!(warnings: run.warnings + [ "#{HrLite.display_name(user)}'s #{category.name} claim changed after compute — recompute" ])
+      end
       Notifications.publish(
         "expense.reimbursed",
-        title: "Your #{category.name} claim was reimbursed with #{period_month.strftime('%B %Y')} payroll",
+        title: "Your #{category.name} claim will be paid with #{period_month.strftime('%B %Y')} payroll",
         path: "/expenses", bell_to: [ user ], email_to: [ user ]
       )
       true

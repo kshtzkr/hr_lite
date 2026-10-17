@@ -22,7 +22,7 @@ RSpec.describe "Admin services", type: :request, no_legacy_bridge: true do
       expect(claim.reload).to be_approved
 
       post "/hr/admin/expenses/#{claim.id}/reimburse", params: { period_month: "2027-06" }
-      expect(claim.reload).to be_reimbursed
+      expect(claim.reload).to be_approved # reimbursed when that run is published
       expect(claim.reimbursed_in).to eq(Date.new(2027, 6, 1))
     end
 

@@ -92,6 +92,57 @@ RSpec.describe "Payroll heads, arrears and loans", no_legacy_bridge: true do
     end
   end
 
+  # FB-5: "reimbursed with June payroll" used to be paid by no payroll at all.
+  describe "a claim booked onto the month's payroll" do
+    def booked_claim(user, amount)
+      category = HrLite::ExpenseCategory.find_or_create_by!(name: "Travel") { |c| c.receipt_required = false }
+      claim = HrLite::Expense.create!(user_id: user.id, category: category, amount: amount, status: "approved",
+                                      spent_on: Date.new(2027, 6, 10), description: "Cab")
+      claim.reimburse!(actor: leader, period_month: month)
+      claim
+    end
+
+    it "is paid on that slip but is not salary, and a recompute does not double it" do
+      plain = employee_with_structure(basic: 10_000, hra: 4_000, special_allowance: 2_000)
+      claimant = employee_with_structure(basic: 10_000, hra: 4_000, special_allowance: 2_000)
+      claim = booked_claim(claimant, 1_200)
+      run = HrLite::PayrollRun.create!(period_month: month)
+      2.times { run.compute!(actor: leader) }
+      plain_slip = run.salary_slips.find_by!(user_id: plain.id)
+      slip = run.salary_slips.find_by!(user_id: claimant.id)
+
+      expect(slip.earnings_rows.count { |row| row["code"] == "reimbursement" }).to eq(1)
+      expect(slip.net_pay).to eq(plain_slip.net_pay + 1_200)
+      expect(slip.gross_earnings).to eq(plain_slip.gross_earnings)
+      expect(slip.deductions_rows).to eq(plain_slip.deductions_rows) # PF, ESI, PT and TDS untouched
+      expect(claim.reload).to be_approved
+
+      run.finalize!(actor: leader) && run.publish!(actor: leader)
+      expect(claim.reload).to be_reimbursed
+    end
+
+    it "makes a run computed before it stale" do
+      user = employee_with_structure
+      run = HrLite::PayrollRun.create!(period_month: month)
+      run.compute!(actor: leader)
+      booked_claim(user, 900)
+
+      expect(run.reload.blocking_warnings)
+        .to include("#{HrLite.display_name(user)}'s Travel claim changed after compute — recompute")
+    end
+
+    it "refuses a month already paid, and will not move a claim off one" do
+      user = employee_with_structure
+      claim = booked_claim(user, 900)
+      run = HrLite::PayrollRun.create!(period_month: month)
+      run.compute!(actor: leader)
+      run.finalize!(actor: leader)
+
+      expect { booked_claim(user, 900) }.to raise_error(ActiveRecord::RecordInvalid)
+      expect { claim.reimburse!(actor: leader, period_month: month.next_month) }.to raise_error(ActiveRecord::RecordInvalid)
+    end
+  end
+
   describe "a one-off deduction" do
     it "reduces the net without touching the gross" do
       user = employee_with_structure
