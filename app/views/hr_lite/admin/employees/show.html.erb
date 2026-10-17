@@ -1,7 +1,7 @@
 <% content_for(:page_title) { @profile.employee_code } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @profile.user } %>
 <% content_for(:back, "Employees") %>
-<% own = @profile.user_id == hr_current_user.id # your own pay and record are for someone else to change %>
+<% own = @profile.user_id == hr_current_user.id && !hr_superadmin? # your own pay and record are for someone else to change, unless you are Super Admin %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">
