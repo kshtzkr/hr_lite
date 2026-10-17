@@ -131,14 +131,17 @@ module HrLite
         # Rescued PER RECIPIENT. Wrapping the whole loop meant one bad address
         # or a single enqueue failure silently dropped everyone after it — on
         # a team-wide leave notice, most of the team.
-        Array(email_to).compact.uniq.each do |user|
+        users = Array(email_to).compact.uniq
+        # One query for everyone's Busy/Meeting end, not one per recipient.
+        held_until = HrLite.config.office_geofence ? WorkStatus.do_not_disturb_for(users.map(&:id)) : {}
+        users.each do |user|
           next if user.email.blank?
 
           begin
             mail = EventMailer.event(to: user.email, subject: title, heading: title,
                                      body: body, lines: lines, path: path, link_url: link_url)
             # Busy or in a meeting: the email waits until that ends.
-            held = WorkStatus.do_not_disturb_until(user.id) if HrLite.config.office_geofence
+            held = held_until[user.id]
             held ? mail.deliver_later(wait_until: held) : mail.deliver_later
           rescue => e
             Rails.logger.error("[hr_lite] event email failed: #{e.class}: #{e.message}")

@@ -16,8 +16,11 @@ module HrLite
     def self.for(user_id, at: Time.current) = for_users([ user_id ], at: at)[user_id]
 
     # When an open Busy or Meeting ends, or nil when the person is reachable.
-    def self.do_not_disturb_until(user_id, at: Time.current)
-      WorkModeEvent.open.overlay.where(user_id: user_id, mode: %w[busy meeting]).where("ends_at > ?", at).maximum(:ends_at)
+    def self.do_not_disturb_until(user_id, at: Time.current) = do_not_disturb_for([ user_id ], at: at)[user_id]
+
+    # The same for many people in one query: { user_id => ends_at }, reachable people absent.
+    def self.do_not_disturb_for(user_ids, at: Time.current)
+      WorkModeEvent.open.overlay.where(user_id: user_ids, mode: %w[busy meeting]).where("ends_at > ?", at).group(:user_id).maximum(:ends_at)
     end
 
     def self.for_users(user_ids, at: Time.current)

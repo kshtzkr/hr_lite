@@ -67,11 +67,12 @@
   <% if records.any? %>
     <section class="hrl-card">
       <h2 class="hrl-card__title">Check-ins</h2>
+      <% all_punches = HrLite::AttendancePunch.where(user_id: records.map(&:user_id).uniq, date: records.map(&:date)).order(:at, :id).group_by { |p| [ p.user_id, p.date ] } # one query, not one a day %>
       <% records.each do |r| %>
         <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">
           <% if names %><strong><%= names[r.user_id] %></strong> · <% end %>
           <%= r.date.strftime("%a %-d %b") %><% if r.work_mode_label %> · <%= r.work_mode_label %><% end %>
-          <%= render "hr_lite/attendance/trail", record: r %>
+          <%= render "hr_lite/attendance/trail", record: r, punches: all_punches.fetch([ r.user_id, r.date ], []) %>
         </div></div>
       <% end %>
     </section>

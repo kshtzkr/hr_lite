@@ -101,8 +101,10 @@ module HrLite
         CSV.generate do |csv|
           csv << [ "Code", "Name", "Days", "LOP", "Gross", "PF", "ESI", "PT", "TDS",
                    "Net pay", "Bank", "Account", "IFSC" ]
-          run.salary_slips.includes(:user).each do |slip|
-            profile = slip.user_profile
+          slips = run.salary_slips.includes(:user).to_a
+          profiles = EmployeeProfile.where(user_id: slips.map(&:user_id)).index_by(&:user_id) # one query, not one a slip
+          slips.each do |slip|
+            profile = profiles[slip.user_id]
             deductions = slip.deductions_rows.index_by { |row| row["code"] }
             csv << [
               profile&.employee_code, HrLite.display_name(slip.user),

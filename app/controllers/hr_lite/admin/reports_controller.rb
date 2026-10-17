@@ -109,9 +109,10 @@ module HrLite
         visible_users.flat_map do |user|
           types.map do |type|
             balance = LeaveBalance.for(user, type, year)
+            entitled = balance.entitled
+            used = balance.used # each once: both query
             { "Employee" => HrLite.display_name(user), "Type" => type.code,
-              "Entitled" => balance.entitled.to_f, "Used" => balance.used.to_f,
-              "Available" => balance.available.to_f }
+              "Entitled" => entitled.to_f, "Used" => used.to_f, "Available" => (entitled - used).to_f }
           end
         end
       end
