@@ -1,7 +1,7 @@
 module HrLite
   # Monthly run lifecycle: draft -> processing -> review -> finalized ->
-  # published (terminal). Compute is synchronous (pure-Ruby math over a
-  # small team; the seam for a background job is one perform_later away).
+  # published (terminal). The page computes through PayrollComputeJob
+  # (compute_later!); compute! itself is synchronous.
   class PayrollRun < ApplicationRecord
     STATUSES = %w[draft processing review finalized published].freeze
 
@@ -37,9 +37,9 @@ module HrLite
     # `processing` is allowed back in so a run stranded there by a killed
     # process (deploy roll, timeout) can be recomputed instead of blocking
     # that month forever.
-    def compute!(actor:)
+    def compute!(actor:, from: status)
       raise_unless %w[draft review processing]
-      previous = status
+      previous = from
 
       begin
         update!(status: "processing")
@@ -59,6 +59,14 @@ module HrLite
         update_columns(status: previous) # rubocop:disable Rails/SkipsModelValidations
         raise e
       end
+    end
+
+    # ~1.2k queries at 54 people: the request only flips the run to processing.
+    def compute_later!(actor:)
+      raise_unless %w[draft review processing]
+      from = status
+      update!(status: "processing")
+      PayrollComputeJob.perform_later(self, from, actor)
     end
 
     def finalize!(actor:)

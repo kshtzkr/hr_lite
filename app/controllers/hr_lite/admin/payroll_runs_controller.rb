@@ -41,7 +41,7 @@ module HrLite
       end
 
       def compute
-        transition { |run| run.compute!(actor: hr_current_user) && "Computed — review the slips." }
+        transition { |run| run.compute_later!(actor: hr_current_user) && "Compute started." }
       end
 
       def approve
