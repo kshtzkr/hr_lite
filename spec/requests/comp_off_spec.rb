@@ -74,7 +74,7 @@ RSpec.describe "Comp-off requests", type: :request do
 
     it "lists pending by default with the approvals tabs, filters by status" do
       get "/hr/admin/comp_off_requests"
-      expect(response.body).to include("Meera").and include("Attendance fixes")
+      expect(response.body).to include("Meera").and include("Day fixes")
 
       get "/hr/admin/comp_off_requests", params: { status: "approved" }
       expect(response.body).to include("No approved comp-off requests")

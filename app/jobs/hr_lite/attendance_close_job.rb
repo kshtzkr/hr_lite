@@ -58,7 +58,7 @@ module HrLite
         "Fix it yourself by #{(date + rule[:within_days]).strftime('%d %b')} (up to #{rule[:per_week]} a week), " \
           "or raise a ticket for HR."
       else
-        "Raise a regularization ticket to get it fixed."
+        "Use Fix a day to get it fixed."
       end
       Notifications.publish(event, title: title, body: body, path: "/regularization_requests/new?date=#{date.iso8601}",
                                    bell_to: [ user ], email_to: [ user ])

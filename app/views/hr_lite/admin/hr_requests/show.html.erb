@@ -4,7 +4,7 @@
 <section class="hrl-card">
   <p class="hrl-small hrl-muted">
     <%= @request.category_label %> · <%= hr_display_name(@request.user) %> ·
-    <%= @request.created_at.to_date.strftime("%d %b %Y") %> ·
+    <%= @request.created_at.to_date.strftime("%d %b %Y") %>
     <%= hrl_request_status_badge(@request.status) %>
   </p>
   <% if @request.category == "id_card" %>
@@ -20,7 +20,7 @@
     <h2 class="hrl-card__title">Answer</h2>
     <%= form_with url: hr_lite.resolve_admin_hr_request_path(@request), method: :post do %>
       <div class="hrl-field">
-        <%= label_tag :resolution, "What you did" %>
+        <%= label_tag :resolution, "Answer to #{hr_display_name(@request.user)}" %>
         <%= text_area_tag :resolution, nil, rows: 4, required: true %>
       </div>
       <div class="hrl-form-actions">

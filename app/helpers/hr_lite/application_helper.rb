@@ -41,7 +41,7 @@ module HrLite
           queue: -> { hrl_queue(HrLite::LeaveRequest.where(status: "pending"), "leave.approve") } },
         { label: "Comp-off", path: :admin_comp_off_requests_path, match: [ "/admin/comp_off_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::CompOffRequest.pending, "leave.approve") } },
-        { label: "Attendance fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
+        { label: "Day fixes", path: :admin_regularization_requests_path, match: [ "/admin/regularization_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::RegularizationRequest.pending, "attendance.manage") } },
         { label: "WFH", path: :admin_wfh_requests_path, match: [ "/admin/wfh_requests" ], if: OPS,
           queue: -> { hrl_queue(HrLite::WfhRequest.pending.overlapping(Date.current, Date.current + HrLite::WfhRequest::MAX_DAYS_AHEAD), "attendance.manage") } },
@@ -75,7 +75,7 @@ module HrLite
         { label: "Org chart", path: :org_path, match: [ "/org" ] },
         { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] },
         { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
-        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: MANAGE },
+        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: -> { hr_can?("checklist.manage", scope: :all) } },
         { label: "Awards", path: :admin_awards_path, match: [ "/admin/awards" ], if: LEAD },
         { label: "PIPs", path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ], if: SUPER }
       ] },
@@ -89,7 +89,7 @@ module HrLite
       { label: "Help", tabs: [
         { label: "Policies", path: :policies_path, match: [ "/policies" ], if: -> { hr_can?("policy.view", scope: :all) } },
         { label: "Ask HR", path: :hr_requests_path, match: [ "/hr_requests" ], if: -> { hr_can?("hr_request.raise") } },
-        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: MANAGE },
+        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: -> { hr_can?("hr_request.manage", scope: :all) } },
         { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
       ] },
       { label: "Admin", divider: true, tabs: [
@@ -98,7 +98,7 @@ module HrLite
         { label: "Roles", path: :admin_roles_path, match: [ "/admin/roles" ], if: -> { hr_can?("role.manage", scope: :all) } },
         { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
         { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
-        { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: MANAGE },
+        { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: -> { hr_can?("asset.manage", scope: :all) } },
         { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD }
       ] }
     ].freeze
@@ -166,7 +166,7 @@ module HrLite
       when HrLite::LeaveRequest
         [ "#{record.leave_type.name}, #{record.date_range_label} · #{pluralize(hrl_days(record.days_count), 'day')}", hr_lite.admin_leave_request_path(record) ]
       when HrLite::CompOffRequest then [ "Comp-off for #{record.date_worked.strftime('%a %-d %b')}", hr_lite.admin_comp_off_request_path(record) ]
-      when HrLite::RegularizationRequest then [ "Attendance fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
+      when HrLite::RegularizationRequest then [ "Day fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
       when HrLite::WfhRequest then [ "WFH, #{record.dates_label}", hr_lite.admin_wfh_request_path(record) ]
       when HrLite::Expense then [ "Claim: #{record.category.name}, #{hrl_money(record.amount)}, #{record.spent_on.strftime('%a %-d %b')}", hr_lite.admin_expenses_path ]
       when HrLite::Resignation
@@ -306,8 +306,8 @@ module HrLite
     # Status pill for a request lifecycle string — one colour map for every
     # list and show screen.
     def hrl_request_status_badge(status)
-      css = { "approved" => "hrl-badge--ok", "rejected" => "hrl-badge--bad",
-              "cancelled" => "hrl-badge--muted" }[status]
+      css = { "approved" => "hrl-badge--ok", "reimbursed" => "hrl-badge--ok", "verified" => "hrl-badge--ok",
+              "rejected" => "hrl-badge--bad", "cancelled" => "hrl-badge--muted", "draft" => "hrl-badge--muted" }[status]
       content_tag(:span, status.humanize, class: "hrl-badge #{css}")
     end
 

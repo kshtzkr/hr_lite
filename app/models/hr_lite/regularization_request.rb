@@ -135,7 +135,7 @@ module HrLite
       transition!("cancelled", actor, nil)
       Notifications.publish(
         "regularization.cancelled",
-        title: "#{HrLite.display_name(user)} cancelled a regularization ticket (#{date.strftime('%d %b')})",
+        title: "#{HrLite.display_name(user)} cancelled a day fix request (#{date.strftime('%d %b')})",
         path: "/admin/regularization_requests",
         bell_to: HrLite.admin_users
       )
@@ -220,7 +220,7 @@ module HrLite
     def notify_requested
       Notifications.publish(
         "regularization.requested",
-        title: "#{HrLite.display_name(user)} raised a regularization ticket for #{date.strftime('%d %b')} " \
+        title: "#{HrLite.display_name(user)} asked to fix #{date.strftime('%d %b')} " \
                "(#{times_label})",
         body: reason.presence,
         path: "/admin/regularization_requests/#{id}",
