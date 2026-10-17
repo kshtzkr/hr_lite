@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.56.0] - 2026-10-17
+
+Owner decisions on the HRMS audit (#133–#138). **Two migrations**: the host runs `bin/rails db:migrate` and refreshes `db/schema.rb`.
+
+- **Claims paid with payroll** (FB-5). "Pay with payroll" books an approved claim to a month. The claim is added to that month's slip as a reimbursement line. It is outside gross, so PF, ESI, PT and TDS do not change. Publishing the run marks the claim reimbursed. Booking or moving a claim after compute blocks the run until it is recomputed. A month whose run is finalized or published is refused. Claims marked reimbursed before this release are not picked up again.
+- **Loan instalments never take more than the month's pay** (FB-4). The deduction is capped at what is left after every other deduction. Only the amount taken is booked, the rest stays owed, and the run shows a warning naming the person.
+- **Re-enrol in a benefit after cover ends** (FB-17). The unique index on enrolments now covers only open rows (`ended_on IS NULL`), and the validation matches it. A new index on `work_mode_events.attendance_record_id` (PF-14).
+- **Super Admin may change their own record** (SE-1). The edit is audited. HR and Leadership still cannot edit their own pay, profile or exit.
+- **Menu** (NV-2): Tax checks, Team loans and Team benefits move from Pay to Admin.
+- **Phone**: the Team loans and person-documents "Open" links are 44 px buttons.
+
 ## [0.55.0] - 2026-10-17
 
 The second pass of the HRMS audit of 0.54.0 covers bugs, security, performance and the remaining screen fixes (#115–#131). No migrations.
