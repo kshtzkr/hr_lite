@@ -20,7 +20,8 @@
       <% @mine_pending.each do |req| %>
         <% title, detail, href = case req
              when HrLite::LeaveRequest then [ req.leave_type.name, "#{req.date_range_label} · #{pluralize(hrl_days(req.days_count), 'day')}", hr_lite.leave_request_path(req) ]
-             when HrLite::RegularizationRequest then [ "Attendance fix", "#{req.date.strftime('%a %-d %b')} · #{req.times_label}", hr_lite.regularization_requests_path ]
+             when HrLite::RegularizationRequest then [ "Day fix", "#{req.date.strftime('%a %-d %b')} · #{req.times_label}", hr_lite.regularization_requests_path ]
+             when HrLite::WfhRequest then [ "Work from home", [ req.start_date, req.end_date ].uniq.map { |d| d.strftime("%a %-d %b") }.join(" – "), hr_lite.wfh_requests_path ]
              else [ "Comp-off", "Worked #{req.date_worked.strftime('%a %-d %b')}", hr_lite.comp_off_requests_path ]
              end %>
         <a class="hrl-listrow" href="<%= href %>">
@@ -37,7 +38,6 @@
   <section class="hrl-card">
     <h2 class="hrl-card__title">On leave this week</h2>
     <%= render "hr_lite/leave_requests/out_list", leaves: @out_week, empty: "Nobody is on leave this week." %>
-    <a class="hrl-card__link" href="<%= hr_lite.team_path %>">Team board</a>
   </section>
 
   <% if @awards.any? %>

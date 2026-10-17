@@ -22,12 +22,12 @@
 </div>
 
 <div class="hrl-row hrl-row--mb" role="tablist">
-  <a class="hrl-btn <%= "hrl-btn--primary" if @tab == "slips" %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "slips", status: @status)) %>" aria-current="<%= @tab == "slips" ? "page" : nil %>">Salary slips</a>
-  <a class="hrl-btn <%= "hrl-btn--primary" if @tab == "declarations" %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "declarations", status: @status)) %>" aria-current="<%= @tab == "declarations" ? "page" : nil %>">Tax declarations</a>
+  <a class="hrl-btn" <%= "aria-current=true" if @tab == "slips" %> href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "slips", status: @status)) %>">Salary slips</a>
+  <a class="hrl-btn" <%= "aria-current=true" if @tab == "declarations" %> href="<%= hr_lite.admin_ca_reviews_path(keep.(tab: "declarations", status: @status)) %>">Tax declarations</a>
 </div>
 <div class="hrl-row hrl-row--mb">
   <% [ [ nil, "All" ], [ "unreviewed", "To review" ], [ "flagged", "Flagged" ], [ "verified", "Verified" ], [ "resolved", "Resolved" ] ].each do |value, label| %>
-    <a class="hrl-btn <%= "hrl-btn--primary" if @status == value %>" href="<%= hr_lite.admin_ca_reviews_path(keep.(status: value)) %>"><%= label %></a>
+    <a class="hrl-btn" <%= "aria-current=true" if @status == value %> href="<%= hr_lite.admin_ca_reviews_path(keep.(status: value)) %>"><%= label %></a>
   <% end %>
 </div>
 
