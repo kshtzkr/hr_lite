@@ -60,7 +60,7 @@ RSpec.describe "Superadmin tier", type: :request do
       create(:salary_structure, user: profile.user)
       get "/hr/admin/employees/#{profile.id}"
       expect(response.body).to include("Salary structures").and include("New structure")
-      get "/hr/admin/loans" # Payroll is an Admin tab
+      get "/hr/salary_slips"
       expect(response.body).to include("/admin/payroll_runs")
     end
 

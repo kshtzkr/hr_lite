@@ -61,12 +61,19 @@ module HrLite
         { label: "Expenses", path: :expenses_path, match: [ "/expenses" ], if: -> { hr_can?("expense.claim") } },
         { label: "Tax", path: :tax_declaration_path, match: [ "/tax_declaration" ] },
         { label: "Loans", path: :loans_path, match: [ "/loans" ] },
-        { label: "Benefits", path: :benefits_path, match: [ "/benefits" ], if: -> { hr_can?("benefit.view") } }
+        { label: "Benefits", path: :benefits_path, match: [ "/benefits" ], if: -> { hr_can?("benefit.view") } },
+        # HR approves payroll without running it; Super Admin runs it. One page.
+        { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips", "/admin/payroll_line_items" ],
+          if: -> { hr_superadmin? || (hr_can?("payroll.approve", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } }
       ] },
       { label: "People", match: [ "/people" ], tabs: [
         { label: "Team board", path: :team_path, match: [ "/team" ] },
         { label: "Org chart", path: :org_path, match: [ "/org" ] },
-        { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] }
+        { label: "Kudos", path: :kudos_path, match: [ "/kudos" ] },
+        { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
+        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: -> { hr_can?("checklist.manage", scope: :all) } },
+        { label: "Awards", path: :admin_awards_path, match: [ "/admin/awards" ], if: LEAD },
+        { label: "PIPs", path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ], if: SUPER }
       ] },
       { label: "Me", tabs: [
         { label: "Profile", path: :employee_profile_path, match: [ "/profile", "/resignation" ] },
@@ -77,7 +84,9 @@ module HrLite
       ] },
       { label: "Help", tabs: [
         { label: "Policies", path: :policies_path, match: [ "/policies" ], if: -> { hr_can?("policy.view", scope: :all) } },
-        { label: "Ask HR", path: :hr_requests_path, match: [ "/hr_requests" ], if: -> { hr_can?("hr_request.raise") } }
+        { label: "Ask HR", path: :hr_requests_path, match: [ "/hr_requests" ], if: -> { hr_can?("hr_request.raise") } },
+        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: -> { hr_can?("hr_request.manage", scope: :all) } },
+        { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
       ] },
       { label: "Admin", divider: true, tabs: [
         { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/expense_categories" ], if: LEAD },
@@ -87,19 +96,10 @@ module HrLite
         { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
         { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: -> { hr_can?("asset.manage", scope: :all) } },
         { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD },
-        # HR approves payroll without running it; Super Admin runs it. One page.
-        { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips", "/admin/payroll_line_items" ],
-          if: -> { hr_superadmin? || (hr_can?("payroll.approve", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
         { label: "Tax checks", path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ],
           if: -> { hr_superadmin? || (hr_can?("tax.view", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
         { label: "Team loans", path: :admin_loans_path, match: [ "/admin/loans" ], if: SUPER },
-        { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE },
-        { label: "Employees", path: :admin_employees_path, match: [ "/admin/employees" ], if: LEAD },
-        { label: "Joining & exits", path: :admin_checklists_path, match: [ "/admin/checklists" ], if: -> { hr_can?("checklist.manage", scope: :all) } },
-        { label: "Awards", path: :admin_awards_path, match: [ "/admin/awards" ], if: LEAD },
-        { label: "PIPs", path: :admin_performance_plans_path, match: [ "/admin/performance_plans" ], if: SUPER },
-        { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: -> { hr_can?("hr_request.manage", scope: :all) } },
-        { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
+        { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE }
       ] }
     ].freeze
 

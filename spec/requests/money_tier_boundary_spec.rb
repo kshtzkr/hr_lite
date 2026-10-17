@@ -28,7 +28,7 @@ RSpec.describe "The money tier stands apart from leadership", type: :request do
 
   it "shows the Payroll nav item to a superadmin who is not in leadership" do
     sign_in payroll_operator
-    get "/hr/admin/loans" # Payroll is an Admin tab
+    get "/hr/salary_slips"
 
     expect(response.body).to include('href="/hr/admin/payroll_runs"')
   end
