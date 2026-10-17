@@ -27,7 +27,8 @@ RSpec.describe "salary slip PDF template under a host renderer" do
     )
 
     expect(html).to include("+91 80 1234 5678 · acme.test") # who sent it and how to reach them
-    expect(slip.pdf_cache_key).to start_with("hr_lite_slip_v2/")
+    expect(slip.pdf_cache_key).to start_with("hr_lite_slip_v3/")
+    expect(html).to match(%r{Payable days: \d+(\.5)? / \d+ \(unpaid \d+(\.5)?\)}) # no "26.0"
     expect(html).to include("Salary slip")
       .and include("rupees")           # AmountInWords PORO, not a helper
       .and include("AB••••••4F")       # masked PAN from the model

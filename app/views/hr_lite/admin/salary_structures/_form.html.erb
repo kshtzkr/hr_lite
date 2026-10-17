@@ -5,6 +5,7 @@
     <div class="hrl-field">
       <%= f.label :annual_ctc, "Annual CTC (₹ a year)" %>
       <%= f.number_field :annual_ctc, step: 1, min: 1, required: true, value: (structure.annual_ctc || breakup&.dig(:annual_ctc))&.round %>
+      <% if structure.annual_ctc %><p class="hrl-hint">= <%= hrl_money(structure.annual_ctc) %> a year</p><% end %>
       <p class="hrl-hint">The only amount you type. Saving splits it: Basic 50%, HRA 50% of Basic in a metro (40% elsewhere), employer PF, ESI and gratuity (4.81% of Basic) inside the CTC, the rest as special allowance.</p>
     </div>
     <div class="hrl-field">
