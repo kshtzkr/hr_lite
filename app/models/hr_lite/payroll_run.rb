@@ -137,6 +137,9 @@ module HrLite
       transaction do
         update!(status: "published", published_at: Time.current, published_by_id: actor&.id)
         audit!("payroll.published", actor, "slips" => salary_slips.count)
+        # The claims these slips carry are paid now.
+        Expense.awaiting_reimbursement.where(reimbursed_in: period_month, user_id: salary_slips.select(:user_id))
+               .update_all(status: "reimbursed", updated_at: Time.current) # rubocop:disable Rails/SkipsModelValidations
       end
 
       # config.slip_release_day holds the employee notice until the slip opens
