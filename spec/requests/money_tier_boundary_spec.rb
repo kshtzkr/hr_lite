@@ -45,7 +45,7 @@ RSpec.describe "The money tier stands apart from leadership", type: :request do
       get "/hr/admin/audit_logs"
 
       expect(response.body).not_to include("Runs the Bali desk single-handed")
-      expect(response.body).not_to include("Appraisal")
+      expect(response.body).not_to include("Appraisal #") # the subject cell; role rows name appraisal.* keys
     end
 
     # The audit screen itself is a governance surface, so reading money-tier
@@ -58,7 +58,7 @@ RSpec.describe "The money tier stands apart from leadership", type: :request do
       sign_in both
       get "/hr/admin/audit_logs"
 
-      expect(response.body).to include("Appraisal")
+      expect(response.body).to include("Appraisal #")
     end
   end
 

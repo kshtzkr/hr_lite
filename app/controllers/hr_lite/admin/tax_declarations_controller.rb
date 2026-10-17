@@ -45,7 +45,7 @@ module HrLite
 
         AuditLog.record!(action: "tax_proof.downloaded", subject: declaration, actor: hr_current_user,
                          changes: { "file" => file.filename.to_s, "owner" => HrLite.display_name(declaration.user) })
-        redirect_to Rails.application.routes.url_helpers.rails_blob_path(file, disposition: "attachment", only_path: true),
+        redirect_to Rails.application.routes.url_helpers.rails_blob_path(file, disposition: "attachment", only_path: true, expires_in: 5.minutes),
                     allow_other_host: false
       end
 

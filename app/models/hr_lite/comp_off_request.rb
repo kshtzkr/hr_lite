@@ -50,6 +50,8 @@ module HrLite
         # (A duplicate live request for the same date cannot exist — the
         # partial unique index on [user_id, date_worked] guarantees it.)
         credit_balance!(type)
+        AuditLog.record!(action: "comp_off.approved", subject: self, actor: actor,
+                         changes: { "date_worked" => date_worked.to_s, "days" => credit_days.to_s("F") })
       end
 
       Notifications.publish(

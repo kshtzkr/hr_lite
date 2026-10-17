@@ -8,6 +8,8 @@ module HrLite
 
     SKIPPED_ATTRIBUTES = %w[updated_at created_at].freeze
     REDACTED = "[changed]".freeze
+    # Personal text stored in the clear: the trail says it changed, never to what.
+    PII_COLUMNS = { "HrLite::EmployeeProfile" => %w[date_of_birth], "HrLite::HrRequest" => %w[subject body] }.freeze
 
     # *_commit, not *_create/_update/_destroy: these callbacks write an audit
     # row and email leadership a diff. Fired inside the transaction they
@@ -40,7 +42,7 @@ module HrLite
     end
 
     def hr_lite_audited_changes(action)
-      encrypted = self.class.try(:encrypted_attributes)&.map(&:to_s) || []
+      encrypted = (self.class.try(:encrypted_attributes)&.map(&:to_s) || []) + PII_COLUMNS.fetch(self.class.name, [])
 
       case action
       when "destroy"

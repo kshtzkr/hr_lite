@@ -79,7 +79,7 @@ module HrLite
     def default_visibility_from_category
       return if visibility.present?
 
-      self.visibility = SENSITIVE_CATEGORIES.include?(category.to_s) ? "money" : "hr"
+      self.visibility = SENSITIVE_CATEGORIES.include?(category.to_s.downcase.strip) ? "money" : "hr"
     end
 
     def file_is_an_allowed_kind

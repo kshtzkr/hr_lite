@@ -20,6 +20,7 @@ module HrLite
     STATUSES.each { |s| define_method("#{s}?") { status == s } }
 
     after_create :notify_submitted
+    after_create { audit!("submitted", user) }
 
     def accept!(actor:, last_day: nil, note: nil)
       raise ActiveRecord::RecordInvalid.new(self), "not pending" unless pending?
@@ -34,6 +35,7 @@ module HrLite
         # nothing was stamped, because the screen used to claim it was.
         @exit_date_recorded = profile.present?
         profile&.update!(date_of_exit: final_day)
+        audit!("accepted", actor)
       end
 
       # Notice periods are the normal case, so access is revoked here only
@@ -55,7 +57,7 @@ module HrLite
     def withdraw!(actor:)
       raise ActiveRecord::RecordInvalid.new(self), "not pending" unless pending? && actor.id == user_id
 
-      update!(status: "withdrawn", decided_at: Time.current)
+      transaction { update!(status: "withdrawn", decided_at: Time.current) && audit!("withdrawn", actor) }
       Notifications.publish(
         "resignation.withdrawn",
         title: "#{HrLite.display_name(user)} withdrew their resignation",
@@ -71,6 +73,8 @@ module HrLite
     end
 
     private
+
+    def audit!(action, actor) = AuditLog.record!(action: "resignation.#{action}", subject: self, actor: actor, changes: { "last_day" => proposed_last_day.to_s })
 
     # Best-effort, like every other call of this hook: a host that cannot
     # revoke must not roll back an accepted resignation.

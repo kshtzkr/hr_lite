@@ -33,10 +33,10 @@ module HrLite
       BADGES[badge]
     end
 
-    # Creates mention rows from the message markers (existing users only,
+    # Creates mention rows from the message markers (employees only,
     # giver excluded) and notifies them. Called once, right after create.
     def register_mentions!
-      ids = HrLite::MentionParser.user_ids(message) - [ giver_id ]
+      ids = (HrLite::MentionParser.user_ids(message) - [ giver_id ]) & HrLite.employees.map(&:id)
       users = HrLite.user_klass.where(id: ids)
       users.each { |u| kudo_mentions.create!(user_id: u.id) }
 

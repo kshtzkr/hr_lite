@@ -18,7 +18,7 @@ module HrLite
         month = parse_month_param(params.dig(:payroll_run, :period_month))
         @run = PayrollRun.new(period_month: month, created_by_id: hr_current_user.id,
                               notes: params.dig(:payroll_run, :notes))
-        if @run.save
+        if PayrollRun.transaction { @run.save && audit!("payroll.created", @run) }
           redirect_to admin_payroll_run_path(@run), notice: "Run created — compute when ready."
         else
           render :new, status: :unprocessable_entity
@@ -32,7 +32,7 @@ module HrLite
 
       def destroy
         run = PayrollRun.find(params[:id])
-        if run.destroy
+        if PayrollRun.transaction { run.destroy && audit!("payroll.deleted", run) }
           redirect_to admin_payroll_runs_path, notice: "Draft run deleted.", status: :see_other
         else
           redirect_to admin_payroll_run_path(run), alert: run.errors.full_messages.to_sentence,
@@ -76,6 +76,8 @@ module HrLite
       end
 
       private
+
+      def audit!(action, run) = AuditLog.record!(action: action, subject: run, actor: hr_current_user, changes: { "period" => run.label })
 
       def require_approver_or_money!
         return if hr_can?("payroll.manage", scope: :all)

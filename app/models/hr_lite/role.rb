@@ -36,12 +36,17 @@ module HrLite
     # permission being taken away, not one left alone.
     def replace_grants!(grants)
       transaction do
+        before = grant_map
         role_grants.destroy_all
         grants.each do |key, scope|
           next if scope.blank? || scope.to_s == "none"
 
           role_grants.create!(permission_key: Permissions.validate!(key), scope: scope.to_s)
         end
+        role_grants.reload
+        after = grant_map
+        changed = (before.keys | after.keys).reject { |key| before[key] == after[key] }
+        AuditLog.record!(action: "role.grants_changed", subject: self, changes: changed.to_h { |key| [ key, [ before[key], after[key] ] ] }) if changed.any?
       end
       reload
     end
