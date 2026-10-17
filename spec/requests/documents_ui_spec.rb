@@ -34,6 +34,8 @@ RSpec.describe "Documents over HTTP", type: :request do
 
       get "/hr/documents"
       expect(response.body).to include("PAN card")
+      # The upload disclosure is a plain button; the form's own Upload is the one primary.
+      expect(Nokogiri::HTML(response.body).at_css("details.hrl-card > summary")["class"]).to eq("hrl-btn")
     end
 
     it "refuses a file type that can carry script" do

@@ -1,5 +1,6 @@
 <% content_for(:page_title) { hr_display_name(@employee) } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @employee } %>
+<% content_for(:back, "Documents to verify") %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@employee) %> — documents</h1>
 </div>

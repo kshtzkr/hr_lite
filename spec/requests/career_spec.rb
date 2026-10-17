@@ -73,7 +73,7 @@ RSpec.describe "Career over HTTP", type: :request do
 
     it "records a standalone role change from the form" do
       get "/hr/admin/employees/#{profile.id}/designation_changes/new"
-      expect(response.body).to include("Role change")
+      expect(response.body).to include("Designation change")
 
       post "/hr/admin/employees/#{profile.id}/designation_changes", params: { designation_change: {
         to_designation: "Ops Manager", effective_date: Date.current.to_s, note: "Team growth"

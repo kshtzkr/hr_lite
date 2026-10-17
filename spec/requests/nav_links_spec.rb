@@ -123,4 +123,26 @@ RSpec.describe "Navigation that leads somewhere", type: :request do
       get "/hr/admin/leave_requests/new"
       expect(response.body).to include("Set up their profile")
     end
+
+    it "links a person's pages back to the place they came from" do
+      create(:employee_profile, user: employee)
+      sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::HR, HrLite::Role::LEADERSHIP, name: "Lata")
+      { "/hr/admin/employees/#{HrLite::EmployeeProfile.last.id}" => "/hr/admin/employees",
+        "/hr/admin/documents/for/#{employee.id}" => "/hr/admin/documents",
+        "/hr/admin/attendances/#{employee.id}" => "/hr/admin/attendances",
+        "/hr/id_card/#{employee.id}" => "/hr/admin/employees",
+        "/hr/people/#{employee.id}/timeline" => "/hr/org" }.each do |path, parent|
+        get path
+        expect(Nokogiri::HTML(response.body).at_css("a.hrl-backlink")&.[]("href")).to eq(parent), path
+      end
+    end
+
+    it "links a profile correction to the help desk and sets Resignation apart from Org chart" do
+      create(:employee_profile, user: employee)
+      sign_in employee
+      get "/hr/profile"
+      card = Nokogiri::HTML(response.body).at_css("section.hrl-card")
+      expect(card.at_css("p a.hrl-card__link")["href"]).to eq("/hr/hr_requests/new")
+      expect(card.at_css("hr + a")["href"]).to eq("/hr/resignation")
+    end
 end

@@ -1,17 +1,20 @@
 <% content_for(:page_title) { @profile.employee_code } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @profile.user } %>
+<% content_for(:back, "Employees") %>
+<% own = @profile.user_id == hr_current_user.id # your own pay and record are for someone else to change %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= hr_display_name(@profile.user) %> <span class="hrl-muted">(<%= @profile.employee_code %>)</span></h1>
   <div class="hrl-page__actions">
+    <% unless own %>
     <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
-    <%# Their records are the tabs above; the HR actions fold into one Manage button. %>
+    <%# Their records are the tabs above; the HR actions fold into one More actions button. %>
     <% if hr_superadmin? || hr_can?("salary.manage", scope: :all) %>
       <details>
-        <summary class="hrl-btn">Manage</summary>
+        <summary class="hrl-btn">More actions (appraisal, designation change, PIP, salary)</summary>
         <div class="hrl-row">
           <% if hr_superadmin? %>
             <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
-            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Role change</a>
+            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Designation change</a>
             <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
           <% end %>
           <% if hr_can?("salary.manage", scope: :all) %>
@@ -19,6 +22,7 @@
           <% end %>
         </div>
       </details>
+    <% end %>
     <% end %>
   </div>
 </div>
@@ -47,34 +51,6 @@
     <% end %>
   </section>
 <% end %>
-
-<%# Stays on the page after an exit date is stamped. Accepting a resignation
-    stamps one, and hiding this card at that moment removed the only control
-    that revokes sign-in — during the notice period, when it is needed. %>
-<section class="hrl-card">
-  <h2 class="hrl-card__title"><%= @profile.date_of_exit ? "Revoke access" : "Offboard" %></h2>
-  <% if @profile.date_of_exit %>
-    <p class="hrl-small hrl-muted">Last day is <%= @profile.date_of_exit.strftime("%d %b %Y") %> —
-      attendance and payroll already clip to it. Run this on or after that day to revoke
-      sign-in. Records are never deleted.</p>
-  <% else %>
-    <p class="hrl-small hrl-muted">Stamps the last day (attendance and payroll clip to it) and revokes sign-in.
-      Records are never deleted.</p>
-  <% end %>
-  <%= form_with url: hr_lite.offboard_admin_employee_path(@profile), method: :post, local: true,
-                html: { data: { turbo_confirm: "Offboard #{hr_display_name(@profile.user)}?" } } do %>
-    <div class="hrl-field">
-      <label for="off_date">Last working day</label>
-      <input type="date" id="off_date" name="date_of_exit" class="hrl-input"
-             value="<%= @profile.date_of_exit || Date.current %>">
-    </div>
-    <div class="hrl-form-actions">
-      <button class="hrl-btn hrl-btn--danger" type="submit">
-        <%= @profile.date_of_exit ? "Revoke access now" : "Offboard employee" %>
-      </button>
-    </div>
-  <% end %>
-</section>
 
 <div class="hrl-grid hrl-grid--2">
   <section class="hrl-card">
@@ -107,7 +83,7 @@
                 <td data-label="Effective"><%= structure.effective_from.strftime("%b %Y") %></td>
                 <td data-label="Basic" class="hrl-num"><%= hrl_money(structure.basic) %></td>
                 <td data-label="Gross" class="hrl-num"><%= hrl_money(structure.monthly_gross) %></td>
-                <td data-label=""><a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a></td>
+                <td data-label=""><% unless own %><a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_salary_structure_path(@profile, structure) %>">Edit</a><% end %></td>
               </tr>
             <% end %>
           </tbody>
@@ -143,6 +119,36 @@
     <% end %>
   <% else %>
     <p class="hrl-muted hrl-small">No appraisals yet.</p>
+  <% end %>
+</section>
+<% end %>
+
+<%# Stays on the page after an exit date is stamped. Accepting a resignation
+    stamps one, and hiding this card at that moment removed the only control
+    that revokes sign-in — during the notice period, when it is needed. %>
+<% unless own %>
+<section class="hrl-card">
+  <h2 class="hrl-card__title"><%= @profile.date_of_exit ? "Revoke access" : "Offboard" %></h2>
+  <% if @profile.date_of_exit %>
+    <p class="hrl-small hrl-muted">Last day is <%= @profile.date_of_exit.strftime("%d %b %Y") %> —
+      attendance and payroll already clip to it. Run this on or after that day to revoke
+      sign-in. Records are never deleted.</p>
+  <% else %>
+    <p class="hrl-small hrl-muted">Stamps the last day (attendance and payroll clip to it) and revokes sign-in.
+      Records are never deleted.</p>
+  <% end %>
+  <%= form_with url: hr_lite.offboard_admin_employee_path(@profile), method: :post, local: true,
+                html: { data: { turbo_confirm: "Offboard #{hr_display_name(@profile.user)}?" } } do %>
+    <div class="hrl-field">
+      <label for="off_date">Last working day</label>
+      <input type="date" id="off_date" name="date_of_exit" class="hrl-input"
+             value="<%= @profile.date_of_exit || Date.current %>">
+    </div>
+    <div class="hrl-form-actions">
+      <button class="hrl-btn hrl-btn--danger" type="submit">
+        <%= @profile.date_of_exit ? "Revoke access now" : "Offboard employee" %>
+      </button>
+    </div>
   <% end %>
 </section>
 <% end %>

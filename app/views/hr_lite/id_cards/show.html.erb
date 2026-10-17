@@ -1,5 +1,6 @@
 <% content_for(:page_title) { "ID card" } %>
 <% content_for(:tabrow) { render "hr_lite/shared/person_tabs", user: @user } if params[:user_id] %>
+<% content_for(:back, "Employees") if params[:user_id] %>
 <% company = HrLite.config.company.call %>
 <% brand = company[:brand].presence || company[:name].presence || "HR" %>
 <% own = @user == hr_current_user %>
@@ -63,6 +64,9 @@
   </div>
 
   <div class="hrl-idcard-actions">
+    <% if own && (@profile.blood_group.blank? || @profile.emergency_contact.blank?) && hr_can?("hr_request.raise") %>
+      <a class="hrl-card__link hrl-idcard-help" href="<%= hr_lite.new_hr_request_path %>">Missing details? Ask HR</a>
+    <% end %>
     <button type="button" class="hrl-btn hrl-btn--primary" data-hrl-print>Print</button>
     <button type="button" class="hrl-btn" data-hrl-share="id-card-<%= @profile.employee_code %>.png">Share</button>
     <% if own && @print_requested %>
