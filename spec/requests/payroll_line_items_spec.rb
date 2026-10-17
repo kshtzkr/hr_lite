@@ -44,7 +44,7 @@ RSpec.describe "One-off payroll items over HTTP", type: :request do
       get "/hr/admin/payroll_line_items?month=2027-05"
       expect(response.body).not_to include("Q1 target")
 
-      post "/hr/admin/payroll_runs/#{run.id}/compute"
+      perform_enqueued_jobs { post "/hr/admin/payroll_runs/#{run.id}/compute" }
       incentive = run.salary_slips.find_by!(user_id: employee.id)
                      .earnings_rows.find { |row| row["code"] == "incentive" }
       expect(BigDecimal(incentive["amount"])).to eq(7500)

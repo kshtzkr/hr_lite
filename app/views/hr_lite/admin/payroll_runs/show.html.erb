@@ -56,6 +56,9 @@
   <p class="hrl-small hrl-muted hrl-mt">
     <% if @run.review? %>
       <%= @run.first_approved_by ? "Approved by #{hr_display_name(@run.first_approved_by)} on #{@run.first_approved_at.strftime('%-d %b')} — one more approver (HR or Super Admin) publishes it." : "Needs two approvals (HR and Super Admin). If nobody approves by the 3rd, a run with no blocking warnings is approved automatically." %>
+    <% elsif @run.processing? %>
+      <% content_for(:head) { tag.meta("http-equiv": "refresh", content: "3") } %>
+      Computing… this page refreshes until the slips are ready.
     <% elsif @run.auto_approved_at %>
       Approved automatically on <%= @run.auto_approved_at.strftime("%-d %b") %> — nobody had approved it by the 3rd.
     <% end %>

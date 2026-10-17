@@ -113,7 +113,7 @@ RSpec.describe "Payroll over HTTP", type: :request do
       run = HrLite::PayrollRun.last
       expect(run.period_month).to eq(month)
 
-      post "/hr/admin/payroll_runs/#{run.id}/compute"
+      perform_enqueued_jobs { post "/hr/admin/payroll_runs/#{run.id}/compute" }
       expect(run.reload).to be_review
       slip = run.salary_slips.first
       expect(slip).to be_present
@@ -147,6 +147,26 @@ RSpec.describe "Payroll over HTTP", type: :request do
       get "/hr/salary_slips/#{slip.id}.pdf"
       expect(response).to redirect_to("/hr/salary_slips/#{slip.id}")
       expect(flash[:alert]).to include("PDF downloads are not configured")
+    end
+
+    it "computes in a job: the page says Computing… and refreshes until review" do
+      run = create(:payroll_run, period_month: month)
+      expect { post "/hr/admin/payroll_runs/#{run.id}/compute" }.to have_enqueued_job(HrLite::PayrollComputeJob)
+      expect(run.reload).to be_processing
+      get "/hr/admin/payroll_runs/#{run.id}"
+      expect(response.body).to include("Computing…", 'http-equiv="refresh"')
+
+      perform_enqueued_jobs
+      expect(run.reload).to be_review
+      expect(run.salary_slips.sole).to have_attributes(user_id: profile.user_id, net_pay: be_positive)
+    end
+
+    it "lands a failed compute as a run warning and restores the status" do
+      run = create(:payroll_run, period_month: month)
+      allow(HrLite::PayrollRunProcessor).to receive(:call).and_raise("boom")
+      perform_enqueued_jobs { post "/hr/admin/payroll_runs/#{run.id}/compute" }
+      expect(run.reload).to be_draft
+      expect(run.warnings).to include(a_string_including("Compute failed (boom)"))
     end
 
     it "renders the PDF through a configured render_pdf hook" do
