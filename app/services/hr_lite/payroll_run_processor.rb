@@ -50,6 +50,9 @@ module HrLite
           end
 
           slip.assign_attributes(attributes)
+          if slip.deductions_rows.any? { |row| row.dig("meta", "carried_forward") }
+            warnings << "#{HrLite.display_name(user)}'s loan instalment cut (pay too low); the rest is carried forward on the loan"
+          end
           slip.save!
           keep_ids << slip.id
         end
