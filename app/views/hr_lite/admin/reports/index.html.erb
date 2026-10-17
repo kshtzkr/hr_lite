@@ -26,11 +26,8 @@
           <tr>
             <td data-label="Report"><%= label %></td>
             <td data-label="">
-              <a class="hrl-small"
-                 href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m")) %>">Open</a>
-              &nbsp;
-              <a class="hrl-small"
-                 href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m"), format: :csv) %>">CSV</a>
+              <a class="hrl-btn" href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m")) %>">Open</a>
+              <a class="hrl-btn" href="<%= hr_lite.admin_report_path(name, month: @month.strftime("%Y-%m"), format: :csv) %>">CSV</a>
             </td>
           </tr>
         <% end %>

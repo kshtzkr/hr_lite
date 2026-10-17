@@ -14,7 +14,7 @@ RSpec.describe "Phone targets and forms", type: :request do
 
   it "draws work-time bar labels at a readable size whatever the range" do
     css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
-    expect(css).to include(".hrl-bars__label { font-size: 9px;", "calc(var(--hrl-bars-n, 0) * 1.4rem)")
+    expect(css).to include(".hrl-bars__label { font-size: 9px;", "calc(var(--hrl-bars-n, 0) * 1.75rem)")
   end
 
   it "makes list Edit links buttons" do
@@ -45,12 +45,22 @@ RSpec.describe "Phone targets and forms", type: :request do
     expect(inputs.first["aria-label"]).to eq("Band 1 from ₹")
   end
 
+  it "makes the remaining list links buttons: rate-card Edit, report Open and CSV" do
+    HrLite::StatutorySeeds.call
+    sign_in owner
+    get "/hr/admin/statutory_rate_cards"
+    expect(page.css("a").select { |a| a.text == "Edit" }.map { |a| a["class"] }.uniq).to eq([ "hrl-btn" ])
+    get "/hr/admin/reports"
+    expect(page.css("a").select { |a| %w[Open CSV].include?(a.text) }.map { |a| a["class"] }.uniq).to eq([ "hrl-btn" ])
+  end
+
   it "starts every employee pick blank, required and filterable" do
     sign_in owner
     HrLite::Benefit.create!(name: "Group health", kind: "health", coverage: 500_000)
-    [ "/hr/admin/payroll_line_items/new", "/hr/admin/loans/new", "/hr/admin/benefits" ].each do |path|
+    ticket = HrLite::HrRequest.create!(user_id: owner.id, category: "other", subject: "Payslip query")
+    [ "/hr/admin/payroll_line_items/new", "/hr/admin/loans/new", "/hr/admin/benefits", "/hr/admin/hr_requests/#{ticket.id}" ].each do |path|
       get path
-      select = page.at_css("select[name='payroll_line_item[user_id]'], select[name='loan[user_id]'], select[name=user_id]")
+      select = page.at_css("select[name='payroll_line_item[user_id]'], select[name='loan[user_id]'], select[name=user_id], select[name=assignee_id]")
       expect(select.at_css("option")["value"]).to eq(""), path
       expect(select["required"]).not_to be_nil
       expect(select["data-hrl-filter"]).to be_present
