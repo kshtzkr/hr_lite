@@ -1,16 +1,16 @@
-<% content_for(:page_title) { "Regularization" } %>
+<% content_for(:page_title) { "Day fixes" } %>
 <% content_for(:back, "Attendance") %>
 <div class="hrl-page__head">
-  <h1 class="hrl-page__title">My regularization tickets</h1>
+  <h1 class="hrl-page__title">Day fixes</h1>
   <div class="hrl-page__actions">
-    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_regularization_request_path %>">Raise a ticket</a>
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_regularization_request_path %>">Fix a day</a>
   </div>
 </div>
 
 <section class="hrl-card">
   <p class="hrl-small hrl-muted">
-    Forgot to check in or out? Raise a ticket with the actual times — once an
-    admin approves, your attendance for that day is fixed automatically.
+    Forgot to check in or out? Fix a day with the actual times — once your
+    manager or HR approves, your attendance for that day is fixed automatically.
   </p>
   <% if @requests.any? %>
     <div class="hrl-table-wrap">
@@ -26,7 +26,7 @@
               <td data-label="" class="<%= 'hrl-cell--void' unless request.pending? %>">
                 <% if request.pending? %>
                   <%= button_to "Cancel", hr_lite.cancel_regularization_request_path(request), method: :post,
-                                class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this ticket?" } } %>
+                                class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this day fix?" } } %>
                 <% end %>
               </td>
             </tr>
@@ -36,6 +36,6 @@
     </div>
     <%= hrl_pagination %>
   <% else %>
-    <p class="hrl-card--empty">No tickets yet.</p>
+    <p class="hrl-card--empty">No day fixes yet.</p>
   <% end %>
 </section>

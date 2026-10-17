@@ -506,6 +506,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-mgrid__flag { position: absolute; top: 3px; right: 4px; width: 7px; height: 7px; border-radius: var(--hrl-radius-pill); background: var(--hrl-bad); }
 .hrl-legend { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
 .hrl-legend .hrl-mgrid__flag { position: static; display: inline-block; }
+.hrl-legend + .hrl-mgrid { margin-top: .6rem; } /* the month key sits above its grid */
 @media (min-width: 768px) { .hrl-mgrid--cal .hrl-mgrid__day { min-height: 88px; } }
 
 /* Utility */
@@ -620,6 +621,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-fill--offline { fill: var(--hrl-mode-offline); } .hrl-stroke--offline { stroke: var(--hrl-mode-offline); } .hrl-fill-bg--offline { background: var(--hrl-mode-offline); }
 .hrl-chart-row { display: grid; gap: var(--hrl-gap-target); }
 @media (min-width: 481px) { .hrl-chart-row { grid-template-columns: 10rem 1fr; align-items: center; } }
+.hrl-chart-row .hrl-num { white-space: nowrap; } /* "16h 13m" stays on one line at 360px */
 .hrl-donut { width: 10rem; max-width: 100%; transform: rotate(0deg); }
 .hrl-donut__track { stroke: var(--hrl-bg); }
 .hrl-field input[type="color"] { width: 4.5rem; padding: .2rem; }

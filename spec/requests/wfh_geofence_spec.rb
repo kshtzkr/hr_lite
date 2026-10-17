@@ -27,9 +27,9 @@ RSpec.describe "Office geofence and WFH", type: :request do
   end
 
   describe "check-in" do
-    it "offers Request WFH on the home page" do
+    it "offers Work from home on the home page, once" do
       get "/hr"
-      expect(response.body).to include(%(href="/hr/wfh_requests">Request WFH</a>))
+      expect(response.body.scan(%(href="/hr/wfh_requests")).size).to eq(1)
     end
 
     it "allows a check-in inside the 500 m radius" do
@@ -154,6 +154,14 @@ RSpec.describe "Office geofence and WFH", type: :request do
       get "/hr/wfh_requests"
       expect(response.body).to include("Mine").and include('min="').and include('max="')
       expect(response.body).not_to include("Colleague secret")
+    end
+
+    it "names the month on the 1st, lights My attendance and sends for approval" do
+      get "/hr/wfh_requests"
+      first = (Date.current..Date.current + HrLite::WfhRequest::MAX_DAYS_AHEAD).find { |d| d.day == 1 }
+      expect(response.body).to include(%(<span class="hrl-mgrid__num">#{first.strftime('%-d %b')}</span>))
+      expect(Nokogiri::HTML(response.body).at_css(".hrl-tabrow [aria-current=page]").text).to eq("My attendance")
+      expect(response.body).to include(%(value="Send for approval"))
     end
 
     it "cannot reach the HR decisions" do

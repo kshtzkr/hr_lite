@@ -22,19 +22,19 @@ module HrLite
     def cancel
       request = RegularizationRequest.where(user_id: hr_current_user.id).find(params[:id])
       request.cancel!(actor: hr_current_user)
-      redirect_to regularization_requests_path, notice: "Ticket cancelled."
+      redirect_to regularization_requests_path, notice: "Day fix cancelled."
     rescue ActiveRecord::RecordInvalid
-      redirect_to regularization_requests_path, alert: "Only pending tickets can be cancelled."
+      redirect_to regularization_requests_path, alert: "Only pending day fixes can be cancelled."
     end
 
     private
 
     def create_notice
       rule = HrLite.config.self_regularization
-      return "Ticket raised — an admin will review it." unless rule
+      return "Sent for approval — your manager or HR will review it." unless rule
       return "Fixed. #{helpers.pluralize(@request.self_fixes_left, 'self-fix')} left this week." if @request.approved?
 
-      "Sent to HR as a ticket — you can fix only a missed punch or short day on a working day in the last #{rule[:within_days]} days yourself, " \
+      "Sent for approval — you can fix only a missed punch or short day on a working day in the last #{rule[:within_days]} days yourself, " \
         "#{rule[:per_week]} times a week."
     end
 

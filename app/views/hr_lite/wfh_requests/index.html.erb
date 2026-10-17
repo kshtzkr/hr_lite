@@ -6,14 +6,14 @@
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Request WFH</h2>
-  <p class="hrl-small hrl-muted">Pick dates from today up to <%= HrLite::WfhRequest::MAX_DAYS_AHEAD %> days ahead. HR approves or rejects. While a request is waiting you can still check in away from the office; HR sees the reason. A rejected date cannot.</p>
+  <p class="hrl-small hrl-muted">Pick dates from today up to <%= HrLite::WfhRequest::MAX_DAYS_AHEAD %> days ahead. Your manager or HR approves or rejects. While a request is waiting you can still check in away from the office; they see the reason. A rejected date cannot.</p>
   <%= form_with model: @request, url: hr_lite.wfh_requests_path, scope: :wfh_request, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
     <% min, max = @window.first.iso8601, @window.last.iso8601 %>
     <div class="hrl-field"><%= f.label :start_date, "From" %><%= f.date_field :start_date, min: min, max: max, required: true %></div>
     <div class="hrl-field"><%= f.label :end_date, "To (same day for one day)" %><%= f.date_field :end_date, min: min, max: max, required: true %></div>
     <div class="hrl-field"><%= f.label :reason, "Why do you need WFH?" %><%= f.text_area :reason, rows: 3, required: true %></div>
-    <div class="hrl-form-actions"><%= f.submit "Send to HR", class: "hrl-btn hrl-btn--primary" %></div>
+    <div class="hrl-form-actions"><%= f.submit "Send for approval", class: "hrl-btn hrl-btn--primary" %></div>
   <% end %>
 </section>
 
@@ -27,7 +27,7 @@
       <% code, word, mod = marks[@day_status[date]] %>
       <div class="<%= class_names("hrl-mgrid__day", "hrl-mgrid__day--#{mod}": mod, "hrl-mgrid__day--today": date == Date.current) %>"
            role="group" aria-label="<%= date.strftime('%-d %b') %><%= ", #{word}" if word %>">
-        <span class="hrl-mgrid__num"><%= date.day %></span>
+        <span class="hrl-mgrid__num"><%= date.day == 1 ? date.strftime("%-d %b") : date.day %></span>
         <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
       </div>
     <% end %>

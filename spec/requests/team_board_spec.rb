@@ -22,7 +22,7 @@ RSpec.describe "Team board", type: :request do
     get "/hr/team"
     expect(response.body).to include("In since 10:02")
     expect(response.body).to include("On leave (CL)")
-    expect(response.body).to include("Not in yet")
+    expect(response.body).to include("Not in yet").and include("&lsaquo;</span> Yesterday</a>")
     # 4h between 10:02 and 14:00 — the running clock counts 3h 58m.
     expect(response.body).to include("3h 58m")
   end
@@ -34,7 +34,7 @@ RSpec.describe "Team board", type: :request do
            check_out_at: yesterday.in_time_zone.change(hour: 19, min: 30))
 
     get "/hr/team", params: { date: yesterday.strftime("%Y-%m-%d") }
-    expect(response.body).to include("Done 10:00–19:30")
+    expect(response.body).to include("Done 10:00–19:30").and include("&lsaquo;</span> Previous day</a>").and include("Next day <span")
     expect(response.body).to include("9h 30m")
     expect(response.body).to include("Absent") # viewer, past working day, no punch
   end

@@ -36,6 +36,7 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
     expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).required_check_out_at).to eq(at(friday, 19, 6))
     get "/hr/attendance"
     expect(response.body).to include("checkout at <strong>19:06</strong>").and include("+60 min")
+    expect(response.body).to include(%(data-hrl-countdown="#{at(friday, 19, 6).iso8601}" data-hrl-done="you can check out">))
   end
 
   it "uses the 10:00 slot when none is saved" do
@@ -66,6 +67,8 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
   it "locks a saved slot until HR unlocks it" do
     travel_to(at(friday, 8, 0))
     sign_in employee
+    get "/hr/attendance"
+    expect(response.body).to include(%(name="period" value="week" class="hrl-btn" data-turbo-confirm="Lock this slot for this week? After that only HR can change it.">This week</button>))
     post "/hr/attendance/slot", params: { start_minute: 570, period: "week" }
     expect(HrLite::AttendanceSlot.current(employee.id, friday + 2).start_minute).to eq(570)
 

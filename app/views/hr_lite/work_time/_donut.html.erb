@@ -29,7 +29,7 @@
         </tbody>
       </table>
     </div>
-    <p class="hrl-small hrl-muted">Shares are of tracked time (<%= hrl_duration(total) %>: working, breaks and out of office). Offline (<%= hrl_duration(result.offline) %>) is not included.</p>
+    <p class="hrl-small hrl-muted">Shares are of tracked time (<%= hrl_duration(total) %>: working, breaks and out of office). Offline (<%= hrl_duration(result.offline) %>) is not included. Stretches: how many separate times each mode ran.</p>
   <% else %>
     <p class="hrl-card--empty">Only offline time recorded.</p>
   <% end %>

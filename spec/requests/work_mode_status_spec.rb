@@ -48,6 +48,8 @@ RSpec.describe "Work mode timeline and status", type: :request do
     create(:leave_request, :approved, user: employee, start_date: tuesday, end_date: tuesday, half_day_part: "second")
     expect(status.primary.mode).to eq("office")
     expect(status.half_day_leave).to be_present
+    get "/hr/attendance"
+    expect(response.body).to include("Half-day leave today (second half).")
   end
 
   it "drops an overlay once its time has passed, even before the job runs" do
