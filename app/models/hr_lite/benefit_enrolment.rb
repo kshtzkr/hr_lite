@@ -9,7 +9,9 @@ module HrLite
     belongs_to :user, class_name: HrLite.config.user_class
 
     validates :enrolled_on, presence: true
-    validates :user_id, uniqueness: { scope: :benefit_id, message: "is already enrolled" }
+    # Mirrors the partial unique index: ended cover is history, not a clash.
+    validates :user_id, uniqueness: { scope: :benefit_id, conditions: -> { where(ended_on: nil) },
+                                      message: "is already enrolled" }, unless: :ended_on?
     validates :dependants, numericality: { greater_than_or_equal_to: 0 }
     validate :ended_after_it_started
 
