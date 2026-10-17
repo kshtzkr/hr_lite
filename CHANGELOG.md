@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.0] - 2026-10-17
+
+The second pass of the HRMS audit of 0.54.0 covers bugs, security, performance and the remaining screen fixes (#115–#131). No migrations.
+
+- **Payroll compute runs in a background job** (`HrLite::PayrollComputeJob`, default queue).
+  - The run page shows "Computing…" and refreshes until the run reaches review.
+  - A failed compute leaves the run as it was and adds a run warning, not an error page.
+  - Hosts need a running ActiveJob backend.
+- **Money**
+  - A run computed before a leave decision, a day fix or a one-off item change now needs a recompute before it can be approved or published.
+  - "Record and verify" refuses blank verified amounts.
+  - Once an employee submits a tax declaration, they can no longer edit it.
+  - HR's verified amounts need a submitted declaration, and each change writes an audit row.
+  - Claims and help-desk tickets refuse decisions in the wrong state.
+  - "1,200" or "1,50,000" in a money field saves instead of failing.
+  - An employee can open only the current or the previous financial year's declaration.
+  - The tax panel labels its gross "before unpaid days".
+- **Leave and attendance**
+  - Deciding a leave or a claim outside its approval flow settles the flow's other rows.
+  - The late ladder skips weekly offs, holidays and half-day leave.
+  - HR attendance fixes refuse future dates, times that fall on another day, and approved full-day leave.
+  - Optional holidays are no longer shaded as days off.
+  - A request warns when it and the other pending ones go past the balance.
+  - First-half and second-half leave on the same date no longer clash.
+  - The approver sees the balance as of the leave date.
+  - Inbox › All lists a flow leave once.
+  - The company-wide leave notice no longer names the leave type.
+  - Submit buttons lock after the first press.
+- **Security and audit**
+  - HR cannot edit their own profile or salary, or offboard themselves. The pages return 404 and the buttons are hidden.
+  - Tax-proof links expire after 5 minutes and ID-card photo links after an hour.
+  - These now write audit rows: role permission changes, comp-off approvals, resignations, and payroll run create and delete.
+  - Audit rows redact date of birth and help-desk text.
+  - "Aadhaar" and "PAN" uploads reach the money tier whatever their case.
+  - Kudos mentions reach employees only.
+  - Offboarding removes the person's HR role assignments.
+- **Inbox**
+  - Your own requests on a person's week open your own pages.
+  - Claim rows name the type, amount and date.
+  - Pending resignations are an Inbox queue and count in "N requests waiting".
+  - "One-off items" shows only to those who can run payroll.
+- **Screens**
+  - Leave forms say what is wrong, and decision pages ask before acting.
+  - Payslips, tax working, tax states and loan facts read in words and whole days.
+  - Admin settings, roles (permission groups fold), policies, holidays and the audit trail fit a phone. Page views are hidden from the audit trail by default.
+  - "Fix a day" is the one name for attendance fixes.
+  - Compute leads a draft run, and the rate card in force is marked.
+  - Home shows this week's leave from today, and reports have month arrows.
+  - Person pages link back, and the employee form is grouped.
+  - People › "My team" is "Team board".
+  - Inbox › WFH puts Give WFH before a folded filter.
+  - Search has a visible Close.
+  - Button borders meet 3:1 contrast, and the sides clear the notch.
+  - List links are 44 px buttons, the help-desk pick starts blank, and work-time bars sit further apart.
+- **Performance**
+  - Leave-balance grids, the report and the chips count each balance once.
+  - A leave notice reads every recipient's do-not-disturb in one query.
+  - A person's month, the work-time report and the payroll register each load in one query instead of one per day or slip.
+  - The overview drops an unused count.
+
 ## [0.54.0] - 2026-10-17
 
 Fixes from the HRMS UI/UX audit of 0.52.0. No migrations.
