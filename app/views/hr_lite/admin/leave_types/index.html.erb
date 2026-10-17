@@ -14,13 +14,13 @@
         <% @leave_types.each do |type| %>
           <tr>
             <td data-label="Type">
-              <span class="hrl-badge" style="background: <%= type.color %>1f; color: <%= type.color %>;"><%= type.code %></span>
+              <span class="hrl-badge hrl-badge--type" style="--hrl-type: <%= type.color %>"><%= type.code %></span>
               <%= type.name %>
               <% unless type.active %><span class="hrl-badge hrl-badge--muted">Inactive</span><% end %>
             </td>
-            <td data-label="Quota" class="hrl-num"><%= type.unlimited? ? "Unlimited" : type.annual_quota.to_f %></td>
+            <td data-label="Quota" class="hrl-num"><%= type.unlimited? ? "Unlimited" : "#{hrl_days(type.annual_quota)} days" %></td>
             <td data-label="Accrual"><%= type.accrual.humanize %></td>
-            <td data-label="Carry cap" class="hrl-num"><%= type.carry_forward_cap.to_f %></td>
+            <td data-label="Carry cap" class="hrl-num"><%= type.carry_forward_cap ? "#{hrl_days(type.carry_forward_cap)} days" : "—" %></td>
             <td data-label="Paid"><%= type.paid ? "Yes" : "No" %></td>
             <td data-label="">
               <a class="hrl-btn" href="<%= hr_lite.edit_admin_leave_type_path(type) %>">Edit</a>

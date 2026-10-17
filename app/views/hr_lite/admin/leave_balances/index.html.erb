@@ -28,10 +28,12 @@
 <section class="hrl-card">
   <h2 class="hrl-card__title">Adjust a balance</h2>
   <p class="hrl-small hrl-muted">Positive credits (comp-off), negative debits. Fully audited.</p>
-  <%= form_with url: hr_lite.adjust_admin_leave_balances_path, method: :post, local: true do %>
+  <%= form_with url: hr_lite.adjust_admin_leave_balances_path, method: :post, local: true,
+                data: { turbo_confirm: "Change this leave balance? It shows on the person's leave at once." } do %>
     <div class="hrl-field">
       <label for="adj_user">Employee</label>
-      <select name="user_id" id="adj_user" class="hrl-input">
+      <select name="user_id" id="adj_user" class="hrl-input" required data-hrl-filter="Type a name to filter">
+        <option value="">Choose…</option>
         <% @employees.each do |employee| %>
           <option value="<%= employee.id %>"><%= hr_display_name(employee) %></option>
         <% end %>

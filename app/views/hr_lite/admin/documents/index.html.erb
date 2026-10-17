@@ -44,7 +44,8 @@
                 <%= button_to "Verify", hr_lite.verify_admin_document_path(doc),
                       method: :post, class: "hrl-btn hrl-btn--primary" %>
                 <%= form_with url: hr_lite.reject_admin_document_path(doc), method: :post, local: true do %>
-                  <%= text_field_tag :note, nil, placeholder: "What is wrong with it", class: "hrl-input", required: true %>
+                  <%= label_tag "reject-doc-#{doc.id}", "What is wrong with it", class: "hrl-sr-only" %>
+                  <%= text_field_tag :note, nil, id: "reject-doc-#{doc.id}", placeholder: "What is wrong with it", class: "hrl-input", required: true %>
                   <%= submit_tag "Reject", class: "hrl-btn" %>
                 <% end %>
               </td>
@@ -58,6 +59,9 @@
 
 <section class="hrl-card">
   <h2 class="hrl-card__title">Everything on file</h2>
+  <% if @documents.empty? %>
+    <p class="hrl-muted">No documents on file yet. People upload them from Me › Documents; you can upload for someone from their page.</p>
+  <% else %>
   <div class="hrl-table-wrap">
     <table class="hrl-table hrl-table--stack">
       <thead><tr><th>Person</th><th>Document</th><th>Expires</th><th>Checked</th></tr></thead>
@@ -85,5 +89,6 @@
       </tbody>
     </table>
   </div>
+  <% end %>
   <%= hrl_pagination %>
 </section>

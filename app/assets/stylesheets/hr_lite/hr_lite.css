@@ -319,6 +319,7 @@ summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4
 .hrl-table td[data-label=""] > :is(a, button) + :is(a, button, form) { margin-left: var(--hrl-s-2); }
 .hrl-table td[data-label=""] > :is(a, button) + form { display: inline-block; vertical-align: top; } /* a button_to beside a link, not under it */
 .hrl-table td[data-label=""] > form + form { margin-top: var(--hrl-s-2); }
+.hrl-table td form > :is(.hrl-input, select) + :is(.hrl-btn, input[type="submit"]) { margin-top: var(--hrl-s-2); } /* a note above its button, never touching */
 .hrl-table tr:has(.hrl-btn) > td, .hrl-table tr:has(.hrl-btn) td > .hrl-badge { vertical-align: middle; } /* text lines up with a 44px button */
 /* Stack on phones and on the narrow content column beside the 768-1023px rail. */
 @media (max-width: 640px), (min-width: 768px) and (max-width: 1023px) {
@@ -621,6 +622,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 @media (min-width: 481px) { .hrl-chart-row { grid-template-columns: 10rem 1fr; align-items: center; } }
 .hrl-donut { width: 10rem; max-width: 100%; transform: rotate(0deg); }
 .hrl-donut__track { stroke: var(--hrl-bg); }
+.hrl-field input[type="color"] { width: 4.5rem; padding: .2rem; }
 .hrl-swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: var(--hrl-radius-pill); vertical-align: middle; }
 .hrl-chart-scroll { overflow-x: auto; }
 /* Wide enough per bar that the height (10rem) sets the scale, so labels render ~12.6px and long ranges scroll. */
