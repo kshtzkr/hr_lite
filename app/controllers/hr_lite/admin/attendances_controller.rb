@@ -209,16 +209,17 @@ module HrLite
       # whose own page this viewer may open for this person.
       def summary_requests(user, range)
         id, from, to = user.id, range.first, range.last
+        own = id == hr_current_user.id # nobody decides their own request: open the employee's own pages
         day = ->(d) { d.strftime("%a %-d %b") }
         {
           "leave.view" => -> {
             LeaveRequest.where(user_id: id).overlapping_range(from, to).includes(:leave_type)
-                        .map { |r| [ r.leave_type.name, r.date_range_label, r.status, admin_leave_request_path(r) ] } +
-              CompOffRequest.where(user_id: id, date_worked: range).map { |r| [ "Comp-off", day.(r.date_worked), r.status, admin_comp_off_request_path(r) ] }
+                        .map { |r| [ r.leave_type.name, r.date_range_label, r.status, own ? leave_request_path(r) : admin_leave_request_path(r) ] } +
+              CompOffRequest.where(user_id: id, date_worked: range).map { |r| [ "Comp-off", day.(r.date_worked), r.status, own ? comp_off_requests_path : admin_comp_off_request_path(r) ] }
           },
           "attendance.view" => -> {
             WfhRequest.where(user_id: id).overlapping(from, to).map { |r| [ "WFH", r.dates_label, r.status, admin_wfh_request_path(r) ] } +
-              RegularizationRequest.where(user_id: id, date: range).map { |r| [ "Attendance fix", day.(r.date), r.status, admin_regularization_request_path(r) ] }
+              RegularizationRequest.where(user_id: id, date: range).map { |r| [ "Attendance fix", day.(r.date), r.status, own ? regularization_requests_path : admin_regularization_request_path(r) ] }
           },
           "expense.approve" => -> {
             Expense.where(user_id: id, spent_on: range).includes(:category)

@@ -65,6 +65,36 @@ RSpec.describe "Inbox counts and own rows", type: :request do
     expect(response.body).to include("WFH, #{wfh.dates_label}", %(href="/hr/admin/wfh_requests/#{wfh.id}"), %(href="/hr/admin/work_locations">Open))
   end
 
+  it "names a claim by category, amount and date" do
+    category = HrLite::ExpenseCategory.create!(name: "Travel", receipt_required: false)
+    claim = HrLite::Expense.create!(user_id: meera.id, category: category, amount: 1_500, spent_on: Date.new(2026, 10, 14), description: "Cab")
+    claim.submit!(actor: meera)
+    sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::FINANCE, name: "Fin")
+    get "/hr/approvals"
+    expect(response.body).to include("Claim: Travel, ₹1,500.00, Wed 14 Oct")
+  end
+
+  it "puts a pending resignation in the Inbox and the Home count, opening the person" do
+    leader = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::LEADERSHIP, name: "Asha")
+    profile = create(:employee_profile, user: meera)
+    HrLite::Resignation.create!(user: meera, proposed_last_day: Date.new(2026, 11, 15))
+    sign_in leader
+    get "/hr/approvals"
+    expect(response.body).to include("Resignation, last day 15 Nov 2026", %(href="/hr/admin/employees/#{profile.id}"))
+    get "/hr/"
+    expect(response.body).to include("1 request waiting on you")
+  end
+
+  it "opens the viewer's own requests on their own pages from their This week screen" do
+    travel_to((Date.current.beginning_of_week + 2).noon) do # a Wednesday: leave cannot sit on a weekly off
+      leave = create(:leave_request, user: hr, leave_type: leave_type, start_date: Date.current, end_date: Date.current)
+      sign_in hr
+      get "/hr/admin/attendances/#{hr.id}/summary"
+      expect(response.body).to include(%(href="/hr/leave_requests/#{leave.id}"))
+      expect(response.body).not_to include("/hr/admin/leave_requests/#{leave.id}")
+    end
+  end
+
   it "makes the reject reason required in the form" do
     request = create(:leave_request, user: meera, leave_type: leave_type)
     sign_in hr

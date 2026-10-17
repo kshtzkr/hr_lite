@@ -49,6 +49,8 @@ module HrLite
           queue: -> { hrl_queue(HrLite::WorkLocation.pending, "attendance.manage") } },
         { label: "Claims", path: :admin_expenses_path, match: [ "/admin/expenses" ], if: -> { hr_can?("expense.approve", scope: :team) },
           queue: -> { hrl_queue(HrLite::Expense.where(status: "submitted"), "expense.approve") } },
+        { label: "Resignations", path: :admin_employees_path, match: [ "/admin/resignations" ], if: LEAD,
+          queue: -> { hrl_queue(HrLite::Resignation.pending, "profile.manage") } },
         { label: "Documents to verify", path: :admin_documents_path, match: [ "/admin/documents" ], if: LEAD,
           queue: -> { hrl_queue(HrLite::Document.where(verification: "pending"), "document.view") } },
         { label: "CA review", path: :admin_ca_reviews_path, match: [ "/admin/ca_reviews" ],
@@ -166,6 +168,10 @@ module HrLite
       when HrLite::CompOffRequest then [ "Comp-off for #{record.date_worked.strftime('%a %-d %b')}", hr_lite.admin_comp_off_request_path(record) ]
       when HrLite::RegularizationRequest then [ "Attendance fix, #{record.date.strftime('%a %-d %b')}", hr_lite.admin_regularization_request_path(record) ]
       when HrLite::WfhRequest then [ "WFH, #{record.dates_label}", hr_lite.admin_wfh_request_path(record) ]
+      when HrLite::Expense then [ "Claim: #{record.category.name}, #{hrl_money(record.amount)}, #{record.spent_on.strftime('%a %-d %b')}", hr_lite.admin_expenses_path ]
+      when HrLite::Resignation
+        profile = HrLite::EmployeeProfile.find_by(user_id: record.user_id)
+        [ "Resignation, last day #{record.proposed_last_day.strftime('%-d %b %Y')}", profile ? hr_lite.admin_employee_path(profile) : hr_lite.admin_employees_path ]
       else [ tab[:label], hr_lite.public_send(tab[:path]) ]
       end
     end
