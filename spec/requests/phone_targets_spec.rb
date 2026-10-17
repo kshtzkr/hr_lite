@@ -54,6 +54,19 @@ RSpec.describe "Phone targets and forms", type: :request do
     expect(page.css("a").select { |a| %w[Open CSV].include?(a.text) }.map { |a| a["class"] }.uniq).to eq([ "hrl-btn" ])
   end
 
+  it "makes the loan list and a person's documents Open links buttons" do
+    meera = user_with_roles(HrLite::Role::EMPLOYEE, name: "Meera")
+    HrLite::Loan.create!(user_id: meera.id, principal: BigDecimal("10000"), monthly_instalment: BigDecimal("1000"),
+                         starts_on: Date.current.beginning_of_month)
+    HrLite::Document.create!(user_id: meera.id, category: "offer_letter", title: "Offer letter",
+                             file: { io: StringIO.new("%PDF-1.4\n%fake\n"), filename: "offer.pdf", content_type: "application/pdf" })
+    sign_in owner
+    [ "/hr/admin/loans", "/hr/admin/documents/for/#{meera.id}" ].each do |path|
+      get path
+      expect(page.css("a").select { |a| a.text == "Open" }.map { |a| a["class"] }).to eq([ "hrl-btn" ]), path
+    end
+  end
+
   it "starts every employee pick blank, required and filterable" do
     sign_in owner
     HrLite::Benefit.create!(name: "Group health", kind: "health", coverage: 500_000)
