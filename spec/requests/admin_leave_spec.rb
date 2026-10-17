@@ -29,8 +29,11 @@ RSpec.describe "Admin leave management", type: :request do
       get "/hr/admin/leave_requests"
       expect(response.body).to include("Asha")
 
+      expect(Nokogiri::HTML(response.body).css("a.hrl-btn[aria-current]").map(&:text)).to eq([ "Pending" ])
+
       get "/hr/admin/leave_requests", params: { status: "approved" }
       expect(response.body).to include("No approved requests")
+      expect(Nokogiri::HTML(response.body).css("a.hrl-btn[aria-current]").map(&:text)).to eq([ "Approved" ])
     end
 
     it "approves from the decision screen" do

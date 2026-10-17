@@ -101,6 +101,16 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       expect(response.body).to include("Pick an employee from the list")
     end
 
+    it "takes a typed name as well as the code, but not a name two people share" do
+      sign_in hr
+      record(code: "ananya")
+      expect(HrLite::LeaveRequest.last).to have_attributes(user_id: employee.id, status: "approved")
+
+      create(:employee_profile, user: create(:user, name: "Ananya"))
+      expect { record(code: "Ananya", from: monday + 1, to: monday + 1) }.not_to change(HrLite::LeaveRequest, :count)
+      expect(response.body).to include("Pick an employee from the list")
+    end
+
     it "records leave the balance does not cover as loss of pay" do
       sign_in hr
       tight = create(:leave_type, name: "Tight", annual_quota: 0)

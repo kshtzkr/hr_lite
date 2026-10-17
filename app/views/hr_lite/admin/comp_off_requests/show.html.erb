@@ -1,9 +1,7 @@
 <% content_for(:page_title) { "Comp-off — #{hr_display_name(@request.user)}" } %>
+<a class="hrl-backlink" href="<%= hr_lite.admin_comp_off_requests_path %>"><span aria-hidden="true">‹</span> Approvals</a>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Comp-off — <%= hr_display_name(@request.user) %></h1>
-  <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.admin_comp_off_requests_path %>">All requests</a>
-  </div>
 </div>
 
 <section class="hrl-card">
@@ -34,7 +32,8 @@
       `formaction:` can never pass verification on the second endpoint. %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Approve</h2>
-    <%= form_with url: hr_lite.approve_admin_comp_off_request_path(@request), method: :post, local: true do |f| %>
+    <%= form_with url: hr_lite.approve_admin_comp_off_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Credit #{hrl_days(@request.credit_days)} day of comp-off to #{hr_display_name(@request.user)}?" } } do |f| %>
       <div class="hrl-field">
         <%= f.label :decision_note, "Note (optional)", for: "approve_note" %>
         <%= f.text_area :decision_note, id: "approve_note" %>
@@ -48,7 +47,8 @@
 
   <section class="hrl-card">
     <h2 class="hrl-card__title">Reject</h2>
-    <%= form_with url: hr_lite.reject_admin_comp_off_request_path(@request), method: :post, local: true do |f| %>
+    <%= form_with url: hr_lite.reject_admin_comp_off_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Reject #{hr_display_name(@request.user)}'s comp-off for #{@request.date_worked.strftime('%d %b %Y')}?" } } do |f| %>
       <div class="hrl-field">
         <%= f.label :decision_note, "Reason (required)", for: "reject_note" %>
         <%= f.text_area :decision_note, id: "reject_note", required: true %>

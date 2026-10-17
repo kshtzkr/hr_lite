@@ -1,10 +1,7 @@
 <% content_for(:page_title) { "Ticket — #{hr_display_name(@request.user)}" } %>
+<a class="hrl-backlink" href="<%= hr_lite.admin_regularization_requests_path %>"><span aria-hidden="true">‹</span> Approvals</a>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title">Regularization — <%= hr_display_name(@request.user) %></h1>
-  <div class="hrl-page__actions">
-    <a class="hrl-btn" href="<%= hr_lite.admin_regularization_requests_path %>">All tickets</a>
-    <a class="hrl-btn" href="<%= hr_lite.admin_attendance_path(@request.user_id, month: @request.date.strftime("%Y-%m")) %>">Their month</a>
-  </div>
 </div>
 
 <section class="hrl-card">
@@ -28,6 +25,7 @@
         <% if @request.decision_note.present? %> · <%= @request.decision_note %><% end %></dd>
     <% end %>
   </dl>
+  <a class="hrl-card__link" href="<%= hr_lite.admin_attendance_path(@request.user_id, month: @request.date.strftime("%Y-%m")) %>">Their month</a>
 </section>
 
 <% if @request.pending? %>
@@ -38,7 +36,8 @@
     <%# Approve and reject are two separate forms on purpose. Rails binds the
         CSRF token to the form's OWN action, so one form retargeted with
         `formaction:` can never pass verification on the second endpoint. %>
-    <%= form_with url: hr_lite.approve_admin_regularization_request_path(@request), method: :post, local: true do |f| %>
+    <%= form_with url: hr_lite.approve_admin_regularization_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Write the proposed times onto #{hr_display_name(@request.user)}'s attendance for #{@request.date.strftime('%d %b %Y')}?" } } do |f| %>
       <div class="hrl-field">
         <%= f.label :decision_note, "Note (optional)", for: "approve_note" %>
         <%= f.text_area :decision_note, id: "approve_note" %>

@@ -5,12 +5,15 @@ module HrLite
     STATUSES = %w[pending approved rejected cancelled].freeze
 
     belongs_to :user, class_name: HrLite.config.user_class
-    belongs_to :leave_type
+    belongs_to :leave_type, optional: true # required below, in words ("must exist" is fixed)
     belongs_to :decided_by, class_name: HrLite.config.user_class, optional: true
     # Set when HR records leave the employee forgot to apply for.
     belongs_to :created_by, class_name: HrLite.config.user_class, optional: true
 
-    validates :start_date, :end_date, presence: true
+    validates :leave_type, presence: { message: "is missing — pick one" }
+    validates :start_date, presence: { message: "is missing — pick the first day" }
+    # With no start the start error says it all (a blank end means one day).
+    validates :end_date, presence: { message: "is missing — pick the last day" }, if: :start_date
     validates :status, inclusion: { in: STATUSES }
     validates :half_day_part, inclusion: { in: %w[first second] }, allow_blank: true
 

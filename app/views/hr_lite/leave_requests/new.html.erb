@@ -7,38 +7,47 @@
 <section class="hrl-card">
   <%= form_with model: @request, url: hr_lite.leave_requests_path, local: true do |f| %>
     <%= render "hr_lite/shared/form_errors", record: @request %>
+    <% bad = ->(attr) { "hrl-#{attr}-error" if @request.errors[attr].any? } %>
+    <% say = ->(attr) { tag.p(@request.errors.full_messages_for(attr).to_sentence, id: bad.(attr), class: "hrl-hint hrl-hint--bad") if bad.(attr) } %>
     <div class="hrl-field">
       <%= f.label :leave_type_id, "Type", id: "hrl-leave-type", for: nil %>
       <% left = @balances.index_by(&:leave_type_id) %>
-      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-leave-type">
-        <% HrLite::LeaveType.active.each_with_index do |type, i| %>
+      <%= tag.div(class: "hrl-chiprow", role: "radiogroup", aria: { labelledby: "hrl-leave-type", describedby: bad.(:leave_type) }) do %>
+        <% HrLite::LeaveType.active.reject { |t| t.comp_off && (b = left[t.id]) && b.available <= 0 }.each_with_index do |type, i| %>
           <label><%= f.radio_button :leave_type_id, type.id, required: i.zero? %><span><%= type.name.sub(/ leave\z/i, "") %><%= " · #{hrl_days(left[type.id].available)} left" if left[type.id] %><% if left[type.id] && (held = left[type.id].penalty_days).positive? %> · <%= hrl_days(held) %> held for penalties<% end %><%= " · Unpaid" unless type.paid %></span></label>
         <% end %>
-      </div>
+      <% end %>
+      <%= say.(:leave_type) %>
       <p class="hrl-hint">Days beyond your balance are unpaid (loss of pay), cut from that month's salary.<% if (capped = @balances.find { |b| b.penalty_days.positive? }) %> Today you can apply for at most <%= hrl_days(capped.applicable) %> days of <%= capped.leave_type.name %>, <%= hrl_days(capped.penalty_days) %> held for penalties.<% end %></p>
+      <% if (profile = HrLite::EmployeeProfile.find_by(user_id: hr_current_user.id))&.on_probation? %>
+        <p class="hrl-hint">On probation until <%= profile.probation_until.strftime("%d %b %Y") %>: at most 1 day of leave a month, of any type.</p>
+      <% end %>
     </div>
     <div class="hrl-field">
       <%= f.label :start_date, "From" %>
-      <%= f.date_field :start_date, required: true %>
+      <%= f.date_field :start_date, required: true, aria: { describedby: bad.(:start_date) } %>
+      <%= say.(:start_date) %>
     </div>
     <div class="hrl-field">
       <%= f.label :end_date, "To (leave blank for one day)" %>
-      <%= f.date_field :end_date %>
+      <%= f.date_field :end_date, aria: { describedby: bad.(:end_date) } %>
+      <%= say.(:end_date) %>
     </div>
     <div class="hrl-field">
       <%= f.label :half_day_part, "Day", id: "hrl-day-part", for: nil %>
-      <div class="hrl-chiprow" role="radiogroup" aria-labelledby="hrl-day-part">
+      <%= tag.div(class: "hrl-chiprow", role: "radiogroup", aria: { labelledby: "hrl-day-part", describedby: bad.(:half_day) }) do %>
         <% HrLite::DAY_PARTS.each do |label, value| %>
           <label><%= f.radio_button :half_day_part, value %><span><%= label %></span></label>
         <% end %>
-      </div>
+      <% end %>
+      <%= say.(:half_day) %>
     </div>
     <div class="hrl-field">
       <%= f.label :reason, "Reason (optional)" %>
       <%= f.text_area :reason %>
     </div>
     <div class="hrl-form-actions">
-      <%= f.submit "Submit request", class: "hrl-btn hrl-btn--primary" %>
+      <%= f.submit "Send for approval", class: "hrl-btn hrl-btn--primary" %>
       <a class="hrl-btn" href="<%= hr_lite.leave_requests_path %>">Cancel</a>
     </div>
   <% end %>

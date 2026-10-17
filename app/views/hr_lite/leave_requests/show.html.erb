@@ -19,5 +19,7 @@
     <%= button_to "Cancel this leave", hr_lite.cancel_leave_request_path(@request), method: :post,
                   class: "hrl-btn hrl-btn--danger hrl-mt",
                   form: { data: { turbo_confirm: "Cancel this leave request?" } } %>
+  <% elsif @request.approved? %>
+    <p class="hrl-hint hrl-mt">This leave has started, so it can no longer be cancelled here. Ask HR if it needs cancelling.</p>
   <% end %>
 </section>

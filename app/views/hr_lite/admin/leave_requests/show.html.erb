@@ -60,7 +60,8 @@
     <%# Approve and reject are two separate forms on purpose. Rails binds the
         CSRF token to the form's OWN action, so one form retargeted with
         `formaction:` can never pass verification on the second endpoint. %>
-    <%= form_with url: hr_lite.approve_admin_leave_request_path(@request), method: :post, local: true do %>
+    <%= form_with url: hr_lite.approve_admin_leave_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Approve #{hr_display_name(@request.user)}'s leave, #{@request.date_range_label}?" } } do %>
       <div class="hrl-field">
         <label for="approve_note">Note (optional)</label>
         <textarea name="decision_note" id="approve_note" class="hrl-input"></textarea>
@@ -73,7 +74,8 @@
 
   <section class="hrl-card">
     <h2 class="hrl-card__title">Reject</h2>
-    <%= form_with url: hr_lite.reject_admin_leave_request_path(@request), method: :post, local: true do %>
+    <%= form_with url: hr_lite.reject_admin_leave_request_path(@request), method: :post, local: true,
+                  html: { data: { turbo_confirm: "Reject #{hr_display_name(@request.user)}'s leave, #{@request.date_range_label}?" } } do %>
       <div class="hrl-field">
         <label for="reject_note">Reason (required)</label>
         <textarea name="decision_note" id="reject_note" class="hrl-input" required></textarea>
