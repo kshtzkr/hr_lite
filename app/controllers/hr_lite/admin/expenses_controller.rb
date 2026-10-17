@@ -15,6 +15,8 @@ module HrLite
         expense = decidable.find(params[:id])
         expense.approve!(actor: hr_current_user, note: params[:decision_note].presence)
         redirect_to admin_expenses_path, notice: "Claim approved."
+      rescue ActiveRecord::RecordInvalid
+        redirect_to admin_expenses_path, alert: "Only a submitted claim can be approved."
       end
 
       def reject
@@ -24,6 +26,8 @@ module HrLite
 
         expense.reject!(actor: hr_current_user, note: note)
         redirect_to admin_expenses_path, notice: "Claim rejected."
+      rescue ActiveRecord::RecordInvalid
+        redirect_to admin_expenses_path, alert: "Only a submitted claim can be rejected."
       end
 
       def reimburse

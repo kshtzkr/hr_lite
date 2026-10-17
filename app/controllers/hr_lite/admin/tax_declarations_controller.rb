@@ -57,6 +57,8 @@ module HrLite
           declaration.tax_declaration_items.each do |item|
             item.update!(verified_amount: item.declared_amount) if item.verified_amount.nil?
           end
+          AuditLog.record!(action: "tax_declaration.accepted_all", subject: declaration, actor: hr_current_user,
+                           changes: { "owner" => HrLite.display_name(declaration.user) })
           declaration.verify!(actor: hr_current_user, note: "Proof accepted")
         end
         redirect_to admin_tax_declarations_path, notice: "Accepted and verified — payroll uses these amounts now."
@@ -66,9 +68,16 @@ module HrLite
 
       def update
         @declaration = find_manageable
+        return redirect_to admin_tax_declaration_path(@declaration), alert: "Only a submitted declaration can be checked." unless @declaration.submitted?
+
         # Recording what the proof supported is a separate act from deciding
         # — an amount can be corrected while the decision is still pending.
-        if @declaration.update(verification_params)
+        recorded = TaxDeclaration.transaction do
+          @declaration.update(verification_params) &&
+            AuditLog.record!(action: "tax_declaration.amounts_recorded", subject: @declaration, actor: hr_current_user,
+                             changes: { "owner" => HrLite.display_name(@declaration.user) })
+        end
+        if recorded
           return verify if params[:verify] # "Record and verify": the typed amounts are saved first
           redirect_to admin_tax_declaration_path(@declaration), notice: "Amounts recorded."
         else
@@ -82,7 +91,8 @@ module HrLite
         declaration.verify!(actor: hr_current_user, note: params[:note])
         redirect_to admin_tax_declarations_path, notice: "Verified — payroll will use the checked amounts."
       rescue ActiveRecord::RecordInvalid
-        redirect_to admin_tax_declaration_path(declaration), alert: "Only a submitted declaration can be verified."
+        redirect_to admin_tax_declaration_path(declaration),
+                    alert: declaration.errors.full_messages.first || "Only a submitted declaration can be verified."
       end
 
       def reject

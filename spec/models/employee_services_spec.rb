@@ -124,6 +124,7 @@ RSpec.describe HrLite::Expense, no_legacy_bridge: true do
     # The point of #20: a fifth module gets multi-level approval for free.
     it "needs the manager first, then finance" do
       expense = claim
+      expense.submit!(actor: employee)
       expect(expense.pending_approvals.map(&:approver_id)).to eq([ manager.id ])
 
       expense.approve!(actor: manager)
@@ -131,6 +132,15 @@ RSpec.describe HrLite::Expense, no_legacy_bridge: true do
 
       expense.approve!(actor: finance)
       expect(expense.reload).to be_approved
+    end
+
+    it "stands the flow down when the claim is decided outside it" do
+      expense = claim
+      expense.submit!(actor: employee)
+
+      expense.approve!(actor: finance) # finance is not on the open rung
+      expect(expense.reload).to be_approved
+      expect(expense.approvals.pending).to be_empty
     end
   end
 end
@@ -344,6 +354,7 @@ RSpec.describe "Employee-service edges", no_legacy_bridge: true do
     category = HrLite::ExpenseCategory.create!(name: "Travel", receipt_required: false)
     expense = HrLite::Expense.create!(user_id: employee.id, category: category, amount: 100,
                                       spent_on: Date.current, description: "Cab")
+    expense.submit!(actor: employee)
 
     expense.reject!(actor: manager, note: "Take the metro")
 

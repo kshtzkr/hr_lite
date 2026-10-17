@@ -30,6 +30,7 @@ module HrLite
     def category_label = self.class.category_label(category)
 
     def assign!(actor:, assignee:)
+      raise ActiveRecord::RecordInvalid.new(self), "already settled" unless open? || in_progress?
       update!(assigned_to_id: assignee.id, status: "in_progress")
       Notifications.publish(
         "hr_request.assigned",
@@ -41,6 +42,7 @@ module HrLite
     end
 
     def resolve!(actor:, resolution:)
+      raise ActiveRecord::RecordInvalid.new(self), "already settled" unless open? || in_progress?
       raise ArgumentError, "a resolution needs an answer" if resolution.blank?
 
       update!(status: "resolved", resolution: resolution, resolved_at: Time.current,

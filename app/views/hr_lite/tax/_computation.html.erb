@@ -34,7 +34,7 @@
         <table class="hrl-table hrl-tax-working__table">
           <tbody>
             <tr><td>Salary paid so far this year</td><td class="hrl-num"><%= hrl_rupees(tax.paid_gross) %></td></tr>
-            <tr><td>Expected for the rest of the year (<%= hrl_rupees(tax.structure.monthly_gross) %> × <%= s.months_left %>)</td><td class="hrl-num"><%= hrl_rupees(tax.projected_gross) %></td></tr>
+            <tr><td>Expected for the rest of the year, before unpaid days (<%= hrl_rupees(tax.structure.monthly_gross) %> × <%= s.months_left %>)</td><td class="hrl-num"><%= hrl_rupees(tax.projected_gross) %></td></tr>
             <tr class="hrl-tax-working__total"><td>Gross salary for the year</td><td class="hrl-num"><%= hrl_rupees(s.gross) %></td></tr>
             <% if s.hra_exemption.positive? %><tr><td>Less HRA exemption (from rent)</td><td class="hrl-num">− <%= hrl_rupees(s.hra_exemption) %></td></tr><% end %>
             <tr><td>Less standard deduction</td><td class="hrl-num">− <%= hrl_rupees(s.standard_deduction) %></td></tr>

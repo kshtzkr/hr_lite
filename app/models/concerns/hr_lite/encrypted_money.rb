@@ -8,6 +8,10 @@ module HrLite
   module EncryptedMoney
     extend ActiveSupport::Concern
 
+    included do
+      validate { @unreadable_money&.each { |attribute| errors.add(attribute, "is not a number") } }
+    end
+
     class_methods do
       def encrypted_money(*attributes)
         attributes.each do |attribute|
@@ -19,11 +23,10 @@ module HrLite
           end
 
           define_method("#{attribute}=") do |value|
-            if value.nil? || (value.respond_to?(:blank?) && value.blank?)
-              super(nil)
-            else
-              super(BigDecimal(value.to_s).round(2).to_s("F"))
-            end
+            digits = value.to_s.gsub(/[,₹\s]/, "") # "1,50,000" and "₹ 1200" are how people type money
+            super(digits.empty? ? nil : BigDecimal(digits).round(2).to_s("F"))
+          rescue ArgumentError
+            (@unreadable_money ||= []) << attribute
           end
         end
       end

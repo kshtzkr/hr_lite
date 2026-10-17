@@ -35,7 +35,7 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(declaration).to be_draft
     end
 
-    it "submits, and cannot be edited once verified" do
+    it "submits, and cannot be edited once submitted or verified" do
       patch "/hr/tax_declaration", params: {
         tax_declaration: { regime: "old", tax_declaration_items_attributes: {
           "0" => { section: "80c", declared_amount: "100000" }
@@ -45,6 +45,11 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       declaration = HrLite::TaxDeclaration.find_by!(user_id: employee.id)
       expect(declaration).to be_submitted
 
+      patch "/hr/tax_declaration", params: { tax_declaration: { regime: "new", tax_declaration_items_attributes: {} } }
+      expect(flash[:alert]).to include("is submitted")
+      expect(declaration.reload.regime).to eq("old")
+
+      declaration.tax_declaration_items.first.update!(verified_amount: 100_000)
       declaration.verify!(actor: finance)
       patch "/hr/tax_declaration", params: {
         tax_declaration: { regime: "new", tax_declaration_items_attributes: {} }
@@ -145,6 +150,18 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       expect(response.body).to include("FY #{HrLite::FinancialYear.label(Date.current)}")
     end
 
+    it "opens this year or last, never any other year" do
+      current = HrLite::FinancialYear.start_for(Date.current)
+      get "/hr/tax_declaration?financial_year=#{current.prev_year}"
+      expect(response.body).to include("FY #{HrLite::FinancialYear.label(current.prev_year)}")
+
+      [ current.years_ago(2), current.next_year ].each do |year|
+        get "/hr/tax_declaration?financial_year=#{year}"
+        expect(response.body).to include("FY #{HrLite::FinancialYear.label(current)}")
+        expect(response.body).not_to include("FY #{HrLite::FinancialYear.label(year)}")
+      end
+    end
+
     it "says so when there is nothing to submit" do
       post "/hr/tax_declaration/submit"
       expect(flash[:alert]).to include("Nothing to submit")
@@ -243,6 +260,36 @@ RSpec.describe "Tax declarations over HTTP", type: :request do
       }
       expect(declaration.reload).to be_verified
       expect(declaration.allowable_total).to eq(90_000)
+    end
+
+    it "will not verify a blank verified amount as ₹0 allowed" do
+      sign_in finance
+      item = declaration.tax_declaration_items.first
+
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        verify: "Record and verify",
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "" } } }
+      }
+      expect(flash[:alert]).to eq("Every line needs a verified amount — enter 0 where the proof supports nothing")
+      expect(declaration.reload).to be_submitted
+    end
+
+    it "audits recorded amounts and an accept-all, and records nothing on a draft" do
+      sign_in finance
+      item = declaration.tax_declaration_items.first
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "90000" } } }
+      }
+      post "/hr/admin/tax_declarations/#{declaration.id}/accept_all"
+      expect(HrLite::AuditLog.where(subject_type: "HrLite::TaxDeclaration", subject_id: declaration.id).pluck(:action))
+        .to include("tax_declaration.amounts_recorded", "tax_declaration.accepted_all")
+
+      declaration.update!(status: "draft")
+      patch "/hr/admin/tax_declarations/#{declaration.id}", params: {
+        tax_declaration: { tax_declaration_items_attributes: { "0" => { id: item.id, verified_amount: "1" } } }
+      }
+      expect(flash[:alert]).to include("Only a submitted")
+      expect(item.reload.verified_amount).to eq(90_000)
     end
 
     it "will not send one back without a reason" do

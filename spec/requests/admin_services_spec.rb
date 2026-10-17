@@ -50,6 +50,19 @@ RSpec.describe "Admin services", type: :request, no_legacy_bridge: true do
       expect(flash[:alert]).to include("Only an approved claim")
     end
 
+    it "will not approve a withdrawn claim or reject a reimbursed one" do
+      sign_in finance
+      claim.update!(status: "cancelled")
+      post "/hr/admin/expenses/#{claim.id}/approve"
+      expect(flash[:alert]).to include("Only a submitted claim")
+      expect(claim.reload).to be_cancelled
+
+      claim.update!(status: "reimbursed")
+      post "/hr/admin/expenses/#{claim.id}/reject", params: { decision_note: "Duplicate" }
+      expect(flash[:alert]).to include("Only a submitted claim")
+      expect(claim.reload).to be_reimbursed
+    end
+
     # HR runs the people screens but does not decide money.
     it "is closed to HR" do
       sign_in hr
@@ -87,6 +100,17 @@ RSpec.describe "Admin services", type: :request, no_legacy_bridge: true do
 
       expect(request.reload).to be_in_progress
       expect(request.assigned_to_id).to eq(hr.id)
+    end
+
+    it "will not assign or resolve a cancelled request" do
+      sign_in hr
+      request.update!(status: "cancelled")
+      post "/hr/admin/hr_requests/#{request.id}/assign", params: { assignee_id: hr.id }
+      expect(flash[:alert]).to include("already settled")
+
+      post "/hr/admin/hr_requests/#{request.id}/resolve", params: { resolution: "Done" }
+      expect(flash[:alert]).to include("already settled")
+      expect(request.reload).to be_cancelled
     end
   end
 

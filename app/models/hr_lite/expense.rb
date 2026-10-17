@@ -39,6 +39,7 @@ module HrLite
     end
 
     def approve!(actor:, note: nil)
+      raise ActiveRecord::RecordInvalid.new(self), "not submitted" unless submitted?
       return record_routed!(actor, note, :approved) if awaiting?(actor)
 
       settle!("approved", actor, note)
@@ -46,6 +47,7 @@ module HrLite
 
     def reject!(actor:, note:)
       raise ArgumentError, "a rejection needs a reason" if note.blank?
+      raise ActiveRecord::RecordInvalid.new(self), "not submitted" unless submitted?
       return record_routed!(actor, note, :rejected) if awaiting?(actor)
 
       settle!("rejected", actor, note)
@@ -90,6 +92,7 @@ module HrLite
 
     def settle!(new_status, actor, note)
       update!(status: new_status, decision_note: note.presence)
+      approval_route.cancel_all! # decided outside the flow: nobody is left waiting to be asked
       Notifications.publish(
         new_status == "approved" ? "expense.approved" : "expense.rejected",
         title: "Your #{category.name} claim was #{new_status}",
