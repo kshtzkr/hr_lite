@@ -64,11 +64,7 @@ module HrLite
         { label: "Benefits", path: :benefits_path, match: [ "/benefits" ], if: -> { hr_can?("benefit.view") } },
         # HR approves payroll without running it; Super Admin runs it. One page.
         { label: "Payroll", path: :admin_payroll_runs_path, match: [ "/admin/payroll_runs", "/admin/salary_slips", "/admin/payroll_line_items" ],
-          if: -> { hr_superadmin? || (hr_can?("payroll.approve", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
-        { label: "Tax checks", path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ],
-          if: -> { hr_superadmin? || (hr_can?("tax.view", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
-        { label: "Team loans", path: :admin_loans_path, match: [ "/admin/loans" ], if: SUPER },
-        { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE }
+          if: -> { hr_superadmin? || (hr_can?("payroll.approve", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } }
       ] },
       { label: "People", match: [ "/people" ], tabs: [
         { label: "Team board", path: :team_path, match: [ "/team" ] },
@@ -99,7 +95,11 @@ module HrLite
         { label: "Statutory rates", path: :admin_statutory_rate_cards_path, match: [ "/admin/statutory_rate_cards" ], if: SUPER },
         { label: "Reports", path: :admin_reports_path, match: [ "/admin/reports" ], if: -> { hr_can?("expense.approve", scope: :all) || %w[leave.view attendance.view profile.view].any? { |key| hr_can?(key, scope: :team) } } },
         { label: "Assets", path: :admin_assets_path, match: [ "/admin/assets" ], if: -> { hr_can?("asset.manage", scope: :all) } },
-        { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD }
+        { label: "Audit trail", path: :admin_audit_logs_path, match: [ "/admin/audit_logs" ], if: LEAD },
+        { label: "Tax checks", path: :admin_tax_declarations_path, match: [ "/admin/tax_declarations" ],
+          if: -> { hr_superadmin? || (hr_can?("tax.view", scope: :all) && instance_exec(&MANAGE_OR_CLAIMS)) } },
+        { label: "Team loans", path: :admin_loans_path, match: [ "/admin/loans" ], if: SUPER },
+        { label: "Team benefits", path: :admin_benefits_path, match: [ "/admin/benefits" ], if: MANAGE }
       ] }
     ].freeze
 

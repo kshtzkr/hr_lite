@@ -64,6 +64,20 @@ RSpec.describe "Menu places and tabs", type: :request do
     expect(old_menu - tab_hrefs).to be_empty
   end
 
+  it "keeps the team tabs in Admin, so Pay holds your own pay and Payroll (NV-2)" do
+    tabs = ->(path) { get path; Nokogiri::HTML(response.body).css(".hrl-tabrow a").map { |a| a.text.strip } }
+    team = [ "Tax checks", "Team loans", "Team benefits" ]
+    sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::SUPER_ADMIN)
+    expect(tabs.("/hr/salary_slips")).to eq([ "Slips", "Expenses", "Tax", "Loans", "Benefits", "Payroll" ])
+    expect(tabs.("/hr/admin/loans")).to include(*team)
+    expect(Nokogiri::HTML(response.body).at_css(".hrl-side__nav [aria-current]").text.strip).to eq("Admin")
+
+    sign_in user_with_roles(HrLite::Role::EMPLOYEE)
+    get "/hr/"
+    expect(Nokogiri::HTML(response.body).css(".hrl-side__nav a").map { |a| a.text.strip }).not_to include("Admin")
+    expect(tabs.("/hr/salary_slips") & team).to be_empty
+  end
+
   it "gives every place and tab its own name" do
     labels = HrLite::ApplicationHelper::SECTIONS.flat_map { |s| [ s[:label] ] + s[:tabs].map { |t| t[:label] } }
     expect(labels.tally.select { |_, n| n > 1 }.keys).to be_empty
