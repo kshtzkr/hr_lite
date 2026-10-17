@@ -225,6 +225,24 @@ RSpec.describe "Payroll heads, arrears and loans", no_legacy_bridge: true do
       expect(loan.reload.outstanding).to eq(2_000)
     end
 
+    it "takes only what the month can pay and carries the rest forward" do
+      loan.update!(principal: 300_000, monthly_instalment: 100_000)
+      run = HrLite::PayrollRun.find_or_create_by!(period_month: month)
+      run.compute!(actor: leader)
+      slip = run.salary_slips.find_by!(user_id: user.id)
+      taken = slip.deduction_amount("loan_repayment")
+
+      expect(taken).to be_between(1, 99_999)
+      expect(slip.total_deductions).to eq(slip.gross_earnings)
+      expect(slip.net_pay).to eq(0)
+      expect(run.warnings).to include(a_string_matching(/loan instalment cut \(pay too low\); the rest is carried forward/))
+
+      run.finalize!(actor: leader)
+      expect(loan.reload.outstanding).to eq(300_000 - taken)
+      expect(loan).to be_active
+      expect(loan.monthly_instalment).to eq(100_000)
+    end
+
     it "closes itself once it is repaid" do
       loan.update!(principal: 10_000)
       run = HrLite::PayrollRun.find_or_create_by!(period_month: month)

@@ -71,10 +71,8 @@ module HrLite
       deductions << { code: "pt", label: "Professional tax", amount: pt } if pt.positive?
 
       deductions.concat(extra_deductions)
-      loan = loan_instalment
-      deductions << loan if loan
 
-      fy = SalarySlip.fy_to_date(@user, @run.period_month)
+      fy =SalarySlip.fy_to_date(@user, @run.period_month)
       tds = Calculators::Tds.call(
         regime: tax_regime,
         structure_monthly_gross: @structure.monthly_gross,
@@ -90,6 +88,8 @@ module HrLite
         rates: @rates[:income_tax],
         override: @tds_override
       )
+      loan = loan_instalment(gross_earned - deductions.sum(BigDecimal(0)) { |row| row[:amount] } - tds.monthly)
+      deductions << loan if loan
       deductions << { code: "tds", label: "Income tax (TDS)", amount: tds.monthly } if tds.monthly.positive?
 
       total_deductions = deductions.sum(BigDecimal(0)) { |row| row[:amount] }
@@ -172,13 +172,16 @@ module HrLite
     # The month's loan instalment, as one deduction line. Computed here and
     # BOOKED only when the run is finalized — a draft is recomputed freely,
     # and booking at compute would take a repayment on every pass.
-    def loan_instalment
-      total = Loan.active.where(user_id: @user.id).sum(BigDecimal(0)) do |loan|
+    # Never more than `room` (pay left after every other deduction); the rest stays owed.
+    def loan_instalment(room)
+      due = Loan.active.where(user_id: @user.id).sum(BigDecimal(0)) do |loan|
         loan.instalment_for(@run.period_month)
       end
-      return nil unless total.positive?
+      return nil unless due.positive?
 
-      { code: "loan_repayment", label: "Loan repayment", amount: total }
+      amount = room.clamp(BigDecimal(0), due)
+      row = { code: "loan_repayment", label: "Loan repayment", amount: amount }
+      amount < due ? row.merge(meta: { carried_forward: (due - amount).to_s("F") }) : row
     end
 
     # Months left in the Indian FY (Apr–Mar) including the run month itself:
