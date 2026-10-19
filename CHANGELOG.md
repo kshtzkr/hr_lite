@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.57.0] - 2026-10-19
+
+No migration.
+
+- **Why a day is Absent.** A refused check-in or check-out is now saved with its reason, and the person's attendance summary lists it under that day, for example "Check-in tried 10:09 — refused: You are not within the office location…". When the phone holds a tap because location is blocked or not found, the browser tells the server, and the day shows "Location not picked up on the phone (denied)". A past Absent day with no tries says "No check-in tried". Days before the first refusal was ever saved show neither line, because there is no record to go on. The rows are `attendance.punch_refused` entries in the audit trail.
+
 ## [0.56.0] - 2026-10-17
 
 Owner decisions on the HRMS audit (#133–#138). **Two migrations**: the host runs `bin/rails db:migrate` and refreshes `db/schema.rb`.

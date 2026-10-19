@@ -51,6 +51,13 @@ module HrLite
     private
 
     def punch(kind)
+      # The browser held the tap (location blocked or not found): log it, file nothing.
+      if params[:held]
+        geo = AttendancePuncher::GEO_STATUSES.include?(params[:geo_status]) ? params[:geo_status] : "unavailable"
+        log_refused(kind, "Location not picked up on the phone (#{geo})")
+        return head(:no_content)
+      end
+
       field = params.fetch(:field, {}).permit(:mode, :purpose, :place).to_h
       result = AttendancePuncher.call(user: hr_current_user, kind: kind, field: field, travel: params[:place] == "travel",
                                       save_home: params[:save_home] == "1" || params[:place] == "home", **punch_params.to_h.symbolize_keys)
@@ -58,9 +65,16 @@ module HrLite
         time = Time.current.strftime("%H:%M")
         redirect_to attendance_path, notice: "#{kind == :check_in ? 'Checked in' : 'Checked out'} at #{time}."
       else
+        log_refused(kind, result.error)
         flash[:punch_offer] = result.offer.to_s if result.offer
         redirect_to attendance_path, alert: result.error
       end
+    end
+
+    # The person's summary lists these per day, so HR can see why a day is Absent.
+    def log_refused(kind, error)
+      AuditLog.record!(action: "attendance.punch_refused", subject: hr_current_user, actor: hr_current_user,
+                       changes: { "kind" => kind.to_s, "error" => error })
     end
 
     def punch_params

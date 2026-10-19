@@ -141,6 +141,10 @@ module HrLite
         range = @period.from..@period.to
         @days = DayStatus.new(user: @employee, range: range)
         @punches = AttendancePunch.where(user_id: @employee.id, date: range).order(:at, :id).group_by(&:date)
+        refused = AuditLog.where(action: "attendance.punch_refused")
+        @refused = refused.where(subject_type: HrLite.user_klass.name, subject_id: @employee.id, created_at: range.first.beginning_of_day..range.last.end_of_day)
+                          .order(:created_at).group_by { |log| log.created_at.to_date }
+        @tracked_from = refused.minimum(:created_at)&.to_date # before this, a day with no tries proves nothing
         @penalties = AttendancePenalty.active.where(user_id: @employee.id, date: range).group(:date).sum(:minutes)
         @balances = LeaveType.active.where(paid: true).map { |type| LeaveBalance.for(@employee, type, LeaveYear.current_key) }
         @requests = summary_requests(@employee, range)
