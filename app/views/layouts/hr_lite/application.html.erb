@@ -10,8 +10,14 @@
   <% if HrLite.config.native_app.call(request) %>
     <%# The host's iOS/Android shells drive pages through Turbo. "reload" makes
         every visit a full page load, so the plain scripts below run exactly
-        as they do in a browser. Browsers never load Turbo here. %>
-    <meta name="turbo-visit-control" content="reload">
+        as they do in a browser. Browsers never load Turbo here. A refused
+        form (422) is drawn in place instead: the reload would bring the form
+        back blank, with no error. no-cache keeps that render out of history. %>
+    <% if response.unprocessable? %>
+      <meta name="turbo-cache-control" content="no-cache">
+    <% else %>
+      <meta name="turbo-visit-control" content="reload">
+    <% end %>
     <%= javascript_include_tag "hr_lite/vendor/turbo.min", type: "module" %>
   <% end %>
   <%= stylesheet_link_tag "hr_lite/hr_lite", media: "all" %>

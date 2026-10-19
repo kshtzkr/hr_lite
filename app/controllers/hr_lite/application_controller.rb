@@ -9,6 +9,9 @@ module HrLite
     before_action :hr_authenticate!
     before_action :hr_set_current_actor
     around_action :hr_use_time_zone
+    # Native pages reload every Turbo visit (see the layout): the page Turbo
+    # fetched and threw away must not spend the flash the reload shows.
+    after_action -> { flash.keep if request.get? && request.headers["X-Turbo-Request-Id"] && HrLite.config.native_app.call(request) }
 
     helper_method :hr_current_user, :hr_admin?, :hr_leadership?, :hr_superadmin?, :hr_operations?, :hr_display_name,
                   :hr_can?, :hr_reaches?, :hr_access
