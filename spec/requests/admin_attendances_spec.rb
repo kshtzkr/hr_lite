@@ -102,7 +102,7 @@ RSpec.describe "Admin attendances", type: :request do
   describe "PATCH /hr/admin/attendances/:user_id (regularization)" do
     before { sign_in admin }
 
-    let(:date) { Date.current - 1 }
+    let(:date) { Date.current.prev_occurring(:wednesday) } # a past weekday: leave on a weekend is refused
 
     it "requires a note" do
       patch "/hr/admin/attendances/#{employee.id}", params: {

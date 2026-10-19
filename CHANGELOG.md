@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.56.1] - 2026-10-19
+
+Forms in the host's iOS and Android staff apps (D24). No migrations.
+
+- **A save shows its confirmation again.** Native pages reload on every Turbo visit, and the page Turbo fetched and threw away used to spend the flash. A GET fetched by Turbo in the app now keeps it for the reload.
+- **A refused form keeps its errors and what was typed.** A 422 used to be discarded and the form reloaded blank. It is now drawn in place (with `turbo-cache-control: no-cache`), and the next visit reloads as before.
+- Browsers are unchanged: they never load Turbo.
+
 ## [0.56.0] - 2026-10-17
 
 Owner decisions on the HRMS audit (#133–#138). **Two migrations**: the host runs `bin/rails db:migrate` and refreshes `db/schema.rb`.

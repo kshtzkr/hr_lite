@@ -18,3 +18,9 @@ group :development, :test do
   gem "factory_bot_rails"
   gem "simplecov", require: false
 end
+
+# System specs: what only a real browser running Turbo can show.
+group :test do
+  gem "capybara"
+  gem "selenium-webdriver"
+end
