@@ -88,10 +88,17 @@
       form.submit();
     }
 
-    function hold(headline) {
+    function hold(headline, status) {
       locating = false;
       if (button) { button.disabled = false; button.removeAttribute("aria-busy"); }
       showHelp(label, headline);
+      // Tell the server about the tap, so HR sees why the day has no check-in.
+      if (/\/check_(in|out)$/.test(form.action) && navigator.sendBeacon) {
+        var data = new FormData(form);
+        data.set("held", "1");
+        data.set("geo_status", status);
+        navigator.sendBeacon(form.action, data);
+      }
     }
 
     form.addEventListener("submit", function (event) {
@@ -102,7 +109,7 @@
       if (label) { label.hidden = false; label.classList.replace("hrl-errors", "hrl-muted"); label.textContent = "Getting location…"; }
 
       if (!navigator.geolocation) {
-        if (required) hold("This browser cannot share your location. Open this page in Chrome or Safari.");
+        if (required) hold("This browser cannot share your location. Open this page in Chrome or Safari.", "unavailable");
         else send("unavailable");
         return;
       }
@@ -117,8 +124,8 @@
         function (err) {
           // Browsers ask only once; a past "Don't allow" denies silently forever.
           // Hold the punch so it is never filed (and flagged) without GPS.
-          if (err && err.code === 1) { hold("Location is blocked. To allow it:"); return; }
-          if (required) { hold("Couldn't get your location. Check that location is on:"); return; }
+          if (err && err.code === 1) { hold("Location is blocked. To allow it:", "denied"); return; }
+          if (required) { hold("Couldn't get your location. Check that location is on:", err && err.code === 3 ? "timeout" : "unavailable"); return; }
           send("timeout");
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }

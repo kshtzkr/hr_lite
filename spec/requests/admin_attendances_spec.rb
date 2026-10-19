@@ -288,6 +288,19 @@ RSpec.describe "Admin attendances", type: :request do
       expect(response.body).not_to include("Tue 13 Oct")
     end
 
+    it "says why a day has no check-in: each refused try, or that none was tried" do
+      HrLite::AuditLog.create!(actor: employee, action: "attendance.punch_refused", subject: employee, created_at: Time.zone.local(2026, 10, 12, 8, 55),
+                               audited_changes: { "kind" => "check_in", "error" => "You are not within the office location." })
+      sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::HR)
+      get "/hr/admin/attendances/#{employee.id}/summary"
+      body = CGI.unescapeHTML(response.body)
+      expect(body).to include("Check-in tried 08:55 — refused: You are not within the office location.")
+      expect(body.scan("No check-in tried").size).to eq(1) # Tue 13: Mon was worked, Wed is today, the rest are ahead
+
+      get "/hr/admin/attendances/#{employee.id}/summary", params: { date: (monday - 7).iso8601 }
+      expect(response.body).not_to include("No check-in tried") # before tracking began, no tries proves nothing
+    end
+
     it "lists only the request types this viewer may open, and nobody outside their reach" do
       sign_in user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::HR)
       get "/hr/admin/attendances/#{employee.id}/summary"
