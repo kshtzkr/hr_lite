@@ -210,6 +210,24 @@ RSpec.describe "Attendance", type: :request do
       expect(flash[:alert]).to include("Already checked in")
     end
 
+    it "logs every refused punch, and a tap the browser held for location, without filing it" do
+      post "/hr/attendance/check_in", params: { held: "1", geo_status: "<b>forged</b>" }
+      expect(response).to have_http_status(:no_content)
+      expect(HrLite::AttendanceRecord.count).to eq(0)
+
+      post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
+      post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }
+      post "/hr/attendance/check_out", params: { held: "1", geo_status: "denied" }
+      expect(HrLite::AttendanceRecord.last.check_out_at).to be_nil
+
+      logs = HrLite::AuditLog.where(action: "attendance.punch_refused", subject_id: user.id).order(:id).map(&:audited_changes)
+      expect(logs).to match([
+        { "kind" => "check_in", "error" => "Location not picked up on the phone (unavailable)" },
+        { "kind" => "check_in", "error" => a_string_including("Already checked in") },
+        { "kind" => "check_out", "error" => "Location not picked up on the phone (denied)" }
+      ])
+    end
+
     it "asks before checking out, and offers Check in again once out" do
       travel_to(Time.find_zone(HrLite.config.time_zone).parse("#{Date.current} 11:00")) # inside the 09:00–20:00 window
       post "/hr/attendance/check_in", params: { geo_status: "ok", lat: "1", lng: "1" }

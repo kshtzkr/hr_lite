@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.56.1] - 2026-10-19
+## [0.57.1] - 2026-10-19
 
 Forms in the host's iOS and Android staff apps (D24). No migrations.
 
 - **A save shows its confirmation again.** Native pages reload on every Turbo visit, and the page Turbo fetched and threw away used to spend the flash. A GET fetched by Turbo in the app now keeps it for the reload.
 - **A refused form keeps its errors and what was typed.** A 422 used to be discarded and the form reloaded blank. It is now drawn in place (with `turbo-cache-control: no-cache`), and the next visit reloads as before.
 - Browsers are unchanged: they never load Turbo.
+
+## [0.57.0] - 2026-10-19
+
+No migration.
+
+- **Why a day is Absent.** A refused check-in or check-out is now saved with its reason, and the person's attendance summary lists it under that day, for example "Check-in tried 10:09 — refused: You are not within the office location…". When the phone holds a tap because location is blocked or not found, the browser tells the server, and the day shows "Location not picked up on the phone (denied)". A past Absent day with no tries says "No check-in tried". Days before the first refusal was ever saved show neither line, because there is no record to go on. The rows are `attendance.punch_refused` entries in the audit trail.
 
 ## [0.56.0] - 2026-10-17
 
