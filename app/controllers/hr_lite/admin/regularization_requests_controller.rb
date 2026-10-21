@@ -18,8 +18,8 @@ module HrLite
       rescue RegularizationRequest::InvalidMerge => e
         redirect_to admin_regularization_request_path(request),
                     alert: "Cannot apply — #{e.message}. Fix the day manually or reject with a note."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_regularization_request_path(request), alert: "Only pending tickets can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_regularization_request_path(request), alert: reason_for(e, "Only pending tickets can be decided.")
       end
 
       def reject
@@ -31,8 +31,8 @@ module HrLite
 
         request.reject!(actor: hr_current_user, note: note)
         redirect_to admin_regularization_requests_path, notice: "Ticket rejected."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_regularization_request_path(request), alert: "Only pending tickets can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_regularization_request_path(request), alert: reason_for(e, "Only pending tickets can be decided.")
       end
 
       private

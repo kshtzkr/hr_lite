@@ -54,8 +54,8 @@ module HrLite
 
       @declaration.submit!(actor: hr_current_user)
       redirect_to tax_declaration_path, notice: "Submitted — HR will check the proof."
-    rescue ActiveRecord::RecordInvalid
-      redirect_to tax_declaration_path, alert: "Only a draft can be submitted."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to tax_declaration_path, alert: reason_for(e, "Only a draft can be submitted.")
     end
 
     private

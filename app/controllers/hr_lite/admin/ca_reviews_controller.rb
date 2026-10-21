@@ -51,8 +51,8 @@ module HrLite
       def resolve
         CaReview.find(params[:id]).resolve!(actor: hr_current_user, note: params[:note])
         redirect_back_to_list notice: "Marked resolved."
-      rescue ActiveRecord::RecordInvalid
-        redirect_back_to_list alert: "Only a flagged item can be resolved."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_back_to_list alert: reason_for(e, "Only a flagged item can be resolved.")
       end
 
       private

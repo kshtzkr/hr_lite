@@ -15,8 +15,8 @@ module HrLite
         expense = decidable.find(params[:id])
         expense.approve!(actor: hr_current_user, note: params[:decision_note].presence)
         redirect_to admin_expenses_path, notice: "Claim approved."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_expenses_path, alert: "Only a submitted claim can be approved."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_expenses_path, alert: reason_for(e, "Only a submitted claim can be approved.")
       end
 
       def reject
@@ -26,8 +26,8 @@ module HrLite
 
         expense.reject!(actor: hr_current_user, note: note)
         redirect_to admin_expenses_path, notice: "Claim rejected."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_expenses_path, alert: "Only a submitted claim can be rejected."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_expenses_path, alert: reason_for(e, "Only a submitted claim can be rejected.")
       end
 
       def reimburse
@@ -35,8 +35,8 @@ module HrLite
         month = parse_month_param(params[:period_month])
         expense.reimburse!(actor: hr_current_user, period_month: month)
         redirect_to admin_expenses_path, notice: "Will be paid with #{month.strftime('%B %Y')} payroll."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_expenses_path, alert: "Only an approved claim can go on payroll, and only on a month not yet paid."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_expenses_path, alert: reason_for(e, "Only an approved claim can go on payroll, and only on a month not yet paid.")
       end
 
       # The receipt the employee had to upload, for the person deciding; same rules as a document download.

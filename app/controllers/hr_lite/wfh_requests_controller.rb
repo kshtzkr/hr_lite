@@ -26,8 +26,8 @@ module HrLite
     def cancel
       WfhRequest.where(user_id: hr_current_user.id).find(params[:id]).cancel!(actor: hr_current_user)
       redirect_to wfh_requests_path, notice: "WFH request cancelled."
-    rescue ActiveRecord::RecordInvalid
-      redirect_to wfh_requests_path, alert: "Only pending requests can be cancelled."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to wfh_requests_path, alert: reason_for(e, "Only pending requests can be cancelled.")
     end
 
     private

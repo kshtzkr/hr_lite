@@ -27,8 +27,8 @@ module HrLite
       request = CompOffRequest.where(user_id: hr_current_user.id).find(params[:id])
       request.cancel!(actor: hr_current_user)
       redirect_to comp_off_requests_path, notice: "Request cancelled."
-    rescue ActiveRecord::RecordInvalid
-      redirect_to comp_off_requests_path, alert: "Only pending requests can be cancelled."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to comp_off_requests_path, alert: reason_for(e, "Only pending requests can be cancelled.")
     end
 
     private

@@ -75,6 +75,15 @@ RSpec.describe "Admin leave management", type: :request do
       post "/hr/admin/leave_requests/#{request_row.id}/approve"
       expect(flash[:alert]).to include("Only pending requests")
     end
+
+    it "says why an approval failed instead of a stock message" do
+      allow_any_instance_of(HrLite::LeaveRequest).to receive(:approve!) do |leave| # rubocop:disable RSpec/AnyInstance
+        leave.errors.add(:base, "Approver is no longer on the flow")
+        raise ActiveRecord::RecordInvalid, leave
+      end
+      post "/hr/admin/leave_requests/#{request_row.id}/approve"
+      expect(flash[:alert]).to eq("Approver is no longer on the flow")
+    end
   end
 
   describe "balance matrix + adjustment" do

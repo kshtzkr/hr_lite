@@ -100,6 +100,11 @@ module HrLite
       end
     end
 
+    # The record's own reason when it has one; `fallback` names the usual cause.
+    def reason_for(error, fallback)
+      error.record.errors.full_messages.to_sentence.presence || fallback
+    end
+
     # Strict param parsing: anything that isn't the exact expected format
     # falls back to today (never 500s on a mangled URL).
     def parse_month_param(value)

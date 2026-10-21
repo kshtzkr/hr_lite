@@ -28,8 +28,8 @@ module HrLite
         user = HrLite.user_klass.find(params[:user_id])
         asset.assign_to!(user, actor: hr_current_user)
         redirect_to admin_assets_path, notice: "#{asset.name} given to #{HrLite.display_name(user)}."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_assets_path, alert: "#{asset.name} is already with somebody."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_assets_path, alert: reason_for(e, "#{asset.name} is already with somebody.")
       end
 
       def take_back
@@ -37,8 +37,8 @@ module HrLite
         asset.return!(actor: hr_current_user, condition: params[:condition_note],
                       status: params[:status].presence_in(Asset::STATUSES) || "available")
         redirect_to admin_assets_path, notice: "#{asset.name} taken back."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_assets_path, alert: "#{asset.name} is not with anybody."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_assets_path, alert: reason_for(e, "#{asset.name} is not with anybody.")
       end
 
       private
