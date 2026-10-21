@@ -33,7 +33,7 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
         raise fail_with, "model refused" if fail_with
 
         @drafted = [ text, placeholders ]
-        draft || { subject: "@position at escapes.asia", body: "Hi @first_name,\n\nBest,\n@sender_name" }
+        draft || { name: "Interest check (AI)", subject: "@position at escapes.asia", body: "Hi @first_name,\n\nBest,\n@sender_name" }
       end
       attr_reader :drafted
 
@@ -277,11 +277,11 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
 
   describe "write with AI" do
     it "rewrites what HR typed into known fields, never saving it" do
-      post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "Outreach", subject: "Hi", body: "Hi Yuvraj, … Best, Khushboo" } }
-      expect(response.body).to include("AI draft ready", "@position at escapes.asia", "Hi @first_name,")
+      post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "", subject: "", body: "Hi Yuvraj, … Best, Khushboo" } }
+      expect(response.body).to include("AI draft ready", "@position at escapes.asia", "Hi @first_name,", 'value="Interest check (AI)"')
       expect(adapter.drafted.first).to include("Hi Yuvraj")
-      expect(adapter.drafted.last).to include("first_name", "interest_link")
-      expect(HrLite::HiringTemplate.where(name: "Outreach")).to be_empty
+      expect(adapter.drafted.last).to include("first_name", "round1_link")
+      expect(HrLite::HiringTemplate.where(name: "Interest check (AI)")).to be_empty
 
       adapter.draft = { subject: "S", body: "Hi @nickname" }
       patch "/hr/admin/hiring_templates/#{template.id}", params: { ai: "1", hiring_template: { name: template.name, subject: "S", body: "B" } }

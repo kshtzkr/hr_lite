@@ -48,7 +48,7 @@ module HrLite
         @campaign = HiringCampaign.find(params[:hiring_campaign_id])
         @template = HiringTemplate.find(params[:template_id])
         @sender = HrLite.config.hiring&.sender
-        scope = params[:all].present? ? @campaign.pipeline(stage: params[:stage], campus: params[:campus], replied: params[:replied]) : @campaign.pipeline.where(id: Array(params[:candidate_ids]))
+        scope = params[:all].present? ? @campaign.pipeline(stage: params[:stage], campus: params[:campus], replied: params[:replied], round: params[:round].to_i.presence_in([ 1, 2, 3 ])) : @campaign.pipeline.where(id: Array(params[:candidate_ids]))
         already = HiringMessage.where(template: @template, candidate_id: scope.select(:id)).pluck(:candidate_id).to_set
         @recipients, @left_out = [], []
         scope.includes(:campaign, :interviews).each do |candidate|

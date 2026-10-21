@@ -1,11 +1,11 @@
 <%= form_with model: template, url: (template.persisted? ? hr_lite.admin_hiring_template_path(template) : hr_lite.admin_hiring_templates_path), local: true do |f| %>
   <%= render "hr_lite/shared/form_errors", record: template %>
-  <div class="hrl-field"><%= f.label :name %><%= f.text_field :name, required: true %></div>
+  <div class="hrl-field"><%= f.label :name, "Template name" %><%= f.text_field :name, required: true %></div>
   <div class="hrl-field"><%= f.label :subject %><%= f.text_field :subject, required: true %></div>
   <div class="hrl-field"><%= f.label :body, "Message" %><%= f.text_area :body, rows: 16, required: true %></div>
   <% if HrLite.config.hiring.respond_to?(:draft_email) %>
     <button class="hrl-btn" type="submit" name="ai" value="1" formnovalidate>Write with AI</button>
-    <p class="hrl-small hrl-muted">Paste or type the email the way you would write it to one person. AI fixes the format and swaps names and offer details for the fields below. Nothing is saved until you click Save.</p>
+    <p class="hrl-small hrl-muted">Paste or type the email the way you would write it to one person. AI fixes the format, names the template if it has no name yet, writes the subject, and swaps names and offer details for the fields below. Nothing is saved until you click Save.</p>
   <% end %>
   <h3 class="hrl-small"><strong>Fields, filled per candidate</strong></h3>
   <% HrLite::HiringMerge::GROUPS.each do |group, names| %>

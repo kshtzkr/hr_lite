@@ -1,23 +1,28 @@
 module HrLite
-  # The candidate's own page from @interest_link: are they interested, which
-  # day and 2-hour slot suits them, and a few yes/no questions. One reply each.
+  # The candidate's own page for one interview round, from @round1_link …
+  # @round3_link: their day and slot, round 1's interest questions, and from
+  # round 2 their documents. One reply per link.
   class HiringRepliesController < ApplicationController
     # WHY no login: candidates have no account. The unguessable 24-character
-    # token in their link is the key, and it opens only their own reply.
+    # token in their link is the key, and it opens only that one reply.
     skip_before_action :hr_authenticate!
     skip_before_action HrLite.config.authenticate_method, raise: false
     layout "hr_lite/public"
     rate_limit to: 10, within: 1.hour, only: :create, name: "hiring_reply",
                with: -> { redirect_to hr_lite.hiring_reply_path(params[:token]), alert: "Too many tries. Please try again in an hour." }
 
-    before_action { @candidate = HiringCandidate.includes(:campaign).find_by!(interest_token: params[:token].to_s) }
+    before_action do
+      @reply = HiringReply.includes(candidate: :campaign).find_by!(token: params[:token].to_s)
+      @candidate = @reply.candidate
+    end
 
     def show; end
 
     def create
-      @candidate.reply!(interested: params[:interested].to_s, date: params[:date], slot: params[:slot], joining: params[:joining],
-                        yes_no: params.permit(*HiringCandidate::YES_NO).to_h)
-      redirect_to hr_lite.hiring_reply_path(@candidate.interest_token)
+      @reply.submit!(interested: params[:interested].to_s, date: params[:date], slot: params[:slot], joining: params[:joining],
+                     yes_no: params.permit(*HiringReply::YES_NO.keys).to_h, alternate_phone: params[:alternate_phone].to_s.strip,
+                     files: params.fetch(:documents, {}).permit(*@reply.documents_asked.keys).to_h)
+      redirect_to hr_lite.hiring_reply_path(@reply.token)
     rescue ArgumentError => e
       flash.now[:alert] = e.message
       render :show, status: :unprocessable_entity

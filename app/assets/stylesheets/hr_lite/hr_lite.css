@@ -677,3 +677,5 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-public { max-width: 40rem; margin: 0 auto; padding: var(--hrl-s-6) var(--hrl-gutter) calc(var(--hrl-s-10) + env(safe-area-inset-bottom)); }
 .hrl-hiring-signature { margin-top: var(--hrl-s-3); padding-top: var(--hrl-s-3); border-top: 1px dashed var(--hrl-line); font-size: var(--hrl-t-small); overflow-wrap: anywhere; }
 .hrl-public__logo { display: block; height: 40px; width: auto; margin-bottom: var(--hrl-s-4); }
+.hrl-kpi--link { display: block; min-height: var(--hrl-target); color: inherit; text-decoration: none; }
+.hrl-kpi--link:hover { border-color: var(--hrl-accent); }

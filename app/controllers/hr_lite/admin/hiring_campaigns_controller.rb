@@ -2,7 +2,7 @@ module HrLite
   module Admin
     # Hiring drives: the list, one campaign's pipeline, and its sheet import.
     class HiringCampaignsController < ApplicationController
-      FIELDS = %i[title position programme stipend ctc location schedule status].freeze
+      FIELDS = %i[title position programme stipend ctc location schedule status allow_sunday].freeze
 
       before_action { hr_require_permission!("hiring.manage", scope: :all) }
       before_action :set_campaign, except: %i[index new create]
@@ -16,9 +16,16 @@ module HrLite
         @stage = params[:stage].presence_in(HiringCandidate::STAGES)
         @campus = params[:campus].presence
         @replied = params[:replied].presence
+        @round = params[:round].to_i.presence_in([ 1, 2, 3 ])
         @stage_counts = @campaign.candidates.group(:stage).count
+        replies = HiringReply.responded.where(candidate_id: @campaign.candidates.select(:id))
+        # Each tile's count is exactly what its link lists.
+        @kpis = { "Awaiting reply" => [ @stage_counts["invited"].to_i, { stage: "invited" } ],
+                  "Replied" => [ replies.distinct.count(:candidate_id), { replied: 1 } ],
+                  "Interested" => [ @stage_counts["interested"].to_i, { stage: "interested" } ] }
+        (1..3).each { |r| @kpis["Booked round #{r}"] = [ replies.where(round: r).where.not(preferred_slot: nil).count, { round: r } ] }
         @campuses = @campaign.candidates.where.not(campus: [ nil, "" ]).distinct.order(:campus).pluck(:campus)
-        @candidates = paginate(@campaign.pipeline(stage: @stage, campus: @campus, replied: @replied))
+        @candidates = paginate(@campaign.pipeline(stage: @stage, campus: @campus, replied: @replied, round: @round))
         @templates = HiringTemplate.alphabetical
         @attention = HiringMessage.joins(:candidate).where(hr_lite_hiring_candidates: { campaign_id: @campaign.id })
                                   .where(status: %w[failed unknown sending]).includes(:candidate, :template).limit(50)

@@ -13,6 +13,17 @@ module HrLite
         @messages = @candidate.messages.includes(:template).order(:created_at)
         @interviews = @candidate.interviews.order(:round, :created_at)
         @timeline = @candidate.timeline.limit(100)
+        @replies = @candidate.replies.responded.order(:round).with_attached_documents
+        next_round = [ @candidate.round, *@interviews.select { |i| %w[scheduled unknown].include?(i.status) }.map(&:round) ].max + 1
+        @next_reply = @replies.find { |r| r.round == next_round && r.preferred_slot }
+      end
+
+      # A document from the candidate's reply, streamed only to hiring.manage and audit-logged.
+      def document
+        attachment = ActiveStorage::Attachment.find_by!(id: params[:attachment_id], record_type: "HrLite::HiringReply",
+                                                        record_id: @candidate.replies.select(:id))
+        AuditLog.record!(action: "hiring.document_viewed", subject: @candidate, changes: { "attachment" => attachment.id })
+        send_data attachment.download, filename: attachment.filename.to_s, type: attachment.content_type, disposition: "attachment"
       end
 
       def stage

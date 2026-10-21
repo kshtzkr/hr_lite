@@ -7,7 +7,7 @@ module HrLite
     GROUPS = { "Candidate" => %w[first_name name course branch campus],
                "Offer" => %w[position programme stipend ctc location schedule],
                "Interview" => %w[interview_date interview_time meet_link sender_name],
-               "Reply" => %w[interest_link] }.freeze
+               "Reply links" => %w[round1_link round2_link round3_link] }.freeze
     RESERVED = GROUPS.values.flatten.freeze
 
     Result = Data.define(:subject, :body, :missing)
@@ -24,7 +24,8 @@ module HrLite
       fill = ->(text) {
         text.to_s.gsub(TOKEN) do
           key = Regexp.last_match(1)
-          value = @values[key].to_s.strip
+          value = @values[key]
+          value = (value.respond_to?(:call) ? value.call : value).to_s.strip
           next value unless value.empty?
 
           missing << "@#{key} (#{RESERVED.include?(key) || @extra.key?(key) ? 'empty' : 'unknown'})"
@@ -46,7 +47,8 @@ module HrLite
         "location" => campaign.location, "schedule" => campaign.schedule,
         "interview_date" => at&.strftime("%-d %B %Y"), "interview_time" => at&.strftime("%-l:%M %p"),
         "meet_link" => interview&.meet_link, "sender_name" => sender_name,
-        "interest_link" => (HrLite.public_url("/apply/#{candidate.interest_token}") if candidate.interest_token) }
+        # Lazy: a round's link (and its row) is made only when a template names it.
+        **(1..3).to_h { |r| [ "round#{r}_link", -> { HrLite.public_url("/apply/#{candidate.reply_for(r).token}") } ] } }
     end
   end
 end

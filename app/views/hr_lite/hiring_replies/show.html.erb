@@ -1,57 +1,82 @@
 <% campaign = @candidate.campaign %>
+<% round = @reply.round %>
 <% content_for(:page_title) { campaign.position } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= campaign.position %></h1>
-  <p class="hrl-page__sub">Hi <%= @candidate.first_name %>, thank you for your interest.</p>
+  <p class="hrl-page__sub">Hi <%= @candidate.first_name %>, <%= round == 1 ? "thank you for your interest." : "congratulations on reaching round #{round}." %></p>
 </div>
 
-<% if @candidate.responded_at %>
+<% if @reply.responded_at %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Thanks, we have your answers</h2>
-    <p><%= @candidate.answers["interested"] == "yes" ? "Our HR team will call you to confirm your interview slot." : "We have noted that you do not want to go ahead. All the best." %></p>
+    <p><%= @reply.answers["interested"] == "no" ? "We have noted that you do not want to go ahead. All the best." : "Our HR team will call you to confirm your round #{round} interview slot." %></p>
   </section>
 <% else %>
-  <%= form_with url: hr_lite.hiring_reply_path(@candidate.interest_token), method: :post, local: true do %>
-    <section class="hrl-card">
-      <fieldset class="hrl-field">
-        <legend><strong>Do you want to go ahead with the interview?</strong></legend>
-        <label class="hrl-field--check"><input type="radio" name="interested" value="yes" required <%= "checked" if params[:interested] == "yes" %>> Yes, I am interested</label>
-        <label class="hrl-field--check"><input type="radio" name="interested" value="no" <%= "checked" if params[:interested] == "no" %>> No, not now</label>
-      </fieldset>
-    </section>
+  <%= form_with url: hr_lite.hiring_reply_path(@reply.token), method: :post, local: true, multipart: true do %>
+    <% if round == 1 %>
+      <section class="hrl-card">
+        <fieldset class="hrl-field">
+          <legend><strong>Do you want to go ahead with the interview?</strong></legend>
+          <label class="hrl-field--check"><input type="radio" name="interested" value="yes" required <%= "checked" if params[:interested] == "yes" %>> Yes, I am interested</label>
+          <label class="hrl-field--check"><input type="radio" name="interested" value="no" <%= "checked" if params[:interested] == "no" %>> No, not now</label>
+        </fieldset>
+      </section>
+    <% end %>
 
     <section class="hrl-card">
-      <h2 class="hrl-card__title">If yes: pick a day and one time slot</h2>
+      <h2 class="hrl-card__title"><%= round == 1 ? "If yes: pick" : "Pick" %> a day and one time slot for round <%= round %></h2>
       <p class="hrl-small hrl-muted">Each slot is 2 hours. HR will call you to confirm.</p>
       <fieldset class="hrl-field">
         <legend>Day</legend>
-        <% HrLite::HiringCandidate.reply_dates.each do |day| %>
+        <% HrLite::HiringReply.dates(allow_sunday: campaign.allow_sunday).each do |day| %>
           <label class="hrl-field--check"><input type="radio" name="date" value="<%= day.iso8601 %>" <%= "checked" if params[:date] == day.iso8601 %>> <%= day.strftime("%A, %-d %B") %></label>
         <% end %>
       </fieldset>
       <fieldset class="hrl-field">
         <legend>Time slot</legend>
-        <% HrLite::HiringCandidate::SLOTS.each do |key, label| %>
+        <% HrLite::HiringReply::SLOTS.each do |key, label| %>
           <label class="hrl-field--check"><input type="radio" name="slot" value="<%= key %>" <%= "checked" if params[:slot] == key %>> <%= label %></label>
         <% end %>
       </fieldset>
-      <fieldset class="hrl-field">
-        <legend>How soon can you join?</legend>
-        <% HrLite::HiringCandidate::JOINING.each do |key, label| %>
-          <label class="hrl-field--check"><input type="radio" name="joining" value="<%= key %>" <%= "checked" if params[:joining] == key %>> <%= label %></label>
-        <% end %>
-      </fieldset>
-      <% { "stipend_ok" => "Are you fine with the monthly stipend#{" of #{campaign.stipend}" if campaign.stipend.present?}?",
-           "location_ok" => "Can you work from our office#{" at #{campaign.location}" if campaign.location.present?}?",
-           "schedule_ok" => "Are you fine with the work schedule#{": #{campaign.schedule}" if campaign.schedule.present?}?",
-           "programme_ok" => "Can you commit to the full programme#{" (#{campaign.programme})" if campaign.programme.present?}?" }.each do |key, question| %>
-        <fieldset class="hrl-field">
-          <legend><%= question %></legend>
-          <label class="hrl-field--check"><input type="radio" name="<%= key %>" value="yes" <%= "checked" if params[key] == "yes" %>> Yes</label>
-          <label class="hrl-field--check"><input type="radio" name="<%= key %>" value="no" <%= "checked" if params[key] == "no" %>> No</label>
-        </fieldset>
-      <% end %>
+      <div class="hrl-field">
+        <label for="alternate_phone">Alternate phone number (optional)</label>
+        <input type="tel" name="alternate_phone" id="alternate_phone" inputmode="tel" autocomplete="tel" value="<%= params[:alternate_phone] %>">
+      </div>
     </section>
+
+    <% if round == 1 %>
+      <section class="hrl-card">
+        <fieldset class="hrl-field">
+          <legend>How soon can you join?</legend>
+          <% HrLite::HiringReply::JOINING.each do |key, label| %>
+            <label class="hrl-field--check"><input type="radio" name="joining" value="<%= key %>" <%= "checked" if params[:joining] == key %>> <%= label %></label>
+          <% end %>
+        </fieldset>
+        <% { "stipend_ok" => "Are you fine with the monthly stipend#{" of #{campaign.stipend}" if campaign.stipend.present?}?",
+             "location_ok" => "Can you work from our office#{" at #{campaign.location}" if campaign.location.present?}?",
+             "schedule_ok" => "Are you fine with the work schedule#{": #{campaign.schedule}" if campaign.schedule.present?}?",
+             "programme_ok" => "Can you commit to the full programme#{" (#{campaign.programme})" if campaign.programme.present?}?" }.each do |key, question| %>
+          <fieldset class="hrl-field">
+            <legend><%= question %></legend>
+            <label class="hrl-field--check"><input type="radio" name="<%= key %>" value="yes" <%= "checked" if params[key] == "yes" %>> Yes</label>
+            <label class="hrl-field--check"><input type="radio" name="<%= key %>" value="no" <%= "checked" if params[key] == "no" %>> No</label>
+          </fieldset>
+        <% end %>
+      </section>
+    <% end %>
+
+    <% if @reply.documents_asked.any? %>
+      <section class="hrl-card">
+        <h2 class="hrl-card__title">Your documents</h2>
+        <p class="hrl-small hrl-muted">PDF, JPG or PNG, up to 5 MB each.</p>
+        <% @reply.documents_asked.each do |kind, label| %>
+          <div class="hrl-field">
+            <label for="doc_<%= kind %>"><%= label %></label>
+            <input type="file" name="documents[<%= kind %>]" id="doc_<%= kind %>" accept=".pdf,.jpg,.jpeg,.png" required>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
 
     <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Send my answers</button></div>
   <% end %>

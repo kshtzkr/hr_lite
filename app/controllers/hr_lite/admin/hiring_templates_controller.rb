@@ -45,6 +45,7 @@ module HrLite
         raise HrLite::HiringDeliveryFailed, "it used unknown fields (#{unknown.map { |t| "@#{t}" }.join(', ')})" if unknown.any?
 
         @template.assign_attributes(subject: out[:subject], body: out[:body])
+        @template.name = out[:name] if @template.name.blank? && out[:name].present?
         AuditLog.record!(action: "hiring.ai_draft", subject: @template)
         flash.now[:notice] = "AI draft ready. Check it, then save."
       rescue HrLite::HiringDeliveryFailed, HrLite::HiringDeliveryUnknown => e
