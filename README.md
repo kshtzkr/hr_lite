@@ -384,6 +384,7 @@ whatever you run). Each is idempotent and sends nothing on a quiet day.
 | Job | Schedule | Purpose |
 |---|---|---|
 | `HrLite::DailyDigestJob` | each morning | Leadership digest: who is out today, pending approvals, flagged punches, missing checkouts |
+| `HrLite::TeamNoticesJob` | daily, 10am | Emails every current employee who is on leave today and whose birthday it is; each email is skipped when its list is empty |
 | `HrLite::PayrollAutoDraftJob` | monthly, on the 1st | Draft and compute the previous month's payroll from attendance, then notify the approvers (`payroll.approve`) and payroll operators |
 | `HrLite::CaReviewReminderJob` | weekly (it acts only in March) | Tell CA reviewers how many slips and declarations are still unverified before 31 March |
 | `HrLite::CaReviewOverdueJob` | 31 March, evening | Tell payroll and HR what the CA has not verified, and any flags left open |
