@@ -84,6 +84,14 @@ RSpec.describe "Career over HTTP", type: :request do
            params: { designation_change: { to_designation: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
     end
+
+    it "says so when the host could not apply the role change" do
+      HrLite.config.on_designation_change = ->(*) { raise "role sync down" }
+      post "/hr/admin/employees/#{profile.id}/designation_changes", params: { designation_change: {
+        to_designation: "Lead", effective_date: Date.current.to_s
+      } }
+      expect(flash[:alert]).to include("could not be applied to their login (role sync down)")
+    end
   end
 
   describe "gating" do

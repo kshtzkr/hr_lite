@@ -66,6 +66,15 @@ RSpec.describe "Resignations", type: :request do
       expect(bells.map { |b| b[:kind] }).to include("resignation.accepted")
     end
 
+    it "says so when the host could not revoke access on a last day already reached" do
+      HrLite.config.offboard_user = ->(_user) { raise "SSO is down" }
+      create(:employee_profile, user: employee)
+      resignation = HrLite::Resignation.create!(user: employee, proposed_last_day: Date.current)
+      sign_in leader
+      post "/hr/admin/resignations/#{resignation.id}/accept", params: { last_day: Date.current.to_s }
+      expect(flash[:alert]).to include("access was NOT revoked (SSO is down)")
+    end
+
     it "is for people who govern profiles only, and pending-only" do
       sign_in employee
       post "/hr/resignation", params: { resignation: { proposed_last_day: Date.current + 30 } }

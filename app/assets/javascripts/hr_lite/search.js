@@ -31,8 +31,9 @@
     clearTimeout(timer);
     timer = setTimeout(function () {
       fetch(form.action + "?frame=1&q=" + encodeURIComponent(input.value), { credentials: "same-origin", cache: "no-store" })
-        .then(function (response) { return response.ok ? response.text() : ""; })
-        .then(function (html) { out.innerHTML = html; });
+        .then(function (response) { if (!response.ok) throw response; return response.text(); })
+        .then(function (html) { out.innerHTML = html; })
+        .catch(function () { out.innerHTML = '<p class="hrl-errors" role="alert">Search failed. Check your connection and try again.</p>'; });
     }, 180);
   });
 

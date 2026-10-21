@@ -13,8 +13,9 @@
     Array.from(data.keys()).forEach(function (key) { if (/\[proofs\]/.test(key)) data.delete(key); });
     data.delete("_method");
     fetch(form.dataset.hrlTaxPreview, { method: "POST", body: data, credentials: "same-origin", headers: { "Accept": "text/html" } })
-      .then(function (response) { return response.ok ? response.text() : null; })
-      .then(function (html) { if (html) panel.innerHTML = html; });
+      .then(function (response) { if (!response.ok) throw response; return response.text(); })
+      .then(function (html) { panel.innerHTML = html; })
+      .catch(function () { panel.innerHTML = '<p class="hrl-errors" role="alert">Could not work out the tax just now. Check your connection; Save still works.</p>'; });
   }
   var rupees = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
   // The limit bar and "₹X of the ₹Y limit counts" follow the amount as typed.

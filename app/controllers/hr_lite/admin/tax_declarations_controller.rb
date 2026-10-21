@@ -62,8 +62,8 @@ module HrLite
           declaration.verify!(actor: hr_current_user, note: "Proof accepted")
         end
         redirect_to admin_tax_declarations_path, notice: "Accepted and verified — payroll uses these amounts now."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_tax_declaration_path(declaration), alert: "Only a submitted declaration can be accepted."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_tax_declaration_path(declaration), alert: reason_for(e, "Only a submitted declaration can be accepted.")
       end
 
       def update

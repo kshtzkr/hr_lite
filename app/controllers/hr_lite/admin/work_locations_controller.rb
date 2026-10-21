@@ -41,8 +41,8 @@ module HrLite
           Rails.logger.error("[hr_lite] work location notification failed: #{e.class}: #{e.message}")
         end
         redirect_to admin_work_locations_path, notice: "Location #{status}."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_work_locations_path, alert: "Only pending locations can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_work_locations_path, alert: reason_for(e, "Only pending locations can be decided.")
       end
     end
   end

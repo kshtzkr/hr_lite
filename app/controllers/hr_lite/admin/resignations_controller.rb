@@ -17,6 +17,10 @@ module HrLite
             "#{hr_display_name(resignation.user)}, so no exit date was recorded — " \
             "create the profile to clip attendance and payroll."
         end
+        if resignation.access_error
+          return redirect_to admin_employees_path,
+                             alert: "#{notice} But access was NOT revoked (#{resignation.access_error}) — revoke the login by hand."
+        end
         redirect_to admin_employees_path, notice: notice
       rescue ActiveRecord::RecordInvalid => e
         # A rejected exit date used to be reported as "not pending", which was

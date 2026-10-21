@@ -125,6 +125,7 @@ RSpec.describe "Onboarding and offboarding", type: :request do
       profile = create(:employee_profile)
       post "/hr/admin/employees/#{profile.id}/offboard"
       expect(profile.reload.date_of_exit).to eq(Date.current)
+      expect(flash[:alert]).to include("access was NOT revoked (ldap down)")
     end
   end
 end

@@ -87,7 +87,7 @@ module HrLite
                                notice: "Nothing to remove for that day."
           end
 
-          record.destroy
+          record.destroy!
           # Its late penalties go too, so checking in again is not charged twice.
           AttendancePenalty.active.where(attendance_record_id: record.id)
                            .find_each { |p| p.update!(removed_at: Time.current, removed_by_id: hr_current_user.id, removal_reason: note) }

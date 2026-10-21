@@ -30,8 +30,8 @@ module HrLite
       request = own.find(params[:id])
       request.cancel!(actor: hr_current_user)
       redirect_to hr_requests_path, notice: "Request withdrawn."
-    rescue ActiveRecord::RecordInvalid
-      redirect_to hr_requests_path, alert: "That request has already been answered."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to hr_requests_path, alert: reason_for(e, "That request has already been answered.")
     end
 
     private

@@ -65,8 +65,8 @@ module HrLite
           redirect_to admin_leave_request_path(request),
                       alert: "Cannot approve — comp-off credit no longer covers this request."
         end
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_leave_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_leave_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       # LeaveRequest#cancellable_by? has always allowed an admin to call off
@@ -96,8 +96,8 @@ module HrLite
 
         request.reject!(actor: hr_current_user, note: note)
         redirect_to admin_leave_requests_path, notice: "Leave rejected."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_leave_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_leave_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       private

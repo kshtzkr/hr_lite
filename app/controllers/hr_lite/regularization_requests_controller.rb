@@ -23,8 +23,8 @@ module HrLite
       request = RegularizationRequest.where(user_id: hr_current_user.id).find(params[:id])
       request.cancel!(actor: hr_current_user)
       redirect_to regularization_requests_path, notice: "Day fix cancelled."
-    rescue ActiveRecord::RecordInvalid
-      redirect_to regularization_requests_path, alert: "Only pending day fixes can be cancelled."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to regularization_requests_path, alert: reason_for(e, "Only pending day fixes can be cancelled.")
     end
 
     private

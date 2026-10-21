@@ -18,8 +18,8 @@ module HrLite
                     notice: "Approved — #{request.credit_days.to_f} day credited."
       rescue CompOffRequest::MissingCompOffType, CompOffRequest::StaleOffDay => e
         redirect_to admin_comp_off_request_path(request), alert: e.message
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_comp_off_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_comp_off_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       def reject
@@ -31,8 +31,8 @@ module HrLite
 
         request.reject!(actor: hr_current_user, note: note)
         redirect_to admin_comp_off_requests_path, notice: "Request rejected."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_comp_off_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_comp_off_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       private

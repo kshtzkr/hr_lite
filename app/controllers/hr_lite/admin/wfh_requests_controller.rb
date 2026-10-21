@@ -49,8 +49,8 @@ module HrLite
         request = decidable.find(params[:id])
         request.approve!(actor: hr_current_user, note: params[:decision_note].to_s.strip.presence)
         redirect_to admin_wfh_requests_path, notice: "WFH approved for #{hr_display_name(request.user)}."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_wfh_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_wfh_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       def reject
@@ -60,8 +60,8 @@ module HrLite
 
         request.reject!(actor: hr_current_user, note: note)
         redirect_to admin_wfh_requests_path, notice: "WFH rejected."
-      rescue ActiveRecord::RecordInvalid
-        redirect_to admin_wfh_request_path(request), alert: "Only pending requests can be decided."
+      rescue ActiveRecord::RecordInvalid => e
+        redirect_to admin_wfh_request_path(request), alert: reason_for(e, "Only pending requests can be decided.")
       end
 
       # HR changes an approved or rejected request: dates (past allowed) and/or decision, with a reason.

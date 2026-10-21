@@ -68,6 +68,9 @@ module HrLite
     end
 
     # False when the person had no employee profile to stamp — see accept!.
+    # Why the host could not revoke access, for the screen to say so.
+    attr_reader :access_error
+
     def exit_date_recorded?
       @exit_date_recorded
     end
@@ -82,6 +85,7 @@ module HrLite
       HrLite.config.offboard_user.call(user)
     rescue => e
       Rails.logger.error("[hr_lite] offboard_user failed: #{e.class}: #{e.message}")
+      @access_error = e.message.truncate(120)
     end
 
     def notify_submitted

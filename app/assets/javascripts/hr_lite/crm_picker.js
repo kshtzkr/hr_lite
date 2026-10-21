@@ -12,12 +12,14 @@
       if (q.length < 2) return;
       timer = setTimeout(function () {
         fetch(box.dataset.hrlCrm + "?q=" + encodeURIComponent(q), { headers: { Accept: "application/json" }, credentials: "same-origin" })
-          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (r) { if (!r.ok) throw r; return r.json(); })
           .then(function (leads) {
             select.length = 1;
+            select.options[0].text = "No lead";
             leads.forEach(function (lead) { select.add(new Option(lead.label, lead.id)); });
             if (leads.length) select.selectedIndex = 1;
-          });
+          })
+          .catch(function () { select.length = 1; select.options[0].text = "Lead search failed. Type again to retry."; });
       }, 250);
     });
   }

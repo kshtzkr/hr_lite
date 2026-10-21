@@ -101,13 +101,15 @@ module HrLite
         # since an unreturned laptop and un-revoked access both outlive the
         # employment.
         ChecklistItem.open_for!(@profile.user, kind: "offboarding", anchor_date: exit_date)
+        done = "Offboarded — last day #{exit_date.strftime('%d %b %Y')}"
         begin
           HrLite.config.offboard_user.call(@profile.user)
         rescue => e
           Rails.logger.error("[hr_lite] offboard_user failed: #{e.class}: #{e.message}")
+          return redirect_to admin_employee_path(@profile),
+                             alert: "#{done}, but access was NOT revoked (#{e.message.truncate(120)}) — revoke the login by hand."
         end
-        redirect_to admin_employee_path(@profile),
-                    notice: "Offboarded — last day #{exit_date.strftime('%d %b %Y')}, access revoked."
+        redirect_to admin_employee_path(@profile), notice: "#{done}, access revoked."
       rescue ActiveRecord::RecordInvalid => e
         redirect_to admin_employee_path(@profile), alert: e.record.errors.full_messages.to_sentence
       end

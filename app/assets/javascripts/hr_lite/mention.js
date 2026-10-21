@@ -59,9 +59,9 @@
 
     var lookup = debounce(function (query) {
       fetch(url + "?q=" + encodeURIComponent(query), { headers: { Accept: "application/json" } })
-        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (r) { if (!r.ok) throw r; return r.json(); })
         .then(renderResults)
-        .catch(close);
+        .catch(function () { close(); menu.textContent = "Could not load names. Keep typing to retry."; menu.hidden = false; });
     }, 200);
 
     textarea.addEventListener("input", function () {
