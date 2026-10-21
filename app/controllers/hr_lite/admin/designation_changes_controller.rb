@@ -12,7 +12,10 @@ module HrLite
         @change = DesignationChange.new(change_params.merge(
           user_id: @profile.user_id, created_by_id: hr_current_user.id
         ))
-        if @change.save
+        if @change.save && @change.hook_error
+          redirect_to admin_employee_path(@profile),
+                      alert: "Role change recorded, but it could not be applied to their login (#{@change.hook_error}) — update their access by hand."
+        elsif @change.persisted?
           redirect_to admin_employee_path(@profile), notice: "Role change recorded."
         else
           render :new, status: :unprocessable_entity

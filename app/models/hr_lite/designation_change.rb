@@ -17,6 +17,9 @@ module HrLite
     after_create :apply_to_profile
     after_create :notify
 
+    # Why the host's on_designation_change hook failed, for the screen to say so.
+    attr_reader :hook_error
+
     def readonly?
       persisted? && !destroyed?
     end
@@ -45,6 +48,7 @@ module HrLite
         HrLite.config.on_designation_change.call(user, to_designation)
       rescue => e
         Rails.logger.error("[hr_lite] on_designation_change failed: #{e.class}: #{e.message}")
+        @hook_error = e.message.truncate(120)
       end
     end
 
