@@ -653,3 +653,5 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-search__close { display: flex; justify-content: flex-end; margin: 0 0 var(--hrl-s-2); }
 .hrl-search::backdrop { background: rgb(15 23 42 / .4); }
 .hrl-search__list { list-style: none; margin: var(--hrl-s-1) 0 0; padding: 0; display: grid; gap: var(--hrl-s-2); }
+/* Hiring email preview: plain text, so its line breaks are the email's. */
+.hrl-hiring-preview { white-space: pre-line; overflow-wrap: anywhere; padding: var(--hrl-s-4); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-bg); }

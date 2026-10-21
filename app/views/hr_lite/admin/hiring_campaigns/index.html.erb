@@ -1,0 +1,21 @@
+<% content_for(:page_title) { "Hiring" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Hiring</h1>
+  <div class="hrl-page__actions"><a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_hiring_campaign_path %>">New campaign</a></div>
+</div>
+
+<% if @campaigns.empty? %>
+  <section class="hrl-card hrl-card--empty"><p class="hrl-muted">No campaigns yet. Create one, then upload the university's candidate sheet.</p></section>
+<% end %>
+<% @campaigns.each do |campaign| %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title"><a class="hrl-card__link" href="<%= hr_lite.admin_hiring_campaign_path(campaign) %>"><%= campaign.title %></a></h2>
+    <p class="hrl-small hrl-muted"><%= [ campaign.position, campaign.stipend, (campaign.status == "closed" ? "Closed" : nil) ].compact_blank.join(" · ") %></p>
+    <div class="hrl-chiprow">
+      <% HrLite::HiringCandidate::STAGES.each do |stage| %>
+        <% if (n = @counts[[ campaign.id, stage ]]) %><span class="hrl-badge hrl-badge--muted"><%= n %> <%= stage.humanize.downcase %></span><% end %>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+<%= hrl_pagination %>

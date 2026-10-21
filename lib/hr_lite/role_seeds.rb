@@ -42,7 +42,7 @@ module HrLite
           "expense.claim" => "self", "benefit.view" => "all", "benefit.manage" => "all",
           "hr_request.raise" => "self", "hr_request.manage" => "all", "policy.view" => "all",
           "asset.view" => "all", "asset.manage" => "all", "checklist.manage" => "all",
-          "work_analytics.view" => "all"
+          "work_analytics.view" => "all", "hiring.manage" => "all"
         }
       },
       Role::FINANCE => {
@@ -69,7 +69,7 @@ module HrLite
           "document.view" => "all", "expense.approve" => "all", "benefit.manage" => "all",
           "hr_request.manage" => "all", "policy.view" => "all", "policy.manage" => "all",
           "asset.view" => "all", "asset.manage" => "all", "checklist.manage" => "all",
-          "work_analytics.view" => "all"
+          "work_analytics.view" => "all", "hiring.manage" => "all"
         }
       },
       Role::CA => {

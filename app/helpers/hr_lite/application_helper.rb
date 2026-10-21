@@ -88,6 +88,10 @@ module HrLite
         { label: "Help desk", path: :admin_hr_requests_path, match: [ "/admin/hr_requests" ], if: -> { hr_can?("hr_request.manage", scope: :all) } },
         { label: "Manage policies", path: :admin_policies_path, match: [ "/admin/policies" ], if: -> { hr_can?("policy.manage", scope: :all) } }
       ] },
+      { label: "Hiring", tabs: [
+        { label: "Campaigns", path: :admin_hiring_campaigns_path, match: [ "/admin/hiring_campaigns", "/admin/hiring_candidates" ], if: -> { hr_can?("hiring.manage", scope: :all) } },
+        { label: "Email templates", path: :admin_hiring_templates_path, match: [ "/admin/hiring_templates" ], if: -> { hr_can?("hiring.manage", scope: :all) } }
+      ] },
       { label: "Admin", divider: true, tabs: [
         { label: "Settings", path: :admin_leave_types_path, match: [ "/admin/leave_types", "/admin/office_locations", "/admin/holidays", "/admin/expense_categories" ], if: LEAD },
         { label: "HR settings", path: :edit_admin_setting_path, match: [ "/admin/setting" ], if: LEAD },
@@ -194,6 +198,7 @@ module HrLite
       "People" => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
       "Me" => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
       "Help" => '<circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+      "Hiring" => '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
       "Admin" => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
       "More" => '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
       "Search" => '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'
@@ -251,6 +256,26 @@ module HrLite
       return nil unless helper && hr_lite_route?(helper)
 
       hr_lite.public_send(helper, approval.subject_id)
+    end
+
+    HIRING_BADGES = { "imported" => "muted", "invited" => "info", "interested" => "ok", "not_interested" => "bad",
+                      "interview" => "warn", "selected" => "ok", "rejected" => "bad", "on_hold" => "muted" }.freeze
+
+    def hrl_hiring_badge(candidate)
+      modifier = HIRING_BADGES.fetch(candidate.stage)
+      tag.span(candidate.stage_label, class: [ "hrl-badge", ("hrl-badge--#{modifier}" unless modifier == "info") ])
+    end
+
+    # One line per hiring timeline row, from the whitelisted changes it stored.
+    def hrl_hiring_event(log)
+      c = log.audited_changes.to_h
+      at = c["starts_at"] && Time.zone.parse(c["starts_at"]).strftime("%-d %b %Y, %-l:%M %p")
+      case log.action.delete_prefix("hiring.")
+      when "stage" then [ "Moved to #{c['to'].to_s.humanize}", c["reason"] ].compact.join(": ")
+      when /\Aemail_(\w+)\z/ then "Email #{Regexp.last_match(1)}: #{c['template']}"
+      when /\Ainterview_(\w+)\z/ then [ "Round #{c['round']} #{Regexp.last_match(1).tr('_', ' ')}", at ].compact.join(" for ")
+      else log.action.delete_prefix("hiring.").humanize
+      end
     end
 
     def hrl_pagination

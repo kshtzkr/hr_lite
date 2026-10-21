@@ -1,0 +1,18 @@
+<% content_for(:page_title) { "Upload candidates" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Upload candidate sheet</h1>
+  <p class="hrl-page__sub"><%= @campaign.title %>. Nothing is saved until you confirm the preview.</p>
+</div>
+<section class="hrl-card">
+  <%= form_with url: hr_lite.import_admin_hiring_campaign_path(@campaign), method: :post, local: true, multipart: true do %>
+    <div class="hrl-field">
+      <label for="sheet">Sheet (.xlsx or .csv, headers in the first row)</label>
+      <input type="file" name="sheet" id="sheet" accept=".xlsx,.xls,.csv" required>
+    </div>
+    <p class="hrl-small hrl-muted">Name and email are required. Columns we do not recognise are kept, and can be used as @placeholders.</p>
+    <div class="hrl-form-actions">
+      <button class="hrl-btn hrl-btn--primary" type="submit">Preview</button>
+      <a class="hrl-btn" href="<%= hr_lite.admin_hiring_campaign_path(@campaign) %>">Cancel</a>
+    </div>
+  <% end %>
+</section>

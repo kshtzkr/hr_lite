@@ -1,0 +1,11 @@
+<%= form_with model: template, url: (template.persisted? ? hr_lite.admin_hiring_template_path(template) : hr_lite.admin_hiring_templates_path), local: true do |f| %>
+  <%= render "hr_lite/shared/form_errors", record: template %>
+  <div class="hrl-field"><%= f.label :name %><%= f.text_field :name, required: true %></div>
+  <div class="hrl-field"><%= f.label :subject %><%= f.text_field :subject, required: true %></div>
+  <div class="hrl-field"><%= f.label :body, "Message" %><%= f.text_area :body, rows: 16, required: true %></div>
+  <p class="hrl-small hrl-muted">Fields you can use: <%= HrLite::HiringMerge::RESERVED.map { |name| "@#{name}" }.join(", ") %>, and any extra column from the sheet, shown on a candidate's page. A candidate missing one is left out of a send, never sent a blank.</p>
+  <div class="hrl-form-actions">
+    <%= f.submit "Save template", class: "hrl-btn hrl-btn--primary" %>
+    <a class="hrl-btn" href="<%= hr_lite.admin_hiring_templates_path %>">Back</a>
+  </div>
+<% end %>

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.61.0] - 2026-10-21
+
+Hiring panel. Six migrations: five new tables and one that grants `hiring.manage` to HR, Leadership and Super Admin and seeds the first outreach email.
+
+- **Campaigns.** One per opening. Position, programme, stipend, CTC, location and schedule live on the campaign and fill the email's @placeholders.
+- **Sheet import with a preview.** Headers are matched through an alias list after case-folding and dropping punctuation, so each university's spelling works. Unknown columns are kept as extra data and usable as @placeholders. Two columns claiming one field wait for HR to pick one. Every skipped row says why, a repeat upload updates instead of duplicating, and nothing is saved before confirm. Phone and date of birth are encrypted. `config.read_sheet` reads the file (default: .csv only).
+- **Bulk email from one mailbox.** A confirm page names everyone left out (already sent, or a placeholder empty or unknown). One spaced job per recipient goes through `config.hiring.send_email`, and a unique index plus a claimed row stop double sends. An answer that never came is marked for a person to check, never resent. Sends are limited to ten an hour per person.
+- **Pipeline and timeline.** The stages are imported, invited, interested, not interested, interview (round N), selected, rejected and on hold. Moves the pipeline does not allow are refused, a rejection needs a listed reason, and every change goes on the candidate's timeline with who made it.
+- **Interview invites.** Rounds go on the hiring mailbox's Google Calendar through `config.hiring`, with reschedule and cancel. Each round is its own row.
+
 ## [0.60.0] - 2026-10-21
 
 Background failures reach a person. No migrations.

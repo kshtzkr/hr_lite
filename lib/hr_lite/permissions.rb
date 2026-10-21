@@ -65,7 +65,8 @@ module HrLite
       "settings.manage" => [ "Administration", "Change company settings, offices and policy" ],
       "audit.view" => [ "Administration", "Read the audit trail" ],
       "audit.view_money" => [ "Administration", "Read audit rows about pay, appraisals and promotions" ],
-      "role.manage" => [ "Administration", "Create roles and grant permissions" ]
+      "role.manage" => [ "Administration", "Create roles and grant permissions" ],
+      "hiring.manage" => [ "Hiring", "Import candidates, email them from the hiring mailbox, schedule interviews and decide" ]
     }.freeze
 
     KEYS = REGISTRY.keys.freeze

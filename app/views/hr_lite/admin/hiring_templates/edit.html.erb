@@ -1,0 +1,26 @@
+<% content_for(:page_title) { @template.name } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title"><%= @template.name %></h1></div>
+<section class="hrl-card"><%= render "form", template: @template %></section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Preview</h2>
+  <% if @preview %>
+    <form method="get" action="<%= hr_lite.edit_admin_hiring_template_path(@template) %>" class="hrl-row">
+      <div class="hrl-field">
+        <label for="candidate_id">Preview for</label>
+        <select name="candidate_id" id="candidate_id" <%= "data-hrl-filter=\"Type a name\"".html_safe if @sample.size > 5 %>>
+          <% @sample.each do |candidate| %><option value="<%= candidate.id %>" <%= "selected" if candidate == @preview_for %>><%= candidate.name %> · <%= candidate.campaign.title %></option><% end %>
+        </select>
+      </div>
+      <div class="hrl-form-actions"><button class="hrl-btn" type="submit">Show</button></div>
+    </form>
+    <% if @preview.missing.any? %>
+      <div class="hrl-flash hrl-flash--warn">This candidate would be left out: <%= @preview.missing.join(", ") %>.</div>
+    <% end %>
+    <p class="hrl-small hrl-muted">From <%= HrLite.config.hiring&.sender&.dig(:email) || "the hiring mailbox" %></p>
+    <p><strong><%= @preview.subject %></strong></p>
+    <div class="hrl-hiring-preview"><%= @preview.body %></div>
+  <% else %>
+    <p class="hrl-muted">Upload a candidate sheet to preview this email for a real person.</p>
+  <% end %>
+</section>
