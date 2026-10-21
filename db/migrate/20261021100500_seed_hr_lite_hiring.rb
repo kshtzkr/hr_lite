@@ -34,8 +34,8 @@ class SeedHrLiteHiring < ActiveRecord::Migration[8.1]
     end
     execute <<~SQL
       INSERT INTO hr_lite_hiring_templates (name, subject, body, created_at, updated_at)
-      VALUES (#{quote("Interest check")}, #{quote("@position at escapes.asia: please confirm your interest")},
-              #{quote(BODY)}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      VALUES (#{connection.quote("Interest check")}, #{connection.quote("@position at escapes.asia: please confirm your interest")},
+              #{connection.quote(BODY)}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     SQL
   end
 
