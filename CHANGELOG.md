@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.59.0] - 2026-10-21
+
+No silent failures where a person is waiting on the answer. No migrations. Audit: `docs/audits/silent_failures.md`.
+
+- **Decisions say why they failed.** 24 admin and employee actions answered every failed save with a stock line such as "Only pending requests can be decided." They now show the record's own reason, and keep the stock line for the genuine not-pending case.
+- **Offboarding no longer claims access was revoked when it was not.** A failing `offboard_user` hook (offboard, or accepting a resignation on its last day) or `on_designation_change` hook now shows an alert with the cause and what to do by hand.
+- **Search, live tax, lead search and @mentions say when they could not load.** They no longer look like "no results" or show a stale figure. An unreadable ID-card photo (HEIC on desktop) now says so.
+
 ## [0.58.0] - 2026-10-21
 
 Leave and birthdays for the whole team, Keka-style. No migrations. Hosts schedule `HrLite::TeamNoticesJob` daily at 10am.
