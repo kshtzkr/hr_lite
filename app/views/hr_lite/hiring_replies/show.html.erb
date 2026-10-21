@@ -65,17 +65,39 @@
       </section>
     <% end %>
 
-    <% if @reply.documents_asked.any? %>
+    <% if round == 3 %>
+      <section class="hrl-card">
+        <h2 class="hrl-card__title">Joining details</h2>
+        <p class="hrl-small hrl-muted">Stored encrypted. Only our HR team can see them.</p>
+        <div class="hrl-field">
+          <label for="aadhaar_number">Aadhaar number</label>
+          <input type="text" name="aadhaar_number" id="aadhaar_number" inputmode="numeric" autocomplete="off" maxlength="14" required>
+        </div>
+        <div class="hrl-field">
+          <label for="pan_number">PAN</label>
+          <input type="text" name="pan_number" id="pan_number" autocomplete="off" maxlength="10" autocapitalize="characters">
+        </div>
+        <label class="hrl-field--check"><input type="checkbox" name="pan_pending" value="1" <%= "checked" if params[:pan_pending] == "1" %>> I don't have a PAN yet (HR will ask for it when you join)</label>
+        <label class="hrl-field--check"><input type="checkbox" name="no_salary_slips" value="1" <%= "checked" if params[:no_salary_slips] == "1" %>> I have no salary slips (fresher)</label>
+      </section>
+    <% end %>
+
+    <% kinds = HrLite::HiringReply::DOCUMENTS.fetch(round, {}) %>
+    <% if kinds.any? %>
       <section class="hrl-card">
         <h2 class="hrl-card__title">Your documents</h2>
-        <p class="hrl-small hrl-muted">PDF, JPG or PNG, up to 5 MB each.</p>
-        <% @reply.documents_asked.each do |kind, label| %>
+        <p class="hrl-small hrl-muted">PDF, JPG or PNG, up to 5 MB each. Stored encrypted.<%= " Skip PAN or salary slips if you ticked the box above." if round == 3 %></p>
+        <% kinds.each do |kind, label| %>
           <div class="hrl-field">
-            <label for="doc_<%= kind %>"><%= label %></label>
-            <input type="file" name="documents[<%= kind %>]" id="doc_<%= kind %>" accept=".pdf,.jpg,.jpeg,.png" required>
+            <label for="doc_<%= kind %>"><%= label %><%= " (if you have it)" if kind.start_with?("salary_slip", "pan") %></label>
+            <input type="file" name="documents[<%= kind %>]" id="doc_<%= kind %>" accept=".pdf,.jpg,.jpeg,.png" <%= "required" unless kind.start_with?("salary_slip", "pan") %>>
           </div>
         <% end %>
       </section>
+    <% end %>
+
+    <% if round == 3 %>
+      <label class="hrl-field--check"><input type="checkbox" name="consent" value="1" required> I agree to share these details and documents with <%= HrLite.config.company.call[:brand].presence || "the company" %> for hiring and joining.</label>
     <% end %>
 
     <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Send my answers</button></div>

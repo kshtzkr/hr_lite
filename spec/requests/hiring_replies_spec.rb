@@ -60,8 +60,12 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     sign_in hr
     get "/hr/admin/hiring_candidates/#{candidate.id}"
     expect(response.body).to include("Round 2 reply", "Photo ID", %(value="#{day.iso8601}"), 'value="10:00"', "Call to confirm")
-    get "/hr/admin/hiring_candidates/#{candidate.id}/document", params: { attachment_id: round2.documents.first.id }
-    expect(response.headers["Content-Disposition"]).to include("attachment")
+    blob = round2.documents.first
+    expect(blob.download).not_to start_with("%PDF") # stored as ciphertext
+    get "/hr/admin/hiring_candidates/#{candidate.id}/document", params: { attachment_id: blob.id }
+    expect([ response.body.b, response.media_type ]).to eq([ pdf.tap(&:rewind).read.b, "application/pdf" ])
+    expect(response.headers["Content-Disposition"]).to include("attachment", "cv.pdf")
+    expect(response.body).not_to include("rails/active_storage")
     expect(HrLite::AuditLog.where(action: "hiring.document_viewed").count).to eq(1)
     get "/hr/admin/hiring_candidates/#{candidate.id}/document", params: { attachment_id: 0 }
     expect(response).to have_http_status(:not_found)
@@ -112,5 +116,54 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     expect(candidate.replies).to be_empty
     expect(render.("Round 3: @round3_link")).to eq("Round 3: https://hr.example.com/apply/#{candidate.reply_for(3).token}")
     expect(candidate.replies.pluck(:round)).to eq([ 3 ])
+  end
+
+  describe "round 3 joining details" do
+    # A made-up Aadhaar with a valid Verhoeff check digit; never a real one.
+    let(:aadhaar) { "23456789012".then { |base| (0..9).map { |d| "#{base}#{d}" }.find { |n| HrLite::HiringReply.aadhaar_valid?(n) } } }
+    let(:round3) { candidate.reply_for(3) }
+
+    def kyc(**params)
+      reply(round3.token, aadhaar_number: aadhaar, pan_number: "abcde1234f", consent: "1",
+                          documents: { marksheets: pdf, aadhaar: pdf, pan: pdf, salary_slip_1: pdf, salary_slip_2: pdf, salary_slip_3: pdf }, **params)
+    end
+
+    it "takes Aadhaar, PAN and salary slips encrypted, and shows HR only masked numbers until an audited reveal" do
+      get "/hr/apply/#{round3.token}"
+      expect(response.body).to include("Aadhaar number", "I don't have a PAN yet", "I have no salary slips", "I agree to share")
+      expect(response.body).not_to include("Address proof")
+      kyc(consent: "")
+      expect(response.body).to include("Tick the consent box")
+      kyc(aadhaar_number: "123456789012")
+      expect(response.body).to include("That Aadhaar number does not look right")
+      expect(response.body).not_to include("123456789012")
+      kyc(pan_number: "12345")
+      expect(response.body).to include("That PAN does not look right")
+      kyc
+      round3.reload
+      expect([ round3.aadhaar_number, round3.pan_number, round3.documents.count ]).to eq([ aadhaar, "ABCDE1234F", 6 ])
+      raw = HrLite::HiringReply.connection.select_one("SELECT aadhaar_number, pan_number FROM hr_lite_hiring_replies WHERE id = #{round3.id}")
+      expect(raw.values.join).not_to include(aadhaar)
+      expect(raw.values.join).not_to include("ABCDE1234F")
+
+      sign_in hr
+      get "/hr/admin/hiring_candidates/#{candidate.id}"
+      expect(response.body).to include("XXXX XXXX #{aadhaar.last(4)}", "XXXXX1234X", "Show full Aadhaar")
+      expect(response.body).not_to include(aadhaar)
+      post "/hr/admin/hiring_candidates/#{candidate.id}/reveal", params: { reply_id: round3.id, field: "aadhaar" }
+      expect(response.body).to include(aadhaar)
+      expect(HrLite::AuditLog.where(action: "hiring.kyc_revealed").sole.audited_changes).to eq("field" => "aadhaar", "round" => 3)
+      post "/hr/admin/hiring_candidates/#{candidate.id}/reveal", params: { reply_id: round3.id, field: "nope" }
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "lets a candidate without a PAN or salary slips go ahead, and tells HR" do
+      reply(round3.token, aadhaar_number: aadhaar, pan_pending: "1", no_salary_slips: "1", consent: "1", documents: { marksheets: pdf, aadhaar: pdf })
+      round3.reload
+      expect([ round3.pan_pending, round3.no_salary_slips, round3.pan_number, round3.documents.count ]).to eq([ true, true, nil, 2 ])
+      sign_in hr
+      get "/hr/admin/hiring_candidates/#{candidate.id}"
+      expect(response.body).to include("PAN pending: collect at joining", "None (fresher)")
+    end
   end
 end

@@ -92,6 +92,22 @@
           <dt>Can join</dt><dd><%= HrLite::HiringReply::JOINING[reply.answers["joining"]] %></dd>
           <% HrLite::HiringReply::YES_NO.each do |key, label| %><dt><%= label %></dt><dd><%= reply.answers[key] == "yes" ? "Yes" : "No" %></dd><% end %>
         <% end %>
+        <% if reply.round == 3 %>
+          <% { "aadhaar" => [ "Aadhaar", reply.masked_aadhaar ], "pan" => [ "PAN", reply.masked_pan ] }.each do |field, (label, masked)| %>
+            <dt><%= label %></dt>
+            <dd>
+              <% if (full = @revealed&.dig(reply.id, field)) %>
+                <strong><%= full %></strong>
+              <% elsif masked %>
+                <%= masked %>
+                <%= button_to "Show full #{label}", hr_lite.reveal_admin_hiring_candidate_path(@candidate), params: { reply_id: reply.id, field: field }, class: "hrl-btn" %>
+              <% else %>
+                <span class="hrl-badge hrl-badge--warn">PAN pending: collect at joining</span>
+              <% end %>
+            </dd>
+          <% end %>
+          <% if reply.no_salary_slips %><dt>Salary slips</dt><dd>None (fresher)</dd><% end %>
+        <% end %>
         <% if reply.alternate_phone.present? %><dt>Alternate phone</dt><dd><a class="hrl-btn" href="tel:<%= reply.alternate_phone.gsub(/[^\d+]/, "") %>">Call <%= reply.alternate_phone %></a></dd><% end %>
         <dt>Replied</dt><dd><%= reply.responded_at.strftime("%-d %b %Y, %-l:%M %p") %></dd>
       </dl>

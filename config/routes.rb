@@ -80,7 +80,7 @@ HrLite::Engine.routes.draw do
       resources :hiring_sends, path: "send", only: %i[new create]
     end
     resources :hiring_candidates, only: %i[show] do
-      member { patch :stage; get :document }
+      member { patch :stage; get :document; post :reveal }
       resources :hiring_interviews, path: "interviews", only: %i[create update destroy]
     end
     resources :hiring_templates, except: %i[show destroy]
