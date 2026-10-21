@@ -30,6 +30,10 @@
       zoom.closest("[data-hrl-photo-adjust]").hidden = false;
       place();
     };
+    img.onerror = function () {
+      input.value = "";
+      alert("Could not read that picture. Choose a JPG or PNG photo.");
+    };
     img.src = URL.createObjectURL(file);
   });
 
