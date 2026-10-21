@@ -20,6 +20,18 @@ DEMO_LEADS = { "1" => "Rahul Mehta · Bali", "2" => "Neha Rao · Ladakh", "3" =>
 HrLite.config.crm_search = ->(_user, q) { DEMO_LEADS.select { |_, l| l.downcase.include?(q.downcase) }.map { |id, l| { id: id, label: l } } }
 HrLite.config.crm_find = ->(id) { DEMO_LEADS[id.to_s] && { label: DEMO_LEADS[id.to_s], url: "#lead-#{id}" } }
 
+# Sample hiring mailbox: logs instead of calling Google (a real host wires Gmail + Calendar).
+module DemoHiring
+  module_function
+
+  def sender = { ready: true, email: "hiring@example.com", name: "Demo HR" }
+  def send_email(to:, **) = Rails.logger.info("[demo hiring] email to #{to}") && { message_id: SecureRandom.hex(8), thread_id: SecureRandom.hex(8) }
+  def create_event(**) = { event_id: SecureRandom.hex(8), meet_link: "https://meet.google.com/demo-link" }
+  def update_event(**) = true
+  def cancel_event(**) = true
+end
+HrLite.config.hiring = DemoHiring
+
 ActiveRecord::Migration.verbose = false
 load File.expand_path("../spec/dummy/db/schema.rb", __dir__)
 ActiveRecord::MigrationContext.new([ HrLite::Engine.root.join("db/migrate").to_s ]).migrate

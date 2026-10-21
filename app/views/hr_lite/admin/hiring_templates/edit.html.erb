@@ -1,0 +1,40 @@
+<% content_for(:page_title) { @template.name } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title"><%= @template.name %></h1></div>
+
+<% if @preview %>
+  <div class="hrl-flash <%= @ready == @campaign_size ? "hrl-flash--ok" : "hrl-flash--warn" %>">
+    Ready for <%= @ready %> of <%= @campaign_size %> candidates in <%= @preview_for.campaign.title %>.<%= " The rest are left out of a send until their fields are filled." if @ready < @campaign_size %>
+  </div>
+<% end %>
+
+<div class="hrl-grid hrl-grid--2">
+  <section class="hrl-card"><%= render "form", template: @template %></section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Preview</h2>
+    <% if @preview %>
+      <form method="get" action="<%= hr_lite.edit_admin_hiring_template_path(@template) %>" class="hrl-row">
+        <div class="hrl-field">
+          <label for="candidate_id">Preview for</label>
+          <select name="candidate_id" id="candidate_id" <%= "data-hrl-filter=\"Type a name\"".html_safe if @sample.size > 5 %>>
+            <% @sample.each do |candidate| %><option value="<%= candidate.id %>" <%= "selected" if candidate == @preview_for %>><%= candidate.name %> · <%= candidate.campaign.title %></option><% end %>
+          </select>
+        </div>
+        <div class="hrl-form-actions"><button class="hrl-btn" type="submit">Show</button></div>
+      </form>
+      <% if @preview.missing.any? %>
+        <div class="hrl-flash hrl-flash--warn">This candidate would be left out: <%= @preview.missing.join(", ") %>.</div>
+      <% end %>
+      <article>
+        <div class="hrl-mail__head">
+          <strong><%= @preview.subject %></strong>
+          <span class="hrl-small hrl-muted"><%= HrLite.config.hiring&.sender&.dig(:email) || "The hiring mailbox" %> to <%= @preview_for.email %></span>
+        </div>
+        <div class="hrl-hiring-preview"><%= @preview.body %></div>
+      </article>
+      <p class="hrl-small hrl-muted">Sent as plain text through Gmail, so it lands in the mailbox's Sent folder.</p>
+    <% else %>
+      <p class="hrl-muted">Upload a candidate sheet to preview this email for a real person.</p>
+    <% end %>
+  </section>
+</div>

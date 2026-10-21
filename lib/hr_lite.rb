@@ -17,6 +17,12 @@ require "hr_lite/amount_in_words"
 require "hr_lite/statutory_rate_card"
 
 module HrLite
+  # Raised by a host hiring adapter. Failed: Google refused, nothing was sent.
+  # Unknown: Google may or may not have acted (a timeout, a 5xx), so the row is
+  # marked for a person to check and never retried by itself.
+  HiringDeliveryFailed = Class.new(StandardError)
+  HiringDeliveryUnknown = Class.new(StandardError)
+
   # Full day / first half / second half — one picker for leave and attendance.
   DAY_PARTS = [ [ "Full day", "" ], [ "First half", "first" ], [ "Second half", "second" ] ].freeze
   class << self

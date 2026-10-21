@@ -1,0 +1,98 @@
+<% content_for(:page_title) { @campaign.title } %>
+<% content_for(:back) { "Campaigns" } %>
+<% sender = HrLite.config.hiring&.sender %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @campaign.title %></h1>
+  <p class="hrl-page__sub"><%= [ @campaign.position, @campaign.stipend, @campaign.location ].compact_blank.join(" · ") %></p>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.import_admin_hiring_campaign_path(@campaign) %>">Upload sheet</a>
+    <a class="hrl-btn" href="<%= hr_lite.edit_admin_hiring_campaign_path(@campaign) %>">Edit offer</a>
+  </div>
+</div>
+
+<% unless sender&.dig(:ready) %>
+  <section class="hrl-card hrl-card--warn">
+    <p><strong>No hiring mailbox is connected.</strong> Emails and invites cannot go out yet.</p>
+    <% if sender&.dig(:connect_url) %><p><a class="hrl-btn" href="<%= sender[:connect_url] %>">Connect <%= sender[:email] %></a></p><% end %>
+  </section>
+<% end %>
+
+<% if @attention.any? %>
+  <section class="hrl-card hrl-card--warn">
+    <h2 class="hrl-card__title">Emails that need a look</h2>
+    <ul class="hrl-feed">
+      <% @attention.each do |message| %>
+        <li class="hrl-feed__item"><div class="hrl-feed__body">
+          <a href="<%= hr_lite.admin_hiring_candidate_path(message.candidate) %>"><%= message.candidate.name %></a> · <%= message.template.name %> ·
+          <% if message.status == "failed" %>
+            Failed (<%= message.error %>)
+            <%= button_to "Send again", hr_lite.admin_retry_hiring_message_path(message), class: "hrl-btn" %>
+          <% else %>
+            Not confirmed: check Gmail Sent before sending again
+          <% end %>
+        </div></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="hrl-card">
+  <form method="get" action="<%= hr_lite.admin_hiring_campaign_path(@campaign) %>" class="hrl-row">
+    <div class="hrl-field">
+      <label for="stage">Stage</label>
+      <select name="stage" id="stage">
+        <option value="">All (<%= @stage_counts.values.sum %>)</option>
+        <% HrLite::HiringCandidate::STAGES.each do |stage| %>
+          <option value="<%= stage %>" <%= "selected" if @stage == stage %>><%= stage.humanize %> (<%= @stage_counts[stage].to_i %>)</option>
+        <% end %>
+      </select>
+    </div>
+    <% if @campuses.any? %>
+      <div class="hrl-field">
+        <label for="campus">Campus</label>
+        <select name="campus" id="campus" <%= "data-hrl-filter=\"Type a campus\"".html_safe if @campuses.size > 5 %>>
+          <option value="">All campuses</option>
+          <% @campuses.each do |campus| %><option <%= "selected" if @campus == campus %>><%= campus %></option><% end %>
+        </select>
+      </div>
+    <% end %>
+    <div class="hrl-form-actions"><button class="hrl-btn" type="submit">Filter</button></div>
+  </form>
+</section>
+
+<section class="hrl-card">
+  <% if @candidates.empty? %>
+    <p class="hrl-muted"><%= @stage_counts.empty? ? "No candidates yet. Upload the university's sheet." : "Nobody at this stage." %></p>
+  <% else %>
+    <form method="get" action="<%= hr_lite.new_admin_hiring_campaign_hiring_send_path(@campaign) %>">
+      <div class="hrl-row">
+        <div class="hrl-field">
+          <label for="template_id">Email</label>
+          <select name="template_id" id="template_id" required>
+            <% @templates.each do |template| %><option value="<%= template.id %>"><%= template.name %></option><% end %>
+          </select>
+        </div>
+        <label class="hrl-field--check"><input type="checkbox" name="all" value="1"> All <%= @total_count %> in this filter</label>
+        <input type="hidden" name="stage" value="<%= @stage %>"><input type="hidden" name="campus" value="<%= @campus %>">
+        <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Review email</button></div>
+      </div>
+      <div class="hrl-table-wrap">
+        <table class="hrl-table hrl-table--stack">
+          <thead><tr><th><span class="hrl-sr-only">Pick</span></th><th>Name</th><th>Course</th><th>Campus</th><th>Stage</th></tr></thead>
+          <tbody>
+            <% @candidates.each do |candidate| %>
+              <tr>
+                <td data-label="Pick"><label class="hrl-field--check"><input type="checkbox" name="candidate_ids[]" value="<%= candidate.id %>"> Select<span class="hrl-sr-only"> <%= candidate.name %></span></label></td>
+                <td data-label="Name"><a class="hrl-card__link" href="<%= hr_lite.admin_hiring_candidate_path(candidate) %>"><%= candidate.name %></a></td>
+                <td data-label="Course"><%= [ candidate.course, candidate.branch ].compact_blank.join(" · ") %></td>
+                <td data-label="Campus"><%= candidate.campus %></td>
+                <td data-label="Stage"><%= hrl_hiring_badge(candidate) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </form>
+    <%= hrl_pagination %>
+  <% end %>
+</section>

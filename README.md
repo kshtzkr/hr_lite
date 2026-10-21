@@ -376,6 +376,20 @@ permission reaches (`leave.view`, `payroll.view`, `expense.approve`,
 Leadership picks Employee of the Month, Quarter and Year at `/admin/awards`,
 and Home shows the current winners to everyone.
 
+## Hiring
+
+Admin › Hiring (`hiring.manage`): campaigns, candidate sheet import, bulk email, interview rounds and decisions. The engine never talks to Google itself. Set `config.hiring` to an object with:
+
+```ruby
+sender                      # => { email:, name:, ready:, connect_url: }
+send_email(to:, subject:, body:)               # => { message_id:, thread_id: } (plain text)
+create_event(summary:, description:, attendee:, starts_at:, ends_at:) # => { event_id:, meet_link: }
+update_event(event_id:, starts_at:, ends_at:)
+cancel_event(event_id:)
+```
+
+Raise `HrLite::HiringDeliveryFailed` when nothing was sent and `HrLite::HiringDeliveryUnknown` when the provider may have acted (timeouts, 5xx). Never put the recipient in the error text: it is stored. `config.read_sheet = ->(path, filename) { rows }` reads uploads (default: .csv).
+
 ## Recurring jobs
 
 Schedule these on the host's job scheduler (cron, GoodJob, Sidekiq-cron,

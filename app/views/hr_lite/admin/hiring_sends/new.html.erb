@@ -1,0 +1,34 @@
+<% content_for(:page_title) { "Send email" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Send “<%= @template.name %>” to <%= pluralize(@recipients.size, "candidate") %></h1>
+  <p class="hrl-page__sub"><%= @campaign.title %></p>
+</div>
+
+<section class="hrl-card">
+  <dl class="hrl-deflist">
+    <dt>From</dt><dd><%= @sender&.dig(:ready) ? "#{@sender[:email]}, so it lands in that Gmail Sent folder" : "No hiring mailbox connected" %></dd>
+    <dt>Will get it</dt><dd><%= @recipients.size %></dd>
+    <dt>Left out</dt><dd><%= @left_out.size %></dd>
+  </dl>
+</section>
+
+<% if @left_out.any? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Left out, and why</h2>
+    <ul class="hrl-feed">
+      <% @left_out.each do |candidate, reason| %><li class="hrl-feed__item"><div class="hrl-feed__body"><strong><%= candidate.name %></strong>: <%= reason %></div></li><% end %>
+    </ul>
+  </section>
+<% end %>
+
+<%= form_with url: hr_lite.admin_hiring_campaign_hiring_sends_path(@campaign), method: :post, local: true do %>
+  <input type="hidden" name="template_id" value="<%= @template.id %>">
+  <% @recipients.each do |candidate| %><input type="hidden" name="candidate_ids[]" value="<%= candidate.id %>"><% end %>
+  <p class="hrl-small hrl-muted">Emails go out one by one in the background. The campaign page lists any that fail.</p>
+  <div class="hrl-form-actions">
+    <% if @recipients.any? && @sender&.dig(:ready) %>
+      <button class="hrl-btn hrl-btn--primary" type="submit" data-turbo-confirm="Send <%= pluralize(@recipients.size, 'email') %> from <%= @sender[:email] %>?">Send <%= pluralize(@recipients.size, "email") %></button>
+    <% end %>
+    <a class="hrl-btn" href="<%= hr_lite.admin_hiring_campaign_path(@campaign) %>">Back</a>
+  </div>
+<% end %>

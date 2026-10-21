@@ -1,0 +1,62 @@
+<% content_for(:page_title) { "Check the import" } %>
+<% counts = @import.counts %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Check the import</h1>
+  <p class="hrl-page__sub"><%= @campaign.title %></p>
+</div>
+<div class="hrl-kpis">
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= counts["create"] %></div><div class="hrl-kpi__label">New</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= counts["update"] %></div><div class="hrl-kpi__label">Update</div></div>
+  <div class="hrl-kpi"><div class="hrl-kpi__value"><%= counts["skip"] %></div><div class="hrl-kpi__label">Skip</div></div>
+</div>
+
+<%= form_with url: hr_lite.import_admin_hiring_campaign_path(@campaign), method: :post, local: true do %>
+  <input type="hidden" name="rows" value="<%= @sealed %>">
+  <% if @import.conflicts.any? %>
+    <section class="hrl-card hrl-card--warn">
+      <h2 class="hrl-card__title">Pick one column for each field</h2>
+      <% @import.conflicts.each do |field, columns| %>
+        <fieldset class="hrl-field">
+          <legend><%= field.humanize %></legend>
+          <% columns.each do |column| %>
+            <label class="hrl-field--check"><input type="radio" name="picks[<%= field %>]" value="<%= column.index %>" required> “<%= column.header %>”</label>
+          <% end %>
+        </fieldset>
+      <% end %>
+      <p class="hrl-small hrl-muted">The column you do not pick is kept as extra data.</p>
+      <button class="hrl-btn" type="submit">Update preview</button>
+    </section>
+  <% end %>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Columns</h2>
+    <div class="hrl-table-wrap">
+      <table class="hrl-table hrl-table--stack hrl-table--tight">
+        <thead><tr><th>In the sheet</th><th>Saved as</th></tr></thead>
+        <tbody>
+          <% @import.columns.each do |column| %>
+            <tr>
+              <td data-label="In the sheet"><%= column.header.presence || "(no header)" %></td>
+              <td data-label="Saved as"><%= column.field ? (column.field == "cv_url" ? "CV link" : column.field.humanize) : "Extra: @#{column.extra_key}" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <% skipped = @import.rows.select { |row| row.outcome == "skip" } %>
+  <% if skipped.any? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Rows that will be skipped</h2>
+      <ul class="hrl-feed"><% skipped.each do |row| %><li class="hrl-feed__item">Row <%= row.number %>: <%= row.reason %></li><% end %></ul>
+    </section>
+  <% end %>
+
+  <div class="hrl-form-actions">
+    <% if @import.conflicts.empty? %>
+      <button class="hrl-btn hrl-btn--primary" type="submit" name="confirm" value="1">Import <%= counts["create"] + counts["update"] %> candidates</button>
+    <% end %>
+    <a class="hrl-btn" href="<%= hr_lite.admin_hiring_campaign_path(@campaign) %>">Cancel</a>
+  </div>
+<% end %>

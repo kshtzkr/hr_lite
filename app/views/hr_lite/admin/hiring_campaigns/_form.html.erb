@@ -1,0 +1,18 @@
+<%= form_with model: campaign, url: (campaign.persisted? ? hr_lite.admin_hiring_campaign_path(campaign) : hr_lite.admin_hiring_campaigns_path), local: true do |f| %>
+  <%= render "hr_lite/shared/form_errors", record: campaign %>
+  <p class="hrl-small hrl-muted">These fill @position, @programme, @stipend, @ctc, @location and @schedule in every email.</p>
+  <div class="hrl-field"><%= f.label :title, "Campaign name" %><%= f.text_field :title, required: true, placeholder: "e.g. Campus drive, October" %></div>
+  <div class="hrl-field"><%= f.label :position %><%= f.text_field :position, required: true %></div>
+  <div class="hrl-field"><%= f.label :programme %><%= f.text_field :programme %></div>
+  <div class="hrl-field"><%= f.label :stipend, "Monthly stipend" %><%= f.text_field :stipend %></div>
+  <div class="hrl-field"><%= f.label :ctc, "Full-time CTC" %><%= f.text_field :ctc %></div>
+  <div class="hrl-field"><%= f.label :location, "Work location" %><%= f.text_area :location, rows: 2 %></div>
+  <div class="hrl-field"><%= f.label :schedule, "Work schedule" %><%= f.text_field :schedule %></div>
+  <% if campaign.persisted? %>
+    <div class="hrl-field"><%= f.label :status %><%= f.select :status, [ %w[Open open], %w[Closed closed] ] %></div>
+  <% end %>
+  <div class="hrl-form-actions">
+    <%= f.submit "Save", class: "hrl-btn hrl-btn--primary" %>
+    <a class="hrl-btn" href="<%= campaign.persisted? ? hr_lite.admin_hiring_campaign_path(campaign) : hr_lite.admin_hiring_campaigns_path %>">Cancel</a>
+  </div>
+<% end %>

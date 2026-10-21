@@ -653,3 +653,23 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-search__close { display: flex; justify-content: flex-end; margin: 0 0 var(--hrl-s-2); }
 .hrl-search::backdrop { background: rgb(15 23 42 / .4); }
 .hrl-search__list { list-style: none; margin: var(--hrl-s-1) 0 0; padding: 0; display: grid; gap: var(--hrl-s-2); }
+/* Hiring email preview: plain text, so its line breaks are the email's. */
+.hrl-hiring-preview { white-space: pre-line; overflow-wrap: anywhere; padding: var(--hrl-s-4); border: 1px solid var(--hrl-line); border-radius: var(--hrl-radius-sm); background: var(--hrl-bg); }
+/* Hiring candidate: actions first on a phone, a right-hand column on desktop. */
+@media (min-width: 1024px) {
+  .hrl-grid--side { grid-template-columns: 2fr 1fr; align-items: start; }
+  .hrl-grid--side > .hrl-grid__aside { grid-column: 2; grid-row: 1 / span 9; }
+}
+.hrl-card--next { background: var(--hrl-info-bg); border-color: transparent; }
+.hrl-hiring-decide > .button_to { flex: 1 1 8rem; }
+.hrl-hiring-decide > .button_to .hrl-btn { width: 100%; }
+.hrl-hiring-person { display: flex; align-items: center; gap: var(--hrl-s-3); width: 100%; }
+.hrl-hiring-avatar { flex: none; width: 52px; height: 52px; border-radius: var(--hrl-radius-pill); background: var(--hrl-info-bg); color: var(--hrl-accent); display: grid; place-items: center; font: 700 var(--hrl-t-lead) var(--hrl-font-head); }
+/* Pipeline stepper: a number until reached, a tick once passed. */
+.hrl-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--hrl-s-1); text-align: center; }
+.hrl-steps li { display: grid; justify-items: center; gap: var(--hrl-s-1); font-size: var(--hrl-t-micro); color: var(--hrl-ink-2); }
+.hrl-steps__dot { width: 28px; height: 28px; border-radius: var(--hrl-radius-pill); display: grid; place-items: center; font-weight: 700; border: 1px solid var(--hrl-line); background: var(--hrl-card); color: var(--hrl-muted); }
+.hrl-steps .is-done .hrl-steps__dot { background: var(--hrl-ok); border-color: var(--hrl-ok); color: var(--hrl-accent-ink); }
+.hrl-steps .is-now .hrl-steps__dot { background: var(--hrl-accent); border-color: var(--hrl-accent); color: var(--hrl-accent-ink); }
+.hrl-steps .is-now { font-weight: 700; color: var(--hrl-accent); }
+.hrl-mail__head { display: grid; gap: var(--hrl-s-2); padding-bottom: var(--hrl-s-3); margin-bottom: var(--hrl-s-3); border-bottom: 1px solid var(--hrl-line); overflow-wrap: anywhere; }

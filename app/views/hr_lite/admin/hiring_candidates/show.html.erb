@@ -1,0 +1,145 @@
+<% content_for(:page_title) { @candidate.name } %>
+<% campaign = @candidate.campaign %>
+<% moves = HrLite::HiringCandidate::MOVES.fetch(@candidate.stage) %>
+<% manual = moves & HrLite::Admin::HiringCandidatesController::MANUAL %>
+<div class="hrl-page__head">
+  <a class="hrl-btn" href="<%= hr_lite.admin_hiring_campaign_path(campaign) %>">‹ <%= campaign.title %></a>
+  <div class="hrl-hiring-person">
+    <span class="hrl-hiring-avatar" aria-hidden="true"><%= @candidate.name.split.first(2).map { |w| w[0] }.join.upcase %></span>
+    <div>
+      <h1 class="hrl-page__title"><%= @candidate.name %></h1>
+      <p class="hrl-page__sub"><%= [ @candidate.course, @candidate.branch, @candidate.campus ].compact_blank.join(" · ") %></p>
+    </div>
+  </div>
+  <div class="hrl-page__actions">
+    <a class="hrl-btn" href="mailto:<%= @candidate.email %>">Email</a>
+    <% if @candidate.phone.present? %><a class="hrl-btn" href="tel:<%= @candidate.phone.gsub(/[^\d+]/, "") %>">Call</a><% end %>
+    <% if @candidate.cv_url.to_s.match?(%r{\Ahttps?://}) %><a class="hrl-btn" href="<%= @candidate.cv_url %>" rel="noopener noreferrer nofollow" target="_blank">CV</a><% end %>
+  </div>
+</div>
+
+<section class="hrl-card" aria-label="Pipeline">
+  <ol class="hrl-steps">
+    <% hrl_hiring_steps(@candidate).each_with_index do |(label, state), i| %>
+      <li class="is-<%= state %>" <%= 'aria-current="step"'.html_safe if state == :now %>><span class="hrl-steps__dot"><%= state == :done ? "✓" : i + 1 %></span><%= label %></li>
+    <% end %>
+  </ol>
+</section>
+
+<div class="hrl-grid hrl-grid--side">
+  <div class="hrl-grid__aside">
+    <% if moves.include?("interview") %>
+      <section class="hrl-card hrl-card--next">
+        <p class="hrl-small hrl-muted">Next step</p>
+        <h2 class="hrl-card__title">Schedule round <%= @interviews.select { |i| %w[scheduled unknown].include?(i.status) }.map(&:round).max.to_i + 1 %></h2>
+        <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interviews_path(@candidate), method: :post, local: true do %>
+          <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required></div>
+          <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required></div>
+          <div class="hrl-field">
+            <label for="minutes">Length</label>
+            <select name="minutes" id="minutes"><% HrLite::Admin::HiringInterviewsController::LENGTHS.each do |m| %><option value="<%= m %>"><%= m %> minutes</option><% end %></select>
+          </div>
+          <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Send invite with Meet link</button></div>
+          <p class="hrl-small">From the hiring mailbox's Google Calendar. Google emails the candidate.</p>
+        <% end %>
+      </section>
+    <% elsif @candidate.stage.in?(%w[imported invited]) %>
+      <section class="hrl-card hrl-card--next">
+        <p class="hrl-small hrl-muted">Next step</p>
+        <h2 class="hrl-card__title">Wait for their reply, then mark them interested</h2>
+      </section>
+    <% end %>
+
+    <% if manual.any? %>
+      <section class="hrl-card">
+        <h2 class="hrl-card__title">Decision</h2>
+        <div class="hrl-form-actions hrl-hiring-decide">
+          <% (manual - [ "rejected" ]).each do |to| %>
+            <%= button_to to.humanize, hr_lite.stage_admin_hiring_candidate_path(@candidate), method: :patch, params: { to: to }, class: "hrl-btn",
+                          form: { data: { turbo_confirm: ("Mark #{@candidate.name} selected? This is final." if to == "selected") } } %>
+          <% end %>
+        </div>
+        <% if manual.include?("rejected") %>
+          <details>
+            <summary class="hrl-btn hrl-btn--danger">Reject…</summary>
+            <%= form_with url: hr_lite.stage_admin_hiring_candidate_path(@candidate), method: :patch, local: true do %>
+              <input type="hidden" name="to" value="rejected">
+              <div class="hrl-field">
+                <label for="reason">Reason</label>
+                <select name="reason" id="reason" required>
+                  <option value="">Pick a reason</option>
+                  <% HrLite::HiringCandidate::REJECTION_REASONS.each do |reason| %><option><%= reason %></option><% end %>
+                </select>
+              </div>
+              <div class="hrl-field"><label for="note">Note (needed for “Other”)</label><textarea name="note" id="note" rows="2"></textarea></div>
+              <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--danger" type="submit" data-turbo-confirm="Reject <%= @candidate.name %>? This is final.">Confirm rejection</button></div>
+            <% end %>
+          </details>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Profile from the sheet</h2>
+    <dl class="hrl-deflist">
+      <dt>Email</dt><dd><%= @candidate.email %></dd>
+      <dt>Phone</dt><dd><%= @candidate.phone.presence || "—" %></dd>
+      <dt>Date of birth</dt><dd><%= @candidate.date_of_birth.presence || "—" %></dd>
+      <% @candidate.extra.each do |key, value| %><dt><%= key.delete_prefix("sheet_").humanize %></dt><dd><%= value %></dd><% end %>
+      <% if @candidate.rejection_reason.present? %><dt>Rejected because</dt><dd><%= @candidate.rejection_reason %></dd><% end %>
+    </dl>
+  </section>
+
+  <% if @interviews.any? %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Interviews</h2>
+      <% @interviews.each do |interview| %>
+        <div class="hrl-card">
+          <p><strong>Round <%= interview.round %></strong> · <%= interview.starts_at.strftime("%-d %b %Y, %-l:%M %p") %> · <%= interview.status == "unknown" ? "not confirmed by Google: check the calendar" : interview.status.humanize %></p>
+          <% if interview.status == "scheduled" %>
+            <details>
+              <summary class="hrl-btn">Reschedule</summary>
+              <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interview_path(@candidate, interview), method: :patch, local: true do %>
+                <div class="hrl-field"><label for="date_<%= interview.id %>">New date</label><input type="date" name="date" id="date_<%= interview.id %>" required></div>
+                <div class="hrl-field"><label for="time_<%= interview.id %>">New time</label><input type="time" name="time" id="time_<%= interview.id %>" required></div>
+                <input type="hidden" name="minutes" value="<%= ((interview.ends_at - interview.starts_at) / 60).round %>">
+                <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Move round <%= interview.round %></button></div>
+              <% end %>
+            </details>
+            <%= button_to "Cancel round #{interview.round}", hr_lite.admin_hiring_candidate_hiring_interview_path(@candidate, interview), method: :delete,
+                          class: "hrl-btn hrl-btn--danger", form: { data: { turbo_confirm: "Cancel this interview? Google tells the candidate." } } %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
+  <% end %>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Emails</h2>
+    <% if @messages.empty? %>
+      <p class="hrl-muted">Nothing sent yet.</p>
+    <% else %>
+      <ul class="hrl-feed">
+        <% @messages.each do |message| %>
+          <li class="hrl-feed__item"><div class="hrl-feed__body">
+            <strong><%= message.template.name %></strong>
+            <span class="hrl-feed__meta"><%= { "sent" => "Sent #{message.sent_at&.strftime('%-d %b, %-l:%M %p')}, in Gmail Sent", "failed" => "Failed: #{message.error}", "queued" => "Waiting to send" }.fetch(message.status, "Not confirmed: check Gmail Sent") %></span>
+          </div></li>
+        <% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Activity</h2>
+    <ol class="hrl-timeline">
+      <% @timeline.each do |log| %>
+        <li class="hrl-timeline__item">
+          <p class="hrl-timeline__title"><%= hrl_hiring_event(log) %></p>
+          <p class="hrl-small hrl-muted"><%= log.actor ? hr_display_name(log.actor) : "System" %> · <%= log.created_at.strftime("%-d %b %Y, %-l:%M %p") %></p>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+</div>

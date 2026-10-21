@@ -35,7 +35,13 @@ module HrLite
                   # ->(user, query) { [{ id:, label: }] } — leads to link to a client meeting
                   :crm_search,
                   # ->(id) { { label:, url: } or nil } — one lead, to validate and link it
-                  :crm_find
+                  :crm_find,
+                  # An object with sender, send_email, create_event, update_event and
+                  # cancel_event (see README, Hiring). nil = hiring cannot send or schedule.
+                  :hiring,
+                  # ->(path, filename) { rows as arrays, headers first } — reads an
+                  # uploaded candidate sheet. Default: .csv only.
+                  :read_sheet
 
     attr_reader :leave_year_start_month, :slip_release_day, :self_regularization, :work_hours
 
@@ -124,6 +130,13 @@ module HrLite
       @require_punch_location = false
       @attendance_slots       = false
       @office_geofence        = false
+      @hiring                 = nil
+      @read_sheet             = ->(path, filename) {
+        raise ArgumentError, "Upload the sheet as a .csv file." unless filename.to_s.downcase.end_with?(".csv")
+
+        require "csv"
+        CSV.read(path, encoding: "bom|utf-8")
+      }
       @work_hours             = nil # e.g. { day: 8, probation_day: 9, week: 40 } — short days close as half days
 
       # Leadership onboarding/offboarding. onboard_user must return a saved

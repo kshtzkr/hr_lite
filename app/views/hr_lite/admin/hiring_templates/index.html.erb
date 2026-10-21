@@ -1,0 +1,15 @@
+<% content_for(:page_title) { "Hiring emails" } %>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title">Hiring email templates</h1>
+  <div class="hrl-page__actions"><a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_hiring_template_path %>">New template</a></div>
+</div>
+<section class="hrl-card">
+  <ul class="hrl-feed">
+    <% @templates.each do |template| %>
+      <li class="hrl-feed__item"><div class="hrl-feed__body">
+        <a class="hrl-card__link" href="<%= hr_lite.edit_admin_hiring_template_path(template) %>"><%= template.name %></a>
+        <span class="hrl-feed__meta"><%= template.subject %></span>
+      </div></li>
+    <% end %>
+  </ul>
+</section>

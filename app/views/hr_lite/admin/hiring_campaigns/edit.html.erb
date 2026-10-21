@@ -1,0 +1,3 @@
+<% content_for(:page_title) { "Edit campaign" } %>
+<div class="hrl-page__head"><h1 class="hrl-page__title">Edit <%= @campaign.title %></h1></div>
+<section class="hrl-card"><%= render "form", campaign: @campaign %></section>

@@ -71,6 +71,16 @@ HrLite::Engine.routes.draw do
 
   namespace :admin do
     resources :policies, only: %i[index new create]
+    resources :hiring_campaigns, except: %i[destroy] do
+      member { get :import; post :import }
+      resources :hiring_sends, path: "send", only: %i[new create]
+    end
+    resources :hiring_candidates, only: %i[show] do
+      member { patch :stage }
+      resources :hiring_interviews, path: "interviews", only: %i[create update destroy]
+    end
+    resources :hiring_templates, except: %i[show destroy]
+    post "hiring_messages/:id/retry", to: "hiring_sends#retry", as: :retry_hiring_message
     get "overview", to: "overview#index"
     resources :attendances, only: %i[index show update], param: :user_id do
       collection { get :week }
