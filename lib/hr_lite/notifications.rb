@@ -56,6 +56,9 @@ module HrLite
       "policy.published"      => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "holiday.published"     => { bell: true,  email: true,  leadership_email: false, leadership_bell: false },
       "digest.daily"          => { bell: false, email: false, leadership_email: true,  leadership_bell: false },
+      # 10am team emails (TeamNoticesJob) to every current employee; skipped when the list is empty.
+      "leave.out_today"       => { bell: false, email: true,  leadership_email: false, leadership_bell: false },
+      "birthday.today"        => { bell: false, email: true,  leadership_email: false, leadership_bell: false },
       "resignation.submitted" => { bell: true,  email: false, leadership_email: true,  leadership_bell: true  },
       "resignation.accepted"  => { bell: true,  email: true,  leadership_email: true,  leadership_bell: false },
       "resignation.withdrawn" => { bell: true,  email: false, leadership_email: true,  leadership_bell: false },

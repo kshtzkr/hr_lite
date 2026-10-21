@@ -3,9 +3,11 @@ module HrLite
     def index
       @latest_kudos = Kudo.recent.includes(:giver, kudo_mentions: :user).limit(3)
       @awards = Award.current
-      @out_week = LeaveRequest.approved.overlapping_range(Date.current, Date.current.end_of_week)
+      # Pending shows too: approval is management's call, not a reason to hide the leave.
+      @out_week = LeaveRequest.where(status: %w[pending approved]).overlapping_range(Date.current, Date.current.end_of_week)
                               .includes(:user).where(user_id: HrLite.active_employees.map(&:id))
                               .sort_by { |leave| hr_display_name(leave.user).downcase }
+      @birthdays = EmployeeProfile.birthdays_in(Date.current.all_week)
       @attention = attention_days
       @waiting = Approval.pending_for(hr_current_user).count
       @mine_pending = [ LeaveRequest.includes(:leave_type), RegularizationRequest, CompOffRequest, WfhRequest ]

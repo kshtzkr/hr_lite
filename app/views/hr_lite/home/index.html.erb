@@ -40,6 +40,22 @@
     <%= render "hr_lite/leave_requests/out_list", leaves: @out_week, empty: "Nobody is on leave this week." %>
   </section>
 
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Birthdays this week</h2>
+    <% if @birthdays.any? %>
+      <div class="hrl-feed">
+        <% @birthdays.each do |profile, day| %>
+          <div class="hrl-feed__item">
+            <div class="hrl-feed__body"><strong><%= hr_display_name(profile.user) %></strong>
+              <div class="hrl-feed__meta"><%= day == Date.current ? "Today" : day.strftime("%a %-d %b") %></div></div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="hrl-muted hrl-small">No birthdays this week.</p>
+    <% end %>
+  </section>
+
   <% if @awards.any? %>
     <section class="hrl-card">
       <h2 class="hrl-card__title">Employee of the month, quarter and year</h2>

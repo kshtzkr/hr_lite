@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.58.0] - 2026-10-21
+
+Leave and birthdays for the whole team, Keka-style. No migrations. Hosts schedule `HrLite::TeamNoticesJob` daily at 10am.
+
+- **Pending leave shows on Home.** "On leave this week" lists pending requests too, tagged "Pending approval". Approval is management's decision, not a reason to hide the leave.
+- **10am "On leave today" email** to every current employee: name and dates, never the leave type. No one out, no email.
+- **10am "Birthdays today" email**, same rules. A 29 Feb birthday falls on 28 Feb outside leap years.
+- **Birthdays this week** card on Home, Monday to Sunday, today marked.
+
 ## [0.57.1] - 2026-10-19
 
 Forms in the host's iOS and Android staff apps (D24). No migrations.

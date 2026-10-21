@@ -12,10 +12,11 @@ RSpec.describe "On leave this week on Home", type: :request do
                            start_date: from, end_date: to, status: status)
   end
 
-  it "lists current staff on approved leave this week with their dates, never the leave type" do
+  it "lists current staff on approved or pending leave this week with their dates, never the leave type" do
     leave("Priya", today, today + 4)
     leave("Ravi", today - 7, today - 6)
     leave("Kiran", today, today, status: "pending")
+    leave("Rejected", today, today, status: "rejected")
     create(:employee_profile, user: leave("Gone", today, today).user, date_of_exit: today - 1)
 
     get "/hr/"
@@ -25,7 +26,8 @@ RSpec.describe "On leave this week on Home", type: :request do
     expect(week).to include("Priya").and include("08 Jul – 12 Jul")
     expect(response.body).to include('title="On leave: 08 Jul – 12 Jul"')
     expect(week).not_to include("Ravi")
-    expect(week).not_to include("Kiran")
+    expect(week).to include("Kiran").and include("Pending approval")
+    expect(week).not_to include("Rejected")
     expect(week).not_to include("Gone")
     # The viewer's own balance chip names the type; the week card must not.
     expect(response.body[%r{On leave this week</h2>.*?</section>}m]).not_to include("Sick leave")
