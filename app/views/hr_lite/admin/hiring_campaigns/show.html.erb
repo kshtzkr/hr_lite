@@ -17,6 +17,12 @@
   </section>
 <% end %>
 
+<div class="hrl-kpis">
+  <% @kpis.each do |label, (count, filter)| %>
+    <a class="hrl-kpi hrl-kpi--link" href="<%= hr_lite.admin_hiring_campaign_path(@campaign, filter) %>"><div class="hrl-kpi__value"><%= count %></div><div class="hrl-kpi__label"><%= label %></div></a>
+  <% end %>
+</div>
+
 <% if @attention.any? %>
   <section class="hrl-card hrl-card--warn">
     <h2 class="hrl-card__title">Emails that need a look</h2>
@@ -56,6 +62,8 @@
         </select>
       </div>
     <% end %>
+    <label class="hrl-field--check"><input type="checkbox" name="replied" value="1" <%= "checked" if @replied %>> Replied via link</label>
+    <input type="hidden" name="round" value="<%= @round %>">
     <div class="hrl-form-actions"><button class="hrl-btn" type="submit">Filter</button></div>
   </form>
 </section>
@@ -72,8 +80,8 @@
             <% @templates.each do |template| %><option value="<%= template.id %>"><%= template.name %></option><% end %>
           </select>
         </div>
-        <label class="hrl-field--check"><input type="checkbox" name="all" value="1"> All <%= @total_count %> in this filter</label>
-        <input type="hidden" name="stage" value="<%= @stage %>"><input type="hidden" name="campus" value="<%= @campus %>">
+        <label class="hrl-field--check"><input type="checkbox" name="all" value="1" data-hrl-select-all="candidate_ids[]"> All <%= @total_count %> in this filter</label>
+        <input type="hidden" name="stage" value="<%= @stage %>"><input type="hidden" name="campus" value="<%= @campus %>"><input type="hidden" name="replied" value="<%= @replied %>"><input type="hidden" name="round" value="<%= @round %>">
         <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Review email</button></div>
       </div>
       <div class="hrl-table-wrap">

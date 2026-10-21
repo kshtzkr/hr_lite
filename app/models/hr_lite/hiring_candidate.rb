@@ -19,6 +19,7 @@ module HrLite
     belongs_to :campaign, class_name: "HrLite::HiringCampaign", inverse_of: :candidates
     has_many :messages, class_name: "HrLite::HiringMessage", foreign_key: :candidate_id, dependent: :restrict_with_error
     has_many :interviews, class_name: "HrLite::HiringInterview", foreign_key: :candidate_id, dependent: :restrict_with_error
+    has_many :replies, class_name: "HrLite::HiringReply", foreign_key: :candidate_id, inverse_of: :candidate, dependent: :restrict_with_error
 
     encrypts :phone, :date_of_birth
     normalizes :email, with: ->(email) { email.to_s.strip.downcase }
@@ -33,7 +34,7 @@ module HrLite
 
     # The one door for a stage change: refuses a move the pipeline does not
     # allow, needs a listed reason to reject, and writes the timeline row.
-    def move_to!(to, reason: nil, note: nil, round: self.round)
+    def move_to!(to, reason: nil, note: nil, round: self.round, actor: HrLite::Current.actor)
       raise ArgumentError, "#{stage_label} cannot move to #{to.humanize}." unless MOVES.fetch(stage).include?(to)
       raise ArgumentError, "Pick a rejection reason." if to == "rejected" && !REJECTION_REASONS.include?(reason)
       raise ArgumentError, "Write a note for “Other”." if reason == "Other" && note.blank?
@@ -41,9 +42,12 @@ module HrLite
       transaction do
         from = stage
         update!(stage: to, round: round, rejection_reason: (to == "rejected" ? [ reason, note.presence ].compact.join(": ") : rejection_reason))
-        log!("stage", from: from, to: to, reason: (reason if to == "rejected"))
+        log!("stage", actor: actor, from: from, to: to, reason: (reason if to == "rejected"))
       end
     end
+
+    # This round's reply link, made on first use (a template that names it).
+    def reply_for(round) = replies.find_or_create_by!(round: round)
 
     def log!(action, actor: HrLite::Current.actor, **changes)
       AuditLog.record!(action: "hiring.#{action}", subject: self, actor: actor, changes: changes.compact)

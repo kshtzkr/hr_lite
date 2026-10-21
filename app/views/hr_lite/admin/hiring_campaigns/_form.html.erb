@@ -8,6 +8,7 @@
   <div class="hrl-field"><%= f.label :ctc, "Full-time CTC" %><%= f.text_field :ctc %></div>
   <div class="hrl-field"><%= f.label :location, "Work location" %><%= f.text_area :location, rows: 2 %></div>
   <div class="hrl-field"><%= f.label :schedule, "Work schedule" %><%= f.text_field :schedule %></div>
+  <div class="hrl-field"><label class="hrl-field--check"><%= f.check_box :allow_sunday %> Allow Sunday interviews (Sunday is off by default)</label></div>
   <% if campaign.persisted? %>
     <div class="hrl-field"><%= f.label :status %><%= f.select :status, [ %w[Open open], %w[Closed closed] ] %></div>
   <% end %>

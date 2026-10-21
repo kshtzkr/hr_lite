@@ -27,6 +27,18 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
       end
 
       def update_event(**event) = (raise(fail_with, "nope") if fail_with) || @events << [ :update, event ]
+      attr_accessor :draft
+
+      def draft_email(text:, placeholders:)
+        raise fail_with, "model refused" if fail_with
+
+        @drafted = [ text, placeholders ]
+        draft || { name: "Interest check (AI)", subject: "@position at escapes.asia", body: "Hi @first_name,\n\nBest,\n@sender_name" }
+      end
+      attr_reader :drafted
+
+      def signature = "<b>Khushboo</b><script>x()</script> | escapes.asia"
+
       def cancel_event(**event) = (raise(fail_with, "nope") if fail_with) || @events << [ :cancel, event ]
     end.new
   end
@@ -118,7 +130,7 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
       campaign.candidates.create!(name: "Chen", email: "chen@x.in")
 
       get "/hr/admin/hiring_campaigns/#{campaign.id}"
-      expect(response.body).to include("Asha", "Bina", "Chen", "Review email")
+      expect(response.body).to include("Asha", "Bina", "Chen", "Review email", 'data-hrl-select-all="candidate_ids[]"')
       get "/hr/admin/hiring_campaigns/#{campaign.id}/send/new", params: { template_id: template.id, all: "1" }
       expect(response.body).to include("to 1 candidate", "Asha</strong>: already sent this template", "Chen</strong>: @branch (empty)", "hire@x.in")
 
@@ -263,6 +275,37 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
     end
   end
 
+  describe "write with AI" do
+    it "rewrites what HR typed into known fields, never saving it" do
+      post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "", subject: "", body: "Hi Yuvraj, … Best, Khushboo" } }
+      expect(response.body).to include("AI draft ready", "@position at escapes.asia", "Hi @first_name,", 'value="Interest check (AI)"')
+      expect(adapter.drafted.first).to include("Hi Yuvraj")
+      expect(adapter.drafted.last).to include("first_name", "round1_link")
+      expect(HrLite::HiringTemplate.where(name: "Interest check (AI)")).to be_empty
+
+      adapter.draft = { subject: "S", body: "Hi @nickname" }
+      patch "/hr/admin/hiring_templates/#{template.id}", params: { ai: "1", hiring_template: { name: template.name, subject: "S", body: "B" } }
+      expect(response.body).to include("AI could not draft this: it used unknown fields (@nickname)")
+      expect(template.reload.subject).to include("@position")
+
+      adapter.fail_with = HrLite::HiringDeliveryFailed
+      post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "X", subject: "S", body: "B" } }
+      expect(response.body).to include("AI could not draft this: model refused")
+    end
+
+    it "hides the button without an AI hook and limits drafts" do
+      get "/hr/admin/hiring_templates/new"
+      expect(response.body).to include("Write with AI")
+      HrLite.config.hiring = Object.new
+      get "/hr/admin/hiring_templates/new"
+      expect(response.body).not_to include("Write with AI")
+      HrLite.config.hiring = adapter
+      20.times { post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "X", subject: "S", body: "B" } } }
+      post "/hr/admin/hiring_templates", params: { ai: "1", hiring_template: { name: "X", subject: "S", body: "B" } }
+      expect(flash[:alert]).to start_with("Twenty AI drafts an hour")
+    end
+  end
+
   describe "templates" do
     it "ships the approved outreach email and previews it for a real candidate" do
       expect(template.body).to include("Hi @first_name,", "Monthly Stipend: @stipend", "Best,\n@sender_name")
@@ -271,7 +314,9 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
 
       asha = candidate("Asha")
       get "/hr/admin/hiring_templates/#{template.id}/edit", params: { candidate_id: asha.id }
-      expect(response.body).to include("Hi Asha,", "This candidate would be left out: @programme (empty)", "Ready for 0 of 1 candidates")
+      expect(response.body).to include("Hi Asha,", "This candidate would be left out: @programme (empty)", "Ready for 0 of 1 candidates",
+                                       "<b>Khushboo</b>", "| escapes.asia")
+      expect(response.body).not_to include("<script>x()")
     end
 
     it "creates and edits templates" do

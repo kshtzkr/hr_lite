@@ -11,8 +11,10 @@ module HrLite
     scope :newest_first, -> { order(created_at: :desc) }
 
     # The pipeline list and "select all" on it are the same filter.
-    def pipeline(stage: nil, campus: nil)
+    def pipeline(stage: nil, campus: nil, replied: nil, round: nil)
       scope = candidates
+      scope = scope.where(id: HiringReply.responded.select(:candidate_id)) if replied.present?
+      scope = scope.where(id: HiringReply.responded.where(round: round).where.not(preferred_slot: nil).select(:candidate_id)) if round.present?
       scope = scope.where(stage: stage) if stage.presence_in(HiringCandidate::STAGES)
       scope = scope.where(campus: campus) if campus.present?
       scope.order(:name, :id)

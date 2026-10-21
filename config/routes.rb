@@ -69,6 +69,10 @@ HrLite::Engine.routes.draw do
   get "career", to: "career#show"
   resources :appraisals, only: %i[index show]
 
+  # A candidate's reply page for one round, from @round1_link … @round3_link (no login: the token is the key).
+  get "apply/:token", to: "hiring_replies#show", as: :hiring_reply
+  post "apply/:token", to: "hiring_replies#create"
+
   namespace :admin do
     resources :policies, only: %i[index new create]
     resources :hiring_campaigns, except: %i[destroy] do
@@ -76,7 +80,7 @@ HrLite::Engine.routes.draw do
       resources :hiring_sends, path: "send", only: %i[new create]
     end
     resources :hiring_candidates, only: %i[show] do
-      member { patch :stage }
+      member { patch :stage; get :document; post :reveal }
       resources :hiring_interviews, path: "interviews", only: %i[create update destroy]
     end
     resources :hiring_templates, except: %i[show destroy]
