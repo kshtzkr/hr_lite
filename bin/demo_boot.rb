@@ -29,7 +29,11 @@ module DemoHiring
   def create_event(**) = { event_id: SecureRandom.hex(8), meet_link: "https://meet.google.com/demo-link" }
   def update_event(**) = true
   def cancel_event(**) = true
+  # A stand-in for the AI rewrite: swaps the greeting's name for @first_name.
+  def draft_email(text:, **) = { subject: "@position at escapes.asia", body: text.sub(/\ASubject:.*\n+/, "").sub(/\AHi \w+/, "Hi @first_name") }
+  def signature = "<b>Demo HR</b> | Demo Travels"
 end
+HrLite.config.public_url_base = "http://localhost:#{port}/hr"
 HrLite.config.hiring = DemoHiring
 
 ActiveRecord::Migration.verbose = false

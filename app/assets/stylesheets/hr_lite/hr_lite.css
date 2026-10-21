@@ -673,3 +673,7 @@ a.hrl-tree__name { display: inline-flex; align-items: center; min-height: var(--
 .hrl-steps .is-now .hrl-steps__dot { background: var(--hrl-accent); border-color: var(--hrl-accent); color: var(--hrl-accent-ink); }
 .hrl-steps .is-now { font-weight: 700; color: var(--hrl-accent); }
 .hrl-mail__head { display: grid; gap: var(--hrl-s-2); padding-bottom: var(--hrl-s-3); margin-bottom: var(--hrl-s-3); border-bottom: 1px solid var(--hrl-line); overflow-wrap: anywhere; }
+/* The candidate reply page: no staff shell, one readable column. */
+.hrl-public { max-width: 40rem; margin: 0 auto; padding: var(--hrl-s-6) var(--hrl-gutter) calc(var(--hrl-s-10) + env(safe-area-inset-bottom)); }
+.hrl-hiring-signature { margin-top: var(--hrl-s-3); padding-top: var(--hrl-s-3); border-top: 1px dashed var(--hrl-line); font-size: var(--hrl-t-small); overflow-wrap: anywhere; }
+.hrl-public__logo { display: block; height: 40px; width: auto; margin-bottom: var(--hrl-s-4); }

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <% company = HrLite.config.company.call %>
+  <title><%= [ content_for(:page_title), company[:brand].presence || company[:name] ].compact.join(" · ") %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "hr_lite/hr_lite", media: "all" %>
+  <% HrLite.config.extra_stylesheets.each do |sheet| %><%= stylesheet_link_tag sheet, media: "all" %><% end %>
+</head>
+<body class="hrl-body">
+  <main id="hrl-main" class="hrl-public">
+    <% if company[:logo_url].present? %><img class="hrl-public__logo" src="<%= company[:logo_url] %>" alt="<%= company[:brand].presence || company[:name] %>"><% end %>
+    <% if flash[:alert].present? %><div class="hrl-flash hrl-flash--warn" role="alert"><%= flash[:alert] %></div><% end %>
+    <%= yield %>
+  </main>
+  <%= javascript_include_tag "hr_lite/confirm", defer: true %>
+</body>
+</html>

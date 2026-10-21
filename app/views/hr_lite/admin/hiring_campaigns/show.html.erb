@@ -56,6 +56,7 @@
         </select>
       </div>
     <% end %>
+    <label class="hrl-field--check"><input type="checkbox" name="replied" value="1" <%= "checked" if @replied %>> Replied via link</label>
     <div class="hrl-form-actions"><button class="hrl-btn" type="submit">Filter</button></div>
   </form>
 </section>
@@ -72,8 +73,8 @@
             <% @templates.each do |template| %><option value="<%= template.id %>"><%= template.name %></option><% end %>
           </select>
         </div>
-        <label class="hrl-field--check"><input type="checkbox" name="all" value="1"> All <%= @total_count %> in this filter</label>
-        <input type="hidden" name="stage" value="<%= @stage %>"><input type="hidden" name="campus" value="<%= @campus %>">
+        <label class="hrl-field--check"><input type="checkbox" name="all" value="1" data-hrl-select-all="candidate_ids[]"> All <%= @total_count %> in this filter</label>
+        <input type="hidden" name="stage" value="<%= @stage %>"><input type="hidden" name="campus" value="<%= @campus %>"><input type="hidden" name="replied" value="<%= @replied %>">
         <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Review email</button></div>
       </div>
       <div class="hrl-table-wrap">

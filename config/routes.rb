@@ -69,6 +69,10 @@ HrLite::Engine.routes.draw do
   get "career", to: "career#show"
   resources :appraisals, only: %i[index show]
 
+  # A candidate's reply page, reached from @interest_link (no login: the token is the key).
+  get "apply/:token", to: "hiring_replies#show", as: :hiring_reply
+  post "apply/:token", to: "hiring_replies#create"
+
   namespace :admin do
     resources :policies, only: %i[index new create]
     resources :hiring_campaigns, except: %i[destroy] do

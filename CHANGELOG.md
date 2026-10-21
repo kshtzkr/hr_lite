@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.62.0] - 2026-10-22
+
+Hiring replies, an AI draft button and the sender's signature. One migration, which adds reply columns to hiring candidates and backfills a token for every existing candidate.
+
+- **@interest_link.** Every candidate gets a private page at `/apply/:token`, with no login. They answer yes or no, then pick one of the next ten weekdays and one 2-hour slot (10–12, 12–2, 2–4, 4–6, 6–8; at most 4 candidates per slot per day). They also say how soon they can join and answer four yes/no questions: stipend, office location, schedule and the full programme. They can reply once. The reply moves them to interested or not interested on the timeline, rings the bell for the HR person who emailed them, and prefills that person's "Schedule round 1" form with the chosen day and slot. The pipeline gains a "Replied via link" filter.
+- **Write with AI** on the template form, when the host adds `config.hiring.draft_email(text:, placeholders:)`. It rewrites what HR typed into a clean email that uses only known @fields, and saves nothing. Output with an unknown field is refused. It is limited to 20 drafts an hour per person and is audit-logged. It posts the same form with `ai=1`, because `formaction` would break per-form CSRF tokens.
+- **Signature preview.** The template preview shows `config.hiring.signature` (sanitized) when the host provides it.
+- **Select all ticks the rows.** "All N in this filter" now ticks and unticks every row, through `select_all.js`.
+
 ## [0.61.0] - 2026-10-21
 
 Hiring panel. Six migrations: five new tables and one that grants `hiring.manage` to HR, Leadership and Super Admin and seeds the first outreach email.

@@ -386,7 +386,11 @@ send_email(to:, subject:, body:)               # => { message_id:, thread_id: } 
 create_event(summary:, description:, attendee:, starts_at:, ends_at:) # => { event_id:, meet_link: }
 update_event(event_id:, starts_at:, ends_at:)
 cancel_event(event_id:)
+draft_email(text:, placeholders:)              # optional => { subject:, body: } for "Write with AI"
+signature                                      # optional => the sender's HTML signature, for the preview
 ```
+
+`@interest_link` points each candidate at `/apply/:token` on `public_url_base`: a no-login page for their yes/no answers and an interview slot.
 
 Raise `HrLite::HiringDeliveryFailed` when nothing was sent and `HrLite::HiringDeliveryUnknown` when the provider may have acted (timeouts, 5xx). Never put the recipient in the error text: it is stored. `config.read_sheet = ->(path, filename) { rows }` reads uploads (default: .csv).
 

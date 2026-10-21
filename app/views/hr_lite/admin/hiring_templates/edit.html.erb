@@ -31,6 +31,9 @@
           <span class="hrl-small hrl-muted"><%= HrLite.config.hiring&.sender&.dig(:email) || "The hiring mailbox" %> to <%= @preview_for.email %></span>
         </div>
         <div class="hrl-hiring-preview"><%= @preview.body %></div>
+        <% if (signature = HrLite.config.hiring.try(:signature)).present? %>
+          <div class="hrl-hiring-signature"><%= sanitize(signature) %></div>
+        <% end %>
       </article>
       <p class="hrl-small hrl-muted">Sent as plain text through Gmail, so it lands in the mailbox's Sent folder.</p>
     <% else %>

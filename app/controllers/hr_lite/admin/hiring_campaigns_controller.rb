@@ -15,9 +15,10 @@ module HrLite
       def show
         @stage = params[:stage].presence_in(HiringCandidate::STAGES)
         @campus = params[:campus].presence
+        @replied = params[:replied].presence
         @stage_counts = @campaign.candidates.group(:stage).count
         @campuses = @campaign.candidates.where.not(campus: [ nil, "" ]).distinct.order(:campus).pluck(:campus)
-        @candidates = paginate(@campaign.pipeline(stage: @stage, campus: @campus))
+        @candidates = paginate(@campaign.pipeline(stage: @stage, campus: @campus, replied: @replied))
         @templates = HiringTemplate.alphabetical
         @attention = HiringMessage.joins(:candidate).where(hr_lite_hiring_candidates: { campaign_id: @campaign.id })
                                   .where(status: %w[failed unknown sending]).includes(:candidate, :template).limit(50)

@@ -33,8 +33,9 @@
         <p class="hrl-small hrl-muted">Next step</p>
         <h2 class="hrl-card__title">Schedule round <%= @interviews.select { |i| %w[scheduled unknown].include?(i.status) }.map(&:round).max.to_i + 1 %></h2>
         <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interviews_path(@candidate), method: :post, local: true do %>
-          <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required></div>
-          <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required></div>
+          <% if @candidate.preferred_slot %><p class="hrl-small">They picked <strong><%= @candidate.preferred_date.strftime("%A, %-d %B") %>, <%= HrLite::HiringCandidate::SLOTS[@candidate.preferred_slot] %></strong>. Call to confirm, then send the invite.</p><% end %>
+          <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required value="<%= @candidate.preferred_date&.iso8601 %>"></div>
+          <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required value="<%= HrLite::HiringCandidate::SLOT_START[@candidate.preferred_slot] %>"></div>
           <div class="hrl-field">
             <label for="minutes">Length</label>
             <select name="minutes" id="minutes"><% HrLite::Admin::HiringInterviewsController::LENGTHS.each do |m| %><option value="<%= m %>"><%= m %> minutes</option><% end %></select>
@@ -79,6 +80,23 @@
       </section>
     <% end %>
   </div>
+
+  <% if @candidate.responded_at %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Their reply</h2>
+      <dl class="hrl-deflist">
+        <dt>Interested</dt><dd><%= @candidate.answers["interested"] == "yes" ? "Yes" : "No" %></dd>
+        <% if @candidate.preferred_slot %>
+          <dt>Slot</dt><dd><%= @candidate.preferred_date.strftime("%A, %-d %B") %>, <%= HrLite::HiringCandidate::SLOTS[@candidate.preferred_slot] %></dd>
+          <dt>Can join</dt><dd><%= HrLite::HiringCandidate::JOINING[@candidate.answers["joining"]] %></dd>
+          <% { "stipend_ok" => "Fine with the stipend", "location_ok" => "Fine with the office location", "schedule_ok" => "Fine with the schedule", "programme_ok" => "Commits to the programme" }.each do |key, label| %>
+            <dt><%= label %></dt><dd><%= @candidate.answers[key] == "yes" ? "Yes" : "No" %></dd>
+          <% end %>
+        <% end %>
+        <dt>Replied</dt><dd><%= @candidate.responded_at.strftime("%-d %b %Y, %-l:%M %p") %></dd>
+      </dl>
+    </section>
+  <% end %>
 
   <section class="hrl-card">
     <h2 class="hrl-card__title">Profile from the sheet</h2>

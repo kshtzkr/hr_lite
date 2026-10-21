@@ -6,10 +6,13 @@ module HrLite
     TOKEN = /(?<![\w.@])@([a-z][a-z0-9_]*)/
     GROUPS = { "Candidate" => %w[first_name name course branch campus],
                "Offer" => %w[position programme stipend ctc location schedule],
-               "Interview" => %w[interview_date interview_time meet_link sender_name] }.freeze
+               "Interview" => %w[interview_date interview_time meet_link sender_name],
+               "Reply" => %w[interest_link] }.freeze
     RESERVED = GROUPS.values.flatten.freeze
 
     Result = Data.define(:subject, :body, :missing)
+
+    def self.tokens(text) = text.to_s.scan(TOKEN).flatten.uniq
 
     def initialize(candidate, sender_name:)
       @extra = candidate.extra.to_h.transform_keys(&:to_s)
@@ -42,7 +45,8 @@ module HrLite
         "programme" => campaign.programme, "stipend" => campaign.stipend, "ctc" => campaign.ctc,
         "location" => campaign.location, "schedule" => campaign.schedule,
         "interview_date" => at&.strftime("%-d %B %Y"), "interview_time" => at&.strftime("%-l:%M %p"),
-        "meet_link" => interview&.meet_link, "sender_name" => sender_name }
+        "meet_link" => interview&.meet_link, "sender_name" => sender_name,
+        "interest_link" => (HrLite.public_url("/apply/#{candidate.interest_token}") if candidate.interest_token) }
     end
   end
 end
