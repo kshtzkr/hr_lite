@@ -101,6 +101,19 @@ module HrLite
       date_of_joining <= date && (date_of_exit.nil? || date_of_exit >= date)
     end
 
+    # 29 Feb birthdays fall on 28 Feb outside leap years.
+    def birthday_in(year)
+      day = Date.valid_date?(year, date_of_birth.month, date_of_birth.day) ? date_of_birth.day : 28
+      Date.new(year, date_of_birth.month, day)
+    end
+
+    # [profile, day] for current staff whose birthday falls in `range`, earliest first.
+    def self.birthdays_in(range)
+      where(user_id: HrLite.active_employees(on: range.first).map(&:id)).where.not(date_of_birth: nil).includes(:user)
+        .filter_map { |p| (day = range.find { |d| p.birthday_in(d.year) == d }) && [ p, day ] }
+        .sort_by { |p, day| [ day, HrLite.display_name(p.user).downcase ] }
+    end
+
     def employment_range_in(month)
       from = [ date_of_joining, month.beginning_of_month ].max
       to = [ date_of_exit || month.end_of_month, month.end_of_month ].min
