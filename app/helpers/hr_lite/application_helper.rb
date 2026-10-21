@@ -266,6 +266,19 @@ module HrLite
       tag.span(candidate.stage_label, class: [ "hrl-badge", ("hrl-badge--#{modifier}" unless modifier == "info") ])
     end
 
+    # The five steps of the candidate stepper: [label, :done|:now|:todo].
+    HIRING_STEPS = %w[Imported Invited Interested Interview Decision].freeze
+    HIRING_STEP_OF = { "imported" => 0, "invited" => 1, "interested" => 2, "not_interested" => 2, "interview" => 3,
+                       "selected" => 4, "rejected" => 4, "on_hold" => 4 }.freeze
+
+    def hrl_hiring_steps(candidate)
+      at = HIRING_STEP_OF.fetch(candidate.stage)
+      HIRING_STEPS.each_with_index.map do |label, i|
+        label = candidate.stage_label if i == at && %w[not_interested interview selected rejected on_hold].include?(candidate.stage)
+        [ label, i < at ? :done : (i == at ? :now : :todo) ]
+      end
+    end
+
     # One line per hiring timeline row, from the whitelisted changes it stored.
     def hrl_hiring_event(log)
       c = log.audited_changes.to_h

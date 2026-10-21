@@ -4,8 +4,10 @@ module HrLite
   # An unknown or blank placeholder is reported, never sent as "".
   class HiringMerge
     TOKEN = /(?<![\w.@])@([a-z][a-z0-9_]*)/
-    RESERVED = %w[name first_name course branch campus position programme stipend ctc location schedule
-                  interview_date interview_time meet_link sender_name].freeze
+    GROUPS = { "Candidate" => %w[first_name name course branch campus],
+               "Offer" => %w[position programme stipend ctc location schedule],
+               "Interview" => %w[interview_date interview_time meet_link sender_name] }.freeze
+    RESERVED = GROUPS.values.flatten.freeze
 
     Result = Data.define(:subject, :body, :missing)
 

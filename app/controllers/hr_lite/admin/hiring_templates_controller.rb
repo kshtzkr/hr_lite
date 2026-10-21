@@ -29,7 +29,13 @@ module HrLite
       def load_preview
         @sample = HiringCandidate.includes(:campaign, :interviews).order(updated_at: :desc).limit(200).to_a
         @preview_for = @sample.find { |c| c.id == params[:candidate_id].to_i } || @sample.first
-        @preview = HiringMerge.new(@preview_for, sender_name: HrLite.config.hiring&.sender&.dig(:name)).render(@template) if @preview_for
+        return true unless @preview_for
+
+        sender_name = HrLite.config.hiring&.sender&.dig(:name)
+        @preview = HiringMerge.new(@preview_for, sender_name:).render(@template)
+        # Readiness across the previewed candidate's campaign: who a send would reach.
+        @campaign_size = @preview_for.campaign.candidates.count
+        @ready = @preview_for.campaign.candidates.includes(:campaign, :interviews).count { |c| HiringMerge.new(c, sender_name:).render(@template).missing.empty? }
         true
       end
 

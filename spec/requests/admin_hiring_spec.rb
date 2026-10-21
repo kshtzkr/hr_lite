@@ -271,7 +271,7 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
 
       asha = candidate("Asha")
       get "/hr/admin/hiring_templates/#{template.id}/edit", params: { candidate_id: asha.id }
-      expect(response.body).to include("Hi Asha,", "This candidate would be left out: @programme (empty)")
+      expect(response.body).to include("Hi Asha,", "This candidate would be left out: @programme (empty)", "Ready for 0 of 1 candidates")
     end
 
     it "creates and edits templates" do
