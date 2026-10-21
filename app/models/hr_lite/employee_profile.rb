@@ -234,7 +234,7 @@ module HrLite
       ChecklistItem.open_for!(user, kind: "onboarding", anchor_date: date_of_joining)
     rescue => e
       # A checklist must never be the reason an employee cannot be created.
-      Rails.logger.error("[hr_lite] onboarding checklist failed: #{e.class}: #{e.message}")
+      HrLite.record_failure("onboarding_checklist", e, subject: user)
     end
   end
 end

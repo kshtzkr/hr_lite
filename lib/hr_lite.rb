@@ -173,8 +173,18 @@ module HrLite
     def notify(user:, kind:, title:, body: nil, path: nil)
       config.notify.call(user: user, kind: kind, title: title, body: body, path: path)
     rescue => e
-      Rails.logger.error("[hr_lite] notify failed: #{e.class}: #{e.message}")
+      record_failure("notify", e, subject: user)
       nil
+    end
+
+    # A background side effect failed: log it and keep a row that HR admins
+    # see on the overview, so nothing fails where nobody looks. Never raises.
+    def record_failure(event, error, subject: nil)
+      Rails.logger.error("[hr_lite] #{event} failed: #{error.class}: #{error.message}")
+      AuditLog.create!(actor: Current.actor, action: "failure.#{event}", subject_type: subject ? subject.class.name : config.user_class,
+                       subject_id: subject&.id || 0, audited_changes: { "error" => error.class.name, "message" => error.message.to_s.truncate(200) })
+    rescue => e
+      Rails.logger.error("[hr_lite] recording a failure failed: #{e.class}: #{e.message}")
     end
   end
 end

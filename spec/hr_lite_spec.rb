@@ -186,9 +186,11 @@ RSpec.describe HrLite do
 
     it "swallows hook failures" do
       HrLite.config.notify = ->(**) { raise "boom" }
+      user = create(:user)
       expect {
-        expect(described_class.notify(user: "u", kind: "k", title: "t")).to be_nil
+        expect(described_class.notify(user: user, kind: "k", title: "t")).to be_nil
       }.not_to raise_error
+      expect(HrLite::AuditLog.find_by(action: "failure.notify").subject_id).to eq(user.id)
     end
   end
 

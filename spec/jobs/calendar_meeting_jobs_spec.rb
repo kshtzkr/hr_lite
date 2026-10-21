@@ -89,6 +89,7 @@ RSpec.describe "Calendar meetings" do
     HrLite.config.calendar_events = ->(_u, _f, _t) { raise "revoked" }
     expect { HrLite::CalendarMeetingSyncJob.perform_now }.not_to raise_error
     expect(status.overlay.mode).to eq("meeting")
+    expect(HrLite::AuditLog.find_by(action: "failure.calendar_read").subject_id).to eq(asha.id)
 
     HrLite.config.calendar_events = nil
     clear_enqueued_jobs

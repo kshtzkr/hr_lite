@@ -9,6 +9,19 @@ RSpec.describe "Admin overview", type: :request do
     expect(response).to redirect_to("/hr/")
   end
 
+  it "lists background failures to leadership, money-tier ones to superadmins only" do
+    HrLite.record_failure("leave.requested.email", RuntimeError.new("smtp down"), subject: create(:user, name: "Asha"))
+    HrLite.record_failure("audit.update", RuntimeError.new("ratings 4"), subject: HrLite::Appraisal.new(id: 7))
+    sign_in user_with_roles(HrLite::Role::LEADERSHIP, name: "Boss")
+    get "/hr/admin/overview"
+    expect(response.body).to include("Failed in the background", "Leave requested email", "Asha", "RuntimeError: smtp down")
+    expect(response.body).not_to include("ratings 4")
+
+    sign_in user_with_roles(HrLite::Role::SUPER_ADMIN, name: "Owner")
+    get "/hr/admin/overview"
+    expect(response.body).to include("Audit update", "Appraisal #7")
+  end
+
   it "shows the quiet-day state" do
     sign_in admin
     get "/hr/admin/overview"

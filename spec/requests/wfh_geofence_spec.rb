@@ -125,6 +125,7 @@ RSpec.describe "Office geofence and WFH", type: :request do
       allow(HrLite::Notifications).to receive(:publish).and_raise("smtp down")
       post "/hr/wfh_requests", params: { wfh_request: { start_date: Date.current, end_date: Date.current, reason: "Recovering" } }
       expect(HrLite::WfhRequest.count).to eq(1)
+      expect(HrLite::AuditLog.find_by(action: "failure.wfh.requested").subject_id).to eq(employee.id)
     end
 
     it "refuses past dates, dates past 30 days, reversed ranges and a missing reason" do

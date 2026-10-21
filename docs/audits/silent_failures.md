@@ -27,7 +27,7 @@ Every `rescue`, swallowed JS failure and unchecked write in `app/`, `lib/` and `
 | `HrLite.safe_url?` URI error | Bad return URL | Treated as unsafe | OK | security |
 | `PayrollComputeJob` | Compute raises | A warning on the run page with the cause, plus `Rails.error.report` | OK. Already visible | background |
 | `PayrollRun` compute rollback | Same | The status is restored and the job above reports it | OK | background |
-| `Notifications` (3 rescues), `HrLite.notify`, `WfhRequest#notify`, work-location notify (2 controllers) | One email, bell or notification fails | Nothing. The action itself succeeded | OK for now. Logged with class and message. **Follow-up:** there is no admin-visible list of failed notifications | background |
-| `Audited` | An audit row fails to write | Nothing. The domain write must not roll back | OK for now. Logged. Same follow-up | background |
-| `EmployeeProfile#open_onboarding_checklist` | The checklist cannot open | The employee is created without a checklist | OK for now. Logged. Same follow-up | background |
-| `CalendarMeetingSyncJob` calendar read | The Google read fails | No meeting mode for that user | OK for now. Logged as warn. Same follow-up | background |
+| `Notifications` (3 rescues), `HrLite.notify`, `WfhRequest#notify`, work-location notify (2 controllers) | One email, bell or notification fails | Nothing. The action itself succeeded | Fixed in 0.60.0: recorded as `failure.<event>` in the audit trail and listed on the HR overview's "Failed in the background" card | background |
+| `Audited` | An audit row fails to write | Nothing. The domain write must not roll back | Fixed in 0.60.0: same audit row and overview card | background |
+| `EmployeeProfile#open_onboarding_checklist` | The checklist cannot open | The employee is created without a checklist | Fixed in 0.60.0: same audit row and overview card | background |
+| `CalendarMeetingSyncJob` calendar read | The Google read fails | No meeting mode for that user | Fixed in 0.60.0: same audit row and overview card | background |

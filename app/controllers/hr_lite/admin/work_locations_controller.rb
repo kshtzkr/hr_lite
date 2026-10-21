@@ -38,7 +38,7 @@ module HrLite
                                                           body: note, path: "/work_locations",
                                                           bell_to: [ location.user ], email_to: [ location.user ])
         rescue => e
-          Rails.logger.error("[hr_lite] work location notification failed: #{e.class}: #{e.message}")
+          HrLite.record_failure("work_location.#{status}", e, subject: location.user)
         end
         redirect_to admin_work_locations_path, notice: "Location #{status}."
       rescue ActiveRecord::RecordInvalid => e

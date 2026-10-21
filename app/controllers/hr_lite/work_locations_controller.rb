@@ -50,7 +50,7 @@ module HrLite
     def notify(event, title, path, to)
       Notifications.publish(event, title: title, path: path, bell_to: to)
     rescue => e
-      Rails.logger.error("[hr_lite] work location notification failed: #{e.class}: #{e.message}")
+      HrLite.record_failure(event, e, subject: hr_current_user)
     end
   end
 end

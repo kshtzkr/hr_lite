@@ -73,6 +73,7 @@ RSpec.describe "Work-mode screens: edges", type: :request do
       sign_in asha
       post "/hr/work_locations", params: { name: "Parents", lat: "2", lng: "2", accuracy_m: "20" }
       expect(HrLite::WorkLocation.where(name: "Parents")).to exist
+      expect(HrLite::AuditLog.find_by(action: "failure.work_location.requested").subject_id).to eq(asha.id)
     end
 
     it "shows HR the queue, decides once, and survives a failed notification" do
@@ -82,6 +83,7 @@ RSpec.describe "Work-mode screens: edges", type: :request do
       allow(HrLite::Notifications).to receive(:publish).and_raise("down")
       post "/hr/admin/work_locations/#{location.id}/approve"
       expect(location.reload).to be_approved
+      expect(HrLite::AuditLog.find_by(action: "failure.work_location.approved").subject_id).to eq(location.user_id)
       post "/hr/admin/work_locations/#{location.id}/approve"
       expect(flash[:alert]).to include("Only pending")
     end

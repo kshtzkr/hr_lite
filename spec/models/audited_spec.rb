@@ -85,6 +85,12 @@ RSpec.describe HrLite::Audited do
     expect { probe }.not_to raise_error
   end
 
+  it "shows HR admins an audit that failed after the row was written" do
+    allow(HrLite::Notifications).to receive(:publish).and_raise("smtp down")
+    expect { probe }.not_to raise_error
+    expect(HrLite::AuditLog.find_by(action: "failure.audit.create")).to have_attributes(subject_type: "HrLite::AuditedProbe")
+  end
+
   describe "audit log immutability" do
     it "refuses updates to persisted rows" do
       probe
