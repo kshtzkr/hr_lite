@@ -33,7 +33,7 @@ module HrLite
                                       .select { |m| m[:id].present? && m[:starts_at] && m[:ends_at] }
                                       .each { |m| m[:id] = m[:id].to_s }
     rescue => e
-      Rails.logger.warn("[hr_lite] calendar read failed for user #{user.id}: #{e.class}: #{e.message}")
+      HrLite.record_failure("calendar_read", e, subject: user)
       nil
     end
 

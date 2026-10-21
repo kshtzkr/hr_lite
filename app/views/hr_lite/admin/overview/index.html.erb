@@ -12,6 +12,23 @@
   <div class="hrl-kpi"><div class="hrl-kpi__value"><%= @kpis[:missing_checkout] %></div><div class="hrl-kpi__label">Missing checkouts</div></div>
 </div>
 
+<% if @failures.present? %>
+  <section class="hrl-card">
+    <h2 class="hrl-card__title">Failed in the background</h2>
+    <% @failures.each do |log| %>
+      <div class="hrl-feed__item">
+        <div class="hrl-feed__body">
+          <strong><%= log.action.delete_prefix("failure.").tr("._", "  ").humanize %></strong>
+          — <%= log.subject.is_a?(HrLite.user_klass) ? hr_display_name(log.subject) : "#{log.subject_type.demodulize.underscore.humanize} ##{log.subject_id}" %>,
+          <%= log.created_at.strftime("%d %b, %H:%M") %>
+          <div class="hrl-small hrl-muted"><%= log.audited_changes["error"] %>: <%= log.audited_changes["message"] %></div>
+        </div>
+      </div>
+    <% end %>
+    <a class="hrl-card__link" href="<%= hr_lite.admin_audit_logs_path %>">Audit trail</a>
+  </section>
+<% end %>
+
 <% if pending.zero? && @kpis.except(:pending).values.all?(&:zero?) %>
   <p class="hrl-card hrl-card--empty">All present and accounted for.</p>
 <% else %>

@@ -96,7 +96,7 @@ module HrLite
       Notifications.publish(event, title: title, body: body.presence, path: path, bell_to: to,
                                    email_to: event == "wfh.requested" ? [] : to)
     rescue => e
-      Rails.logger.error("[hr_lite] wfh notification failed: #{e.class}: #{e.message}")
+      HrLite.record_failure(event, e, subject: user)
     end
 
     def dates_in_window

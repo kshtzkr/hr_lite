@@ -37,8 +37,8 @@ module HrLite
       hr_lite_publish_policy_change(log)
     rescue => e
       # The trail is best-effort by design: an audit hiccup must never roll
-      # back the domain write it describes. Logged loudly instead.
-      Rails.logger.error("[hr_lite] audit failed: #{e.class}: #{e.message}")
+      # back the domain write it describes. Shown to HR admins instead.
+      HrLite.record_failure("audit.#{action}", e, subject: self)
     end
 
     def hr_lite_audited_changes(action)

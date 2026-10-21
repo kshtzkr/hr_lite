@@ -110,7 +110,7 @@ module HrLite
         lead_path = leadership[:path] || path
 
         deliver_bells(event, row, bell_to, title, body, path)
-        deliver_emails(row, email_to, title, body, path, lines, link_url)
+        deliver_emails(event, row, email_to, title, body, path, lines, link_url)
         return if skip_leadership
 
         deliver_leadership_email(event, row, lead_title, lead_body, lead_path, lines, diff)
@@ -128,7 +128,7 @@ module HrLite
         end
       end
 
-      def deliver_emails(row, email_to, title, body, path, lines, link_url = nil)
+      def deliver_emails(event, row, email_to, title, body, path, lines, link_url = nil)
         return unless row[:email]
 
         # Rescued PER RECIPIENT. Wrapping the whole loop meant one bad address
@@ -147,7 +147,7 @@ module HrLite
             held = held_until[user.id]
             held ? mail.deliver_later(wait_until: held) : mail.deliver_later
           rescue => e
-            Rails.logger.error("[hr_lite] event email failed: #{e.class}: #{e.message}")
+            HrLite.record_failure("#{event}.email", e, subject: user)
           end
         end
       end
@@ -162,7 +162,7 @@ module HrLite
                                body: body, lines: lines, diff: diff, path: path, event: event.to_s)
                    .deliver_later
       rescue => e
-        Rails.logger.error("[hr_lite] leadership email failed: #{e.class}: #{e.message}")
+        HrLite.record_failure("#{event}.leadership_email", e)
       end
 
       def deliver_leadership_bells(event, row, bell_to, title, body, path)
@@ -175,7 +175,7 @@ module HrLite
           HrLite.notify(user: leader, kind: event.to_s, title: title, body: body, path: path)
         end
       rescue => e
-        Rails.logger.error("[hr_lite] leadership bell failed: #{e.class}: #{e.message}")
+        HrLite.record_failure("#{event}.leadership_bell", e)
       end
     end
   end

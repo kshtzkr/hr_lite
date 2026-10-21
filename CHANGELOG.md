@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.60.0] - 2026-10-21
+
+Background failures reach a person. No migrations.
+
+- **"Failed in the background" card on the HR overview.** A failed event email, leadership email or bell, host notify hook, WFH or work-location notice, audit row, onboarding checklist or calendar read used to write only a log line. Each is now recorded once in the audit trail (`failure.<event>`, with the error class, a 200-character message and the affected user) through `HrLite.record_failure`, and the ten most recent show on the overview to anyone who can open the audit trail. Money-tier subjects stay superadmin-only, as on the audit trail.
+
 ## [0.59.0] - 2026-10-21
 
 No silent failures where a person is waiting on the answer. No migrations. Audit: `docs/audits/silent_failures.md`.

@@ -75,6 +75,7 @@ RSpec.describe HrLite::Notifications do
       expect {
         described_class.publish("policy.changed", title: "T")
       }.not_to raise_error
+      expect(HrLite::AuditLog.find_by(action: "failure.policy.changed.leadership_email").audited_changes).to eq("error" => "RuntimeError", "message" => "smtp down")
     end
 
     it "swallows per-user email failures" do
@@ -82,6 +83,7 @@ RSpec.describe HrLite::Notifications do
       expect {
         described_class.publish("kudos.mentioned", title: "T", email_to: [ user_a ])
       }.not_to raise_error
+      expect(HrLite::AuditLog.find_by(action: "failure.kudos.mentioned.email").subject_id).to eq(user_a.id)
     end
 
     it "swallows leadership-bell resolution failures" do
@@ -89,6 +91,7 @@ RSpec.describe HrLite::Notifications do
       expect {
         described_class.publish("leave.requested", title: "T", bell_to: [ user_a ])
       }.not_to raise_error
+      expect(HrLite::AuditLog.find_by(action: "failure.leave.requested.leadership_bell")).to be_present
     end
   end
 end

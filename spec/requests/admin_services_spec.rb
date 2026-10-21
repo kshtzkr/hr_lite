@@ -237,6 +237,7 @@ RSpec.describe "Admin services", type: :request, no_legacy_bridge: true do
       allow(HrLite::ChecklistItem).to receive(:open_for!).and_raise("boom")
 
       expect { create(:employee_profile, user: employee) }.not_to raise_error
+      expect(HrLite::AuditLog.find_by(action: "failure.onboarding_checklist").subject_id).to eq(employee.id)
     end
   end
 end
