@@ -38,10 +38,25 @@ module HrLite
         render :show
       end
 
+      # Selected / Rejected / On hold also send that decision's saved email. With
+      # none saved yet, HR writes it first; the decision waits until it exists.
       def stage
         to = params[:to].presence_in(MANUAL) or raise ArgumentError, "That is not a decision HR makes here."
+        raise ArgumentError, "#{@candidate.stage_label} cannot move to #{to.humanize}." unless HiringCandidate::MOVES.fetch(@candidate.stage).include?(to)
+
+        template = HiringTemplate.for_decision(to)
+        if HiringTemplate::PURPOSES.key?(to) && !template
+          return redirect_to hr_lite.new_admin_hiring_template_path(purpose: to, candidate_id: @candidate.id),
+                             alert: "Write the #{HiringTemplate::PURPOSES[to]} email first. Every #{HiringTemplate::PURPOSES[to]} click sends it."
+        end
+        raise ArgumentError, "Connect your Google account for hiring before sending decision emails." if template && !HrLite.config.hiring&.sender&.dig(:ready)
+
         @candidate.move_to!(to, reason: params[:reason], note: params[:note])
-        redirect_to hr_lite.admin_hiring_candidate_path(@candidate), notice: "Moved to #{@candidate.stage_label}."
+        if template && (message = HiringMessage.create_or_find_by!(candidate: @candidate, template: template) { |m| m.batch = SecureRandom.uuid; m.sent_by = hr_current_user }).previously_new_record?
+          HiringSendJob.perform_later(message.id)
+        end
+        redirect_to hr_lite.admin_hiring_candidate_path(@candidate),
+                    notice: "Moved to #{@candidate.stage_label}.#{" The #{template.name} email is on its way." if template}"
       rescue ArgumentError => e
         redirect_to hr_lite.admin_hiring_candidate_path(@candidate), alert: e.message
       end

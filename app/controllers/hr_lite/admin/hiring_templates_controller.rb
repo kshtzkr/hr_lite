@@ -10,12 +10,15 @@ module HrLite
                  with: -> { redirect_to hr_lite.admin_hiring_templates_path, alert: "Twenty AI drafts an hour is the limit. Try again later." }
 
       def index = @templates = HiringTemplate.alphabetical
-      def new = @template = HiringTemplate.new
+      def new = @template = HiringTemplate.new(purpose: params[:purpose].presence_in(HiringTemplate::PURPOSES.keys))
 
       def create
-        @template = HiringTemplate.new(template_params)
+        @template = HiringTemplate.new(template_params.merge(purpose: params.dig(:hiring_template, :purpose).presence))
         return draft if params[:ai].present?
         return render(:new, status: :unprocessable_entity) unless @template.save
+
+        candidate = HiringCandidate.find_by(id: params[:candidate_id]) if @template.purpose
+        return redirect_to(hr_lite.admin_hiring_candidate_path(candidate), notice: "Saved. Click #{HiringTemplate::PURPOSES[@template.purpose]} again to send it.") if candidate
 
         redirect_to hr_lite.edit_admin_hiring_template_path(@template), notice: "Saved."
       end

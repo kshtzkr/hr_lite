@@ -3,9 +3,30 @@
   <h1 class="hrl-page__title">Hiring email templates</h1>
   <div class="hrl-page__actions"><a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_hiring_template_path %>">New template</a></div>
 </div>
+
 <section class="hrl-card">
+  <h2 class="hrl-card__title">Decision emails</h2>
+  <p class="hrl-small hrl-muted">Sent when you click Selected, Rejected or On hold on a candidate. You can edit them; they cannot be deleted.</p>
   <ul class="hrl-feed">
-    <% @templates.each do |template| %>
+    <% decisions = @templates.select(&:purpose).index_by(&:purpose) %>
+    <% HrLite::HiringTemplate::PURPOSES.each do |purpose, label| %>
+      <li class="hrl-feed__item"><div class="hrl-feed__body">
+        <% if (template = decisions[purpose]) %>
+          <a class="hrl-card__link" href="<%= hr_lite.edit_admin_hiring_template_path(template) %>"><%= label %>: <%= template.name %></a>
+          <span class="hrl-feed__meta"><%= template.subject %></span>
+        <% else %>
+          <strong><%= label %></strong> <span class="hrl-badge hrl-badge--warn">Not set</span>
+          <a class="hrl-btn" href="<%= hr_lite.new_admin_hiring_template_path(purpose: purpose) %>">Write the <%= label %> email</a>
+        <% end %>
+      </div></li>
+    <% end %>
+  </ul>
+</section>
+
+<section class="hrl-card">
+  <h2 class="hrl-card__title">Other emails</h2>
+  <ul class="hrl-feed">
+    <% @templates.reject(&:purpose).each do |template| %>
       <li class="hrl-feed__item"><div class="hrl-feed__body">
         <a class="hrl-card__link" href="<%= hr_lite.edit_admin_hiring_template_path(template) %>"><%= template.name %></a>
         <span class="hrl-feed__meta"><%= template.subject %></span>

@@ -1,5 +1,9 @@
 <%= form_with model: template, url: (template.persisted? ? hr_lite.admin_hiring_template_path(template) : hr_lite.admin_hiring_templates_path), local: true do |f| %>
   <%= render "hr_lite/shared/form_errors", record: template %>
+  <% if template.new_record? && template.purpose %>
+    <input type="hidden" name="hiring_template[purpose]" value="<%= template.purpose %>">
+    <% if params[:candidate_id].present? %><input type="hidden" name="candidate_id" value="<%= params[:candidate_id] %>"><% end %>
+  <% end %>
   <div class="hrl-field"><%= f.label :name, "Template name" %><%= f.text_field :name, required: true %></div>
   <div class="hrl-field"><%= f.label :subject %><%= f.text_field :subject, required: true %></div>
   <div class="hrl-field"><%= f.label :body, "Message" %><%= f.text_area :body, rows: 16, required: true %></div>

@@ -58,7 +58,7 @@
         <div class="hrl-form-actions hrl-hiring-decide">
           <% (manual - [ "rejected" ]).each do |to| %>
             <%= button_to to.humanize, hr_lite.stage_admin_hiring_candidate_path(@candidate), method: :patch, params: { to: to }, class: "hrl-btn",
-                          form: { data: { turbo_confirm: ("Mark #{@candidate.name} selected? This is final." if to == "selected") } } %>
+                          form: { data: { turbo_confirm: ("Mark #{@candidate.name} #{to.humanize.downcase}?#{" This is final." if to == "selected"}#{" They get the #{to.humanize} email." if HrLite::HiringTemplate::PURPOSES.key?(to)}" if HrLite::HiringTemplate::PURPOSES.key?(to)) } } %>
           <% end %>
         </div>
         <% if manual.include?("rejected") %>
@@ -74,7 +74,7 @@
                 </select>
               </div>
               <div class="hrl-field"><label for="note">Note (needed for “Other”)</label><textarea name="note" id="note" rows="2"></textarea></div>
-              <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--danger" type="submit" data-turbo-confirm="Reject <%= @candidate.name %>? This is final.">Confirm rejection</button></div>
+              <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--danger" type="submit" data-turbo-confirm="Reject <%= @candidate.name %>? This is final. They get the Rejected email.">Confirm rejection</button></div>
             <% end %>
           </details>
         <% end %>
