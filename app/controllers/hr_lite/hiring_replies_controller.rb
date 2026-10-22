@@ -19,7 +19,7 @@ module HrLite
     def show; end
 
     def create
-      @reply.submit!(interested: params[:interested].to_s, date: params[:date], slot: params[:slot], joining: params[:joining],
+      @reply.submit!(email: params[:email], interested: params[:interested].to_s, date: params[:date], slot: params[:slot], joining: params[:joining],
                      yes_no: params.permit(*HiringReply::YES_NO.keys).to_h, alternate_phone: params[:alternate_phone].to_s.strip,
                      files: params.fetch(:documents, {}).permit(*HiringReply::DOCUMENTS.fetch(@reply.round, {}).keys).to_h,
                      kyc: params.permit(:aadhaar_number, :pan_number, :pan_pending, :no_salary_slips, :consent).to_h.symbolize_keys)

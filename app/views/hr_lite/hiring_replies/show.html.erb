@@ -3,7 +3,7 @@
 <% content_for(:page_title) { campaign.position } %>
 <div class="hrl-page__head">
   <h1 class="hrl-page__title"><%= campaign.position %></h1>
-  <p class="hrl-page__sub">Hi <%= @candidate.first_name %>, <%= round == 1 ? "thank you for your interest." : "congratulations on reaching round #{round}." %></p>
+  <p class="hrl-page__sub">This form is for <strong><%= @candidate.name %></strong>. Hi <%= @candidate.first_name %>, <%= round == 1 ? "thank you for your interest." : "congratulations on reaching round #{round}." %></p>
 </div>
 
 <% if @reply.responded_at %>
@@ -13,6 +13,13 @@
   </section>
 <% else %>
   <%= form_with url: hr_lite.hiring_reply_path(@reply.token), method: :post, local: true, multipart: true do %>
+    <section class="hrl-card">
+      <div class="hrl-field">
+        <label for="email">Your email (the one this link was sent to)</label>
+        <input type="email" name="email" id="email" autocomplete="email" required value="<%= params[:email] %>">
+      </div>
+    </section>
+
     <% if round == 1 %>
       <section class="hrl-card">
         <fieldset class="hrl-field">

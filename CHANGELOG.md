@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.62.1] - 2026-10-22
+
+A reply link can only be answered by the candidate it belongs to. No migrations.
+
+- **Previews never show a real reply link.** The template preview and the send-confirm check render "[Name's round N link]" instead, so HR can no longer open a previewed candidate's link and answer as them. A real link is made only when an email is actually sent.
+- **The reply page names its owner and checks their email.** It says "This form is for <full name>" and asks for the email the link was sent to. A different email is refused and nothing is saved.
+
 ## [0.62.0] - 2026-10-22
 
 Hiring replies per round, an AI draft button and the sender's signature. Two migrations: a new `hr_lite_hiring_replies` table, and `allow_sunday` on campaigns.

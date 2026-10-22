@@ -61,8 +61,10 @@ module HrLite
 
     # Saves the reply, moves round 1's candidate to interested / not interested,
     # puts it on their timeline and rings the HR person who emailed them.
-    def submit!(interested: nil, date: nil, slot: nil, joining: nil, yes_no: {}, alternate_phone: nil, files: {}, kyc: {})
+    def submit!(email: nil, interested: nil, date: nil, slot: nil, joining: nil, yes_no: {}, alternate_phone: nil, files: {}, kyc: {})
       raise ArgumentError, "You have already replied. Thank you." if responded_at
+      # The link is personal: the email it was sent to proves the right person opened it.
+      raise ArgumentError, "That email does not match this link. Use the link from your own email." unless email.to_s.strip.casecmp?(candidate.email)
 
       assign_kyc!(kyc) if round == 3
 

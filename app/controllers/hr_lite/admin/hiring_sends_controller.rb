@@ -52,7 +52,7 @@ module HrLite
         already = HiringMessage.where(template: @template, candidate_id: scope.select(:id)).pluck(:candidate_id).to_set
         @recipients, @left_out = [], []
         scope.includes(:campaign, :interviews).each do |candidate|
-          missing = HiringMerge.new(candidate, sender_name: @sender&.dig(:name)).render(@template).missing
+          missing = HiringMerge.new(candidate, sender_name: @sender&.dig(:name), preview: true).render(@template).missing
           reason = already.include?(candidate.id) ? "already sent this template" : (missing.join(", ") if missing.any?)
           reason ? @left_out << [ candidate, reason ] : @recipients << candidate
         end
