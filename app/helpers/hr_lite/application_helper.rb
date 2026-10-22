@@ -286,7 +286,8 @@ module HrLite
       case log.action.delete_prefix("hiring.")
       when "stage" then [ "Moved to #{c['to'].to_s.humanize}", c["reason"] ].compact.join(": ")
       when /\Aemail_(\w+)\z/ then "Email #{Regexp.last_match(1)}: #{c['template']}"
-      when /\Ainterview_(\w+)\z/ then [ "Round #{c['round']} #{Regexp.last_match(1).tr('_', ' ')}", at ].compact.join(" for ")
+      when /\Ainterview_(\w+)\z/
+        [ [ "Round #{c['round']} #{Regexp.last_match(1).tr('_', ' ')}", at ].compact.join(" for "), c["with"] ].compact.join(" with ")
       else log.action.delete_prefix("hiring.").humanize
       end
     end

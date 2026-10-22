@@ -245,6 +245,26 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
       expect(response.body).to include("Round 2 cancelled", "Round 1 rescheduled for", "Round 1 scheduled for")
     end
 
+    it "invites staff picked from the system and typed emails as guests on the same event" do
+      asha.update!(stage: "interested")
+      colleague = user_with_roles(HrLite::Role::EMPLOYEE, name: "Sadique", email: "sadique@earthlygroup.in")
+      schedule_with = ->(**extra) { post "/hr/admin/hiring_candidates/#{asha.id}/interviews", params: { date: 2.days.from_now.to_date, time: "11:00", **extra } }
+
+      schedule_with.(interviewer_emails: "ok@x.in, not-an-email")
+      expect(flash[:alert]).to eq("Check these interviewer emails: not-an-email")
+      schedule_with.(interviewer_emails: Array.new(11) { |i| "p#{i}@x.in" }.join(","))
+      expect(flash[:alert]).to eq("Invite at most 10 interviewers.")
+
+      schedule_with.(interviewer_ids: [ colleague.id ], interviewer_emails: "Guest@Example.com; sadique@earthlygroup.in asha@x.in")
+      interview = asha.interviews.sole
+      expect(interview.interviewers).to eq([ "sadique@earthlygroup.in", "guest@example.com" ])
+      expect(adapter.events.last.last).to include(attendee: "asha@x.in", guests: [ "sadique@earthlygroup.in", "guest@example.com" ])
+      expect(flash[:notice]).to eq("Invite sent for round 1 to the candidate and 2 interviewers.")
+      get "/hr/admin/hiring_candidates/#{asha.id}"
+      expect(response.body).to include("Other interviewers", "Sadique · sadique@earthlygroup.in",
+                                       "With sadique@earthlygroup.in, guest@example.com", "with sadique@earthlygroup.in, guest@example.com")
+    end
+
     it "keeps a record when Google refuses or does not answer" do
       asha.update!(stage: "interested")
       adapter.fail_with = HrLite::HiringDeliveryUnknown
