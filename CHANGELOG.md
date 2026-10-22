@@ -7,19 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.63.0] - 2026-10-22
+## [0.64.0] - 2026-10-22
 
 Decision emails. One migration: `purpose` on hiring templates.
 
 - **Selected, Rejected and On hold each send a saved email.** The first time a button is used with no email set, HR is taken to write it, with Write with AI on hand. Then they return to the candidate and click again. After that, every click moves the stage and sends that email through the HR person's own Gmail, once per candidate. Decisions are refused while the mailbox is not connected.
 - **Decision emails can be edited, never deleted.** There is one per decision, and the purpose never changes. The templates page lists them first, flagging any that are not set.
 
-## [0.62.1] - 2026-10-22
+## [0.63.1] - 2026-10-22
 
 A reply link can only be answered by the candidate it belongs to. No migrations.
 
 - **Previews never show a real reply link.** The template preview and the send-confirm check render "[Name's round N link]" instead, so HR can no longer open a previewed candidate's link and answer as them. A real link is made only when an email is actually sent.
 - **The reply page names its owner and checks their email.** It says "This form is for <full name>" and asks for the email the link was sent to. A different email is refused and nothing is saved.
+
+## [0.63.0] - 2026-10-22
+
+Every penalty row now says why it exists. No migrations.
+
+- **Penalty cause, behind an "i".** Tap a row in "Penalties in <month>" (or its "i") to see the day and punch that caused it and what it adds to the day it sits on, e.g. "You checked in at 19:39 on Mon 19 Oct, after 11:00, so +1h goes on your next 2 working days. So Thu 22 Oct needs 60 min more before checkout." A carried penalty (late after 11:00, or left early) used to show only the day it landed on, so it read as a penalty for a day the person was on time.
+- **How to avoid or clear them.** The Penalty hours card adds: check in by your slot and stay until the required checkout; if a punch was wrong, fix that day and ask HR to remove the penalties it caused.
 
 ## [0.62.0] - 2026-10-22
 
