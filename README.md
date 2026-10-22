@@ -383,7 +383,7 @@ Admin › Hiring (`hiring.manage`): campaigns, candidate sheet import, bulk emai
 ```ruby
 sender                      # => { email:, name:, ready:, connect_url: }
 send_email(to:, subject:, body:)               # => { message_id:, thread_id: } (plain text)
-create_event(summary:, description:, attendee:, starts_at:, ends_at:) # => { event_id:, meet_link: }
+create_event(summary:, description:, attendee:, guests:, starts_at:, ends_at:) # => { event_id:, meet_link: }; guests = other interviewers' emails
 update_event(event_id:, starts_at:, ends_at:)
 cancel_event(event_id:)
 draft_email(text:, placeholders:)              # optional => { subject:, body: } for "Write with AI"

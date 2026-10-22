@@ -41,6 +41,17 @@
             <label for="minutes">Length</label>
             <select name="minutes" id="minutes"><% HrLite::Admin::HiringInterviewsController::LENGTHS.each do |m| %><option value="<%= m %>"><%= m %> minutes</option><% end %></select>
           </div>
+          <div class="hrl-field">
+            <label for="interviewer_ids">Other interviewers (optional)</label>
+            <select name="interviewer_ids[]" id="interviewer_ids" multiple size="4">
+              <% HrLite.active_employees.sort_by { |u| hr_display_name(u).to_s }.each do |user| %><option value="<%= user.id %>"><%= hr_display_name(user) %> · <%= user.email %></option><% end %>
+            </select>
+            <p class="hrl-small hrl-muted">Hold Ctrl or ⌘ to pick more than one.</p>
+          </div>
+          <div class="hrl-field">
+            <label for="interviewer_emails">Or type emails (comma separated)</label>
+            <input type="text" name="interviewer_emails" id="interviewer_emails" inputmode="email" autocomplete="off" placeholder="name@earthlygroup.in, guest@example.com">
+          </div>
           <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Send invite with Meet link</button></div>
           <p class="hrl-small">From the hiring mailbox's Google Calendar. Google emails the candidate.</p>
         <% end %>
@@ -138,6 +149,7 @@
       <% @interviews.each do |interview| %>
         <div class="hrl-card">
           <p><strong>Round <%= interview.round %></strong> · <%= interview.starts_at.strftime("%-d %b %Y, %-l:%M %p") %> · <%= interview.status == "unknown" ? "not confirmed by Google: check the calendar" : interview.status.humanize %></p>
+          <% if interview.interviewers.any? %><p class="hrl-small">With <%= interview.interviewers.join(", ") %></p><% end %>
           <% if interview.status == "scheduled" %>
             <details>
               <summary class="hrl-btn">Reschedule</summary>

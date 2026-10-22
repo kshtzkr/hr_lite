@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Other interviewers on an interview invite.** "Schedule round N" adds a multi-select of active staff and a box for any other emails (comma separated, up to 10 in all). They are passed to the host as `create_event(guests:)` and go on the same Google Calendar event as the candidate, with one Meet link. Reschedule and cancel then reach them too. The interview stores who was invited, and the candidate page and timeline show "with …". One migration: `interviewers` (json) on `hr_lite_hiring_interviews`.
+
 ## [0.62.0] - 2026-10-22
 
 Hiring replies per round, an AI draft button and the sender's signature. Two migrations: a new `hr_lite_hiring_replies` table, and `allow_sunday` on campaigns.
