@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.63.0] - 2026-10-22
+
+Every penalty row now says why it exists. No migrations.
+
+- **Penalty cause, behind an "i".** Tap a row in "Penalties in <month>" (or its "i") to see the day and punch that caused it and what it adds to the day it sits on, e.g. "You checked in at 19:39 on Mon 19 Oct, after 11:00, so +1h goes on your next 2 working days. So Thu 22 Oct needs 60 min more before checkout." A carried penalty (late after 11:00, or left early) used to show only the day it landed on, so it read as a penalty for a day the person was on time.
+- **How to avoid or clear them.** The Penalty hours card adds: check in by your slot and stay until the required checkout; if a punch was wrong, fix that day and ask HR to remove the penalties it caused.
+
 ## [0.62.0] - 2026-10-22
 
 Hiring replies per round, an AI draft button and the sender's signature. Two migrations: a new `hr_lite_hiring_replies` table, and `allow_sunday` on campaigns.

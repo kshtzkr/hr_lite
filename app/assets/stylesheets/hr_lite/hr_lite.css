@@ -294,6 +294,10 @@ details > form > button[type=submit], details > form > .hrl-btn { margin-top: .2
 .hrl-btn[disabled] { opacity: .55; cursor: default; }
 summary.hrl-btn { list-style: none; }
 summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4 draws it whatever the display */
+/* A line with an "i": tap anywhere on it for why; the reason drops below. */
+.hrl-why > summary { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-height: 44px; list-style: none; cursor: pointer; }
+.hrl-why > summary::-webkit-details-marker { display: none; }
+.hrl-why > summary > .hrl-icon { color: var(--hrl-accent); }
 
 /* Badges & chips */
 .hrl-badge {
