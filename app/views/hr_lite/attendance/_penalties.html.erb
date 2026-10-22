@@ -25,10 +25,15 @@
   <% penalties.each do |penalty| %>
     <div class="hrl-feed__item hrl-small">
       <div class="hrl-feed__body">
-        <strong><%= penalty.date.strftime("%a %-d %b") %></strong> ·
-        <span class="<%= class_names("hrl-badge", penalty.removed_at ? "hrl-badge--muted" : "hrl-badge--warn") %>">+<%= penalty.minutes %> min</span>
-        <%= penalty.label %>
-        <div class="hrl-muted"><%= penalty.cause %></div>
+        <details class="hrl-why">
+          <summary>
+            <span><strong><%= penalty.date.strftime("%a %-d %b") %></strong> ·
+            <span class="<%= class_names("hrl-badge", penalty.removed_at ? "hrl-badge--muted" : "hrl-badge--warn") %>">+<%= penalty.minutes %> min</span>
+            <%= penalty.label %></span>
+            <%= hrl_icon("Info") %><span class="hrl-sr-only">Why?</span>
+          </summary>
+          <div class="hrl-muted"><%= penalty.cause %></div>
+        </details>
         <% if penalty.removed_at %>
           <div class="hrl-muted">Removed by HR: <%= penalty.removal_reason %></div>
         <% elsif local_assigns[:removable] %>
