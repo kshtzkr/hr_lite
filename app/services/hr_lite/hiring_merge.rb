@@ -14,8 +14,11 @@ module HrLite
 
     def self.tokens(text) = text.to_s.scan(TOKEN).flatten.uniq
 
-    def initialize(candidate, sender_name:)
+    # preview: true shows a label for each reply link instead of the real one, so
+    # nobody can open a candidate's link from a preview and answer as them.
+    def initialize(candidate, sender_name:, preview: false)
       @extra = candidate.extra.to_h.transform_keys(&:to_s)
+      @preview = preview
       @values = @extra.merge(reserved(candidate, sender_name))
     end
 
@@ -48,7 +51,7 @@ module HrLite
         "interview_date" => at&.strftime("%-d %B %Y"), "interview_time" => at&.strftime("%-l:%M %p"),
         "meet_link" => interview&.meet_link, "sender_name" => sender_name,
         # Lazy: a round's link (and its row) is made only when a template names it.
-        **(1..3).to_h { |r| [ "round#{r}_link", -> { HrLite.public_url("/apply/#{candidate.reply_for(r).token}") } ] } }
+        **(1..3).to_h { |r| [ "round#{r}_link", -> { @preview ? "[#{candidate.name}'s round #{r} link]" : HrLite.public_url("/apply/#{candidate.reply_for(r).token}") } ] } }
     end
   end
 end

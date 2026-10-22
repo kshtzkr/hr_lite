@@ -12,7 +12,7 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
   before { Rails.cache.clear }
 
   def reply(token = round1.token, **params)
-    post "/hr/apply/#{token}", params: { interested: "yes", date: day.iso8601, slot: "10-12", joining: "two_weeks", alternate_phone: "+91 98765 43210",
+    post "/hr/apply/#{token}", params: { email: candidate.email, interested: "yes", date: day.iso8601, slot: "10-12", joining: "two_weeks", alternate_phone: "+91 98765 43210",
                                          stipend_ok: "yes", location_ok: "yes", schedule_ok: "no", programme_ok: "yes", **params }
   end
 
@@ -23,7 +23,10 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     HrLite.config.notify = ->(**args) { bells << args }
 
     get "/hr/apply/#{round1.token}"
-    expect(response.body).to include("Hi Asha", "monthly stipend of ₹15,000", "10 AM – 12 PM", "Alternate phone")
+    expect(response.body).to include("This form is for <strong>Asha Rao</strong>", "Hi Asha", "monthly stipend of ₹15,000", "10 AM – 12 PM", "Alternate phone")
+    reply(email: "someone.else@x.in")
+    expect(response.body).to include("That email does not match this link")
+    expect(round1.reload.responded_at).to be_nil
     reply
     expect(response).to redirect_to("/hr/apply/#{round1.token}")
     round1.reload
@@ -107,6 +110,11 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     expect(response).to have_http_status(:not_found)
     11.times { reply(interested: "") }
     expect(flash[:alert]).to eq("Too many tries. Please try again in an hour.")
+  end
+
+  it "never shows a real link in a preview, so nobody answers as the previewed candidate" do
+    mail = HrLite::HiringMerge.new(candidate, sender_name: "K", preview: true).render(HrLite::HiringTemplate.new(subject: "S", body: "Go @round1_link"))
+    expect([ mail.body, candidate.replies.count ]).to eq([ "Go [Asha Rao's round 1 link]", 0 ])
   end
 
   it "fills each round's link only when a template names it" do

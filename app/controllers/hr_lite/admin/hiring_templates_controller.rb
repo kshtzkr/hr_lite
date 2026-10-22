@@ -58,10 +58,10 @@ module HrLite
         return true unless @preview_for
 
         sender_name = HrLite.config.hiring&.sender&.dig(:name)
-        @preview = HiringMerge.new(@preview_for, sender_name:).render(@template)
+        @preview = HiringMerge.new(@preview_for, sender_name:, preview: true).render(@template)
         # Readiness across the previewed candidate's campaign: who a send would reach.
         @campaign_size = @preview_for.campaign.candidates.count
-        @ready = @preview_for.campaign.candidates.includes(:campaign, :interviews).count { |c| HiringMerge.new(c, sender_name:).render(@template).missing.empty? }
+        @ready = @preview_for.campaign.candidates.includes(:campaign, :interviews).count { |c| HiringMerge.new(c, sender_name:, preview: true).render(@template).missing.empty? }
         true
       end
 
