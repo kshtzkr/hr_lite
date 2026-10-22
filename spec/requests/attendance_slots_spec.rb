@@ -58,6 +58,8 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
 
     expect(penalties).to eq([ [ friday, 120, "late" ], [ friday + 3, 60, "late_carry" ], [ friday + 4, 60, "late_carry" ] ])
     expect(HrLite::AttendanceRecord.find_by(user_id: employee.id).status).to eq("present")
+    get "/hr/attendance"
+    expect(response.body).to include("You checked in at 11:01 on Fri 16 Oct, after 11:00, so +1h goes on your next 2 working days. So Mon 19 Oct needs 60 min more before checkout.")
   end
 
   it "after 11:30 makes the day a half day" do
@@ -118,5 +120,6 @@ RSpec.describe "Attendance slots and late penalties", type: :request do
     HrLite::AttendanceCloseJob.perform_now(date: friday)
 
     expect(penalties).to eq([ [ friday + 3, 30, "short_day" ] ])
+    expect(HrLite::AttendancePenalty.last.cause).to eq("You checked out at 17:00 on Fri 16 Oct, before that day's required checkout of 17:30. So Mon 19 Oct needs 30 min more before checkout.")
   end
 end

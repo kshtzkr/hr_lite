@@ -4,7 +4,7 @@
 <section class="hrl-card" id="penalties">
   <h2 class="hrl-card__title">Penalty hours</h2>
   <p><strong><%= hrl_duration(held * 60) %></strong> held · <%= pluralize(hrl_days(HrLite::AttendancePenalty.days_for(held)), "day") %><%= " of #{leave_type.name}" if leave_type %></p>
-  <p class="hrl-hint">Penalties add up until HR removes them.<% if leave_type %> Every 5 hours holds half a day of leave, which can't be applied for.<% end %></p>
+  <p class="hrl-hint">Penalties add up until HR removes them.<% if leave_type %> Every 5 hours holds half a day of leave, which can't be applied for.<% end %> To avoid more, check in by your slot and stay until the required checkout. If a punch was wrong, fix that day and ask HR to remove the penalties it caused.</p>
   <% HrLite::PenaltyRemoval.where(user_id: user.id).includes(:removed_by).order(created_at: :desc).each do |removal| %>
     <div class="hrl-feed__item hrl-small"><div class="hrl-feed__body">Removed <%= hrl_duration(removal.minutes * 60) %> on <%= removal.created_at.strftime("%-d %b %Y") %> by <%= hr_display_name(removal.removed_by) %>: <%= removal.reason %></div></div>
   <% end %>
@@ -16,7 +16,7 @@
     <% end %>
   <% end %>
 </section>
-<% penalties = HrLite::AttendancePenalty.where(user_id: user.id, date: month.all_month).order(:date, :id) %>
+<% penalties = HrLite::AttendancePenalty.where(user_id: user.id, date: month.all_month).includes(:attendance_record).order(:date, :id) %>
 <section class="hrl-card">
   <h2 class="hrl-card__title">Penalties in <%= month.strftime("%B") %></h2>
   <% if penalties.empty? %>
@@ -28,10 +28,11 @@
         <strong><%= penalty.date.strftime("%a %-d %b") %></strong> ·
         <span class="<%= class_names("hrl-badge", penalty.removed_at ? "hrl-badge--muted" : "hrl-badge--warn") %>">+<%= penalty.minutes %> min</span>
         <%= penalty.label %>
+        <div class="hrl-muted"><%= penalty.cause %></div>
         <% if penalty.removed_at %>
           <div class="hrl-muted">Removed by HR: <%= penalty.removal_reason %></div>
         <% elsif local_assigns[:removable] %>
-          <%= form_with url: hr_lite.remove_penalty_admin_attendance_path(user.id, penalty_id: penalty.id), method: :post, local: true, class: "hrl-row" do %>
+          <%= form_with url: hr_lite.remove_penalty_admin_attendance_path(user.id, penalty_id: penalty.id), method: :post, local: true, class: "hrl-row hrl-mt" do %>
             <label class="hrl-sr-only" for="hrl-remove-<%= penalty.id %>">Reason to remove</label>
             <input type="text" class="hrl-input" name="removal_reason" id="hrl-remove-<%= penalty.id %>" required placeholder="Reason to remove">
             <button type="submit" class="hrl-btn">Remove</button>
