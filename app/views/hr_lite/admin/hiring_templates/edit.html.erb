@@ -1,5 +1,8 @@
 <% content_for(:page_title) { @template.name } %>
-<div class="hrl-page__head"><h1 class="hrl-page__title"><%= @template.name %></h1></div>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @template.name %></h1>
+  <% if @template.purpose %><p class="hrl-page__sub"><span class="hrl-badge">Decision email: <%= HrLite::HiringTemplate::PURPOSES[@template.purpose] %></span> Sent when you click <%= HrLite::HiringTemplate::PURPOSES[@template.purpose] %>. It can be edited, not deleted.</p><% end %>
+</div>
 
 <% if @preview %>
   <div class="hrl-flash <%= @ready == @campaign_size ? "hrl-flash--ok" : "hrl-flash--warn" %>">

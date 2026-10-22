@@ -1,3 +1,6 @@
 <% content_for(:page_title) { "New template" } %>
-<div class="hrl-page__head"><h1 class="hrl-page__title">New hiring email</h1></div>
+<div class="hrl-page__head">
+  <h1 class="hrl-page__title"><%= @template.purpose ? "The #{HrLite::HiringTemplate::PURPOSES[@template.purpose]} email" : "New hiring email" %></h1>
+  <% if @template.purpose %><p class="hrl-page__sub">Sent every time someone clicks <%= HrLite::HiringTemplate::PURPOSES[@template.purpose] %> on a candidate. Paste what you would write, then use Write with AI to tidy it and add the fields.</p><% end %>
+</div>
 <section class="hrl-card"><%= render "form", template: @template %></section>

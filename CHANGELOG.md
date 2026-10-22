@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.63.0] - 2026-10-22
+
+Decision emails. One migration: `purpose` on hiring templates.
+
+- **Selected, Rejected and On hold each send a saved email.** The first time a button is used with no email set, HR is taken to write it, with Write with AI on hand. Then they return to the candidate and click again. After that, every click moves the stage and sends that email through the HR person's own Gmail, once per candidate. Decisions are refused while the mailbox is not connected.
+- **Decision emails can be edited, never deleted.** There is one per decision, and the purpose never changes. The templates page lists them first, flagging any that are not set.
+
 ## [0.62.1] - 2026-10-22
 
 A reply link can only be answered by the candidate it belongs to. No migrations.

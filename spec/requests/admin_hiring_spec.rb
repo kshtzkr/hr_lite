@@ -203,6 +203,7 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
     end
 
     it "refuses moves the pipeline does not allow and needs a reason to reject" do
+      HrLite::HiringTemplate.create!(purpose: "rejected", name: "Regret", subject: "S", body: "B")
       schedule
       expect(flash[:alert]).to eq("Invited cannot be interviewed.")
       patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "selected" }
@@ -272,6 +273,51 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
       adapter.ready = false
       delete "/hr/admin/hiring_candidates/#{asha.id}/interviews/#{scheduled.id}"
       expect(flash[:alert]).to eq("Connect the hiring mailbox before scheduling.")
+    end
+  end
+
+  describe "decision emails" do
+    let!(:asha) { candidate("Asha", stage: "interview", round: 1) }
+
+    it "asks HR to write the email first, then sends it with the decision, once" do
+      patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "selected" }
+      expect(response).to redirect_to("/hr/admin/hiring_templates/new?candidate_id=#{asha.id}&purpose=selected")
+      expect(asha.reload.stage).to eq("interview")
+      get "/hr/admin/hiring_templates/new", params: { purpose: "selected", candidate_id: asha.id }
+      expect(response.body).to include("The Selected email", 'name="hiring_template[purpose]" value="selected"', "Write with AI")
+
+      post "/hr/admin/hiring_templates", params: { candidate_id: asha.id, hiring_template: { purpose: "selected", name: "Offer", subject: "Welcome", body: "Congratulations @first_name" } }
+      expect(response).to redirect_to("/hr/admin/hiring_candidates/#{asha.id}")
+      expect(flash[:notice]).to eq("Saved. Click Selected again to send it.")
+
+      perform_enqueued_jobs { patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "selected" } }
+      expect(asha.reload.stage).to eq("selected")
+      expect(adapter.sent.sole).to include(to: "asha@x.in", subject: "Welcome", body: "Congratulations Asha")
+      expect(flash[:notice]).to include("The Offer email is on its way")
+    end
+
+    it "keeps one email per decision, never changes its purpose, and lists the missing ones" do
+      offer = HrLite::HiringTemplate.create!(purpose: "selected", name: "Offer", subject: "S", body: "B")
+      expect(HrLite::HiringTemplate.new(purpose: "selected", name: "X", subject: "S", body: "B")).not_to be_valid
+      expect(HrLite::HiringTemplate.new(purpose: "hired", name: "X", subject: "S", body: "B")).not_to be_valid
+      patch "/hr/admin/hiring_templates/#{offer.id}", params: { hiring_template: { name: "Offer v2", purpose: "rejected" } }
+      expect(offer.reload.slice(:name, :purpose).values).to eq([ "Offer v2", "selected" ])
+      get "/hr/admin/hiring_templates"
+      expect(response.body).to include("Selected: Offer v2", "Write the Rejected email", "Write the On hold email")
+      get "/hr/admin/hiring_templates/#{offer.id}/edit"
+      expect(response.body).to include("Decision email: Selected")
+    end
+
+    it "refuses to send without a connected mailbox, and a re-click sends nothing twice" do
+      HrLite::HiringTemplate.create!(purpose: "on_hold", name: "Hold", subject: "S", body: "B")
+      adapter.ready = false
+      patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "on_hold" }
+      expect([ asha.reload.stage, flash[:alert] ]).to eq([ "interview", "Connect your Google account for hiring before sending decision emails." ])
+      adapter.ready = true
+      perform_enqueued_jobs { patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "on_hold" } }
+      asha.update!(stage: "interview")
+      perform_enqueued_jobs { patch "/hr/admin/hiring_candidates/#{asha.id}/stage", params: { to: "on_hold" } }
+      expect(adapter.sent.size).to eq(1)
     end
   end
 
