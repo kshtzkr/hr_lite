@@ -34,9 +34,9 @@
         <h2 class="hrl-card__title">Schedule round <%= @interviews.select { |i| %w[scheduled unknown].include?(i.status) }.map(&:round).max.to_i + 1 %></h2>
         <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interviews_path(@candidate), method: :post, local: true do %>
           <% picked = @next_reply %>
-          <% if picked %><p class="hrl-small">They picked <strong><%= picked.preferred_date.strftime("%A, %-d %B") %>, <%= HrLite::HiringReply::SLOTS[picked.preferred_slot] %></strong>. Call to confirm, then send the invite.</p><% end %>
+          <% if picked %><p class="hrl-small">Their turn: <strong><%= picked.preferred_date.strftime("%A, %-d %B") %>, <%= picked.turn_label %></strong> (in the <%= HrLite::HiringReply::SLOTS[picked.preferred_slot] %> slot). Call to confirm, then send the invite.</p><% end %>
           <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required value="<%= picked&.preferred_date&.iso8601 %>"></div>
-          <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required value="<%= HrLite::HiringReply::SLOT_START[picked&.preferred_slot] %>"></div>
+          <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required value="<%= picked&.turn_starts_at&.strftime("%H:%M") %>"></div>
           <div class="hrl-field">
             <label for="minutes">Length</label>
             <select name="minutes" id="minutes"><% HrLite::Admin::HiringInterviewsController::LENGTHS.each do |m| %><option value="<%= m %>"><%= m %> minutes</option><% end %></select>
@@ -87,7 +87,7 @@
       <h2 class="hrl-card__title">Round <%= reply.round %> reply</h2>
       <dl class="hrl-deflist">
         <% if reply.round == 1 %><dt>Interested</dt><dd><%= reply.answers["interested"] == "yes" ? "Yes" : "No" %></dd><% end %>
-        <% if reply.preferred_slot %><dt>Slot</dt><dd><%= reply.preferred_date.strftime("%A, %-d %B") %>, <%= HrLite::HiringReply::SLOTS[reply.preferred_slot] %></dd><% end %>
+        <% if reply.preferred_slot %><dt>Interview time</dt><dd><%= reply.preferred_date.strftime("%A, %-d %B") %>, <%= reply.turn_label %> (<%= HrLite::HiringReply::SLOTS[reply.preferred_slot] %> slot)</dd><% end %>
         <% if reply.answers["joining"] %>
           <dt>Can join</dt><dd><%= HrLite::HiringReply::JOINING[reply.answers["joining"]] %></dd>
           <% HrLite::HiringReply::YES_NO.each do |key, label| %><dt><%= label %></dt><dd><%= reply.answers[key] == "yes" ? "Yes" : "No" %></dd><% end %>

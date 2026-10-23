@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.64.1] - 2026-10-23
+
+Interview slots hand out 30-minute turns. No migrations.
+
+- **Up to 4 people per 2-hour slot, a 30-minute turn each.** Turns go in booking order: the 1st at the slot's start, the 2nd 30 minutes later, and so on. A full slot disappears from the form, and a day with no free slots says "Fully booked". A late fifth booking is refused with "Someone just booked that slot".
+- **Everyone sees the turn.** The candidate's thank-you page shows their interview time. HR's candidate page shows it, and "Schedule round N" is prefilled with that start time, so HR never retypes it. Turns are worked out from booking order and never stored.
+- **No email box on the reply page.** Each link already identifies its candidate, and the page still says "This form is for <name>".
+
 ## [0.64.0] - 2026-10-22
 
 Decision emails. One migration: `purpose` on hiring templates.

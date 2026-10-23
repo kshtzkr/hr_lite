@@ -11,8 +11,8 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
   before { Rails.cache.clear }
 
-  def reply(token = round1.token, **params)
-    post "/hr/apply/#{token}", params: { email: candidate.email, interested: "yes", date: day.iso8601, slot: "10-12", joining: "two_weeks", alternate_phone: "+91 98765 43210",
+  def reply(token = round1.token, date: day.iso8601, slot: "10-12", **params)
+    post "/hr/apply/#{token}", params: { pick: "#{date}|#{slot}", interested: "yes", joining: "two_weeks", alternate_phone: "+91 98765 43210",
                                          stipend_ok: "yes", location_ok: "yes", schedule_ok: "no", programme_ok: "yes", **params }
   end
 
@@ -24,9 +24,6 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
     get "/hr/apply/#{round1.token}"
     expect(response.body).to include("This form is for <strong>Asha Rao</strong>", "Hi Asha", "monthly stipend of ₹15,000", "10 AM – 12 PM", "Alternate phone")
-    reply(email: "someone.else@x.in")
-    expect(response.body).to include("That email does not match this link")
-    expect(round1.reload.responded_at).to be_nil
     reply
     expect(response).to redirect_to("/hr/apply/#{round1.token}")
     round1.reload
@@ -62,7 +59,7 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
     sign_in hr
     get "/hr/admin/hiring_candidates/#{candidate.id}"
-    expect(response.body).to include("Round 2 reply", "Photo ID", %(value="#{day.iso8601}"), 'value="10:00"', "Call to confirm")
+    expect(response.body).to include("Round 2 reply", "Photo ID", %(value="#{day.iso8601}"), 'value="10:00"', "Call to confirm", "10:00–10:30 AM")
     blob = round2.documents.first
     expect(blob.download).not_to start_with("%PDF") # stored as ciphertext
     get "/hr/admin/hiring_candidates/#{candidate.id}/document", params: { attachment_id: blob.id }
@@ -74,6 +71,30 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     expect(response).to have_http_status(:not_found)
     get "/hr/admin/hiring_campaigns/#{campaign.id}", params: { round: 2 }
     expect(response.body).to include("Asha Rao", "Booked round 2")
+  end
+
+  it "gives up to 4 people a 30-minute turn each in a slot, first come first served, then hides it" do
+    book = ->(name, slot = "12-2", at = 1.minute.ago) { campaign.candidates.create!(name: name, email: "#{name.downcase}@x.in").reply_for(1).tap { |r| r.update!(responded_at: at, preferred_date: day, preferred_slot: slot) } }
+    first, second, third = [ [ "A", 3 ], [ "B", 2 ], [ "C", 1 ] ].map { |n, mins| book.(n, "12-2", mins.minutes.ago) }
+    expect([ first, second, third ].map(&:turn_label)).to eq([ "12:00–12:30 PM", "12:30–1:00 PM", "1:00–1:30 PM" ])
+    get "/hr/apply/#{round1.token}"
+    expect(response.body).to include(%(value="#{day.iso8601}|12-2"))
+
+    reply(slot: "12-2")
+    expect(round1.reload.turn_label).to eq("1:30–2:00 PM")
+    get "/hr/apply/#{round1.token}"
+    expect(response.body).to include("Your round 1 interview time", "1:30–2:00 PM")
+    other = campaign.candidates.create!(name: "E", email: "e@x.in").reply_for(1)
+    get "/hr/apply/#{other.token}"
+    expect(response.body).not_to include(%(value="#{day.iso8601}|12-2"))
+
+    sign_in hr
+    get "/hr/admin/hiring_candidates/#{candidate.id}"
+    expect(response.body).to include("Their turn", "1:30–2:00 PM", 'value="13:30"')
+
+    (HrLite::HiringReply::SLOTS.keys - [ "12-2" ]).each { |slot| 4.times { |i| book.("#{slot}#{i}", slot) } }
+    get "/hr/apply/#{other.token}"
+    expect(response.body).to include("Fully booked")
   end
 
   it "keeps Sunday off unless the campaign allows it" do
@@ -89,14 +110,13 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
   end
 
   it "takes a no without a slot, and explains a missing or full answer" do
-    others = Array.new(4) { |i| campaign.candidates.create!(name: "C#{i}", email: "c#{i}@x.in").reply_for(1) }
-    others.each { |r| r.update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4") }
+    4.times { |i| campaign.candidates.create!(name: "C#{i}", email: "c#{i}@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4") }
     reply(interested: "")
     expect(response.body).to include("Tell us whether you want to go ahead")
     reply(slot: "1-3")
     expect(response.body).to include("Pick a time slot")
     reply(slot: "2-4")
-    expect(response.body).to include("That slot just filled up")
+    expect(response.body).to include("Someone just booked that slot")
     reply(joining: "")
     expect(response.body).to include("Tell us how soon you can join")
     reply(alternate_phone: "call me")
