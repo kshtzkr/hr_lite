@@ -5,7 +5,8 @@ module HrLite
   class HiringReply < ApplicationRecord
     SLOTS = { "10-12" => "10 AM – 12 PM", "12-2" => "12 – 2 PM", "2-4" => "2 – 4 PM", "4-6" => "4 – 6 PM", "6-8" => "6 – 8 PM" }.freeze
     SLOT_START = { "10-12" => "10:00", "12-2" => "12:00", "2-4" => "14:00", "4-6" => "16:00", "6-8" => "18:00" }.freeze
-    SLOT_CAPACITY = 1 # like Calendly: a booked slot on a day is gone for everyone else
+    SLOT_CAPACITY = 4 # people per 2-hour slot per day, then it is gone from the form
+    TURN = 30.minutes # each booking gets its own turn, in the order they booked
     JOINING = { "immediately" => "Immediately", "two_weeks" => "Within 2 weeks", "one_month" => "Within a month" }.freeze
     YES_NO = { "stipend_ok" => "Fine with the stipend", "location_ok" => "Fine with the office location",
                "schedule_ok" => "Fine with the schedule", "programme_ok" => "Commits to the programme" }.freeze
@@ -52,6 +53,18 @@ module HrLite
     end
 
     # What this round asks for; round 3 skips PAN and slips the candidate says they lack.
+    # Their 30-minute turn inside the slot: 1st booking at the start, 2nd 30
+    # minutes later, and so on. Worked out from booking order, never stored.
+    def turn_starts_at
+      return unless responded_at && preferred_slot
+
+      earlier = self.class.responded.where(preferred_date:, preferred_slot:)
+                    .where("responded_at < :at OR (responded_at = :at AND id < :id)", at: responded_at, id: id).count
+      Time.zone.parse("#{preferred_date} #{SLOT_START.fetch(preferred_slot)}") + (TURN * earlier)
+    end
+
+    def turn_label = (at = turn_starts_at) && "#{at.strftime('%-l:%M')}–#{(at + TURN).strftime('%-l:%M %p')}"
+
     def documents_asked
       asked = DOCUMENTS.fetch(round, {})
       asked = asked.except("pan") if pan_pending

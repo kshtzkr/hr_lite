@@ -9,7 +9,12 @@
 <% if @reply.responded_at %>
   <section class="hrl-card">
     <h2 class="hrl-card__title">Thanks, we have your answers</h2>
-    <p><%= @reply.answers["interested"] == "no" ? "We have noted that you do not want to go ahead. All the best." : "Our HR team will call you to confirm your round #{round} interview slot." %></p>
+    <% if @reply.answers["interested"] == "no" %>
+      <p>We have noted that you do not want to go ahead. All the best.</p>
+    <% else %>
+      <% if (turn = @reply.turn_label) %><p>Your round <%= round %> interview time: <strong><%= @reply.preferred_date.strftime("%A, %-d %B") %>, <%= turn %></strong>.</p><% end %>
+      <p>Our HR team will call you to confirm it.</p>
+    <% end %>
   </section>
 <% else %>
   <%= form_with url: hr_lite.hiring_reply_path(@reply.token), method: :post, local: true, multipart: true do %>
@@ -25,7 +30,7 @@
 
     <section class="hrl-card">
       <h2 class="hrl-card__title"><%= round == 1 ? "If yes: pick" : "Pick" %> a day and one time slot for round <%= round %></h2>
-      <p class="hrl-small hrl-muted">Each slot is 2 hours and only one person can book it. HR will call you to confirm.</p>
+      <p class="hrl-small hrl-muted">Each 2-hour slot takes up to 4 people. You get your own 30-minute interview time inside it, in the order you book. HR will call you to confirm.</p>
       <% HrLite::HiringReply.open_slots(allow_sunday: campaign.allow_sunday).each do |day, slots| %>
         <fieldset class="hrl-field">
           <legend><%= day.strftime("%A, %-d %B") %></legend>

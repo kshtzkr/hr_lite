@@ -59,7 +59,7 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
     sign_in hr
     get "/hr/admin/hiring_candidates/#{candidate.id}"
-    expect(response.body).to include("Round 2 reply", "Photo ID", %(value="#{day.iso8601}"), 'value="10:00"', "Call to confirm")
+    expect(response.body).to include("Round 2 reply", "Photo ID", %(value="#{day.iso8601}"), 'value="10:00"', "Call to confirm", "10:00–10:30 AM")
     blob = round2.documents.first
     expect(blob.download).not_to start_with("%PDF") # stored as ciphertext
     get "/hr/admin/hiring_candidates/#{candidate.id}/document", params: { attachment_id: blob.id }
@@ -73,16 +73,27 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     expect(response.body).to include("Asha Rao", "Booked round 2")
   end
 
-  it "hides a slot someone booked, like Calendly, and says when a day is full" do
-    booker = campaign.candidates.create!(name: "C1", email: "c1@x.in").reply_for(1)
-    booker.update!(responded_at: Time.current, preferred_date: day, preferred_slot: "10-12")
+  it "gives up to 4 people a 30-minute turn each in a slot, first come first served, then hides it" do
+    book = ->(name, slot = "12-2", at = 1.minute.ago) { campaign.candidates.create!(name: name, email: "#{name.downcase}@x.in").reply_for(1).tap { |r| r.update!(responded_at: at, preferred_date: day, preferred_slot: slot) } }
+    first, second, third = [ [ "A", 3 ], [ "B", 2 ], [ "C", 1 ] ].map { |n, mins| book.(n, "12-2", mins.minutes.ago) }
+    expect([ first, second, third ].map(&:turn_label)).to eq([ "12:00–12:30 PM", "12:30–1:00 PM", "1:00–1:30 PM" ])
     get "/hr/apply/#{round1.token}"
-    expect(response.body).not_to include(%(value="#{day.iso8601}|10-12"))
     expect(response.body).to include(%(value="#{day.iso8601}|12-2"))
-    (HrLite::HiringReply::SLOTS.keys - [ "10-12" ]).each_with_index do |slot, i|
-      campaign.candidates.create!(name: "D#{i}", email: "d#{i}@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: slot)
-    end
+
+    reply(slot: "12-2")
+    expect(round1.reload.turn_label).to eq("1:30–2:00 PM")
     get "/hr/apply/#{round1.token}"
+    expect(response.body).to include("Your round 1 interview time", "1:30–2:00 PM")
+    other = campaign.candidates.create!(name: "E", email: "e@x.in").reply_for(1)
+    get "/hr/apply/#{other.token}"
+    expect(response.body).not_to include(%(value="#{day.iso8601}|12-2"))
+
+    sign_in hr
+    get "/hr/admin/hiring_candidates/#{candidate.id}"
+    expect(response.body).to include("Their turn", "1:30–2:00 PM", 'value="13:30"')
+
+    (HrLite::HiringReply::SLOTS.keys - [ "12-2" ]).each { |slot| 4.times { |i| book.("#{slot}#{i}", slot) } }
+    get "/hr/apply/#{other.token}"
     expect(response.body).to include("Fully booked")
   end
 
@@ -99,7 +110,7 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
   end
 
   it "takes a no without a slot, and explains a missing or full answer" do
-    campaign.candidates.create!(name: "C1", email: "c1@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4")
+    4.times { |i| campaign.candidates.create!(name: "C#{i}", email: "c#{i}@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4") }
     reply(interested: "")
     expect(response.body).to include("Tell us whether you want to go ahead")
     reply(slot: "1-3")
