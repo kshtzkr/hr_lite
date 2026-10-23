@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.64.1] - 2026-10-23
+
+Interview slots book like Calendly. No migrations.
+
+- **One candidate per slot.** A 2-hour slot on a day can be booked by one candidate. Once booked it disappears from everyone else's reply form, and a day with no free slots says "Fully booked". The form lists each day with its free slots as one choice.
+- **No email box on the reply page.** Each link already identifies its candidate, and the page still says "This form is for <name>".
+
 ## [0.64.0] - 2026-10-22
 
 Decision emails. One migration: `purpose` on hiring templates.

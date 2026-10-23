@@ -11,8 +11,8 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
   before { Rails.cache.clear }
 
-  def reply(token = round1.token, **params)
-    post "/hr/apply/#{token}", params: { email: candidate.email, interested: "yes", date: day.iso8601, slot: "10-12", joining: "two_weeks", alternate_phone: "+91 98765 43210",
+  def reply(token = round1.token, date: day.iso8601, slot: "10-12", **params)
+    post "/hr/apply/#{token}", params: { pick: "#{date}|#{slot}", interested: "yes", joining: "two_weeks", alternate_phone: "+91 98765 43210",
                                          stipend_ok: "yes", location_ok: "yes", schedule_ok: "no", programme_ok: "yes", **params }
   end
 
@@ -24,9 +24,6 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
 
     get "/hr/apply/#{round1.token}"
     expect(response.body).to include("This form is for <strong>Asha Rao</strong>", "Hi Asha", "monthly stipend of ₹15,000", "10 AM – 12 PM", "Alternate phone")
-    reply(email: "someone.else@x.in")
-    expect(response.body).to include("That email does not match this link")
-    expect(round1.reload.responded_at).to be_nil
     reply
     expect(response).to redirect_to("/hr/apply/#{round1.token}")
     round1.reload
@@ -76,6 +73,19 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
     expect(response.body).to include("Asha Rao", "Booked round 2")
   end
 
+  it "hides a slot someone booked, like Calendly, and says when a day is full" do
+    booker = campaign.candidates.create!(name: "C1", email: "c1@x.in").reply_for(1)
+    booker.update!(responded_at: Time.current, preferred_date: day, preferred_slot: "10-12")
+    get "/hr/apply/#{round1.token}"
+    expect(response.body).not_to include(%(value="#{day.iso8601}|10-12"))
+    expect(response.body).to include(%(value="#{day.iso8601}|12-2"))
+    (HrLite::HiringReply::SLOTS.keys - [ "10-12" ]).each_with_index do |slot, i|
+      campaign.candidates.create!(name: "D#{i}", email: "d#{i}@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: slot)
+    end
+    get "/hr/apply/#{round1.token}"
+    expect(response.body).to include("Fully booked")
+  end
+
   it "keeps Sunday off unless the campaign allows it" do
     monday = Date.new(2026, 10, 26)
     expect(HrLite::HiringReply.dates(allow_sunday: false, from: monday).none?(&:sunday?)).to be(true)
@@ -89,14 +99,13 @@ RSpec.describe "Hiring reply pages", type: :request, no_legacy_bridge: true do
   end
 
   it "takes a no without a slot, and explains a missing or full answer" do
-    others = Array.new(4) { |i| campaign.candidates.create!(name: "C#{i}", email: "c#{i}@x.in").reply_for(1) }
-    others.each { |r| r.update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4") }
+    campaign.candidates.create!(name: "C1", email: "c1@x.in").reply_for(1).update!(responded_at: Time.current, preferred_date: day, preferred_slot: "2-4")
     reply(interested: "")
     expect(response.body).to include("Tell us whether you want to go ahead")
     reply(slot: "1-3")
     expect(response.body).to include("Pick a time slot")
     reply(slot: "2-4")
-    expect(response.body).to include("That slot just filled up")
+    expect(response.body).to include("Someone just booked that slot")
     reply(joining: "")
     expect(response.body).to include("Tell us how soon you can join")
     reply(alternate_phone: "call me")

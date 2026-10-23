@@ -13,13 +13,6 @@
   </section>
 <% else %>
   <%= form_with url: hr_lite.hiring_reply_path(@reply.token), method: :post, local: true, multipart: true do %>
-    <section class="hrl-card">
-      <div class="hrl-field">
-        <label for="email">Your email (the one this link was sent to)</label>
-        <input type="email" name="email" id="email" autocomplete="email" required value="<%= params[:email] %>">
-      </div>
-    </section>
-
     <% if round == 1 %>
       <section class="hrl-card">
         <fieldset class="hrl-field">
@@ -32,19 +25,20 @@
 
     <section class="hrl-card">
       <h2 class="hrl-card__title"><%= round == 1 ? "If yes: pick" : "Pick" %> a day and one time slot for round <%= round %></h2>
-      <p class="hrl-small hrl-muted">Each slot is 2 hours. HR will call you to confirm.</p>
-      <fieldset class="hrl-field">
-        <legend>Day</legend>
-        <% HrLite::HiringReply.dates(allow_sunday: campaign.allow_sunday).each do |day| %>
-          <label class="hrl-field--check"><input type="radio" name="date" value="<%= day.iso8601 %>" <%= "checked" if params[:date] == day.iso8601 %>> <%= day.strftime("%A, %-d %B") %></label>
-        <% end %>
-      </fieldset>
-      <fieldset class="hrl-field">
-        <legend>Time slot</legend>
-        <% HrLite::HiringReply::SLOTS.each do |key, label| %>
-          <label class="hrl-field--check"><input type="radio" name="slot" value="<%= key %>" <%= "checked" if params[:slot] == key %>> <%= label %></label>
-        <% end %>
-      </fieldset>
+      <p class="hrl-small hrl-muted">Each slot is 2 hours and only one person can book it. HR will call you to confirm.</p>
+      <% HrLite::HiringReply.open_slots(allow_sunday: campaign.allow_sunday).each do |day, slots| %>
+        <fieldset class="hrl-field">
+          <legend><%= day.strftime("%A, %-d %B") %></legend>
+          <% if slots.empty? %>
+            <p class="hrl-small hrl-muted">Fully booked</p>
+          <% else %>
+            <% slots.each do |slot| %>
+              <% value = "#{day.iso8601}|#{slot}" %>
+              <label class="hrl-field--check"><input type="radio" name="pick" value="<%= value %>" <%= "checked" if params[:pick] == value %>> <%= HrLite::HiringReply::SLOTS[slot] %></label>
+            <% end %>
+          <% end %>
+        </fieldset>
+      <% end %>
       <div class="hrl-field">
         <label for="alternate_phone">Alternate phone number (optional)</label>
         <input type="tel" name="alternate_phone" id="alternate_phone" inputmode="tel" autocomplete="tel" value="<%= params[:alternate_phone] %>">

@@ -5,7 +5,7 @@ module HrLite
   class HiringReply < ApplicationRecord
     SLOTS = { "10-12" => "10 AM – 12 PM", "12-2" => "12 – 2 PM", "2-4" => "2 – 4 PM", "4-6" => "4 – 6 PM", "6-8" => "6 – 8 PM" }.freeze
     SLOT_START = { "10-12" => "10:00", "12-2" => "12:00", "2-4" => "14:00", "4-6" => "16:00", "6-8" => "18:00" }.freeze
-    SLOT_CAPACITY = 4 # candidates per slot per day; HR calls each to confirm
+    SLOT_CAPACITY = 1 # like Calendly: a booked slot on a day is gone for everyone else
     JOINING = { "immediately" => "Immediately", "two_weeks" => "Within 2 weeks", "one_month" => "Within a month" }.freeze
     YES_NO = { "stipend_ok" => "Fine with the stipend", "location_ok" => "Fine with the office location",
                "schedule_ok" => "Fine with the schedule", "programme_ok" => "Commits to the programme" }.freeze
@@ -36,6 +36,13 @@ module HrLite
 
     def self.slot_full?(date, slot) = responded.where(preferred_date: date, preferred_slot: slot).count >= SLOT_CAPACITY
 
+    # The slots still free on each offered day, for the reply form.
+    def self.open_slots(allow_sunday:)
+      days = dates(allow_sunday: allow_sunday)
+      booked = responded.where(preferred_date: days).group(:preferred_date, :preferred_slot).count
+      days.to_h { |day| [ day, SLOTS.keys.reject { |slot| booked[[ day, slot ]].to_i >= SLOT_CAPACITY } ] }
+    end
+
     # The next ten interview days. Sunday is off unless the campaign allows it.
     def self.dates(allow_sunday:, from: Date.current) = (1..20).map { |i| from + i }.reject { |d| d.sunday? && !allow_sunday }.first(10)
 
@@ -61,10 +68,8 @@ module HrLite
 
     # Saves the reply, moves round 1's candidate to interested / not interested,
     # puts it on their timeline and rings the HR person who emailed them.
-    def submit!(email: nil, interested: nil, date: nil, slot: nil, joining: nil, yes_no: {}, alternate_phone: nil, files: {}, kyc: {})
+    def submit!(interested: nil, date: nil, slot: nil, joining: nil, yes_no: {}, alternate_phone: nil, files: {}, kyc: {})
       raise ArgumentError, "You have already replied. Thank you." if responded_at
-      # The link is personal: the email it was sent to proves the right person opened it.
-      raise ArgumentError, "That email does not match this link. Use the link from your own email." unless email.to_s.strip.casecmp?(candidate.email)
 
       assign_kyc!(kyc) if round == 3
 
@@ -76,7 +81,7 @@ module HrLite
         date = self.class.dates(allow_sunday: candidate.campaign.allow_sunday).find { |day| day.iso8601 == date.to_s }
         raise ArgumentError, "Pick a day for the interview." unless date
         raise ArgumentError, "Pick a time slot." unless SLOTS.key?(slot)
-        raise ArgumentError, "That slot just filled up. Pick another one." if self.class.slot_full?(date, slot)
+        raise ArgumentError, "Someone just booked that slot. Pick another one." if self.class.slot_full?(date, slot)
         raise ArgumentError, "That phone number does not look right." if alternate_phone.present? && !alternate_phone.to_s.gsub(/[\s-]/, "").match?(/\A\+?\d{7,15}\z/)
 
         if round == 1
