@@ -310,7 +310,10 @@ module HrLite
         body: decision_note.presence,
         path: "/leave_requests/#{id}",
         bell_to: [ user ],
-        email_to: [ user ]
+        email_to: [ user ],
+        # The employee's path 404s for anyone else; leadership opens the admin record.
+        leadership: { title: "#{title} — #{HrLite.display_name(user)}, #{leave_type.name} (#{date_range_label})",
+                      path: "/admin/leave_requests/#{id}" }
       )
     end
 

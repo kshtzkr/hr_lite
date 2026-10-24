@@ -134,6 +134,14 @@ RSpec.describe HrLite::LeaveRequest do
       expect(bells.map { |b| b[:kind] }).to include("leave.approved")
     end
 
+    it "links leadership's copy to the admin record, not the employee's page" do
+      HrLite.config.leadership_emails = [ "lead@x.test" ]
+      expect(HrLite::EventMailer).to receive(:leadership)
+        .with(hash_including(path: "/admin/leave_requests/#{request.id}", subject: include("Asha")))
+        .and_call_original
+      request.approve!(actor: admin)
+    end
+
     it "flags that month's computed run for a recompute when approved and when cancelled" do
       run = create(:payroll_run, period_month: Date.new(2027, 6, 1), status: "review")
       june = create(:leave_request, user: user, leave_type: type, start_date: Date.new(2027, 6, 14), end_date: Date.new(2027, 6, 14))
