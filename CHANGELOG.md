@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.64.2] - 2026-10-24
+
+Leadership's leave-decision emails open the leave. No migrations.
+
+- **"Leave approved/rejected" emails to leadership linked to the employee's own page** (`/leave_requests/:id`), which 404s for anyone else. Leadership's copy now names the employee and links to `/admin/leave_requests/:id`. The employee's email is unchanged.
+
 ## [0.64.1] - 2026-10-23
 
 Interview slots hand out 30-minute turns. No migrations.
