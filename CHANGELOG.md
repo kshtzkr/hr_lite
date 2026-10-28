@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.65.0] - 2026-10-28
+
+Expense claims have categories to pick from. No migrations.
+
+- **`hr_lite:seed` adds 15 travel-company expense categories** (local conveyance, flights and trains, hotel stay, meals, client meetings, site inspections, visa fees, fuel and tolls, airport transfers, phone, courier, printing, trade fairs, tips, Other) when the table is empty. The "What kind of expense" picker was blank on installs nobody had configured. Every category needs a receipt except tips; "Other" uses the required "What it was for" note. An install that already has categories is left alone.
+
 ## [0.64.2] - 2026-10-24
 
 Leadership's leave-decision emails open the leave. No migrations.

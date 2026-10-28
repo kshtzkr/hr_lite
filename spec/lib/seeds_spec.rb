@@ -5,7 +5,8 @@ RSpec.describe HrLite::Seeds do
     first = described_class.run!
     expect(HrLite::LeaveType.pluck(:code)).to contain_exactly("CL", "SL", "EL", "LWP", "CO")
     expect(HrLite::Holiday.count).to eq(3)
-    expect(first.length).to eq(8)
+    expect(HrLite::ExpenseCategory.pluck(:name)).to include("Hotel stay", "Other")
+    expect(first.length).to eq(8 + HrLite::Seeds::DEFAULT_EXPENSE_CATEGORIES.size)
 
     expect { described_class.run! }.not_to change { [ HrLite::LeaveType.count, HrLite::Holiday.count ] }
     expect(described_class.run!).to eq([])
@@ -16,6 +17,12 @@ RSpec.describe HrLite::Seeds do
     HrLite::LeaveType.find_by(code: "CL").update!(annual_quota: 20)
     described_class.run!
     expect(HrLite::LeaveType.find_by(code: "CL").annual_quota).to eq(20)
+  end
+
+  it "seeds expense categories only into an empty table" do
+    HrLite::ExpenseCategory.create!(name: "Travel")
+    described_class.run!
+    expect(HrLite::ExpenseCategory.pluck(:name)).to eq([ "Travel" ])
   end
 
   it "keeps LWP unlimited-unpaid" do
