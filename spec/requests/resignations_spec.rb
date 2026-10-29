@@ -32,6 +32,8 @@ RSpec.describe "Resignations", type: :request do
     it "rejects past last days" do
       post "/hr/resignation", params: { resignation: { proposed_last_day: Date.current - 1 } }
       expect(response).to have_http_status(:unprocessable_entity)
+      # The calendar greys the past out too.
+      expect(response.body).to include(%(min="#{Date.current.iso8601}"))
     end
 
     it "politely refuses a withdraw with nothing pending" do

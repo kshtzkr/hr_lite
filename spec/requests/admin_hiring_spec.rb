@@ -224,6 +224,8 @@ RSpec.describe "Hiring", type: :request, no_legacy_bridge: true do
 
     it "schedules, reschedules and cancels rounds on the calendar, each round its own row" do
       asha.update!(stage: "interested")
+      get "/hr/admin/hiring_candidates/#{asha.id}"
+      expect(response.body).to include(%(id="date" required min="#{Date.current.iso8601}"))
       schedule(date: Date.yesterday)
       expect(flash[:alert]).to eq("Pick a date and time in the future.")
       schedule
