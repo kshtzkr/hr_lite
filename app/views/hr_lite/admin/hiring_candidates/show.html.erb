@@ -35,7 +35,7 @@
         <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interviews_path(@candidate), method: :post, local: true do %>
           <% picked = @next_reply %>
           <% if picked %><p class="hrl-small">Their turn: <strong><%= picked.preferred_date.strftime("%A, %-d %B") %>, <%= picked.turn_label %></strong> (in the <%= HrLite::HiringReply::SLOTS[picked.preferred_slot] %> slot). Call to confirm, then send the invite.</p><% end %>
-          <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required value="<%= picked&.preferred_date&.iso8601 %>"></div>
+          <div class="hrl-field"><label for="date">Date</label><input type="date" name="date" id="date" required min="<%= Date.current %>" value="<%= picked&.preferred_date&.iso8601 %>"></div>
           <div class="hrl-field"><label for="time">Time</label><input type="time" name="time" id="time" required value="<%= picked&.turn_starts_at&.strftime("%H:%M") %>"></div>
           <div class="hrl-field">
             <label for="minutes">Length</label>
@@ -142,7 +142,7 @@
             <details>
               <summary class="hrl-btn">Reschedule</summary>
               <%= form_with url: hr_lite.admin_hiring_candidate_hiring_interview_path(@candidate, interview), method: :patch, local: true do %>
-                <div class="hrl-field"><label for="date_<%= interview.id %>">New date</label><input type="date" name="date" id="date_<%= interview.id %>" required></div>
+                <div class="hrl-field"><label for="date_<%= interview.id %>">New date</label><input type="date" name="date" id="date_<%= interview.id %>" required min="<%= Date.current %>"></div>
                 <div class="hrl-field"><label for="time_<%= interview.id %>">New time</label><input type="time" name="time" id="time_<%= interview.id %>" required></div>
                 <input type="hidden" name="minutes" value="<%= ((interview.ends_at - interview.starts_at) / 60).round %>">
                 <div class="hrl-form-actions"><button class="hrl-btn hrl-btn--primary" type="submit">Move round <%= interview.round %></button></div>

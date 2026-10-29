@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.65.1] - 2026-10-29
+
+Calendars refuse back dates where a back date makes no sense. No migrations.
+
+- **Scheduling or rescheduling an interview and proposing a resignation's last day grey out past days.** The server already refused them ("Pick a date and time in the future.", "cannot be in the past"). The picker now matches, so a typed past date is stopped next to the field before the form is sent.
+
 ## [0.65.0] - 2026-10-28
 
 Expense claims have categories to pick from. No migrations.
