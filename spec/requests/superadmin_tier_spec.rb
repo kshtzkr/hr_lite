@@ -40,7 +40,7 @@ RSpec.describe "Superadmin tier", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).not_to include("Salary structures")
       expect(response.body).not_to match(/4,?24,?242/) # not bare "424": asset digests are hex
-      expect(response.body).not_to include("New structure")
+      expect(response.body).not_to include("Add salary structure")
       expect(response.body).not_to include("New appraisal")
     end
 
@@ -59,7 +59,7 @@ RSpec.describe "Superadmin tier", type: :request do
 
       create(:salary_structure, user: profile.user)
       get "/hr/admin/employees/#{profile.id}"
-      expect(response.body).to include("Salary structures").and include("New structure")
+      expect(response.body).to include("Salary structures").and include("Add salary structure")
       get "/hr/salary_slips"
       expect(response.body).to include("/admin/payroll_runs")
     end

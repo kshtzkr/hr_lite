@@ -96,6 +96,6 @@ RSpec.describe "Confirm before irreversible actions", type: :request do
     get "/hr/admin/employees/#{profile.id}"
     titles = Nokogiri::HTML(response.body).css("h2.hrl-card__title").map(&:text)
     expect(titles.last).to eq("Offboard")
-    expect(response.body).to include("More actions (appraisal, designation change, PIP, salary)")
+    expect(response.body).to include("More actions (appraisal, designation change, PIP)")
   end
 end

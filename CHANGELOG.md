@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.65.1] - 2026-11-03
+
+- **Salary structures card has its own "Add salary structure" button.** It used to hide inside the employee's "More actions" menu, so the empty card ("payroll will skip this employee") gave no way to add one. More actions now holds only appraisal, designation change and PIP.
+
 ## [0.65.0] - 2026-10-28
 
 Expense claims have categories to pick from. No migrations.

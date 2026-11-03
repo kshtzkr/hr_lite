@@ -8,18 +8,13 @@
     <% unless own %>
     <a class="hrl-btn" href="<%= hr_lite.edit_admin_employee_path(@profile) %>">Edit</a>
     <%# Their records are the tabs above; the HR actions fold into one More actions button. %>
-    <% if hr_superadmin? || hr_can?("salary.manage", scope: :all) %>
+    <% if hr_superadmin? %>
       <details>
-        <summary class="hrl-btn">More actions (appraisal, designation change, PIP, salary)</summary>
+        <summary class="hrl-btn">More actions (appraisal, designation change, PIP)</summary>
         <div class="hrl-row">
-          <% if hr_superadmin? %>
-            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
-            <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Designation change</a>
-            <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
-          <% end %>
-          <% if hr_can?("salary.manage", scope: :all) %>
-            <a class="hrl-btn hrl-btn--primary" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">New structure</a>
-          <% end %>
+          <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_appraisal_path(@profile) %>">New appraisal</a>
+          <a class="hrl-btn" href="<%= hr_lite.new_admin_employee_designation_change_path(@profile) %>">Designation change</a>
+          <a class="hrl-btn" href="<%= hr_lite.new_admin_performance_plan_path(user_id: @profile.user_id) %>">Start PIP</a>
         </div>
       </details>
     <% end %>
@@ -91,6 +86,9 @@
       </div>
     <% else %>
       <p class="hrl-muted hrl-small">No structure yet — payroll will skip this employee.</p>
+    <% end %>
+    <% if !own && hr_can?("salary.manage", scope: :all) %>
+      <a class="hrl-btn hrl-btn--primary hrl-mt" href="<%= hr_lite.new_admin_employee_salary_structure_path(@profile) %>">Add salary structure</a>
     <% end %>
   </section>
   <% end %>
