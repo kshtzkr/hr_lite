@@ -53,6 +53,7 @@ module HrLite
     def call
       return fail!("Pick a work mode.") unless SELECTABLE.include?(@mode)
       return fail!("A reason is required for an HR change.") if @source == "hr" && @p[:reason].blank?
+      return fail!(HrLite::ADMIN_DECIDED) if @source == "hr" && HrLite.outranked?(@actor, open_setter_id)
 
       status = WorkStatus.for(@user.id, at: @now)
       return fail!("#{status.primary.label} today — work modes are off. Use the leave screen to change it.") if %w[holiday on_leave sick_leave].include?(status.primary.mode)
@@ -72,6 +73,8 @@ module HrLite
     private
 
     def fail!(message) = Result.new(nil, message)
+
+    def open_setter_id = WorkModeEvent.open.where(user_id: @user.id, layer: WorkModeEvent::MODES.dig(@mode, 1)).pick(:set_by_id)
 
     def checked_in?
       @record = AttendanceRecord.find_by(user_id: @user.id, date: @now.in_time_zone(HrLite.config.time_zone).to_date)

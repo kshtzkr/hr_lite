@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.67.0] - 2026-11-07
+
+An admin's decision stands over HR. No migrations.
+
+- **HR cannot change what an admin decided; an admin can change anything.** "Admin" is anyone holding `role.manage` (Super Admin by default). HR overrides the system as before, but is refused with "An admin decided this. Only an admin can change it." when the thing was last set by an admin: a work mode an admin set (same layer), leave an admin approved (cancel and fix), a WFH request an admin decided, and a punch an admin fixed. The admin is never refused, including over HR's own change. Who decided is read from the existing `set_by_id` / `decided_by_id` / `regularized_by_id`, so nothing is stored twice.
+
 ## [0.66.0] - 2026-11-07
 
 Saturday can be a work-from-home day for everyone. No migrations.
