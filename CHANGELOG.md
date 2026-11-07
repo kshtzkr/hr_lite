@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.68.0] - 2026-11-07
+
+HR takes a day out of leave when the person came in. No migrations.
+
+- **"Take <day> out of leave" on the attendance Fix panel.** When someone checks in on a day of approved full-day leave, HR (or an admin) opens that day's Fix panel, gives a reason and takes the day out. A one-day leave is cancelled; a longer one shrinks, or splits in two around a middle day, with its paid days going to the earlier part first. The day goes back to the balance, a `leave.day_cancelled` audit row is written, a computed payroll run is flagged for recompute, and the employee is told. Leave an admin approved can only be changed by an admin (0.67.0).
+
 ## [0.67.0] - 2026-11-07
 
 An admin's decision stands over HR. No migrations.

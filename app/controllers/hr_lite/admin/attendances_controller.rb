@@ -58,6 +58,7 @@ module HrLite
         @counts[:absent] -= 1 if @month.all_month.cover?(Date.current) && @day_status.for(Date.current).kind == :absent
         @edit_date = params[:date].present? ? parse_date_param(params[:date]) : nil
         @edit_record = @edit_date && AttendanceRecord.find_or_initialize_by(user_id: @employee.id, date: @edit_date)
+        @edit_leave = @edit_record&.check_in_at && LeaveRequest.active_on(@edit_date).find_by(user_id: @employee.id, half_day: false)
         @punches = AttendanceRecord.for_month(@month).where(user_id: @employee.id).where.not(check_in_at: nil)
                                    .includes(:work_location, :check_out_work_location).order(:date)
         @offices = OfficeLocation.active.to_a

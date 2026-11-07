@@ -60,7 +60,21 @@
 <% end %>
 
 <% if @edit_date %>
-  <section class="hrl-card" id="regularize">
+<div id="regularize">
+  <% if @edit_leave %>
+    <section class="hrl-card">
+      <h2 class="hrl-card__title">Checked in on leave</h2>
+      <%= form_with url: hr_lite.cancel_day_admin_leave_request_path(@edit_leave, date: @edit_date), method: :post, local: true do %>
+        <p>Approved <%= @edit_leave.leave_type.name %>, <%= @edit_leave.date_range_label %>.</p>
+        <div class="hrl-field">
+          <label for="cancel_day_note">Why take this day out of the leave? (required)</label>
+          <textarea name="decision_note" id="cancel_day_note" class="hrl-input" required></textarea>
+        </div>
+        <button type="submit" class="hrl-btn hrl-btn--primary">Take <%= @edit_date.strftime("%d %b") %> out of leave</button>
+      <% end %>
+    </section>
+  <% end %>
+  <section class="hrl-card">
     <h2 class="hrl-card__title">Fix <%= @edit_date.strftime("%A, %d %B") %></h2>
     <% if @edit_record.flagged? %>
       <p class="hrl-small"><span class="hrl-badge hrl-badge--bad">Flagged</span> <%= @edit_record.flag_note %></p>
@@ -99,4 +113,5 @@
       <% end %>
     <% end %>
   </section>
+</div>
 <% end %>

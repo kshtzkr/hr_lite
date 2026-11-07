@@ -88,6 +88,21 @@ module HrLite
         end
       end
 
+      # One day out of approved full-day leave (they came in), from the attendance Fix panel.
+      def cancel_day
+        request = find_decidable
+        date = parse_date_param(params[:date])
+        note = params[:decision_note].to_s.strip
+        alert = if note.blank? then "A reason is required."
+        elsif HrLite.outranked?(hr_current_user, request.decided_by_id) then HrLite::ADMIN_DECIDED
+        elsif !(request.approved? && !request.half_day && date.between?(request.start_date, request.end_date) &&
+                request.cancellable_by?(hr_current_user)) then "That day cannot be taken out of this leave."
+        end
+        request.cancel_day!(date, actor: hr_current_user, note: note) unless alert
+        redirect_to admin_attendance_path(request.user_id, date: date, month: date.strftime("%Y-%m")),
+                    alert ? { alert: alert } : { notice: "#{date.strftime('%d %b')} taken out of leave. The day is back in the balance." }
+      end
+
       def reject
         request = find_decidable
         note = params[:decision_note].to_s.strip
