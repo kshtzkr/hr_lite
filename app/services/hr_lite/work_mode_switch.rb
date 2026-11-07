@@ -83,7 +83,7 @@ module HrLite
     def office_attrs = base
 
     def wfh_attrs
-      approved = WfhRequest.approved_for(@user.id, @record.date) ||
+      approved = WfhRequest.approved_for(@user.id, @record.date) || HrLite.config.wfh_weekdays.include?(@record.date.wday) ||
                  EmployeeProfile.where(user_id: @user.id).pick(:permanent_wfh)
       return "WFH needs an approved WFH request for today." unless approved
 

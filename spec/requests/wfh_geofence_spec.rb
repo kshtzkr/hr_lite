@@ -86,6 +86,24 @@ RSpec.describe "Office geofence and WFH", type: :request do
       expect(record.work_mode).to eq("office")
     end
 
+    it "makes a config.wfh_weekdays day WFH for everyone, and the office still wins inside the radius" do
+      HrLite.config.wfh_weekdays = [ 6 ]
+      home_at_outside
+      travel_to(Date.current.next_occurring(:friday).noon) do
+        post "/hr/attendance/check_in", params: outside
+        expect(flash[:alert]).to eq(HrLite::AttendancePuncher::OFF_SITE_MESSAGE)
+      end
+      travel_to(Date.current.next_occurring(:saturday).noon) do
+        post "/hr/attendance/check_in", params: outside
+        expect(record).to have_attributes(work_mode: "wfh", wfh_request_id: nil)
+
+        record.destroy
+        post "/hr/attendance/check_in", params: inside
+        expect(record.work_mode).to eq("office")
+        expect(HrLite::WorkModeSwitch.call(user: employee, mode: "wfh", source: "employee", actor: employee)).to be_ok
+      end
+    end
+
     it "gives no exception for rejected or other-date requests" do
       wfh("rejected")
       wfh("approved", from: Date.current + 1, to: Date.current + 2)
