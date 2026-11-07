@@ -53,7 +53,7 @@ RSpec.describe "Payroll approval", no_legacy_bridge: true do
 
   it "warns when leave or attendance fixes for the month are still pending" do
     leave_month = run.period_month
-    create(:leave_request, user: create(:user), start_date: leave_month + 2, end_date: leave_month + 2)
+    create(:leave_request, user: create(:user), start_date: leave_month.next_occurring(:wednesday), end_date: leave_month.next_occurring(:wednesday))
     run.compute!(actor: owner)
     expect(run.reload.warnings.last).to start_with("1 leave or attendance request is still pending")
   end
