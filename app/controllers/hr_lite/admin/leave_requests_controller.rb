@@ -49,8 +49,9 @@ module HrLite
         @request = find_recorded
         reason = params[:correction_reason].to_s.strip
         @request.errors.add(:base, "A reason is required to fix this leave") if reason.blank?
+        @request.errors.add(:base, HrLite::ADMIN_DECIDED) if HrLite.outranked?(hr_current_user, @request.decided_by_id)
         attrs = params.require(:leave_request).permit(:leave_type_id, :start_date, :end_date, :half_day_part)
-        if reason.present? && @request.correct!(actor: hr_current_user, attrs: attrs, reason: reason)
+        if @request.errors.empty? && @request.correct!(actor: hr_current_user, attrs: attrs, reason: reason)
           return redirect_to(admin_leave_request_path(@request), notice: "Leave fixed.")
         end
 

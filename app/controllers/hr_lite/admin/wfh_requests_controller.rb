@@ -69,6 +69,7 @@ module HrLite
         request = decidable.where(status: %w[approved rejected]).find(params[:id])
         note = params[:decision_note].to_s.strip
         return redirect_to admin_wfh_request_path(request), alert: "A reason is required to change WFH." if note.blank?
+        return redirect_to admin_wfh_request_path(request), alert: HrLite::ADMIN_DECIDED if HrLite.outranked?(hr_current_user, request.decided_by_id)
 
         request.change!(actor: hr_current_user, start_date: params[:start_date], end_date: params[:end_date],
                         status: params[:status].presence_in(%w[approved rejected]) || request.status, note: note)

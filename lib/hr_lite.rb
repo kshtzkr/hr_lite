@@ -25,6 +25,7 @@ module HrLite
 
   # Full day / first half / second half — one picker for leave and attendance.
   DAY_PARTS = [ [ "Full day", "" ], [ "First half", "first" ], [ "Second half", "second" ] ].freeze
+  ADMIN_DECIDED = "An admin decided this. Only an admin can change it.".freeze
   class << self
     def config
       @config ||= Configuration.new
@@ -83,6 +84,14 @@ module HrLite
       return false if user.blank?
 
       can?(user, "payroll.manage", scope: :all)
+    end
+
+    # An admin (role.manage) decision stands: anyone else, HR included, is
+    # outranked by it; an admin may change anyone's.
+    def outranked?(actor, decider_id)
+      return false if decider_id.blank? || can?(actor, "role.manage", scope: :all)
+
+      (decider = user_klass.find_by(id: decider_id)).present? && can?(decider, "role.manage", scope: :all)
     end
 
     # An access list, cleaned — read now only by the 0.6.0 upgrade migration.

@@ -102,7 +102,7 @@ module HrLite
       return false unless pending? || approved?
       return pending? || start_date > Date.current if user_id == actor.id
 
-      HrLite.admin?(actor) || HrLite.leadership?(actor)
+      (HrLite.admin?(actor) || HrLite.leadership?(actor)) && !HrLite.outranked?(actor, decided_by_id)
     end
 
     def cancel!(actor:, note: nil)

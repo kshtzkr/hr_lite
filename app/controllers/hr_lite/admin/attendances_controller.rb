@@ -73,9 +73,9 @@ module HrLite
         record = AttendanceRecord.find_or_initialize_by(user_id: @employee.id, date: date)
 
         note = params.dig(:attendance_record, :regularization_note).to_s.strip
-        if note.blank?
+        if note.blank? || HrLite.outranked?(hr_current_user, record.regularized_by_id)
           return redirect_to admin_attendance_path(@employee.id, date: date, month: date.strftime("%Y-%m")),
-                             alert: "A regularization note is required."
+                             alert: note.blank? ? "A regularization note is required." : HrLite::ADMIN_DECIDED
         end
 
         attrs = params.require(:attendance_record).permit(:check_in_at, :check_out_at, :status, :half_day_part)
