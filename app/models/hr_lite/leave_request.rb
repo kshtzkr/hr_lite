@@ -132,6 +132,36 @@ module HrLite
       true
     end
 
+    # The person came in on a day of approved leave: HR takes that day out.
+    # One day is a cancel; otherwise the leave shrinks, or splits around a
+    # middle day (paid days go to the earlier part first). `used` is
+    # computed, so the day goes back to the balance.
+    def cancel_day!(date, actor:, note:)
+      return cancel!(actor: actor, note: note) if start_date == end_date
+
+      transaction do
+        last = end_date
+        if date == start_date then self.start_date = date + 1
+        else
+          self.end_date = date - 1
+          if date < last
+            later = dup.tap { |r| r.assign_attributes(start_date: date + 1, end_date: last) }
+            kept = paid_days && [ paid_days, LeaveDayCounter.count(self) ].min
+            self.class.insert!(later.attributes.except("id", "created_at", "updated_at")
+                                    .merge("days_count" => LeaveDayCounter.count(later), "paid_days" => kept && paid_days - kept))
+            self.paid_days = kept
+          end
+        end
+        self.days_count = LeaveDayCounter.count(self)
+        save!
+        audit!("day_cancelled", actor, "#{date}: #{note}")
+        flag_computed_runs!
+      end
+      Notifications.publish("leave.cancelled", title: "HR took #{date.strftime('%d %b')} out of your leave", body: note,
+                                               path: "/leave_requests", bell_to: [ user ])
+      true
+    end
+
     # HR fixes leave it recorded — any time, even past dates — without a
     # cancel. Re-run as a fresh recording so the create checks and the
     # balance / loss-of-pay split are worked out exactly as the first time.

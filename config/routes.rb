@@ -91,7 +91,7 @@ HrLite::Engine.routes.draw do
       member { get :summary; patch :shorter_day; post :slot; post :unlock_slot; post :remove_penalty; post :remove_penalty_hours }
     end
     resources :leave_requests, only: %i[index show new create edit update] do
-      member { post :approve; post :reject; post :cancel }
+      member { post :approve; post :reject; post :cancel; post :cancel_day }
     end
     resources :leave_balances, only: :index do
       collection { post :adjust }
