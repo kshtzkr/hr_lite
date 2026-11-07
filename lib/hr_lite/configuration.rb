@@ -24,6 +24,8 @@ module HrLite
                   :attendance_slots,
                   # true = check-in only inside an active office radius, unless WFH is approved for the day
                   :office_geofence,
+                  # e.g. [6] — weekdays (Date#wday) that are WFH for everyone, like a standing approval
+                  :wfh_weekdays,
                   # ->(user, from, to) { [{ id:, title:, starts_at:, ends_at: }] } — timed,
                   # accepted events; starts Meeting mode by itself. Pairs with calendar_users.
                   :calendar_events,
@@ -130,6 +132,7 @@ module HrLite
       @require_punch_location = false
       @attendance_slots       = false
       @office_geofence        = false
+      @wfh_weekdays           = []
       @hiring                 = nil
       @read_sheet             = ->(path, filename) {
         raise ArgumentError, "Upload the sheet as a .csv file." unless filename.to_s.downcase.end_with?(".csv")

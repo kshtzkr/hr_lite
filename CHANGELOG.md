@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.66.0] - 2026-11-07
+
+Saturday can be a work-from-home day for everyone. No migrations.
+
+- **`config.wfh_weekdays`** (e.g. `[ 6 ]` for Saturday, default `[]`) makes those weekdays count as approved WFH for every employee, like permanent WFH: an off-site check-in is accepted at their home location instead of being refused, and the WFH work mode can be picked. A check-in inside an office radius is still In office that day. Other days are unchanged: off-site needs an approved WFH request.
+
 ## [0.65.1] - 2026-11-03
 
 - **Salary structures card has its own "Add salary structure" button.** It used to hide inside the employee's "More actions" menu, so the empty card ("payroll will skip this employee") gave no way to add one. More actions now holds only appraisal, designation change and PIP.

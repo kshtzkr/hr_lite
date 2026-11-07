@@ -141,7 +141,7 @@ module HrLite
 
       # A request HR has not decided yet still lets the person work; the day is flagged for HR.
       @wfh = WfhRequest.approved_for(@user.id, Date.current) || WfhRequest.pending_for(@user.id, Date.current)
-      return OFF_SITE_MESSAGE unless @wfh || profile&.permanent_wfh
+      return OFF_SITE_MESSAGE unless @wfh || profile&.permanent_wfh || HrLite.config.wfh_weekdays.include?(Date.current.wday)
 
       @mode, @place = "wfh", "home"
       return if (@location = covering_home)
