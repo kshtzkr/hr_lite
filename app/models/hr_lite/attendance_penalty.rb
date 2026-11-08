@@ -49,5 +49,11 @@ module HrLite
       end
       "#{why} So #{date.strftime('%a %-d %b')} needs #{minutes} min more before checkout."
     end
+
+    private
+
+    # The puncher creates these on every late check-in; telling leadership each time cost ~1 s per punch.
+    # The audit row stays, and an HR removal (update) still notifies.
+    def hr_lite_publish_policy_change(log) = (super unless log.action == "create")
   end
 end

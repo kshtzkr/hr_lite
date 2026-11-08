@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.68.1] - 2026-11-08
+
+A late check-in no longer takes a second. No migrations.
+
+- **Leadership is not told each time the system adds an attendance penalty.** Every late check-in created 1 to 3 penalty rows, and each one emailed leadership and rang a bell for every leadership user (about 18 live notifications per penalty). That made a late check-in take up to 1.2 s. The audit log row is still written, and an HR removal still notifies leadership.
+
 ## [0.68.0] - 2026-11-07
 
 HR takes a day out of leave when the person came in. No migrations.
