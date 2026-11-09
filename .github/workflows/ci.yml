@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # setup-ruby has no Ruby 4.0.0 build for ubuntu-26.04 yet
     env:
       RUBY_VERSION: ruby-4.0.0
       RUBOCOP_CACHE_ROOT: tmp/rubocop
@@ -35,7 +35,7 @@ jobs:
         run: bin/rubocop -f github
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # setup-ruby has no Ruby 4.0.0 build for ubuntu-26.04 yet
     strategy:
       fail-fast: false
       matrix:
