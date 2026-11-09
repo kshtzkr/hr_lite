@@ -25,7 +25,7 @@
            elsif @leaves[date].any? then [ "hrl-mgrid__day--leave", "#{@leaves[date].size} off" ]
            end %>
       <div class="<%= class_names("hrl-mgrid__day", cell_class, "hrl-mgrid__day--today": date == Date.current) %>">
-        <span class="hrl-mgrid__num"><%= date.day %></span>
+        <span class="hrl-mgrid__num"><%= hr_leadership? ? link_to(date.day, hr_lite.calendar_path(month: @month.strftime("%Y-%m"), day: date.iso8601, anchor: "calendar-day"), aria: { label: date.strftime("%a %-d %b") }) : date.day %></span>
         <% if code %><span class="hrl-mgrid__tag"><%= code %></span><% end %>
       </div>
     <% end %>
@@ -50,3 +50,24 @@
     <p class="hrl-muted hrl-small hrl-mt">No holidays or leave this month.</p>
   <% end %>
 </section>
+
+<%# HR and leadership: make the tapped day a holiday for every office, or undo one. A past one stays, or its day off turns into absences. %>
+<% if @day %>
+  <% holiday = @holidays[@day]&.find { |h| h.office_location_id.nil? } %>
+  <section class="hrl-card" id="calendar-day">
+    <h2 class="hrl-card__title"><%= @day.strftime("%A %-d %B %Y") %></h2>
+    <% if holiday %>
+      <p><%= holiday.name %></p>
+      <% if !holiday.optional && @day >= Date.current %>
+        <%= button_to "Remove holiday", hr_lite.admin_holiday_path(holiday, from: "calendar"), method: :delete, class: "hrl-btn hrl-btn--danger",
+                      form: { data: { turbo_confirm: "Remove #{holiday.name}? #{@day.strftime('%a %-d %b %Y')} becomes a working day and everyone is told." } } %>
+      <% end %>
+    <% else %>
+      <%= form_with scope: :holiday, url: hr_lite.admin_holidays_path(from: "calendar"), local: true do |f| %>
+        <%= f.hidden_field :date, value: @day.iso8601 %>
+        <div class="hrl-field"><%= f.label :name %><%= f.text_field :name, required: true %></div>
+        <div class="hrl-form-actions"><%= f.submit "Make holiday", class: "hrl-btn hrl-btn--primary" %></div>
+      <% end %>
+    <% end %>
+  </section>
+<% end %>

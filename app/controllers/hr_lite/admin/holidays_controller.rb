@@ -12,10 +12,14 @@ module HrLite
       def create
         @holiday = Holiday.new(holiday_params)
         if @holiday.save
+          if @holiday.office_location_id.nil? && !@holiday.optional # a day off for everyone: that day's penalties go
+            AttendancePenalty.active.where(attendance_record_id: AttendanceRecord.where(date: @holiday.date).select(:id))
+                             .update_all(removed_at: Time.current, removed_by_id: hr_current_user.id, removal_reason: "Holiday declared: #{@holiday.name}")
+          end
           announce("Holiday added: #{@holiday.name} on #{@holiday.date.strftime('%a %d %b %Y')}", @holiday.office_location_id)
-          redirect_to admin_holidays_path(year: @holiday.date.year), notice: "Holiday added."
+          redirect_to back_to(admin_holidays_path(year: @holiday.date.year), @holiday.date), notice: "Holiday added."
         else
-          redirect_to admin_holidays_path, alert: @holiday.errors.full_messages.to_sentence
+          redirect_to back_to(admin_holidays_path, @holiday.date), alert: @holiday.errors.full_messages.to_sentence
         end
       end
 
@@ -31,7 +35,8 @@ module HrLite
       def destroy
         holiday = Holiday.find(params[:id])
         holiday.destroy!
-        redirect_to admin_holidays_path(year: holiday.date.year),
+        announce("Holiday removed: #{holiday.name} on #{holiday.date.strftime('%a %d %b %Y')}. It is a working day.", holiday.office_location_id)
+        redirect_to back_to(admin_holidays_path(year: holiday.date.year), holiday.date),
                     notice: "Holiday removed.", status: :see_other
       end
 
@@ -75,6 +80,11 @@ module HrLite
           staff = staff.select { |u| in_office.include?(u.id) }
         end
         Notifications.publish("holiday.published", title: title, path: "/holidays", bell_to: staff, email_to: staff)
+      end
+
+      # A request sent from the company calendar goes back to that month of it.
+      def back_to(fallback, date)
+        params[:from] == "calendar" ? calendar_path(month: date&.strftime("%Y-%m")) : fallback
       end
 
       def holiday_params

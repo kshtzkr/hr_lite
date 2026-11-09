@@ -9,6 +9,8 @@ module HrLite
       office = WorkingCalendar.office_for(hr_current_user.id) # the viewer's office's holidays
       @calendar = WorkingCalendar.new(range, office_id: office)
       @holidays = Holiday.in_range(range).for_office(office).order(:date).group_by(&:date)
+      day = Date.strptime(params[:day].to_s, "%Y-%m-%d") rescue nil
+      @day = day if hr_leadership? && range.cover?(day) # the tapped day's add/remove panel
       @leaves = LeaveRequest.approved.includes(:leave_type, :user)
                             .overlapping_range(range.first, range.last)
                             .each_with_object(Hash.new { |h, k| h[k] = [] }) do |request, acc|
