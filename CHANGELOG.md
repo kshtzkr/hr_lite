@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.69.0] - 2026-11-09
+
+HR and leadership make or remove a holiday from the company calendar. No migrations.
+
+- **Tap a day on the company calendar to make it a holiday for every office, or remove one.** People with `profile.manage` at `all` scope (HR, Leadership and Super Admin by default) get a link on each day of `/calendar`. It opens a panel under the grid: a Name field and "Make holiday" when the day has no all-office holiday, or "Remove holiday" (it asks first) when the day has one today or later. A past one shows its name only, because removing it would turn the day off into an absence for everyone who stayed home. Both buttons go through `Admin::HolidaysController#create` and `#destroy` with its existing permission, and come back to that calendar month. Holidays made here are all-office and not optional; office-only and optional ones stay on Admin → Holidays. Everyone else sees the calendar as before.
+- **A new all-office holiday removes that day's attendance penalties.** When `#create` saves a non-optional holiday for every office, the active penalties whose attendance record falls on that date get `removed_at`, `removed_by` and the reason "Holiday declared: <name>", in one update and with no notification per row. No penalty row is deleted. Putting a penalty back when the holiday is removed again is not done.
+- **Removing a holiday tells the same people that adding it does**, by bell and email: "Holiday removed: <name> on <date>. It is a working day."
+
 ## [0.68.1] - 2026-11-08
 
 A late check-in no longer takes a second. No migrations.
