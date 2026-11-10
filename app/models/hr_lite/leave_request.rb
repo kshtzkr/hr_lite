@@ -392,10 +392,11 @@ module HrLite
     end
 
     # A full-day leave over a day that already has a check-in makes no
-    # sense; a half-day alongside a punch is legitimate (worked half).
+    # sense; a half-day alongside a punch is legitimate (worked half), and
+    # HR may record leave over a checked-in day (leave outranks the punch).
     def no_punch_conflict
       return unless start_date && end_date
-      return if half_day
+      return if half_day || recorded_by_hr?
 
       punched = AttendanceRecord.where(user_id: user_id, date: start_date..end_date)
                                 .where.not(check_in_at: nil)
@@ -418,7 +419,8 @@ module HrLite
     # balance with days held for penalties. Any other excess becomes loss of pay at approval.
     def sufficient_balance
       return unless start_date && end_date && leave_type
-      return if leave_type.unlimited? || errors.any?
+      # HR records any day; past the balance it is loss of pay. Comp-off has no loss of pay.
+      return if leave_type.unlimited? || errors.any? || (recorded_by_hr? && !leave_type.comp_off)
 
       held = balance.penalty_days
       return unless leave_type.comp_off || held.positive?

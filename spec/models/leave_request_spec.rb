@@ -98,6 +98,7 @@ RSpec.describe HrLite::LeaveRequest do
       expect(three).not_to be_valid
       expect(three.errors[:base]).to eq([ "For these dates you can apply for at most 2 days of Earned — 10 days held for penalties" ])
       expect(build_request(leave_type: earned, end_date: monday + 1)).to be_valid
+      expect(build_request(leave_type: earned, end_date: monday + 2, created_by: create(:user))).to be_valid # HR records past the cap
 
       removal = HrLite::PenaltyRemoval.create!(user_id: user.id, minutes: 3000, reason: "Metro strike", removed_by_id: user.id)
       expect(balance.penalty_days).to eq(5)
