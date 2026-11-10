@@ -111,6 +111,17 @@ RSpec.describe "HR operations: ID card print requests and recorded leave", type:
       expect(response.body).to include("Pick an employee from the list")
     end
 
+    it "records leave on a day the employee checked in; the employee alone still cannot" do
+      create(:attendance_record, user_id: employee.id, date: monday, check_in_at: monday.in_time_zone.change(hour: 10))
+      own = HrLite::LeaveRequest.new(user_id: employee.id, leave_type: type, start_date: monday, end_date: monday)
+      expect(own).not_to be_valid
+      expect(own.errors[:base]).to include("Attendance is marked in this period")
+
+      sign_in hr
+      record
+      expect(HrLite::LeaveRequest.last).to have_attributes(user_id: employee.id, start_date: monday, status: "approved")
+    end
+
     it "records leave the balance does not cover as loss of pay" do
       sign_in hr
       tight = create(:leave_type, name: "Tight", annual_quota: 0)

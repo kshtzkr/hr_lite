@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.69.1] - 2026-11-10
+
+HR (and admins) can record leave on any working day. No migrations.
+
+- **"Record leave" no longer refuses a checked-in day.** HR recording full-day leave for someone who checked in got "Attendance is marked in this period" and nothing was saved. It now saves and is approved as usual; the day shows and pays as leave, which already outranks a punch.
+- **…nor caps it at penalty-held days.** Leave HR records is no longer limited to the balance left after penalty holds ("you can apply for at most N days"); anything past the balance is loss of pay, as before. Comp-off still needs its credit, because it has no loss of pay.
+- Unchanged: an employee applying for themselves still meets both checks, and nobody can record leave on days that are all weekly offs or holidays, or over leave already recorded.
+
 ## [0.69.0] - 2026-11-09
 
 HR and leadership make or remove a holiday from the company calendar. No migrations.
