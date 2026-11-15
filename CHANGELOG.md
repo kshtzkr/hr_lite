@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.70.0] - 2026-11-16
+
+Five permissions on the Roles screen are now checked. One data migration.
+
+- **Each screen asks for its own permission.** The audit trail needs "Read the audit trail" (`audit.view`); pay and appraisal rows in it need `audit.view_money`; HR settings, office locations and expense categories need `settings.manage`; accepting a resignation needs `resignation.manage`; putting an approved claim on payroll needs `expense.reimburse`. Before, these boxes did nothing: the screens opened on `profile.manage`, `payroll.manage` or `expense.approve`.
+- **Nobody loses access on upgrade.** The migration gives every role the new permission wherever it holds the one that opened the screen before. Untick a box on the Roles screen to take a screen away from a role.
+- A role that held `audit.view` without `profile.manage` (seeded Finance) can now open the audit trail by its address; the menu link still shows for leadership only.
+
 ## [0.69.1] - 2026-11-10
 
 HR (and admins) can record leave on any working day. No migrations.

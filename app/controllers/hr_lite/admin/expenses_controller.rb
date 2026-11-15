@@ -31,6 +31,8 @@ module HrLite
       end
 
       def reimburse
+        return hr_access_denied unless hr_can?("expense.reimburse", scope: :all)
+
         expense = decidable.find(params[:id])
         month = parse_month_param(params[:period_month])
         expense.reimburse!(actor: hr_current_user, period_month: month)

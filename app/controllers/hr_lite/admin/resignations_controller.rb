@@ -1,6 +1,9 @@
 module HrLite
   module Admin
     class ResignationsController < LeadershipController
+      skip_before_action :require_governing_access!
+      before_action -> { hr_require_permission!("resignation.manage", scope: :all) }
+
       def accept
         resignation = Resignation.find(params[:id])
         resignation.accept!(

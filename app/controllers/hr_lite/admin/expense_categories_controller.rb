@@ -3,6 +3,9 @@ module HrLite
     # No destroy: claims hold the category by foreign key. Retire one by
     # unticking Active, which takes it off the claim form.
     class ExpenseCategoriesController < LeadershipController
+      skip_before_action :require_governing_access!
+      before_action -> { hr_require_permission!("settings.manage", scope: :all) }
+
       def index
         @expense_categories = ExpenseCategory.alphabetical
       end
