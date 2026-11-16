@@ -14,7 +14,7 @@ RSpec.describe "Payroll and admin pages read right", type: :request do
     create(:salary_structure, user: create(:employee_profile).user)
     run.compute!(actor: owner)
     get "/hr/admin/payroll_runs/#{run.id}"
-    expect(response.body).to include("<th>Paid days</th>").and match(%r{data-label="Paid days" class="hrl-num">\d+(\.5)?</td>})
+    expect(response.body).to include('<th class="hrl-num">Paid days</th>').and match(%r{data-label="Paid days" class="hrl-num">\d+(\.5)?</td>})
   end
 
   it "names whom the help-desk answer goes to (VS-19)" do

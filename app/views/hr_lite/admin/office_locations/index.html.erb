@@ -10,7 +10,7 @@
   <% if @office_locations.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Name</th><th>Coordinates</th><th>Radius</th><th>Active</th><th></th></tr></thead>
+        <thead><tr><th>Name</th><th>Coordinates</th><th class="hrl-num">Radius</th><th>Active</th><th></th></tr></thead>
         <tbody>
           <% @office_locations.each do |office| %>
             <tr>

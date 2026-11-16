@@ -8,7 +8,7 @@
 <section class="hrl-card">
   <div class="hrl-table-wrap">
     <table class="hrl-table hrl-table--stack">
-      <thead><tr><th>Person</th><th>Regime</th><th>Tax for the year</th><th>Deducted so far</th><th>TDS a month</th><th>Declaration</th></tr></thead>
+      <thead><tr><th>Person</th><th>Regime</th><th class="hrl-num">Tax for the year</th><th class="hrl-num">Deducted so far</th><th class="hrl-num">TDS a month</th><th>Declaration</th></tr></thead>
       <tbody>
         <% @profiles.each do |profile| %>
           <% declaration = @declarations[profile.user_id] %>

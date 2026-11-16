@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.70.1] - 2026-11-16
+
+Layout fixes from an audit of every screen at 360px and 1440px. No migrations.
+
+- **The More sheet names every tab.** The line under each place was cut with "…" on a phone. It now wraps.
+- **A tick box's whole row takes the tap.** Where the label sits beside the box, a tap just off the 18px box did nothing. The label's tap area now covers the row.
+- **Number columns have their heading over the numbers** on twelve tables (payroll runs, loans, leave types, tax overview and others). The heading was left-aligned over right-aligned figures.
+- **The "‹" and "›" pager arrows are 44px wide** on work time and a person's summary. They were 38 to 41px, depending on the font.
+- **Buttons on one line share a height**: Edit beside an open "More actions" on an employee, and Edit beside Share on a draft appraisal.
+- **The weekday boxes of a shorter-day rule line up.** The first sat 4px above the rest.
+- The new-employee picker's blank option reads "— new person, below —", which fits a phone.
+
 ## [0.70.0] - 2026-11-16
 
 Five permissions on the Roles screen are now checked. One data migration.

@@ -16,7 +16,7 @@
   <% if @requests.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th></th></tr></thead>
+        <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th class="hrl-num">Days</th><th></th></tr></thead>
         <tbody>
           <% @requests.each do |request| %>
             <tr>

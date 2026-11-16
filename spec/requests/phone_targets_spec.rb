@@ -12,6 +12,16 @@ RSpec.describe "Phone targets and forms", type: :request do
     expect(css[/^\.hrl-tabrow \.hrl-nav__link \{[^}]*\}/]).to include("min-width: var(--hrl-target)")
   end
 
+  it "wraps the More sheet's hint, makes a check row and an arrow full targets, and heads number columns" do
+    css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
+    expect(css[/^\.hrl-nav__hint \{[^}]*\}/]).not_to include("nowrap")
+    expect(css).to include('.hrl-field--check label::before { content: ""; position: absolute; inset: 0; }',
+                           ".hrl-btn[aria-label] { min-width: var(--hrl-target); }")
+    sign_in owner
+    get "/hr/admin/leave_types"
+    expect(page.css("th.hrl-num").map(&:text)).to eq([ "Quota", "Carry cap" ])
+  end
+
   it "draws work-time bar labels at a readable size whatever the range" do
     css = HrLite::Engine.root.join("app/assets/stylesheets/hr_lite/hr_lite.css").read
     expect(css).to include(".hrl-bars__label { font-size: 9px;", "calc(var(--hrl-bars-n, 0) * 1.75rem)")
