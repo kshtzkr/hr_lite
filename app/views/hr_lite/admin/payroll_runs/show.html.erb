@@ -69,7 +69,7 @@
   <% if @slips.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Employee</th><th>Paid days</th><th><abbr title="Loss of pay: unpaid days">LOP</abbr></th><th>Gross</th><th>Deductions</th><th>Net</th><th></th></tr></thead>
+        <thead><tr><th>Employee</th><th class="hrl-num">Paid days</th><th class="hrl-num"><abbr title="Loss of pay: unpaid days">LOP</abbr></th><th class="hrl-num">Gross</th><th class="hrl-num">Deductions</th><th class="hrl-num">Net</th><th></th></tr></thead>
         <tbody>
           <% @slips.each do |slip| %>
             <tr>

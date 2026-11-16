@@ -14,7 +14,7 @@
   </p>
   <div class="hrl-table-wrap">
     <table class="hrl-table hrl-table--stack">
-      <thead><tr><th>Year</th><th>PF ceiling</th><th>ESI ceiling</th><th>Verified</th><th></th></tr></thead>
+      <thead><tr><th>Year</th><th class="hrl-num">PF ceiling</th><th class="hrl-num">ESI ceiling</th><th>Verified</th><th></th></tr></thead>
       <tbody>
         <% live = HrLite::StatutoryRateCardRecord.effective_for(Date.current.beginning_of_month) %>
         <% @cards.each do |card| %>

@@ -10,7 +10,7 @@
   <% if @runs.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Period</th><th>Status</th><th>Slips</th><th>Net payout</th><th></th></tr></thead>
+        <thead><tr><th>Period</th><th>Status</th><th class="hrl-num">Slips</th><th class="hrl-num">Net payout</th><th></th></tr></thead>
         <tbody>
           <% @runs.each do |run| %>
             <tr>

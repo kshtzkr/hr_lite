@@ -121,7 +121,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 /* Place icons: stroke-only, decoration beside a label that always shows. */
 .hrl-icon { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .hrl-nav__text { display: flex; flex-direction: column; min-width: 0; }
-.hrl-nav__hint { font-size: var(--hrl-t-small); font-weight: 400; color: var(--hrl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hrl-nav__hint { font-size: var(--hrl-t-small); font-weight: 400; color: var(--hrl-muted); }
 .hrl-nav__link--active .hrl-nav__hint { color: inherit; }
 /* Tab row: the current place's tabs on one line; it scrolls sideways, never the page. */
 .hrl-tabrow { display: flex; gap: var(--hrl-gap-target); overflow-x: auto; margin: 0 0 var(--hrl-s-4); padding-bottom: var(--hrl-s-2); border-bottom: 1px solid var(--hrl-line); }
@@ -228,6 +228,7 @@ html:has(.hrl-body) { scroll-padding-top: 4rem; scroll-padding-bottom: calc(4.4r
 .hrl-page__actions { width: 100%; display: flex; flex-wrap: wrap; gap: .5rem; }
 .hrl-page__actions .hrl-btn { flex: 1 1 auto; }
 .hrl-page__actions .hrl-btn[aria-label] { flex: 0 0 auto; } /* icon-only pager arrows keep their width */
+.hrl-page__actions:has(> details[open]) { align-items: flex-start; } /* an open menu does not stretch the button beside it */
 @media (min-width: 481px) {
   .hrl-page__actions { width: auto; margin-left: auto; }
   .hrl-page__actions .hrl-btn { flex: 0 1 auto; }
@@ -292,6 +293,7 @@ details > form > button[type=submit], details > form > .hrl-btn { margin-top: .2
 .hrl-btn--block { width: 100%; }
 .hrl-btn--big { min-height: 58px; font-size: var(--hrl-t-lead); }
 .hrl-btn[disabled] { opacity: .55; cursor: default; }
+.hrl-btn[aria-label] { min-width: var(--hrl-target); } /* an arrow-only button is a full target */
 summary.hrl-btn { list-style: none; }
 summary.hrl-btn::-webkit-details-marker { display: none; } /* Safari before 18.4 draws it whatever the display */
 /* A line with an "i": tap anywhere on it for why; the reason drops below. */
@@ -361,16 +363,18 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 }
 .hrl-field textarea { min-height: 90px; resize: vertical; }
 .hrl-filter { appearance: none; margin-bottom: var(--hrl-gap-target); } /* select_filter.js search box above its select */
-.hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: var(--hrl-target); }
+.hrl-field--check { display: flex; align-items: center; gap: .55rem; min-height: var(--hrl-target); position: relative; }
 .hrl-field--check + .hrl-field--check { margin-top: var(--hrl-gap-target); }
+.hrl-row > .hrl-field--check { margin-top: 0; } /* side by side: the row's gap spaces them */
 /* A choice row inside a .hrl-field keeps its row layout (.hrl-field label would make it a block). */
 .hrl-field label.hrl-field--check { display: flex; font-size: inherit; font-weight: 400; margin-bottom: 0; }
 .hrl-field--check input {
-  width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto;
+  width: 1.15rem; height: 1.15rem; min-height: 0; flex: 0 0 auto; position: relative; z-index: 1; /* above the label's ::before */
   accent-color: var(--hrl-accent);
 }
-/* The 44px label is the tap target for the small box. */
+/* The 44px label is the tap target for the small box; its ::before carries that over the box and the gap. */
 .hrl-field--check label { margin-bottom: 0; font-weight: 600; flex: 1; min-height: var(--hrl-target); display: flex; align-items: center; }
+.hrl-field--check label::before { content: ""; position: absolute; inset: 0; }
 .hrl-field--check label .hrl-hint { display: block; margin-top: 0; font-weight: 400; }
 /* Rails wraps an invalid label/field in this div; contents keeps the stack, the re-pointed token reddens the border. */
 .field_with_errors { display: contents; --hrl-field: var(--hrl-bad); }
@@ -397,6 +401,7 @@ fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .hrl-feed { list-style: none; margin: 0; padding: 0; }
 .hrl-feed__item { display: flex; gap: .7rem; padding: .8rem 0; border-bottom: 1px solid var(--hrl-line); }
 .hrl-feed__item:last-child { border-bottom: 0; }
+.hrl-feed__item > .button_to { display: flex; } /* its button stretches like a link button beside it */
 .hrl-avatar {
   flex: 0 0 auto; width: 38px; height: 38px; border-radius: var(--hrl-radius-pill);
   background: var(--hrl-info-bg); color: var(--hrl-accent);

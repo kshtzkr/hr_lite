@@ -38,7 +38,7 @@
   <% if rows.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Name</th><% if @statuses %><th>Now</th><% end %><th>Status</th><th>Hours <%= @date == Date.current ? "today" : "that day" %></th><th>Hours this month</th></tr></thead>
+        <thead><tr><th>Name</th><% if @statuses %><th>Now</th><% end %><th>Status</th><th class="hrl-num">Hours <%= @date == Date.current ? "today" : "that day" %></th><th class="hrl-num">Hours this month</th></tr></thead>
         <tbody>
           <% rows.each do |row| %>
             <tr>

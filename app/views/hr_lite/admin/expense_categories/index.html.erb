@@ -10,7 +10,7 @@
   <% if @expense_categories.any? %>
     <div class="hrl-table-wrap">
       <table class="hrl-table hrl-table--stack">
-        <thead><tr><th>Name</th><th>Monthly cap</th><th>Receipt</th><th>Active</th><th></th></tr></thead>
+        <thead><tr><th>Name</th><th class="hrl-num">Monthly cap</th><th>Receipt</th><th>Active</th><th></th></tr></thead>
         <tbody>
           <% @expense_categories.each do |category| %>
             <tr>
