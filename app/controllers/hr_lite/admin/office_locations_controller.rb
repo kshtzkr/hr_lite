@@ -1,6 +1,9 @@
 module HrLite
   module Admin
     class OfficeLocationsController < LeadershipController
+      skip_before_action :require_governing_access!
+      before_action -> { hr_require_permission!("settings.manage", scope: :all) }
+
       def index
         @office_locations = OfficeLocation.order(:name)
       end

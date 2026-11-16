@@ -77,10 +77,10 @@ RSpec.describe "Inbox counts and own rows", type: :request do
   it "puts a pending resignation in the Inbox and the Home count, opening the person" do
     leader = user_with_roles(HrLite::Role::EMPLOYEE, HrLite::Role::LEADERSHIP, name: "Asha")
     profile = create(:employee_profile, user: meera)
-    HrLite::Resignation.create!(user: meera, proposed_last_day: Date.new(2026, 11, 15))
+    HrLite::Resignation.create!(user: meera, proposed_last_day: Date.new(2030, 11, 15))
     sign_in leader
     get "/hr/approvals"
-    expect(response.body).to include("Resignation, last day 15 Nov 2026", %(href="/hr/admin/employees/#{profile.id}"))
+    expect(response.body).to include("Resignation, last day 15 Nov 2030", %(href="/hr/admin/employees/#{profile.id}"))
     get "/hr/"
     expect(response.body).to include("1 request waiting on you")
   end
