@@ -38,6 +38,15 @@ RSpec.describe HrLite::Notifications do
       }.not_to have_enqueued_mail(HrLite::EventMailer, :event)
     end
 
+    it "skips a user the host says opted out of that event" do
+      HrLite.config.email_opt_out = ->(event, user) { event == "kudos.mentioned" && user == user_a }
+      expect {
+        described_class.publish("kudos.mentioned", title: "T", email_to: [ user_a, user_b ])
+      }.to have_enqueued_mail(HrLite::EventMailer, :event).once
+    ensure
+      HrLite.config.email_opt_out = nil
+    end
+
     it "sends ONE leadership email to all configured addresses" do
       expect {
         described_class.publish("policy.changed", title: "T", diff: { "x" => [ 1, 2 ] })

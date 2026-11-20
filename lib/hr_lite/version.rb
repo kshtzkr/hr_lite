@@ -1,3 +1,3 @@
 module HrLite
-  VERSION = "0.70.1"
+  VERSION = "0.71.0"
 end

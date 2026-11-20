@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.0] - 2026-11-20
+
+### Added
+
+- `config.email_opt_out`: a host callable `->(event, user)` that skips the per-user email of an event for a user who does not want it. Bells and leadership emails are unchanged. No migrations.
+
 ## [0.70.1] - 2026-11-16
 
 Layout fixes from an audit of every screen at 360px and 1440px. No migrations.
