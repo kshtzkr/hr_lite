@@ -138,7 +138,7 @@ module HrLite
         # One query for everyone's Busy/Meeting end, not one per recipient.
         held_until = HrLite.config.office_geofence ? WorkStatus.do_not_disturb_for(users.map(&:id)) : {}
         users.each do |user|
-          next if user.email.blank?
+          next if user.email.blank? || HrLite.config.email_opt_out&.call(event.to_s, user)
 
           begin
             mail = EventMailer.event(to: user.email, subject: title, heading: title,

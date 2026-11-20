@@ -8,7 +8,7 @@ module HrLite
                   :employees_scope, :mentionable_users, :notify, :render_pdf, :company,
                   :time_zone, :currency_symbol, :on_designation_change,
                   :leadership_emails, :extra_stylesheets, :superadmin_emails,
-                  :mailer_from, :public_url_base, :notification_matrix, :back_link,
+                  :mailer_from, :public_url_base, :notification_matrix, :email_opt_out, :back_link,
                   :onboard_user, :offboard_user, :invite_url_for,
                   # ->(user) { { url:, unread: } } — shows a notifications link in
                   # the HR shell; nil (default) shows nothing.
@@ -124,6 +124,7 @@ module HrLite
       @mailer_from           = "hr@example.com"
       @public_url_base       = nil # e.g. "https://hr.example.com" — enables email links + HrLite.public_url
       @notification_matrix   = nil # resolved lazily to Notifications::DEFAULT_MATRIX
+      @email_opt_out         = nil # ->(event, user) { true } = this user does not want this event by email
       @back_link             = nil # optional {label:, url:} for the shell nav
       @native_app            = ->(request) { request.user_agent.to_s.match?(/Hotwire Native|Turbo Native/) }
       @leave_year_start_month = 1  # 1 = calendar year; 7 = July–June leave year
